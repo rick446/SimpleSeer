@@ -18,7 +18,10 @@ except(ImportError):
 
 import cv
 import IPython.Shell
-import pyfirmata
+try:
+    import pyfirmata
+except:
+    print "Warning: Pyfirmata is not installed on this system, it is not required but recommended"
 import bson
 import redis
 import ming

@@ -40,11 +40,13 @@ Mac OS X (Using homebrew)
 
 Linux (Using apt-get)
 =======
-> apt-get install mongodb-server python-pymongo
+> apt-get install mongodb-server
+> easy_install python-pymongo
 > easy_install ming
 > easy_install cherrypy
 > hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.
 py install
 
-
+*NOTE: Don't install python-pymongo from the repos as it is much too far out of date and requires 2+
+=======
 
