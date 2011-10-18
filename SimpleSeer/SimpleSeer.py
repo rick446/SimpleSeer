@@ -26,13 +26,21 @@ class SimpleSeer(threading.Thread):
         self.config = Session()
 
         self.cameras = []
+        
         for camera in self.config.cameras:
-            id = camera['id']
-            del camera['id']
-            self.cameras.append(Camera(id, camera))
+            camerainfo = camera.copy()
+            id = camerainfo['id']
+            del camerainfo['id']
+            self.cameras.append(Camera(id, camerainfo))
         #log initialized camera X
-
+    
+        Session().redis.set("cameras", json.dumps(self.config.cameras))
+        #tell redis what cameras we have
+        
         self.inspections = Inspection.m.find( enabled = 1 ).all()
+        
+        all_inspections = Inspection.m.find().all()
+        Session().redis.set("inspections", all_inspections) 
          
         self.conditions = []
         #self.conditions = Events.m.find( { "enabled": 1 }).all()
@@ -41,6 +49,10 @@ class SimpleSeer(threading.Thread):
         self.lastframes = []
         self.framecount = 0
         self.results = [] #results for each frame
+        Session().redis.set("results", [])
+        #NOTE THIS IS NOT CORRECT BEHAVIOR!
+        #WE SHOULD GET FRAMES/RESULTS OUT OF REDIS
+        
         #log display started
 
         #self.web = Web(self.config['web'])
@@ -48,7 +60,9 @@ class SimpleSeer(threading.Thread):
         #self.controls = Controls(self.config['arduino'])
         
         self.initialized = True
+        
         super(SimpleSeer, self).__init__()
+        self.daemon = True
         
         if self.config.start_shell:
             self.shell_thread = Shell.ShellThread()
@@ -69,12 +83,15 @@ class SimpleSeer(threading.Thread):
             currentframes.append(frame)
             
             while len(self.lastframes) > self.config.max_frames:
-                self.lastframes.popleft()
-                self.results.popleft()
+                self.lastframes.pop(0)
+                self.results.pop(0)
                             
             self.framecount = self.framecount + 1
+            Session().redis.set("framecount", self.framecount)
             count = count + 1
-        self.lastframes.append(currentframes)
+            
+                    
+        self.lastframes.append(currentframes)            
             
         return currentframes
             
@@ -93,7 +110,7 @@ class SimpleSeer(threading.Thread):
         self.results.append(frame_results)
         
     def check(self):
-        for watcher in self.watchers():
+        for watcher in self.watchers:
             if watcher.enabled:
                 watcher.check()
     
@@ -102,11 +119,19 @@ class SimpleSeer(threading.Thread):
             timer_start = time.time()
             
             self.inspect()
-            self.check()
+            #self.check()
             
-            self.display.send(frames)
+            count = 0
+            for f in self.lastframes[-1]:
+                jpgdata = StringIO()
+                f.image.applyLayers().getPIL().save(jpgdata, "jpeg")
+                Session().redis.set("currentframe_%d" % count, jpgdata.getvalue())
+                Session().redis.set("histogram_%d" % count, f.image.histogram(20))
+                count = count + 1
             
-            timeleft = poll_interval - (time.time() - timerstart)
+            #self.display.send(frames)
+            
+            timeleft = Session().poll_interval - (time.time() - timer_start)
             if timeleft > 0:
                 time.sleep(timeleft)
             else:

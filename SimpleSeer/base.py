@@ -4,6 +4,11 @@ import json
 import pygame.image
 from multiprocessing import Process, Queue, Pipe
 import threading
+import logging
+from StringIO import StringIO
+import types
+
+
 
 import cherrypy
 try:
@@ -15,6 +20,7 @@ import cv
 import IPython.Shell
 import pyfirmata
 import bson
+import redis
 import ming
 from ming.datastore import DataStore
 

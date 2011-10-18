@@ -1,5 +1,22 @@
 from base import *
 
+
+
+class SmartJSONRedis(redis.Redis):
+    """
+    This is a corny wrapper for Redis() that just auto-JSON ifys our seer data
+    """
+    
+    def set(self, key, val):
+        if (hasattr(val, "__json__")):
+            val = val.__json__()
+        
+        if (isinstance(val, list) and len(val) and hasattr(val[0], "__json__")):
+            val = [v.__json__() for v in val]
+        
+        return super(SmartJSONRedis, self).set(key,val)
+            
+
 class Session():
     """
     The session singleton must be instantiated with a configuration file reference
@@ -31,7 +48,9 @@ class Session():
         
         self.bind = DataStore(self.mongo, database = self.database)
         self.mingsession = ming.Session(self.bind)
-    
+        
+        self.redis = SmartJSONRedis(**self.redis_config)
+        self.log = logging.getLogger(__name__)
         
     def __getattr__(self, attr):
         return ''  #return false on any non-present properties
