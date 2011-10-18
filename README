@@ -1,6 +1,34 @@
+The SimpleSeer is a way to create inspections and take measurements,
+it uses the SimpleCV framework and MongoDB to turn any PC into a vision appliance.
+
+Examples of usage:
+==========================
+
+To start SimpleSeer:
+
+    $ cd SimpleSeer
+    $ python __init__.py
+
+To capture an image, display, and store in the database:
+
+    >>> frames = SimpleSeer().capture()
+    >>> frames[0].image.show()
+    >>> frames[0].save()
+
+To retrieve and display all captured frames at a 1 second delay:
+
+    >>> allframes = Frames.m.find().all()
+    >>> for f in allframes:
+    >>>   f.image.show()
+    >>>   time.sleep(1)
+
 Installation instructions:
+==========================
 
 You must have SimpleCV installed first! http://simplecv.org
+
+You will also need to edit (or copy and edit) default.cfg for settings
+that reflect your Camera, database, and etc.
 
 Mac OS X (Using homebrew)
 ========
@@ -20,3 +48,5 @@ Linux (Using apt-get)
 py install
 
 *NOTE: Don't install python-pymongo from the repos as it is much too far out of date and requires 2+
+=======
+
