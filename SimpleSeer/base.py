@@ -6,6 +6,7 @@ from multiprocessing import Process, Queue, Pipe
 import threading
 
 import cherrypy
+import urllib
 try:
   import Image as pil
 except(ImportError):

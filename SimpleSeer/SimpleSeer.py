@@ -1,13 +1,15 @@
 from base import *
 from Session import Session
 from Inspection import Inspection
+from Web import *
 
 class SimpleSeer(threading.Thread):
     """
     The SimpleSeer object 
     
     """
-    __shared_state = { "initialized": False } 
+    __shared_state = { "initialized": False }
+    web_interface = None
 #    cameras = []
 #    shell_thread = ''
 #    display = ''
@@ -53,6 +55,11 @@ class SimpleSeer(threading.Thread):
         if self.config.start_shell:
             self.shell_thread = Shell.ShellThread()
             self.shell_thread.start()
+
+        try:
+            self.web_interface = Web()
+        except:
+            print "Couldn't start web interface"
 
     def capture(self):
         count = 0
