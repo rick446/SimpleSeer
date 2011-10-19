@@ -45,11 +45,15 @@ class Session():
         config = json.load(open(json_config))
         for k in config.keys():
             self.__dict__[k] = config[k]
+            
         
         self.bind = DataStore(self.mongo, database = self.database)
         self.mingsession = ming.Session(self.bind)
         
         self.redis = SmartJSONRedis(**self.redis_config)
+        for k in config.keys():
+            self.redis.set(k, config[k])
+        
         self.log = logging.getLogger(__name__)
         
     def __getattr__(self, attr):
