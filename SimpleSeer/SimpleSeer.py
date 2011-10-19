@@ -57,8 +57,6 @@ class SimpleSeer(threading.Thread):
         
         #log display started
 
-        #self.web = Web(self.config['web'])
-
         #self.controls = Controls(self.config['arduino'])
         
         self.initialized = True
