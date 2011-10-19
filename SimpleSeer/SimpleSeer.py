@@ -70,7 +70,6 @@ class SimpleSeer(threading.Thread):
 
 
         self.web_interface = Web()
-        self.web_interface.start()
 
 
     def capture(self):

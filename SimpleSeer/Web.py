@@ -1,6 +1,6 @@
 from base import *
 
-class Web(threading.Thread):
+class Web():
     """
     This is the abstract web interface to handle event callbacks for Seer
     all it does is basically fire up a webserver on port 53317 to allow you
@@ -19,12 +19,9 @@ class Web(threading.Thread):
     def __init__(self):
         cherrypy.tree.mount(WebInterface())
         cherrypy.config.update(self.config)
-        cherrypy.server.start()
-        super(Web, self).__init__()
+        cherrypy.engine.start()
+        atexit.register(cherrypy.engine.exit)
 
-    def run(self):
-        print "poll redis"
-        time.sleep(0.05)
 
     
 
