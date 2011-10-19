@@ -1,5 +1,6 @@
 
-/* cribbed from http://jsfiddle.net/gaby/3YLQf/ */
+/* Make sure the display is always relevant to the browser size
+ * parts cribbed from http://jsfiddle.net/gaby/3YLQf/ */
 $(function(){
 
     var stretcher = $('#maindisplay > img'),
@@ -27,3 +28,34 @@ $(function(){
     });
 
 });
+
+
+SimpleSeer = new Object();
+SimpleSeer.getValue = function(key) {
+    returndata = $.parseJSON(
+        $.ajax(
+            {
+                url: "/GET/" + key + ".json", 
+                async: false, 
+                dataType: 'json'
+            }
+        ).responseText
+    );
+    
+    return returndata['GET'];
+};
+
+SimpleSeer.cameras = SimpleSeer.getValue('cameras');
+SimpleSeer.framecount = SimpleSeer.getValue('framecount');
+
+
+setInterval(function(){
+   thisframe = SimpleSeer.getValue('framecount');
+   if (SimpleSeer.framecount != thisframe) {
+       d = new Date();
+       $('#maindisplay > img').attr("src", "/GET/currentframe_0.jpg?" + d.getTime());
+   }
+   SimpleSeer.framecount = thisframe;
+
+}, 2500);
+

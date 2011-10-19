@@ -906,6 +906,11 @@ transform:rotate(45deg);
     behavior: url(/PIE.htc);
 }
 
+#maindisplay img {
+    vertical-align: middle; 
+    margin: 0 auto;
+}
+
 @font-face {
 	font-family: 'pictos';
 	src: url('pictos-web.eot');
