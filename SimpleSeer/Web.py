@@ -20,6 +20,11 @@ class Web(threading.Thread):
         cherrypy.tree.mount(WebInterface())
         cherrypy.config.update(self.config)
         cherrypy.server.start()
+        super(Web, self).__init__()
+
+    def run(self):
+        print "poll redis"
+        time.sleep(0.05)
 
     
 
