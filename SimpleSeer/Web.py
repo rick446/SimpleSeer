@@ -15,7 +15,7 @@ class Web():
                 'server.socket_host' : '0.0.0.0',
                 'log.screen' : False,
                 'tools.staticdir.on': True,
-                'tools.staticdir.dir': os.getcwd() + "/public/"
+                'tools.staticdir.dir': os.getcwd() + "/public/",
                 }
             }
 
