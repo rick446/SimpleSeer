@@ -4,6 +4,11 @@ import json
 import pygame.image
 from multiprocessing import Process, Queue, Pipe
 import threading
+import logging
+from StringIO import StringIO
+import types
+
+
 
 import cherrypy
 import urllib
@@ -19,6 +24,7 @@ try:
 except:
     print "Warning: Pyfirmata is not installed on this system, it is not required but recommended"
 import bson
+import redis
 import ming
 from ming.datastore import DataStore
 

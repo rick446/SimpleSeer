@@ -99,5 +99,7 @@ class Inspection(ming.Document):
     def fixed_window(self, frame):        
         params = tuple([int(p) for p in self.roi_parameters])
         return (frame.image.crop(*params), params)
-#    def __json__(self):
+
+    def __json__(self):
+        json.dumps(dict( name = self.name, test_type = self.test_type, enabled = self.enabled, roi_method = self.roi_method ))
     
