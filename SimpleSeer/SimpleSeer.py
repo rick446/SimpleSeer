@@ -57,8 +57,6 @@ class SimpleSeer(threading.Thread):
         
         #log display started
 
-        #self.web = Web(self.config['web'])
-
         #self.controls = Controls(self.config['arduino'])
         
         self.initialized = True
@@ -72,7 +70,6 @@ class SimpleSeer(threading.Thread):
 
 
         self.web_interface = Web()
-        self.web_interface.start()
 
 
     def capture(self):

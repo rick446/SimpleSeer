@@ -1,6 +1,9 @@
 from base import *
 
-class Web(threading.Thread):
+
+
+atexit.register(cherrypy.engine.exit)
+class Web():
     """
     This is the abstract web interface to handle event callbacks for Seer
     all it does is basically fire up a webserver on port 53317 to allow you
@@ -19,12 +22,9 @@ class Web(threading.Thread):
     def __init__(self):
         cherrypy.tree.mount(WebInterface())
         cherrypy.config.update(self.config)
-        cherrypy.server.start()
-        super(Web, self).__init__()
+        cherrypy.engine.start()
 
-    def run(self):
-        print "poll redis"
-        time.sleep(0.05)
+
 
     
 
@@ -37,34 +37,6 @@ class WebInterface(object):
     @cherrypy.expose
     def index(self):
         filename = "index.html"
-        subdirectory = "public"
-        f = urllib.urlopen(subdirectory + "/" + filename)
-        s = f.read() # read the file
-        f.close()
-        return s
-
-
-    @cherrypy.expose
-    def options(self):
-        filename = "options.html"
-        subdirectory = "public"
-        f = urllib.urlopen(subdirectory + "/" + filename)
-        s = f.read() # read the file
-        f.close()
-        return s
-
-    @cherrypy.expose
-    def modal(self):
-        filename = "modal.html"
-        subdirectory = "public"
-        f = urllib.urlopen(subdirectory + "/" + filename)
-        s = f.read() # read the file
-        f.close()
-        return s
-
-    @cherrypy.expose
-    def products(self):
-        filename = "products.html"
         subdirectory = "public"
         f = urllib.urlopen(subdirectory + "/" + filename)
         s = f.read() # read the file

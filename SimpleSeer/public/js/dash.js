@@ -1,5 +1,6 @@
 $(document).ready(function() {
     $('.options').bind('click', function() {
+        alert("hi");
         var trig, purl;
         trig = $(this).attr('title');
         purl = $(this).attr('href');
@@ -25,4 +26,5 @@ $(document).ready(function() {
         purl.abort();
         $(this).unbind('click');
     });
+    $('nav').draggable();
 });

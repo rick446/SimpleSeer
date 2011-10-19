@@ -33,19 +33,26 @@ that reflect your Camera, database, and etc.
 Mac OS X (Using homebrew)
 ========
 
+(install nginx & copy nginx conf file)
 > brew install mongodb
 > easy_install ming
 > easy_install cherrypy
 > hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.py install
+> git clone git://github.com/nicolasff/webdis.git && cd webdis && make && ./webdis &
 
 Linux (Using apt-get)
 =======
-> apt-get install mongodb-server
+> apt-get install mongodb-server nginx
+> cp etc/nginx/sites-enabled/default /etc/nginx/sites-enabled
+> /etc/init.d/nginx restart
 > easy_install python-pymongo
 > easy_install ming
 > easy_install cherrypy
 > hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.
 py install
+> git clone git://github.com/nicolasff/webdis.git && cd webdis && make && ./webdis &
+
+
 
 *NOTE: Don't install python-pymongo from the repos as it is much too far out of date and requires 2+
 =======

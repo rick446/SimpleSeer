@@ -7,6 +7,8 @@ import threading
 import logging
 from StringIO import StringIO
 import types
+import atexit
+
 
 
 
