@@ -47,6 +47,7 @@ SimpleSeer.getValue = function(key) {
 
 SimpleSeer.cameras = SimpleSeer.getValue('cameras');
 SimpleSeer.framecount = SimpleSeer.getValue('framecount');
+SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
 
 
 setInterval(function(){
@@ -57,5 +58,4 @@ setInterval(function(){
    }
    SimpleSeer.framecount = thisframe;
 
-}, 2500);
-
+}, SimpleSeer.poll_interval * 1000);
