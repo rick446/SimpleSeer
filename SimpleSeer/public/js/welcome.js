@@ -3,6 +3,10 @@ $.expr[':']['nth-of-type'] = function(elem, i, match) {
     var parts = match[3].split("+");
     return (i + 1 - (parts[1] || 0)) % parseInt(parts[0], 10) === 0;
 };
+
+
+
+
 $(document).ready(function() {
     var howh = $(document).height();
     $('body').css('height',+howh+'px');
