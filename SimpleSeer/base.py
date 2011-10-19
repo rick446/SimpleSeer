@@ -34,5 +34,5 @@ from ming.datastore import DataStore
 
 import SimpleCV
 #from SimpleCV.Shell import *
-from SimpleCV import Image, JpegStreamer, Camera
+from SimpleCV import Image, JpegStreamer, Camera, Color
 #from SimpleCV.Display import Display

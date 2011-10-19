@@ -45,7 +45,7 @@ class Measurement(ming.Document):
         
         function_ref = getattr(self, self.test_method)
         
-        result = function_ref(sample, self.parameters)
+        result = function_ref(sample)
            
         return Result({
             "measurement_id": self._id,
@@ -57,10 +57,11 @@ class Measurement(ming.Document):
     def save(self):
         self.m.save()
         
-    def mean_color(self, img, parameters):
+    def mean_color(self, img):
         return [str(c) for c in img.meanColor()]
 
-    def largest_blob_area(self, img, parameters):
+    def largest_blob_area(self, img):
+        parameters = self.parameters
         blobs = img.findBlobs(**parameters)
         
         if blobs:
@@ -68,5 +69,16 @@ class Measurement(ming.Document):
             return [str(blobs[-1].area())]
         
         return ['']
-        
     
+    def count_blobs_hue(self, img):
+        parameters = self.parameters
+        huedistance = img.hueDistance(parameters['color']).invert()
+        blobs = huedistance.findBlobs(int(parameters['threshold']))
+        if not blobs:
+            return ['']
+        
+        for b in blobs:
+            b.image = img
+            b.draw(Color.GREEN)
+        return [len(blobs)]
+            

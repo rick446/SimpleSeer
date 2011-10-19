@@ -58,7 +58,13 @@ class Inspection(ming.Document):
         #note that we should validate/roi method
 
                 
-        samples, roi = roi_function_ref(frame)
+        samplesroi = roi_function_ref(frame)
+        
+        if not samplesroi:
+            return
+            
+        samples, roi = samplesroi
+        #NATE ROI SHOULD ALSO BE AN ARRAY TODO
             
         if not isinstance(samples, list):
             samples = [samples]
@@ -99,6 +105,13 @@ class Inspection(ming.Document):
     def fixed_window(self, frame):        
         params = tuple([int(p) for p in self.roi_parameters])
         return (frame.image.crop(*params), params)
+        
+    def blob_detection(self, frame):
+        params = tuple([int(p) for p in self.roi_parameters])
+        blobs = frame.image.findBlobs(*params)
+        if not blobs:
+            return 
+        return ([b.crop() for b in blobs], blobs[-1].points)
 
     def __json__(self):
         json.dumps(dict( name = self.name, test_type = self.test_type, enabled = self.enabled, roi_method = self.roi_method ))
