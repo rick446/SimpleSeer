@@ -71,6 +71,11 @@ class WebInterface(object):
         f.close()
         return s
 
+    @cherrypy.expose
+    def poll(self):
+        text = "Wow, this is some fun stuff"
+        return json.dumps(text)
+
 
     
 
