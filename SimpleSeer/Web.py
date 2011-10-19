@@ -1,5 +1,8 @@
 from base import *
 
+
+
+atexit.register(cherrypy.engine.exit)
 class Web():
     """
     This is the abstract web interface to handle event callbacks for Seer
@@ -20,7 +23,7 @@ class Web():
         cherrypy.tree.mount(WebInterface())
         cherrypy.config.update(self.config)
         cherrypy.engine.start()
-        atexit.register(cherrypy.engine.exit)
+
 
 
     
@@ -40,34 +43,7 @@ class WebInterface(object):
         f.close()
         return s
 
-
-    @cherrypy.expose
-    def options(self):
-        filename = "options.html"
-        subdirectory = "public"
-        f = urllib.urlopen(subdirectory + "/" + filename)
-        s = f.read() # read the file
-        f.close()
-        return s
-
-    @cherrypy.expose
-    def modal(self):
-        filename = "modal.html"
-        subdirectory = "public"
-        f = urllib.urlopen(subdirectory + "/" + filename)
-        s = f.read() # read the file
-        f.close()
-        return s
-
-    @cherrypy.expose
-    def products(self):
-        filename = "products.html"
-        subdirectory = "public"
-        f = urllib.urlopen(subdirectory + "/" + filename)
-        s = f.read() # read the file
-        f.close()
-        return s
-
+    
 
     
 

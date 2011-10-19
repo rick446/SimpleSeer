@@ -11,7 +11,6 @@ def run_shell(shell):
     shell()
     cherrypy.engine.exit()
     
-
 class ShellThread(threading.Thread):
     def run(self):
         scvShell = setup_shell()

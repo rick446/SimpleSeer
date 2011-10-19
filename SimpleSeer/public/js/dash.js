@@ -1,5 +1,6 @@
 $(document).ready(function() {
     $('.options').bind('click', function() {
+        alert("hi");
         var trig, purl;
         trig = $(this).attr('title');
         purl = $(this).attr('href');
