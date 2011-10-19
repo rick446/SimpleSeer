@@ -1,0 +1,7 @@
+$(document).ready(function() {
+    $('.info').bind('click', function() {
+        $(this).next('span').append('<span class="arrw"></span>');
+        $(this).next('span').toggleClass('hidden');
+        return false;
+    });
+});
