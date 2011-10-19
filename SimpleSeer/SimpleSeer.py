@@ -33,6 +33,8 @@ class SimpleSeer(threading.Thread):
             camerainfo = camera.copy()
             id = camerainfo['id']
             del camerainfo['id']
+            if camerainfo.has_key('crop'):
+                del camerainfo['crop']
             self.cameras.append(Camera(id, camerainfo))
         #log initialized camera X
     
@@ -77,6 +79,8 @@ class SimpleSeer(threading.Thread):
         currentframes = []
         for c in self.cameras:
             img = c.getImage()
+            if self.config.cameras[0].has_key('crop'):
+                img = img.crop(*self.config.cameras[0]['crop'])
             frame = Frame.make({"capturetime": time.time(), 
                 "camera": self.config.cameras[count]['name']})
             frame.image = img
