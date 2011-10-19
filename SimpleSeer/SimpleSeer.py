@@ -68,10 +68,10 @@ class SimpleSeer(threading.Thread):
             self.shell_thread = Shell.ShellThread()
             self.shell_thread.start()
 
-        try:
-            self.web_interface = Web()
-        except:
-            print "Couldn't start web interface"
+
+        self.web_interface = Web()
+        self.web_interface.start()
+
 
     def capture(self):
         count = 0
