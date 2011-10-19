@@ -15,7 +15,7 @@ class Web():
                 'server.socket_host' : '0.0.0.0',
                 'log.screen' : False,
                 'tools.staticdir.on': True,
-                'tools.staticdir.dir': os.getcwd() + "/public/"
+                'tools.staticdir.dir': os.getcwd() + "/public/",
                 }
             }
 
@@ -43,7 +43,11 @@ class WebInterface(object):
         f.close()
         return s
 
-    
+    @cherrypy.expose
+    def poll(self):
+        text = "Wow, this is some fun stuff"
+        return json.dumps(text)
+
 
     
 
