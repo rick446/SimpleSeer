@@ -8,6 +8,7 @@ To start SimpleSeer:
 
     $ cd SimpleSeer
     $ python __init__.py
+    >>> SimpleSeer().start()
 
 To capture an image, display, and store in the database:
 
