@@ -2,18 +2,19 @@ from base import *
 from Session import *
 from Measurement import Measurement
 
-class Inspection(ming.Document):
+class Inspection(SimpleDoc):
     """
+    
     An Inspection determines what part of an image to look at from a given camera
-    and what Measurement objects get taken.  It has a single handler, the roi_method,
+    and what Measurement objects get taken.  It has a single handler, the method,
     which determines ROI for the measurements.
     
-    The roi_method determines if measurements are or are not taken.  A completely
-    passive roi_method would return the entire image space (taking measurements
-    on every frame), and an "enabled = 0" equivalent would be roi_method always
+    The method determines if measurements are or are not taken.  A completely
+    passive method would return the entire image space (taking measurements
+    on every frame), and an "enabled = 0" equivalent would be method always
     returning None.
     
-    The roi_method can return several samples, pieces of the evaluated frame,
+    The method can return several samples, pieces of the evaluated frame,
     and these get passed in turn to each Measurement.
     
     The results from these measurements are aggregated and returned from the
@@ -23,9 +24,9 @@ class Inspection(ming.Document):
         name = "Blob Measurement 1",
         test_type = "Measurement",
         enabled = 1,
-        roi_method = "fixed_window",
+        method = "fixed_window",
         camera = "Default Camera",
-        roi_parameters = ["100", "100", "400", "300"])) #x,y,w,h
+        parameters = dict( x: 100, y: 100, w: 400, h: 300))) #x,y,w,h
 
     insp.save()
     
@@ -41,19 +42,21 @@ class Inspection(ming.Document):
     _id = ming.Field(ming.schema.ObjectId)    
     name = ming.Field(str)
     test_type = ming.Field(str) 
-    roi_method = ming.Field(str)#this might be a relation 
+    method = ming.Field(str)
     enabled = ming.Field(int)
     camera = ming.Field(str)
-    roi_parameters = ming.Field(ming.schema.Array(str))
+    parameters = ming.Field({str: None})
+
+
                          
     def execute(self, frame):
         """
-        The execute method takes in a frame object, executes the roi_method
+        The execute method takes in a frame object, executes the method
         and sends the samples to each measurement object.  The results are returned
         as a multidimensional array [ samples ][ measurements ] = result
         """
 
-        roi_function_ref = getattr(self, self.roi_method)
+        roi_function_ref = getattr(self, self.method)
         #get the ROI function that we want
         #note that we should validate/roi method
 
@@ -90,29 +93,33 @@ class Inspection(ming.Document):
             frame.image.dl().blit(sample.applyLayers(), (roi[0], roi[1]))
 
         return results
-    
-    def save(self):
-        self.m.save()
         
     @property
     def measurements(self):
         #note, should figure out some way to cache this
-        return Measurement.m.find( inspection_id = self._id ).all()
+        return Measurement.find( inspection_id = self._id ).all()
 
-
-    #below are "core" inspection functions
-
-    def fixed_window(self, frame):        
-        params = tuple([int(p) for p in self.roi_parameters])
-        return (frame.image.crop(*params), params)
+    @classmethod
+    def find(cls, *args, **kwargs):
+        if not kwargs.has_key('enabled'):
+            kwargs['enabled'] = 1
         
-    def blob_detection(self, frame):
-        params = tuple([int(p) for p in self.roi_parameters])
-        blobs = frame.image.findBlobs(*params)
-        if not blobs:
-            return 
-        return ([b.crop() for b in blobs], blobs[-1].points)
+        return cls.m.find(*args, **kwargs)
 
     def __json__(self):
-        json.dumps(dict( name = self.name, test_type = self.test_type, enabled = self.enabled, roi_method = self.roi_method ))
+        return json.dumps(dict( name = self.name, test_type = self.test_type, enabled = self.enabled, method = self.method ))
     
+
+    #below are "core" inspection functions
+    def fixed_window(self, frame):        
+        params = self.parameters
+        return ([frame.image.crop(**params)], [tuple(params[x], params[y])])
+        
+    def blob_detection(self, frame):
+        params = self.parameters
+        blobs = frame.image.findBlobs(**params)
+        if not blobs:
+            return 
+        return ([b.crop() for b in blobs], [b.points[0] for b in blobs])
+
+

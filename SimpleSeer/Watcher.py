@@ -1,7 +1,7 @@
 from base import *
 from Session import Session
 
-class Watcher(ming.Document):
+class Watcher(SimpleDoc):
     """
     The Watcher reviews results in SimpleSeer, and has two handler patterns:
       - self.conditions takes any parameters in the Parameters object

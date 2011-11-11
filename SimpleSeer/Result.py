@@ -1,7 +1,7 @@
 from base import *
 from Session import Session
 
-class Result(ming.Document):
+class Result(SimpleDoc):
     """
     Result( {
        "data": ["1","2","3"]

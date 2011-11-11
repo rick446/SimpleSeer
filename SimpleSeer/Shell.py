@@ -21,3 +21,4 @@ from Inspection import Inspection
 from Measurement import Measurement
 from Result import Result
 from Web import Web
+from Frame import Frame

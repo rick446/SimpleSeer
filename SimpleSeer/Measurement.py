@@ -22,7 +22,7 @@ from Result import Result
 
 
 """
-class Measurement(ming.Document):
+class Measurement(SimpleDoc):
     class __mongometa__:
         session = Session().mingsession
         name = 'measurement'
@@ -53,9 +53,6 @@ class Measurement(ming.Document):
             "is_numeric": self.is_numeric})
         
         return data
-        
-    def save(self):
-        self.m.save()
         
     def mean_color(self, img):
         return [str(c) for c in img.meanColor()]

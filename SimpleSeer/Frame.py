@@ -12,7 +12,7 @@ from Session import Session
     >>> f.save()
     >>> 
 """
-class Frame(ming.Document):
+class Frame(SimpleDoc):
     class __mongometa__:
         session = Session().mingsession
         name = 'frame'

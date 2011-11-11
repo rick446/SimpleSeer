@@ -2,7 +2,7 @@ from base import *
 from Session import Session
 
 
-class Statistic(ming.Document):
+class Statistic(SimpleDoc):
     """
     
     s = Statistic( {
