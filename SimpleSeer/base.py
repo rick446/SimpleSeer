@@ -1,4 +1,5 @@
 import sys, time, os
+from datetime import datetime
 import threading
 import json
 import pygame.image
@@ -22,27 +23,24 @@ try:
     import pyfirmata
 except:
     print "Warning: Pyfirmata is not installed on this system, it is not required but recommended"
-import bson
 import redis
-import ming
-from ming.datastore import DataStore
+import mongoengine
 
 
-
-class SimpleDoc(ming.Document):
+class SimpleDoc(mongoengine.Document):
     """
-    All Seer objects should extend SimpleDoc, which wraps ming.Document
+    All Seer objects should extend SimpleDoc, which wraps mongoengine.Document
     """
-    @classmethod
-    def find(cls, *args, **kwargs):
-        return cls.m.find(*args, **kwargs)
+    #@classmethod
+    #def find(cls, *args, **kwargs):
+    #    return cls.m.find(*args, **kwargs)
     
-    @classmethod
-    def remove(cls, *args, **kwargs):
-        return cls.m.remove(*args, **kwargs)
+    #@classmethod
+    #def remove(cls, *args, **kwargs):
+    #    return cls.m.remove(*args, **kwargs)
     
-    def save(self):
-        self.m.save()
+    #def save(self):
+    #    self.m.save()
         
     #def __json__(self):
         

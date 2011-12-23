@@ -14,16 +14,10 @@ class Statistic(SimpleDoc):
     
     
     """
-    class __mongometa__:
-        session = Session().mingsession
-        name = 'statistic'
-    
-    _id = ming.Field(ming.schema.ObjectId)    
-    
-    data = ming.Field({ str: None })
-    name = ming.Field(str)
-    capturetime = ming.Field(float)
-    results = ming.Field(ming.schema.Array(ming.schema.ObjectID))
+    data = mongoengine.DictField()
+    name = mongoengine.StringField()
+    capturetime = mongoengine.DateTimeField()
+    results = mongoengine.ListField(mongoengine.ObjectField())
 
     def saveResults(self):
         for r in self.unsavedresults:

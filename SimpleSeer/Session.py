@@ -64,20 +64,14 @@ class Session():
             return  #return the existing shared context
         
         self.__dict__.clear()   #flush if this is a reload
-        
-        
-     
-        
+           
         #convert simplejson's default unicode to utf-8 so it works as parameters
         config = json.load(open(json_config), object_hook=_decode_dict)
         for k in config.keys():
             self.__dict__[k] = config[k]
             
+        mongoengine.connect(self.database)
         
-        self.bind = DataStore(self.mongo, database = self.database)
-        self.mingsession = ming.Session(self.bind)
-        
-        print self.redis_config
         self.redis = SmartJSONRedis(**self.redis_config)
         for k in config.keys():
             self.redis.set(k, config[k])

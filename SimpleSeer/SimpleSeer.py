@@ -47,7 +47,7 @@ class SimpleSeer(threading.Thread):
         Session().redis.set("inspections", all_inspections) 
          
         self.conditions = []
-        #self.conditions = Events.m.find( { "enabled": 1 }).all()
+        #self.conditions = Event.find( { "enabled": 1 }).all()
 
         #self.display = Display()
         self.lastframes = []
@@ -81,12 +81,12 @@ class SimpleSeer(threading.Thread):
             img = c.getImage()
             if self.config.cameras[0].has_key('crop'):
                 img = img.crop(*self.config.cameras[0]['crop'])
-            frame = Frame.make({"capturetime": time.time(), 
-                "camera": self.config.cameras[count]['name']})
+            frame = Frame(capturetime = datetime.now(), 
+                camera= self.config.cameras[count]['name'])
             frame.image = img
             
             if self.config.record_all:
-                frame.m.save()
+                frame.save()
             
             currentframes.append(frame)
             

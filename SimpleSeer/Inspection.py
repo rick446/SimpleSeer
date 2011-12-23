@@ -1,6 +1,5 @@
 from base import *
 from Session import *
-from Measurement import Measurement
 
 class Inspection(SimpleDoc):
     """
@@ -35,17 +34,12 @@ class Inspection(SimpleDoc):
     results = insp.execute()
     
     """
-    class __mongometa__:
-        session = Session().mingsession
-        name = 'inspection'
-        
-    _id = ming.Field(ming.schema.ObjectId)    
-    name = ming.Field(str)
-    test_type = ming.Field(str) 
-    method = ming.Field(str)
-    enabled = ming.Field(int)
-    camera = ming.Field(str)
-    parameters = ming.Field({str: None})
+    name = mongoengine.StringField()
+    test_type = mongoengine.StringField() 
+    method = mongoengine.StringField()
+    enabled = mongoengine.IntField()
+    camera = mongoengine.StringField()
+    parameters = mongoengine.DictField()
 
 
                          
@@ -123,3 +117,4 @@ class Inspection(SimpleDoc):
         return ([b.crop() for b in blobs], [b.points[0] for b in blobs])
 
 
+from Measurement import Measurement

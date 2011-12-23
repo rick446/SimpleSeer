@@ -1,5 +1,9 @@
 from base import *
 from Session import Session
+from Measurement import Measurement
+from Inspection import Inspection
+from Frame import Frame
+
 
 class Result(SimpleDoc):
     """
@@ -7,19 +11,16 @@ class Result(SimpleDoc):
        "data": ["1","2","3"]
     
     """
-    class __mongometa__:
-        session = Session().mingsession
-        name = 'result'
-        
-    data = ming.Field(ming.schema.Array(str))
-    roi = ming.Field(ming.schema.Array(int))
-    capturetime = ming.Field(float)
-    camera = ming.Field(str)
-    is_numeric = ming.Field(int)
+    #this needs some work yet, should be much simpler
+    data = mongoengine.ListField(mongoengine.StringField())
+    roi = mongoengine.ListField(mongoengine.IntField())
+    capturetime = mongoengine.FloatField()
+    camera = mongoengine.StringField()
+    is_numeric = mongoengine.IntField()
 
-    measurement_id = ming.Field(ming.schema.ObjectId)
-    inspection_id = ming.Field(ming.schema.ObjectId)
-    frame_id = ming.Field(ming.schema.ObjectId)
+    measurement = mongoengine.ReferenceField(Measurement)
+    inspection = mongoengine.ReferenceField(Inspection)
+    frame = mongoengine.ReferenceField(Frame)
     
     @property
     def float_data(self):
@@ -33,6 +34,4 @@ class Result(SimpleDoc):
             return None
         np.cast[int](self.data)
         
-    def save(self):
-        self.m.save()
         
