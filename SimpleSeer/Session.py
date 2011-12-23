@@ -1,6 +1,7 @@
 from base import *
 
-
+#code to convert unicode to string
+# http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
 def _decode_list(lst):
     newlist = []
     for i in lst:
