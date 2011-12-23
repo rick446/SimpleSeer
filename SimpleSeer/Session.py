@@ -1,6 +1,27 @@
 from base import *
 
 
+def _decode_list(lst):
+    newlist = []
+    for i in lst:
+        if isinstance(i, unicode):
+            i = i.encode('utf-8')
+        elif isinstance(i, list):
+            i = _decode_list(i)
+        newlist.append(i)
+    return newlist
+
+def _decode_dict(dct):
+    newdict = {}
+    for k, v in dct.iteritems():
+        if isinstance(k, unicode):
+            k = k.encode('utf-8')
+        if isinstance(v, unicode):
+             v = v.encode('utf-8')
+        elif isinstance(v, list):
+            v = _decode_list(v)
+        newdict[k] = v
+    return newdict   
 
 class SmartJSONRedis(redis.Redis):
     """
@@ -42,7 +63,12 @@ class Session():
             return  #return the existing shared context
         
         self.__dict__.clear()   #flush if this is a reload
-        config = json.load(open(json_config))
+        
+        
+     
+        
+        #convert simplejson's default unicode to utf-8 so it works as parameters
+        config = json.load(open(json_config), object_hook=_decode_dict)
         for k in config.keys():
             self.__dict__[k] = config[k]
             
@@ -50,6 +76,7 @@ class Session():
         self.bind = DataStore(self.mongo, database = self.database)
         self.mingsession = ming.Session(self.bind)
         
+        print self.redis_config
         self.redis = SmartJSONRedis(**self.redis_config)
         for k in config.keys():
             self.redis.set(k, config[k])

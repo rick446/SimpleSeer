@@ -44,7 +44,7 @@ class SimpleDoc(ming.Document):
     def save(self):
         self.m.save()
         
-    def __json__(self):
+    #def __json__(self):
         
 
 
