@@ -26,7 +26,7 @@ class Inspection(SimpleDoc):
         enabled = 1,
         method = "fixed_window",
         camera = "Default Camera",
-        parameters = dict( x: 100, y: 100, w: 400, h: 300))) #x,y,w,h
+        parameters = dict( x =  100, y = 100, w = 400, h = 300))) #x,y,w,h
 
     insp.save()
     
@@ -99,12 +99,12 @@ class Inspection(SimpleDoc):
         #note, should figure out some way to cache this
         return Measurement.find( inspection_id = self._id ).all()
 
-    @classmethod
-    def find(cls, *args, **kwargs):
-        if not kwargs.has_key('enabled'):
-            kwargs['enabled'] = 1
+    #@classmethod
+    #def find(cls, *args, **kwargs):
+        #if not kwargs.has_key('enabled'):
+        #   kwargs['enabled'] = 1
         
-        return cls.m.find(*args, **kwargs)
+     #   return cls.m.find(*args, **kwargs)
 
     def __json__(self):
         return json.dumps(dict( name = self.name, test_type = self.test_type, enabled = self.enabled, method = self.method ))
