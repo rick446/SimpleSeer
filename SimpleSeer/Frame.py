@@ -1,5 +1,6 @@
 from base import *
 from Session import Session
+from FrameFeature import FrameFeature
 
 """
     Frame Objects are a mongo-friendly wrapper for SimpleCV image objects,
@@ -15,6 +16,7 @@ from Session import Session
 class Frame(SimpleDoc):
     capturetime = mongoengine.DateTimeField()
     camera = mongoengine.StringField()
+    features = mongoengine.ListField(mongoengine.EmbeddedDocumentField(FrameFeature))
     _height = mongoengine.IntField(default = 0)
     _width = mongoengine.IntField(default = 0)
     _image = mongoengine.BinaryField() #binary image data

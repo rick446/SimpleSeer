@@ -41,10 +41,9 @@ class SimpleSeer(threading.Thread):
         Session().redis.set("cameras", json.dumps(self.config.cameras))
         #tell redis what cameras we have
         
-        self.inspections = [] #Inspection.find(dict(enabled = 1)).all()
+        self.inspections = Inspection.objects
         
-        all_inspections = [] #Inspection.find().all()
-        Session().redis.set("inspections", all_inspections) 
+        Session().redis.set("inspections", self.inspections) 
          
         self.conditions = []
         #self.conditions = Event.find( { "enabled": 1 }).all()
@@ -112,6 +111,7 @@ class SimpleSeer(threading.Thread):
                     continue
                 
                 results = inspection.execute(frame)
+                frame.features.append(results)
                 if results:
                     frame_results.extend(results)
         

@@ -1,7 +1,9 @@
 import sys, time, os
+from copy import copy, deepcopy
 from datetime import datetime
 import threading
 import json
+import pickle
 import pygame.image
 from multiprocessing import Process, Queue, Pipe
 import threading
@@ -51,5 +53,5 @@ class SimpleDoc(mongoengine.Document):
 
 import SimpleCV
 #from SimpleCV.Shell import *
-from SimpleCV import Image, JpegStreamer, Camera, Color
+from SimpleCV import Image, JpegStreamer, Camera, Color, cv
 #from SimpleCV.Display import Display
