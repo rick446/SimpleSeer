@@ -16,7 +16,7 @@ from FrameFeature import FrameFeature
 class Frame(SimpleDoc):
     capturetime = mongoengine.DateTimeField()
     camera = mongoengine.StringField()
-    features = mongoengine.DictField()
+    features = mongoengine.ListField(mongoengine.EmbeddedDocument)
     #features 
     
     

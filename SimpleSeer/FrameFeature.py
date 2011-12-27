@@ -10,6 +10,8 @@ class FrameFeature(mongoengine.EmbeddedDocument):
     #this is incredibly sloppy, really -- but we're going to get away with it
     #because features are essentially immutable
     
+    children = mongoengine.ListField(mongoengine.EmbeddedDocument)
+    
     
     #feature attributes need to be in this list to be queryable
     #note that plugins can inject into this

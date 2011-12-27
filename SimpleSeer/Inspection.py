@@ -99,11 +99,9 @@ class Inspection(SimpleDoc):
                 f.image = image
                 roi = f.crop()
             
-                resultdict = {}
                 for child in children:    
-                    resultdict[child.id] = child.execute()
+                    r.children.append(child.execute(roi))
                 
-                r = [r, resultdict]
         
         return results
 
