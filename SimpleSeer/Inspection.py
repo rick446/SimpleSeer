@@ -64,36 +64,48 @@ class Inspection(SimpleDoc):
     #TODO validate agains morph operations
     
                                            
-    def execute(self, frame):
+    def execute(self, image, parents = {}):
         """
         The execute method takes in a frame object, executes the method
         and sends the samples to each measurement object.  The results are returned
         as a multidimensional array [ samples ][ measurements ] = result
         """
         
-        #execute the morphs
+        #execute the morphs?
         
+        #recursion stopper
+        if parents.has_key(self.id):
+            return []
         
         method_ref = getattr(self, self.method)
         #get the ROI function that we want
         #note that we should validate/roi method
  
-        results = method_ref(frame.image)
+        results = method_ref(image)
         
         if not results:
             return []
-    
+        
+        children = Inspection.objects(parent = self.id)
+        
+        if not children:
+            return results
+        
+        if children:
+            newparents = deepcopy(parents)
+            newparents[self.id] = True
+            for r in results:
+                f = r.feature
+                f.image = image
+                roi = f.crop()
+            
+                resultdict = {}
+                for child in children:    
+                    resultdict[child.id] = child.execute()
+                
+                r = [r, resultdict]
+        
         return results
-        
-    #@classmethod
-    #def find(cls, *args, **kwargs):
-        #if not kwargs.has_key('enabled'):
-        #   kwargs['enabled'] = 1
-        
-     #   return cls.m.find(*args, **kwargs)
-
-    def __json__(self):
-        return json.dumps(dict( name = self.name, method = self.method ))
 
     #below are "core" inspection functions
     def region(self, frame):        

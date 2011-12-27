@@ -16,7 +16,10 @@ from FrameFeature import FrameFeature
 class Frame(SimpleDoc):
     capturetime = mongoengine.DateTimeField()
     camera = mongoengine.StringField()
-    features = mongoengine.ListField(mongoengine.EmbeddedDocumentField(FrameFeature))
+    features = mongoengine.DictField()
+    #features 
+    
+    
     _height = mongoengine.IntField(default = 0)
     _width = mongoengine.IntField(default = 0)
     _image = mongoengine.BinaryField() #binary image data

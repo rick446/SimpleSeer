@@ -41,20 +41,13 @@ class SimpleSeer(threading.Thread):
         Session().redis.set("cameras", json.dumps(self.config.cameras))
         #tell redis what cameras we have
         
-        self.inspections = Inspection.objects
+        self.inspections = Inspection.objects#all root level inspections
         
         Session().redis.set("inspections", self.inspections) 
          
-        self.conditions = []
-        #self.conditions = Event.find( { "enabled": 1 }).all()
-
-        #self.display = Display()
+        
         self.lastframes = []
         self.framecount = 0
-        self.results = [] #results for each frame
-        Session().redis.set("results", [])
-        #NOTE THIS IS NOT CORRECT BEHAVIOR!
-        #WE SHOULD GET FRAMES/RESULTS OUT OF REDIS
         
         #log display started
 
@@ -107,16 +100,17 @@ class SimpleSeer(threading.Thread):
         frame_results = []
         for frame in frames:   
             for inspection in self.inspections:
-                if frame.camera != inspection.camera:
+                if inspection.parent:  #root parents only
                     continue
                 
-                results = inspection.execute(frame)
+                if frame.camera != inspection.camera: #this camera only
+                    continue
+                
+                results = inspection.execute(frame.image)
                 frame.features.append(results)
                 if results:
-                    frame_results.extend(results)
-        
-        self.results.append(frame_results)
-        
+                    frame_results[inspection.id] = results
+                
     def check(self):
         for watcher in self.watchers:
             if watcher.enabled:

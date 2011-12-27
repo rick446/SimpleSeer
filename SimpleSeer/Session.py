@@ -33,6 +33,7 @@ class SmartJSONRedis(redis.Redis):
         if (hasattr(val, "__json__")):
             val = val.__json__()
         
+        #TODO, this is WRONG -- it should do it recursively on each value
         if (isinstance(val, list) and len(val) and hasattr(val[0], "__json__")):
             val = [v.__json__() for v in val]
         

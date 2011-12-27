@@ -33,23 +33,22 @@ class SimpleDoc(mongoengine.Document):
     """
     All Seer objects should extend SimpleDoc, which wraps mongoengine.Document
     """
-    #@classmethod
-    #def find(cls, *args, **kwargs):
-    #    return cls.m.find(*args, **kwargs)
-    
-    #@classmethod
-    #def remove(cls, *args, **kwargs):
-    #    return cls.m.remove(*args, **kwargs)
-    
-    #def save(self):
-    #    self.m.save()
+    _jsonignore = [None]
         
-    #def __json__(self):
+    def __json__(self):
+        data = deepcopy(self._data)
         
-
-
-
-
+        data["id"] = str(self.id)
+        for ignore in self._jsonignore:
+            del data[ignore]
+        
+        for k in data:
+            if k[0] == "_":
+                del data[k]
+                
+        return json.dumps(data)
+        
+            
 
 import SimpleCV
 #from SimpleCV.Shell import *

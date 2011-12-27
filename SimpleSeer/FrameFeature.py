@@ -59,7 +59,17 @@ class FrameFeature(mongoengine.EmbeddedDocument):
     def feature(self):
         return pickle.loads(self.featurepickle)
     
+
+    def __json__():
+        data = deepcopy(self._data)
+        data[id] = data[None]
+        del data[None]
+        del data[featurepickle]
+        #do something with image refs
+        return json.dumps(data)
+
     #cribbed from http://www.ariel.com.au/a/python-point-int-poly.html
+    #should be moved to SimpleCV/Features
     def contains(self, point):
         x, y  = point
         poly = self.points
