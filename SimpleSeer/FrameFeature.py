@@ -66,7 +66,7 @@ class FrameFeature(mongoengine.EmbeddedDocument):
         del data[None]
         del data[featurepickle]
         #do something with image refs
-        return json.dumps(data)
+        return SimpleDocJSONEncoder().encode(data)
 
     #cribbed from http://www.ariel.com.au/a/python-point-int-poly.html
     #should be moved to SimpleCV/Features

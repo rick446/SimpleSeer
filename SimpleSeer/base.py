@@ -27,7 +27,22 @@ except:
     print "Warning: Pyfirmata is not installed on this system, it is not required but recommended"
 import redis
 import mongoengine
+import bson
 
+
+class SimpleDocJSONEncoder(json.JSONEncoder):
+    def default(self, obj, **kwargs):
+        
+        if (hasattr(obj, "__json__")):
+            return obj.__json__()
+        
+        if isinstance(obj, bson.objectid.ObjectId):
+            return str(obj)
+            
+        if isinstance(obj, datetime):
+            return int(time.mktime(obj.timetuple()) + obj.microsecond/1e6)
+        else:            
+            return json.JSONEncoder.default(obj, **kwargs)
 
 class SimpleDoc(mongoengine.Document):
     """
@@ -42,11 +57,12 @@ class SimpleDoc(mongoengine.Document):
         for ignore in self._jsonignore:
             del data[ignore]
         
-        for k in data:
-            if k[0] == "_":
-                del data[k]
-                
-        return json.dumps(data)
+        #remove private data
+        for k in [k for k in data.keys() if k[0] == "_"]:
+          del data[k]
+        
+        
+        return SimpleDocJSONEncoder().encode(data)
         
             
 
