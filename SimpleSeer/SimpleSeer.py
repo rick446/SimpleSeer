@@ -97,7 +97,6 @@ class SimpleSeer(threading.Thread):
             
     def inspect(self):
         frames = self.capture()
-        frame_results = []
         for frame in frames:   
             for inspection in self.inspections:
                 if inspection.parent:  #root parents only
@@ -107,9 +106,8 @@ class SimpleSeer(threading.Thread):
                     continue
                 
                 results = inspection.execute(frame.image)
-                frame.features.append(results)
-                if results:
-                    frame_results[inspection.id] = results
+                frame.features.extend(results)
+        return frames
                 
     def check(self):
         for watcher in self.watchers:

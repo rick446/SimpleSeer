@@ -10,6 +10,7 @@ class FrameFeature(mongoengine.EmbeddedDocument):
     #this is incredibly sloppy, really -- but we're going to get away with it
     #because features are essentially immutable
     
+    inspection = mongoengine.ObjectIdField()
     children = mongoengine.ListField(mongoengine.EmbeddedDocument)
     
     
@@ -31,6 +32,7 @@ class FrameFeature(mongoengine.EmbeddedDocument):
     }
     
     #this converts a SimpleCV Feature object into a FrameFeature
+    #clean this up a bit
     def setFeature(self, data):
         imgref = data.image
         data.image = ''  #remove image ref for pickling
@@ -62,10 +64,8 @@ class FrameFeature(mongoengine.EmbeddedDocument):
         return pickle.loads(self.featurepickle)
     
 
-    def __json__():
+    def __json__(self):
         data = deepcopy(self._data)
-        data[id] = data[None]
-        del data[None]
         del data[featurepickle]
         #do something with image refs
         return SimpleDocJSONEncoder().encode(data)

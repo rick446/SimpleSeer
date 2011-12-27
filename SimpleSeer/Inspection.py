@@ -86,6 +86,10 @@ class Inspection(SimpleDoc):
         if not results:
             return []
         
+        for r in results:
+            r.inspection = self.id
+        
+        
         children = Inspection.objects(parent = self.id)
         
         if not children:
@@ -100,7 +104,7 @@ class Inspection(SimpleDoc):
                 roi = f.crop()
             
                 for child in children:    
-                    r.children.append(child.execute(roi))
+                    r.children.extend(child.execute(roi))
                 
         
         return results
