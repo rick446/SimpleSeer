@@ -16,7 +16,7 @@ Frame.objects.delete()
 Inspection.objects.delete()
 Measurement.objects.delete()
 
-frame = SimpleSeer().capture()[0]  #test capture method
+frame = Frame.capture()[0]  #test capture method
 frame.save() #test save
 myjson = frame.__json__() #test json
 frame_loaded = Frame.objects[0] #test load
@@ -42,7 +42,6 @@ frame.save()  #test save
 
 feature_loaded = Frame.objects[0].features[0] #test load
 
-
 insp2 = Inspection(
    name = "Light Blobs",
    method = "blob",
@@ -52,7 +51,11 @@ insp2 = Inspection(
 
 insp2.save()
 
+frames = Inspection.inspect() #an implicit capture event
 
+frames[0].save()  #test save
+Frame.objects.order_by("-capturetime").first().features[0].children[0].feature
+#reload the most recent frame, and check to see if we can retrieve a blob from it
 
 
 

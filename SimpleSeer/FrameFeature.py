@@ -6,8 +6,8 @@ class FrameFeature(mongoengine.EmbeddedDocument):
    
     featuretype = mongoengine.StringField()
     featuredata = mongoengine.DictField()  #this holds any type-specific feature data
-    featurepickle = mongoengine.StringField() #a pickle of the feature, for rendering out
-    _featurecache = ''
+    featurepickle = mongoengine.BinaryField() #a pickle of the feature, for rendering out
+    _featurebuffer = ''
     #this is incredibly sloppy, really -- but we're going to get away with it
     #because features are essentially immutable
     
@@ -58,13 +58,17 @@ class FrameFeature(mongoengine.EmbeddedDocument):
             value = getattr(data, k)
             #here we need to handle all the cases for odd bits of data, but
             #for now we'll just toss them
-            if type(value) == cv.iplimage:
-                self.featuredata[k] = Image(value)
+            if type(value) == cv.iplimage or isinstance(value, SimpleCV.Image):
+                continue
+                #TODO do we need this here?  I'm not sure
+                #self.featuredata[k] = Image(value)
             else:
                 self.featuredata[k] = str(value)
     @property
     def feature(self):
-        return pickle.loads(self.featurepickle)
+        if not self._featurebuffer:
+            self._featurebuffer = pickle.loads(self.featurepickle)
+        return self._featurebuffer
     
 
     def __json__(self):
