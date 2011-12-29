@@ -90,7 +90,7 @@ class Inspection(SimpleDoc):
             r.inspection = self.id
         
         
-        children = Inspection.objects(parent = self.id)
+        children = self.children
         
         if not children:
             return results
@@ -108,6 +108,10 @@ class Inspection(SimpleDoc):
                 
         
         return results
+    
+    @property
+    def children(self):
+        return Inspection.objects(parent = self.id)
 
     #below are "core" inspection functions
     def region(self, frame):        

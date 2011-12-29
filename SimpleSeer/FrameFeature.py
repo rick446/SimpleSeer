@@ -66,7 +66,7 @@ class FrameFeature(mongoengine.EmbeddedDocument):
 
     def __json__(self):
         data = deepcopy(self._data)
-        del data[featurepickle]
+        del data['featurepickle']
         #do something with image refs
         return SimpleDocJSONEncoder().encode(data)
 

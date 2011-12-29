@@ -10,6 +10,7 @@ class SimpleSeer(threading.Thread):
     """
     __shared_state = { "initialized": False }
     web_interface = None
+    halt = False
 #    cameras = []
 #    shell_thread = ''
 #    display = ''
@@ -115,7 +116,7 @@ class SimpleSeer(threading.Thread):
                 watcher.check()
     
     def run(self):
-        while True:
+        while not self.halt:
             timer_start = time.time()
             
             self.inspect()
@@ -137,6 +138,12 @@ class SimpleSeer(threading.Thread):
             else:
                 time.sleep(0)
     
+    #TODO, this doesn't work yet
+    def stop(self):  #this should be called from an external thread
+        self.halt = True
+        cherrypy.engine.stop()
+        self.join()
+        
     
     
 from Frame import Frame
