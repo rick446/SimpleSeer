@@ -1,3 +1,4 @@
+
 from base import *
 from Session import Session
 
@@ -33,6 +34,4 @@ class Result(SimpleDoc):
             return None
         np.cast[int](self.data)
         
-    def save(self):
-        self.m.save()
         

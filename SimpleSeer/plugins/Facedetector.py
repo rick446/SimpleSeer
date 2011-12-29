@@ -22,7 +22,14 @@ def Inspection.find_center_fiducial(self, frame):
     
     return [frame.crop(m.x - rad, m.y - rad, rad*2, rad*2) for m in matches]
     
-    
+
+DEFAULT_CENTER_FIDUCIAL = Inspection(dict(
+
+
+
+))
+
+
 
 
 
