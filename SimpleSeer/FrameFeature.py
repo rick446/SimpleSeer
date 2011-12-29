@@ -7,11 +7,13 @@ class FrameFeature(mongoengine.EmbeddedDocument):
     featuretype = mongoengine.StringField()
     featuredata = mongoengine.DictField()  #this holds any type-specific feature data
     featurepickle = mongoengine.StringField() #a pickle of the feature, for rendering out
+    _featurecache = ''
     #this is incredibly sloppy, really -- but we're going to get away with it
     #because features are essentially immutable
     
     inspection = mongoengine.ObjectIdField()
     children = mongoengine.ListField(mongoengine.GenericEmbeddedDocumentField())
+
 
     
     #feature attributes need to be in this list to be queryable
@@ -34,6 +36,7 @@ class FrameFeature(mongoengine.EmbeddedDocument):
     #this converts a SimpleCV Feature object into a FrameFeature
     #clean this up a bit
     def setFeature(self, data):
+        self._featurecache = data
         imgref = data.image
         data.image = ''  #remove image ref for pickling
         self.featurepickle = pickle.dumps(data)

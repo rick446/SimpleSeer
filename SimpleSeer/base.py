@@ -34,7 +34,10 @@ class SimpleDocJSONEncoder(json.JSONEncoder):
     def default(self, obj, **kwargs):
         
         if (hasattr(obj, "__json__")):
-            return obj.__json__()
+            return json.loads(obj.__json__()) #TODO that's a bit crap
+            
+        if isinstance(obj, SimpleCV.Image):
+            return obj.applyLayers().getBitmap().tostring().encode("base64")
         
         if isinstance(obj, bson.objectid.ObjectId):
             return str(obj)
