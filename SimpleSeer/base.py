@@ -1,6 +1,9 @@
 import sys, time, os
+from copy import copy, deepcopy
+from datetime import datetime
 import threading
 import json
+import pickle
 import pygame.image
 from multiprocessing import Process, Queue, Pipe
 import threading
@@ -22,36 +25,48 @@ try:
     import pyfirmata
 except:
     print "Warning: Pyfirmata is not installed on this system, it is not required but recommended"
-import bson
 import redis
-import ming
-from ming.datastore import DataStore
+import mongoengine
+import bson
 
 
+class SimpleDocJSONEncoder(json.JSONEncoder):
+    def default(self, obj, **kwargs):
+        
+        if (hasattr(obj, "__json__")):
+            return obj.__json__()
+        
+        if isinstance(obj, bson.objectid.ObjectId):
+            return str(obj)
+            
+        if isinstance(obj, datetime):
+            return int(time.mktime(obj.timetuple()) + obj.microsecond/1e6)
+        else:            
+            return json.JSONEncoder.default(obj, **kwargs)
 
-class SimpleDoc(ming.Document):
+class SimpleDoc(mongoengine.Document):
     """
-    All Seer objects should extend SimpleDoc, which wraps ming.Document
+    All Seer objects should extend SimpleDoc, which wraps mongoengine.Document
     """
-    @classmethod
-    def find(cls, *args, **kwargs):
-        return cls.m.find(*args, **kwargs)
-    
-    @classmethod
-    def remove(cls, *args, **kwargs):
-        return cls.m.remove(*args, **kwargs)
-    
-    def save(self):
-        self.m.save()
+    _jsonignore = [None]
         
     def __json__(self):
+        data = deepcopy(self._data)
         
-
-
-
-
+        data["id"] = str(self.id)
+        for ignore in self._jsonignore:
+            del data[ignore]
+        
+        #remove private data
+        for k in [k for k in data.keys() if k[0] == "_"]:
+          del data[k]
+        
+        
+        return SimpleDocJSONEncoder().encode(data)
+        
+            
 
 import SimpleCV
 #from SimpleCV.Shell import *
-from SimpleCV import Image, JpegStreamer, Camera, Color
+from SimpleCV import Image, JpegStreamer, Camera, Color, cv
 #from SimpleCV.Display import Display

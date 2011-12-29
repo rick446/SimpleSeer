@@ -1,6 +1,19 @@
 from base import *
 from Session import *
-from Measurement import Measurement
+from FrameFeature import FrameFeature
+
+
+class Region(SimpleCV.Feature):
+    
+    def __init__(self, startx, starty, width, height):
+        
+        point = (startx, starty)
+        self.x = point[0] + width / 2
+        self.y = point[1] + height / 2
+        self.points = [tuple(point),
+            (point[0] + width, point[1]),
+            (point[0] + width, point[1] + height),
+            (point[0], point[1] + height)]
 
 class Inspection(SimpleDoc):
     """
@@ -20,13 +33,11 @@ class Inspection(SimpleDoc):
     The results from these measurements are aggregated and returned from the
     Inspection.execute() function, which gives all samples to each measurement.
     
-    insp = Inspection(dict(
-        name = "Blob Measurement 1",
-        test_type = "Measurement",
-        enabled = 1,
-        method = "fixed_window",
+    insp = Inspection(
+        name = "Area of Interest",
+        method = "region",
         camera = "Default Camera",
-        parameters = dict( x: 100, y: 100, w: 400, h: 300))) #x,y,w,h
+        parameters = dict( x =  100, y = 100, w = 400, h = 300)) #x,y,w,h
 
     insp.save()
     
@@ -35,91 +46,84 @@ class Inspection(SimpleDoc):
     results = insp.execute()
     
     """
-    class __mongometa__:
-        session = Session().mingsession
-        name = 'inspection'
-        
-    _id = ming.Field(ming.schema.ObjectId)    
-    name = ming.Field(str)
-    test_type = ming.Field(str) 
-    method = ming.Field(str)
-    enabled = ming.Field(int)
-    camera = ming.Field(str)
-    parameters = ming.Field({str: None})
-
-
-                         
-    def execute(self, frame):
+    name = mongoengine.StringField()
+    parent = mongoengine.ObjectIdField()
+    
+    method = mongoengine.StringField()
+    #TODO, validate that this method exists
+    camera = mongoengine.StringField()
+    #TODO validate that this camera exists
+    parameters = mongoengine.DictField()
+    #TODO validate against function
+    filters = mongoengine.DictField()
+    #TODO validate against valid fields for the feature type
+    richattributes = mongoengine.DictField()
+    #TODO validate against attributes
+    morphs = mongoengine.ListField()
+    #list of dicts for morph operations
+    #TODO validate agains morph operations
+    
+                                           
+    def execute(self, image, parents = {}):
         """
         The execute method takes in a frame object, executes the method
         and sends the samples to each measurement object.  The results are returned
         as a multidimensional array [ samples ][ measurements ] = result
         """
-
-        roi_function_ref = getattr(self, self.method)
+        
+        #execute the morphs?
+        
+        #recursion stopper
+        if parents.has_key(self.id):
+            return []
+        
+        method_ref = getattr(self, self.method)
         #get the ROI function that we want
         #note that we should validate/roi method
-
+ 
+        results = method_ref(image)
+        
+        if not results:
+            return []
+        
+        for r in results:
+            r.inspection = self.id
+        
+        
+        children = Inspection.objects(parent = self.id)
+        
+        if not children:
+            return results
+        
+        if children:
+            newparents = deepcopy(parents)
+            newparents[self.id] = True
+            for r in results:
+                f = r.feature
+                f.image = image
+                roi = f.crop()
+            
+                for child in children:    
+                    r.children.extend(child.execute(roi))
                 
-        samplesroi = roi_function_ref(frame)
         
-        if not samplesroi:
-            return
-            
-        samples, roi = samplesroi
-        #NATE ROI SHOULD ALSO BE AN ARRAY TODO
-            
-        if not isinstance(samples, list):
-            samples = [samples]
-        
-        results = []
-        frame.image.addDrawingLayer()
-        for sample in samples:
-            sampleresults = []
-            for m in self.measurements:
-                r = m.calculate(sample)
-                     
-                r.roi = roi
-                r.capturetime = frame.capturetime
-                r.camera = frame.camera
-                r.frame_id = frame._id
-                r.inspection_id = self._id
-                r.measurement_id = m._id
-                    
-                sampleresults.append(r)
-                #probably need to add unit conversion here
-            
-            results.append(sampleresults)
-            frame.image.dl().blit(sample.applyLayers(), (roi[0], roi[1]))
-
         return results
-        
-    @property
-    def measurements(self):
-        #note, should figure out some way to cache this
-        return Measurement.find( inspection_id = self._id ).all()
-
-    @classmethod
-    def find(cls, *args, **kwargs):
-        if not kwargs.has_key('enabled'):
-            kwargs['enabled'] = 1
-        
-        return cls.m.find(*args, **kwargs)
-
-    def __json__(self):
-        return json.dumps(dict( name = self.name, test_type = self.test_type, enabled = self.enabled, method = self.method ))
-    
 
     #below are "core" inspection functions
-    def fixed_window(self, frame):        
+    def region(self, frame):        
         params = self.parameters
-        return ([frame.image.crop(**params)], [tuple(params[x], params[y])])
+        ff = FrameFeature()
+        ff.setFeature(Region(params['x'], params['y'], params['w'], params['h']))
+        return [ff]
         
-    def blob_detection(self, frame):
+    def blob(self, frame):
         params = self.parameters
+        
+        #if we have a color parameter, lets threshold        
         blobs = frame.image.findBlobs(**params)
         if not blobs:
-            return 
-        return ([b.crop() for b in blobs], [b.points[0] for b in blobs])
+            return []
+        return [FrameFeature(b) for b in blobs]
 
 
+from Measurement import Measurement

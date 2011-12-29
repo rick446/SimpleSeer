@@ -18,8 +18,7 @@ To capture an image, display, and store in the database:
 
 To retrieve and display all captured frames at a 1 second delay:
 
-    >>> allframes = Frames.m.find().all()
-    >>> for f in allframes:
+    >>> for f in Frame.objects:
     >>>   f.image.show()
     >>>   time.sleep(1)
 
@@ -34,9 +33,11 @@ that reflect your Camera, database, and etc.
 Mac OS X (Using homebrew)
 ========
 
-(install nginx & copy nginx conf file)
+> brew install nginx  #nginx conf is slightly different, so you have to set up manually
 > brew install mongodb
-> easy_install ming
+> brew install redis (and follow directions to install redis as service)
+> brew install libevent
+> easy_install mongoengine
 > easy_install cherrypy
 > hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.py install
 > git clone git://github.com/nicolasff/webdis.git && cd webdis && make && ./webdis &
@@ -47,7 +48,7 @@ Linux (Using apt-get)
 > cp etc/nginx/sites-enabled/default /etc/nginx/sites-enabled
 > /etc/init.d/nginx restart
 > easy_install python-pymongo
-> easy_install ming
+> easy_install mongoengine
 > easy_install cherrypy
 > hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.
 py install

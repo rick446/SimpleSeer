@@ -1,6 +1,28 @@
 from base import *
 
+#code to convert unicode to string
+# http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
+def _decode_list(lst):
+    newlist = []
+    for i in lst:
+        if isinstance(i, unicode):
+            i = i.encode('utf-8')
+        elif isinstance(i, list):
+            i = _decode_list(i)
+        newlist.append(i)
+    return newlist
 
+def _decode_dict(dct):
+    newdict = {}
+    for k, v in dct.iteritems():
+        if isinstance(k, unicode):
+            k = k.encode('utf-8')
+        if isinstance(v, unicode):
+             v = v.encode('utf-8')
+        elif isinstance(v, list):
+            v = _decode_list(v)
+        newdict[k] = v
+    return newdict   
 
 class SmartJSONRedis(redis.Redis):
     """
@@ -11,6 +33,7 @@ class SmartJSONRedis(redis.Redis):
         if (hasattr(val, "__json__")):
             val = val.__json__()
         
+        #TODO, this is WRONG -- it should do it recursively on each value
         if (isinstance(val, list) and len(val) and hasattr(val[0], "__json__")):
             val = [v.__json__() for v in val]
         
@@ -42,13 +65,13 @@ class Session():
             return  #return the existing shared context
         
         self.__dict__.clear()   #flush if this is a reload
-        config = json.load(open(json_config))
+           
+        #convert simplejson's default unicode to utf-8 so it works as parameters
+        config = json.load(open(json_config), object_hook=_decode_dict)
         for k in config.keys():
             self.__dict__[k] = config[k]
             
-        
-        self.bind = DataStore(self.mongo, database = self.database)
-        self.mingsession = ming.Session(self.bind)
+        mongoengine.connect(self.database)
         
         self.redis = SmartJSONRedis(**self.redis_config)
         for k in config.keys():

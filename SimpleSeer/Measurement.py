@@ -1,6 +1,6 @@
 from base import *
 from Session import Session
-from Result import Result
+from Inspection import Inspection
 
 """
     The measurement object takes any regions of interest in an Inspection and
@@ -22,24 +22,17 @@ from Result import Result
 
 
 """
-class Measurement(SimpleDoc):
-    class __mongometa__:
-        session = Session().mingsession
-        name = 'measurement'
-        
-    _id = ming.Field(ming.schema.ObjectId)  
-    name = ming.Field(str)
+class Measurement(SimpleDoc): 
+    name = mongoengine.StringField()
     #VALIDATION NEEDED: this should be a unique name
-    label = ming.Field(str)
-    test_method = ming.Field(str)
-    parameters = ming.Field({str: None})
-    result_labels = ming.Field(ming.schema.Array(str))
-    
-    is_numeric = ming.Field(int)
+    label = mongoengine.StringField()
+    test_method = mongoengine.StringField()
+    parameters = mongoengine.DictField()
+    result_labels = mongoengine.ListField(mongoengine.StringField())
+    is_numeric = mongoengine.IntField()
     #VALIDATION NEEDED, data should be castable 
-    units = ming.Field(str)
-    
-    inspection_id = ming.Field(ming.schema.ObjectId)
+    units = mongoengine.StringField()
+    inspection = mongoengine.ReferenceField(Inspection)
 
     def calculate(self, sample):
         
@@ -79,3 +72,4 @@ class Measurement(SimpleDoc):
             b.draw(Color.GREEN)
         return [len(blobs)]
             
+from Result import Result

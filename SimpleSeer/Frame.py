@@ -1,5 +1,6 @@
 from base import *
 from Session import Session
+from FrameFeature import FrameFeature
 
 """
     Frame Objects are a mongo-friendly wrapper for SimpleCV image objects,
@@ -13,18 +14,17 @@ from Session import Session
     >>> 
 """
 class Frame(SimpleDoc):
-    class __mongometa__:
-        session = Session().mingsession
-        name = 'frame'
-
-    _id = ming.Field(ming.schema.ObjectId)
-    capturetime = ming.Field(float)
-    camera = ming.Field(str)
-    _height = ming.Field(int, if_missing = 0)
-    _width = ming.Field(int, if_missing = 0)
-    _image = ming.Field(ming.schema.Binary) #binary image data
-    _layer = ming.Field(ming.schema.Binary, if_missing = None) #layer data
-    _imgcache = ming.Field(str, if_missing = '')
+    capturetime = mongoengine.DateTimeField()
+    camera = mongoengine.StringField()
+    features = mongoengine.ListField(mongoengine.EmbeddedDocument)
+    #features 
+    
+    
+    _height = mongoengine.IntField(default = 0)
+    _width = mongoengine.IntField(default = 0)
+    _image = mongoengine.BinaryField() #binary image data
+    _layer = mongoengine.BinaryField(default = '') #layer data
+    _imgcache = ''
 
     @apply
     def image():
@@ -44,7 +44,7 @@ class Frame(SimpleDoc):
           
         def fset(self, img):
             self._width, self._height = img.size()
-            self._image = bson.Binary(img.getBitmap().tostring())
+            self._image = img.getBitmap().tostring()
           
             if len(img._mLayers):
                 if len(img._mLayers) > 1:
@@ -53,20 +53,20 @@ class Frame(SimpleDoc):
                         layer.renderToOtherLayer(mergedlayer)
                 else:
                     mergedlayer = img.dl()
-                self._layer = bson.Binary(pygame.image.tostring(mergedlayer._mSurface, "RGBA"))
+                self._layer = pygame.image.tostring(mergedlayer._mSurface, "RGBA")
           
             self._imgcache = img
             
         return property(fget, fset)
        
     def __repr__(self):
-       return "<SimpleSeer Frame Object %d,%d captured with '%s' at %f>" % (
-            self._width, self._height, self.camera, self.capturetime) 
+       return "<SimpleSeer Frame Object %d,%d captured with '%s' at %s>" % (
+            self._width, self._height, self.camera, self.capturetime.ctime()) 
         
     def save(self):
         if self._imgcache != '':
             self.image = self._imgcache #encode any layer changes made before save
             self._imgcache = ''
-        
-        self.m.save()
+
+        super(Frame, self).save()
        

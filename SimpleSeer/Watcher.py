@@ -28,16 +28,11 @@ class Watcher(SimpleDoc):
         handlers = ["log_statistics"])
     w.check()
     """
-    class __mongometa__:
-        session = Session().mingsession
-        name = 'watcher'
-        
-    _id = ming.Field(ming.schema.ObjectId)    
-    name = ming.Field(str)
-    conditions = ming.Field(ming.schema.Array(str))
-    handlers = ming.Field(ming.schema.Array(str))#this might be a relation 
-    enabled = ming.Field(int)
-    parameters = ming.Field({str: None})
+    name = mongoengine.StringField()
+    conditions = mongoengine.ListField(mongoengine.StringField())
+    handlers = mongoengine.ListField(mongoengine.StringField())#this might be a relation 
+    enabled = mongoengine.IntField()
+    parameters = mongoengine.DictField()
     
     def check(self):
         """

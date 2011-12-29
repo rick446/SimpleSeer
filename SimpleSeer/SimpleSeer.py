@@ -41,21 +41,13 @@ class SimpleSeer(threading.Thread):
         Session().redis.set("cameras", json.dumps(self.config.cameras))
         #tell redis what cameras we have
         
-        self.inspections = Inspection.m.find( enabled = 1 ).all()
+        self.inspections = Inspection.objects#all root level inspections
         
-        all_inspections = Inspection.m.find().all()
-        Session().redis.set("inspections", all_inspections) 
+        Session().redis.set("inspections", self.inspections) 
          
-        self.conditions = []
-        #self.conditions = Events.m.find( { "enabled": 1 }).all()
-
-        #self.display = Display()
+        
         self.lastframes = []
         self.framecount = 0
-        self.results = [] #results for each frame
-        Session().redis.set("results", [])
-        #NOTE THIS IS NOT CORRECT BEHAVIOR!
-        #WE SHOULD GET FRAMES/RESULTS OUT OF REDIS
         
         #log display started
 
@@ -81,12 +73,12 @@ class SimpleSeer(threading.Thread):
             img = c.getImage()
             if self.config.cameras[0].has_key('crop'):
                 img = img.crop(*self.config.cameras[0]['crop'])
-            frame = Frame.make({"capturetime": time.time(), 
-                "camera": self.config.cameras[count]['name']})
+            frame = Frame(capturetime = datetime.now(), 
+                camera= self.config.cameras[count]['name'])
             frame.image = img
             
             if self.config.record_all:
-                frame.m.save()
+                frame.save()
             
             currentframes.append(frame)
             
@@ -105,18 +97,18 @@ class SimpleSeer(threading.Thread):
             
     def inspect(self):
         frames = self.capture()
-        frame_results = []
         for frame in frames:   
             for inspection in self.inspections:
-                if frame.camera != inspection.camera:
+                if inspection.parent:  #root parents only
                     continue
                 
-                results = inspection.execute(frame)
-                if results:
-                    frame_results.extend(results)
-        
-        self.results.append(frame_results)
-        
+                if frame.camera != inspection.camera: #this camera only
+                    continue
+                
+                results = inspection.execute(frame.image)
+                frame.features.extend(results)
+        return frames
+                
     def check(self):
         for watcher in self.watchers:
             if watcher.enabled:
