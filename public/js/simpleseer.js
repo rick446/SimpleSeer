@@ -59,3 +59,9 @@ setInterval(function(){
    SimpleSeer.framecount = thisframe;
 
 }, SimpleSeer.poll_interval * 1000);
+
+$(document).ready($('#maindisplay > img').click( function(){
+  alert('hi');
+    
+    
+}))
