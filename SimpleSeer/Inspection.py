@@ -73,7 +73,7 @@ class Inspection(SimpleDoc):
         
         #execute the morphs?
         
-        #recursion stopper
+        #recursion stopper so we don't accidentally end up in any loops
         if parents.has_key(self.id):
             return []
         
@@ -104,7 +104,7 @@ class Inspection(SimpleDoc):
                 roi = f.crop()
             
                 for child in children:    
-                    r.children.extend(child.execute(roi))
+                    r.children.extend(child.execute(roi, newparents))
                 
         
         return results
@@ -112,22 +112,37 @@ class Inspection(SimpleDoc):
     @property
     def children(self):
         return Inspection.objects(parent = self.id)
+        
+    @classmethod    
+    def inspect(self):
+        return SimpleSeer.SimpleSeer().inspect()
 
     #below are "core" inspection functions
-    def region(self, frame):        
+    def region(self, image):        
         params = self.parameters
+        
+        if params['x'] + params['w'] > image.width or params['y'] + params['h'] > image.height:
+            return []
+        
         ff = FrameFeature()
         ff.setFeature(Region(params['x'], params['y'], params['w'], params['h']))
         return [ff]
         
-    def blob(self, frame):
+    def blob(self, image):
         params = self.parameters
         
         #if we have a color parameter, lets threshold        
-        blobs = frame.image.findBlobs(**params)
+        blobs = image.findBlobs(**params)
         if not blobs:
             return []
-        return [FrameFeature(b) for b in blobs]
-
+        
+        feats = []
+        for b in blobs:
+            ff = FrameFeature()
+            ff.setFeature(b)
+            feats.append(ff)
+            
+        return feats
 
 from Measurement import Measurement
+import SimpleSeer

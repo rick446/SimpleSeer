@@ -57,9 +57,8 @@ insp2.save()
 
 
 
-
 #TODO, test Redis/Webdis storage
 #TODO, call cherrypy controllers
 
-SimpleSeer.stop() 
+SimpleSeer().stop() 
 

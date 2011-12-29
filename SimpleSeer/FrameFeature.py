@@ -11,8 +11,8 @@ class FrameFeature(mongoengine.EmbeddedDocument):
     #because features are essentially immutable
     
     inspection = mongoengine.ObjectIdField()
-    children = mongoengine.ListField(mongoengine.EmbeddedDocument)
-    
+    children = mongoengine.ListField(mongoengine.GenericEmbeddedDocumentField())
+
     
     #feature attributes need to be in this list to be queryable
     #note that plugins can inject into this
@@ -52,13 +52,13 @@ class FrameFeature(mongoengine.EmbeddedDocument):
         for k in data.__dict__:
             if self.featuredata_mask.has_key(k) or hasattr(self, k):
                 continue
-            value == getattr(data, k)
+            value = getattr(data, k)
             #here we need to handle all the cases for odd bits of data, but
             #for now we'll just toss them
             if type(value) == cv.iplimage:
-                featuredata[k] = Image(value)
+                self.featuredata[k] = Image(value)
             else:
-                featuredata[k] = str(value)
+                self.featuredata[k] = str(value)
     @property
     def feature(self):
         return pickle.loads(self.featurepickle)
@@ -94,6 +94,6 @@ class FrameFeature(mongoengine.EmbeddedDocument):
 
         return inside  
         
-    
-    
+#we can't make a recursive object since the class isn't yet declared    
+
     

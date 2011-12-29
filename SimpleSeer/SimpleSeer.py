@@ -3,6 +3,7 @@ from Session import Session
 from Inspection import Inspection
 from Web import *
 
+
 class SimpleSeer(threading.Thread):
     """
     The SimpleSeer object 

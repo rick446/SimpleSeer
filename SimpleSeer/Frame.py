@@ -69,4 +69,10 @@ class Frame(SimpleDoc):
             self._imgcache = ''
 
         super(Frame, self).save()
+        
+    @classmethod
+    def capture(cls):
+        return SimpleSeer.SimpleSeer().capture()
        
+       
+import SimpleSeer
