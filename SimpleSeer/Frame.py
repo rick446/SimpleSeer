@@ -20,8 +20,8 @@ class Frame(SimpleDoc):
     #features 
     
     
-    _height = mongoengine.IntField(default = 0)
-    _width = mongoengine.IntField(default = 0)
+    height = mongoengine.IntField(default = 0)
+    width = mongoengine.IntField(default = 0)
     _image = mongoengine.BinaryField() #binary image data
     _layer = mongoengine.BinaryField(default = '') #layer data
     _imgcache = ''
@@ -32,7 +32,7 @@ class Frame(SimpleDoc):
             if self._imgcache != '':
                 return self._imgcache
             
-            bitmap = cv.CreateImageHeader((self._width, self._height), cv.IPL_DEPTH_8U, 3)
+            bitmap = cv.CreateImageHeader((self.width, self.height), cv.IPL_DEPTH_8U, 3)
             cv.SetData(bitmap, self._image)
             
             self._imgcache = Image(bitmap)
@@ -43,7 +43,7 @@ class Frame(SimpleDoc):
             
           
         def fset(self, img):
-            self._width, self._height = img.size()
+            self.width, self.height = img.size()
             self._image = img.getBitmap().tostring()
           
             if len(img._mLayers):
@@ -61,7 +61,7 @@ class Frame(SimpleDoc):
        
     def __repr__(self):
        return "<SimpleSeer Frame Object %d,%d captured with '%s' at %s>" % (
-            self._width, self._height, self.camera, self.capturetime.ctime()) 
+            self.width, self.height, self.camera, self.capturetime.ctime()) 
         
     def save(self):
         if self._imgcache != '':
