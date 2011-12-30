@@ -19,10 +19,9 @@
     <script src="js/dash.js"></script>
     <script src="js/progress.js"></script>    
     <script src="js/processing.min.js"></script>  
-    <script src="js/simpleseer.js"></script>    
 </head>
 <body id="index">
-    <div id="maindisplay"><img src="/GET/currentframe_0.jpg"></div>
+    <div id="maindisplay"><canvas id="display_0"><canvas></div>
     <header>
         <hgroup class="clearfix">
             <h1 class="hidden"><a href="index.html">Ingenuitas</a></h1>
@@ -47,4 +46,8 @@
     <footer>
     </footer> 
 </body>
+<script src="js/simpleseer.js"></script>    
+<script type="text/javascript">
+  $(document).ready( SimpleSeer.setup );
+</script>
 </html>
