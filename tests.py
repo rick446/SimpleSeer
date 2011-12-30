@@ -63,5 +63,7 @@ Frame.objects.order_by("-capturetime").first().features[0].children[0].feature
 #TODO, test Redis/Webdis storage
 #TODO, call cherrypy controllers
 
-SimpleSeer().stop() 
+import cherrypy
+cherrypy.engine.stop()
+#SimpleSeer().stop() 
 

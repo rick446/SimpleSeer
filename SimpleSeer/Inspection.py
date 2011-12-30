@@ -119,7 +119,7 @@ class Inspection(SimpleDoc):
 
     #below are "core" inspection functions
     def region(self, image):        
-        params = self.parameters
+        params = utf8convert(self.parameters)
         
         if params['x'] + params['w'] > image.width or params['y'] + params['h'] > image.height:
             return []
@@ -129,7 +129,8 @@ class Inspection(SimpleDoc):
         return [ff]
         
     def blob(self, image):
-        params = self.parameters
+        params = utf8convert(self.parameters)
+        
         
         #if we have a color parameter, lets threshold        
         blobs = image.findBlobs(**params)
