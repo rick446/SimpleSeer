@@ -12,16 +12,30 @@
     <link rel="stylesheet" href="css/style.css">
     <script src="js/modernizr2.js"></script>
     <script src="js/jquery.min.js"></script>
-    <script src="js/jquery-ui.min.js"></script>    
+    <script src="js/jquery-ui.min.js"></script> 
+    <script src="js/jQuery.radmenu.min.js"></script> 
     <script src="js/global.js"></script>
     <script src="js/modal.js"></script>
     <script src="js/dialog.js"></script>
     <script src="js/dash.js"></script>
     <script src="js/progress.js"></script>    
-    <script src="js/processing.min.js"></script>  
+    <script src="js/processing.min.js"></script> 
+    
 </head>
 <body id="index">
-    <div id="maindisplay"><canvas id="display_0"><canvas></div>
+    <div id="maindisplay"><img src="/GET/currentframe_0.jpg" /><canvas id="display"></canvas>
+        <div id="radial">
+            <ul class="radial_items">
+                <li class="radial_item"><div id="radial_item_ROI" class="radialbutton">ROI</div></li>
+                <li class="radial_item"><div id="radial_item_BLOB" class="radialbutton">BLOB</div></li>
+                <li class="radial_item"><div id="radial_item_FOO" class="radialbutton">FOO</div></li>
+                <li class="radial_item"><div id="radial_item_BAR" class="radialbutton">BAR</div></li>
+                <li class="radial_item"><div id="radial_item_BAZ" class="radialbutton">BAZ</div></li>
+                <li class="radial_item"><div id="radial_item_BIM" class="radialbutton">BIM</div></li>
+            </ul>
+        <!-- in the future these would be loaded from a plugin database -->
+        </div>
+    </div>
     <header>
         <hgroup class="clearfix">
             <h1 class="hidden"><a href="index.html">Ingenuitas</a></h1>

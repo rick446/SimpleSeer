@@ -967,3 +967,50 @@ transform:rotate(45deg);
     tr, img { page-break-inside: avoid }
     img { max-width: 100% !important }
 }
+
+#maindisplay > img {
+    width: 100%;
+}
+
+#display {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+}
+
+#radial {
+    position: absolute;
+    z-index: 99;
+    top: 0px;
+    left: 0px;
+    width: 300px;
+    height: 300px;
+}
+
+.radial_item {
+    background-color:none;
+    height:30px;
+    padding:10px;
+    color:#234;
+    -moz-border-radius:10px;
+    -webkit-border-radius:10px;
+    cursor:pointer;  
+}
+
+.radial_item.active { 
+    background-color:#511; color:white;
+    padding: 10px; 
+    -moz-border-radius:40px;
+    z-index:100;
+}
+
+.radialbutton { 
+    font-size:1.5em; 
+    color:#abc;
+    background-color:#def;
+    -moz-border-radius:30px;
+    width:30px;
+    height:30px;
+    -webkit-border-radius:30px;
+}
+

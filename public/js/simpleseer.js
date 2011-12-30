@@ -6,7 +6,7 @@ SS = SimpleSeer = new Object();
 
 $(function(){
 
-    var stretcher = $('#display_0'),
+    var stretcher = $('#maindisplay > img'),
         element = stretcher[0],
         currentSize = { width: 0, height: 0 },
         $document = $(document);
@@ -23,7 +23,13 @@ $(function(){
             }
             currentSize.width = element.width;
             currentSize.height = element.height;
+            
         }
+        $('#display').height = stretcher.height();
+        $('#display').width = stretcher.width();
+        SS.p.size(stretcher.width(), stretcher.height());
+        SS.xscalefactor = stretcher.width() /  SS.framedata[0].width
+        SS.yscalefactor = stretcher.height() / SS.framedata[0].height
     })
 
     $(window).load(function () {
@@ -49,10 +55,10 @@ SimpleSeer.getValue = function(key) {
 
 SimpleSeer.cameras = SimpleSeer.getValue('cameras');
 SimpleSeer.framecount = SimpleSeer.getValue('framecount');
+SimpleSeer.framedata = [$.parseJSON(SimpleSeer.getValue('currentframedata_0'))];
 SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
 
 
-/*
 setInterval(function(){
    thisframe = SimpleSeer.getValue('framecount');
    if (SimpleSeer.framecount != thisframe) {
@@ -62,25 +68,53 @@ setInterval(function(){
    SimpleSeer.framecount = thisframe;
 
 }, SimpleSeer.poll_interval * 1000);
- */
 
-SS.p = new Processing('display_0');
+SS.p = new Processing('display');
 //coloquially, we'll probably always refer to this as SS.p
 
 //this is the "main" loop of the processing app
 
 SS.p.setup = function() {
-  SS.p.size(SS.width, SS.height);
+  SS.p.size($('#maindisplay > img').width(), $('#maindisplay > img').height());
+}
+
+SS.setscale = function() {
+  SS.p.scale(SS.xscalefactor, SS.yscalefactor)
+  SS.mouseX = SS.p.mouseX / SS.xscalefactor;
+  SS.mouseY = SS.p.mouseY / SS.yscalefactor;
 }
 
 SS.p.draw = function() {
-  SS.p.background(51);   
+  SS.setscale();
+  
+  SS.p.background(0, 0);   
   SS.p.fill(255, 80);  
-  SS.p.rect(SS.p.mouseX, SS.p.mouseY, 20, 20);  
+  SS.p.rect(SS.mouseX, SS.mouseY, 20, 20);  
  }
+ 
+SS.p.mousePressed = function() {
+  //SS.setscale();
+  SS.action = { startpx: [SS.mouseX, SS.mouseY] };
+   
+  $("radial").radmenu("show");
+}
 
 //this executes at document.ready
 SimpleSeer.setup = function(){
     SS.p.setup();
     SS.p.loop();
+    
+    $("#radial").radmenu({
+        listClass: 'radial_items', // the list class to look within for items
+        itemClass: 'radial_item', // the items - NOTE: the HTML inside the item is copied into the menu item
+        radius: 100, // radius in pixels
+        animSpeed:400, // animation speed in millis
+        centerX: 30, // the center x axis offset
+        centerY: 100, // the center y axis offset
+        selectEvent: "click", // the select event (click)
+        onSelect: function($selected){ // show what is returned 
+            alert("you clicked on .. " + $selected.index());
+        },
+        angleOffset: 0 // in degrees
+    });
 }
