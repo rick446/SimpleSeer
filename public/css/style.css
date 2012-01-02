@@ -980,7 +980,7 @@ transform:rotate(45deg);
 
 #radial {
     position: absolute;
-    z-index: 99;
+    /* z-index: 99; */
     top: 0px;
     left: 0px;
     width: 300px;
@@ -991,7 +991,7 @@ transform:rotate(45deg);
     background-color:none;
     height:30px;
     padding:10px;
-    color:#234;
+    color:#000;
     -moz-border-radius:10px;
     -webkit-border-radius:10px;
     cursor:pointer;  

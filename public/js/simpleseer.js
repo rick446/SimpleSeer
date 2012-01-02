@@ -4,6 +4,7 @@
 
 SS = SimpleSeer = new Object();
 
+//initalize the display and the resize function
 $(function(){
 
     var stretcher = $('#maindisplay > img'),
@@ -38,27 +39,24 @@ $(function(){
 
 });
 
-
+//function to retrieve data from webdis
 SimpleSeer.getValue = function(key) {
     returndata = $.parseJSON(
-        $.ajax(
-            {
-                url: "/GET/" + key + ".json", 
+        $.ajax({ url: "/GET/" + key + ".json", 
                 async: false, 
                 dataType: 'json'
-            }
-        ).responseText
+            }).responseText
     );
-    
     return returndata['GET'];
 };
 
+//import some context from webdis
 SimpleSeer.cameras = SimpleSeer.getValue('cameras');
 SimpleSeer.framecount = SimpleSeer.getValue('framecount');
 SimpleSeer.framedata = [$.parseJSON(SimpleSeer.getValue('currentframedata_0'))];
 SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
 
-
+/* //check the frame id, if it increments, reload context
 setInterval(function(){
    thisframe = SimpleSeer.getValue('framecount');
    if (SimpleSeer.framecount != thisframe) {
@@ -68,6 +66,8 @@ setInterval(function(){
    SimpleSeer.framecount = thisframe;
 
 }, SimpleSeer.poll_interval * 1000);
+ */
+
 
 SS.p = new Processing('display');
 //coloquially, we'll probably always refer to this as SS.p
@@ -84,19 +84,22 @@ SS.setscale = function() {
   SS.mouseY = SS.p.mouseY / SS.yscalefactor;
 }
 
+
 SS.p.draw = function() {
   SS.setscale();
   
   SS.p.background(0, 0);   
-  SS.p.fill(255, 80);  
-  SS.p.rect(SS.mouseX, SS.mouseY, 20, 20);  
+  //SS.p.fill(255, 80);  
+  //SS.p.rect(SS.mouseX, SS.mouseY, 20, 20);  
  }
+
  
 SS.p.mousePressed = function() {
   //SS.setscale();
   SS.action = { startpx: [SS.mouseX, SS.mouseY] };
    
-  $("radial").radmenu("show");
+   
+  $("#radial").radmenu("show").css( { zIndex: 99, top: SS.p.mouseY.toString() + "px", left: SS.p.mouseX.toString() + "px" } );
 }
 
 //this executes at document.ready
@@ -114,6 +117,8 @@ SimpleSeer.setup = function(){
         selectEvent: "click", // the select event (click)
         onSelect: function($selected){ // show what is returned 
             alert("you clicked on .. " + $selected.index());
+            $("#radial").radmenu("hide").css( { zIndex: -1, top: "0px", left: "0px" } );
+
         },
         angleOffset: 0 // in degrees
     });
