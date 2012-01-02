@@ -76,30 +76,111 @@ SS.p = new Processing('display');
 
 SS.p.setup = function() {
   SS.p.size($('#maindisplay > img').width(), $('#maindisplay > img').height());
+  SS.action = { startpx: [0,0], task: "" }
 }
 
 SS.setscale = function() {
   SS.p.scale(SS.xscalefactor, SS.yscalefactor)
-  SS.mouseX = SS.p.mouseX / SS.xscalefactor;
-  SS.mouseY = SS.p.mouseY / SS.yscalefactor;
+  SS.mouseX = Math.round(SS.p.mouseX / SS.xscalefactor);
+  SS.mouseY = Math.round(SS.p.mouseY / SS.yscalefactor);
 }
 
+//these get registered to with each handler
+SS.taskhandler = {
+    ROI: {
+        render: function() {
+            
+            
+            
+            
+            
+            
+        },
+        callback: function() {
+            
+            
+            
+            
+            
+        },
+        
+        manipulate: function() {
+            startx = SS.action['startpx'][0];
+            starty = SS.action['startpx'][1];
+            
+            w = Math.abs(startx - SS.mouseX);
+            h = Math.abs(starty - SS.mouseY);
+            
+            if (startx > SS.mouseX) {
+                startx = SS.mouseX;
+            }
+            if (starty > SS.mouseY) {
+                starty = SS.mouseY;
+            }
+            
+            SS.p.fill(255, 20);
+            SS.p.rect(startx, starty, w, h);
+        }
+        
+        manipulate_onclick: function() {
+            
+            startx = SS.action['startpx'][0];
+            starty = SS.action['startpx'][1];
+            
+            w = Math.abs(startx - SS.mouseX);
+            h = Math.abs(starty - SS.mouseY);
+            
+            if (startx > SS.mouseX) {
+                startx = SS.mouseX;
+            }
+            if (starty > SS.mouseY) {
+                starty = SS.mouseY;
+            }
+            
+            SS.addInspection("region", {x: startx, y: starty, w: w, h: h});
+            
+            
+        }
+    }
+    
+    
+    
+    
+    
+}
 
 SS.p.draw = function() {
   SS.setscale();
+  SS.p.background(0, 0);     
   
-  SS.p.background(0, 0);   
-  //SS.p.fill(255, 80);  
+  
+  if (SS.action["task"]) {
+      task = SS.action["task"];
+      
+      if (task in SS.taskhandler) {
+          SS.taskhandler[task].manipulate();
+      }
+      
+      
+      
+  }
+  
+  //SS.p.fill(255, 20);  
   //SS.p.rect(SS.mouseX, SS.mouseY, 20, 20);  
  }
 
  
 SS.p.mousePressed = function() {
   //SS.setscale();
-  SS.action = { startpx: [SS.mouseX, SS.mouseY] };
-   
-   
-  $("#radial").radmenu("show").css( { zIndex: 99, top: SS.p.mouseY.toString() + "px", left: SS.p.mouseX.toString() + "px" } );
+  
+    if (!SS.action["task"]) {
+        SS.action = { startpx: [SS.mouseX, SS.mouseY], task: "radial_select" };
+        $("#radial").radmenu("show").css( { zIndex: 99, top: SS.p.mouseY.toString() + "px", left: SS.p.mouseX.toString() + "px" } );
+    } else {
+        if (task in SS.taskhandler) {
+            SS.taskhandler[task].manipulate_onclick();
+        }
+    }
 }
 
 //this executes at document.ready
@@ -112,11 +193,14 @@ SimpleSeer.setup = function(){
         itemClass: 'radial_item', // the items - NOTE: the HTML inside the item is copied into the menu item
         radius: 100, // radius in pixels
         animSpeed:400, // animation speed in millis
-        centerX: 30, // the center x axis offset
-        centerY: 100, // the center y axis offset
+        centerX: -10, // the center x axis offset
+        centerY: -10, // the center y axis offset
         selectEvent: "click", // the select event (click)
         onSelect: function($selected){ // show what is returned 
-            alert("you clicked on .. " + $selected.index());
+            id = $selected.children()[0].id;
+            task = id.substr(12); //get the task from the id
+            SS.action["task"] = task;
+        
             $("#radial").radmenu("hide").css( { zIndex: -1, top: "0px", left: "0px" } );
 
         },

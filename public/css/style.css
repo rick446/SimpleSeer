@@ -998,7 +998,7 @@ transform:rotate(45deg);
 }
 
 .radial_item.active { 
-    background-color:#511; color:white;
+    background-color:#000; color:black;
     padding: 10px; 
     -moz-border-radius:40px;
     z-index:100;
