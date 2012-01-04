@@ -120,7 +120,7 @@ SS.taskhandler = {
             
             SS.p.fill(255, 20);
             SS.p.rect(startx, starty, w, h);
-        }
+        },
         
         manipulate_onclick: function() {
             
@@ -138,7 +138,7 @@ SS.taskhandler = {
             }
             
             SS.addInspection("region", {x: startx, y: starty, w: w, h: h});
-            
+
             
         }
     }
