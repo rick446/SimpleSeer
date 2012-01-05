@@ -978,39 +978,48 @@ transform:rotate(45deg);
     left: 0px;
 }
 
-#radial {
-    position: absolute;
-    /* z-index: 99; */
-    top: 0px;
-    left: 0px;
-    width: 300px;
-    height: 300px;
+#radial_container { 
+	position:absolute; 
+	width:60px; 
+	height:60px; 
+	border-radius:120px;
+	text-align:center;
+	box-shadow: rgba(0,0,0,.4) 0 8px 16px, inset rgba(0,0,0,1) 0 1px 0, inset rgba(0,0,0,1) 0 1px 8px, rgba(0,0,0,1) 0 1px 1px;
+	border: rgba(0,0,0,.6) solid 80px;
+	display: none;
+	background: url("/img/74-location2x.png") no-repeat 50% 50%;
+}
+.radial_div_item a {
+	line-height:26px;
+	font-size: 16px;
+	padding: 8px;
+	height: 26px;
+	width: 26px;
+	color:#fff;
+	display: block;
+	text-decoration: none;
+	border-radius:26px;
+	cursor:pointer;
+	background: rgba(0,0,0,.5);
+	box-shadow: inset rgba(0,0,0,.8) 0 8px 16px, rgba(0,0,0,1) 0 0 0;
+
+}
+.radial_div_item.active a { 
+	background-color:#111;
+	z-index:100;
+	color:#444 !important;
+	box-shadow : inset #222 0 0 4px
 }
 
-.radial_item {
-    background-color:none;
-    height:30px;
-    padding:10px;
-    color:#000;
-    -moz-border-radius:10px;
-    -webkit-border-radius:10px;
-    cursor:pointer;  
-}
+/*radial menu icons*/
+    .radico, a b.radico {display:block;height: 26px;width: 26px;}
+    .btn .ico {margin-right: 5px;}
+    .radico:hover, a b.radico:hover {opacity: .6;}
+    .contrast {background: url("/img/62-contrast.png") no-repeat 50% 50%;}
+    .bright {background: url("/img/61-brightness.png") no-repeat 50% 50%;}
+    .gear {background: url("/img/19-gear.png") no-repeat 50% 50%;}
+    .sliders {background: url("/img/106-sliders.png") no-repeat 50% 50%;}
+    .chat {background: url("/img/08-chat.png") no-repeat 50% 50%;}
+    .crop {background: url("/img/292-crop.png") no-repeat 50% 50%;}
 
-.radial_item.active { 
-    background-color:#000; color:black;
-    padding: 10px; 
-    -moz-border-radius:40px;
-    z-index:100;
-}
-
-.radialbutton { 
-    font-size:1.5em; 
-    color:#abc;
-    background-color:#def;
-    -moz-border-radius:30px;
-    width:30px;
-    height:30px;
-    -webkit-border-radius:30px;
-}
 
