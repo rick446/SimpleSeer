@@ -152,7 +152,7 @@ SS.taskhandler = {
 }
 
 
-SS.launchRadial = function() {
+SS.launchRadial = function(animate) {
     
     
     if (SS.radialAnimating) {
@@ -162,11 +162,11 @@ SS.launchRadial = function() {
     
     if (oldtask == "radial_select") {
         distance = SS.xscalefactor * SS.euclidean(SS.action["startpx"], [SS.mouseX, SS.mouseY]);
-        if (distance > 75) { 
+        if (distance > 75 && animate) { 
             SS.radialAnimating = true;
             $("#radial_container").animate( {
                 top: (SS.p.mouseY - 110).toString() + "px", 
-                left: (SS.p.mouseX - 110).toString() + "px" }, 500,
+                left: (SS.p.mouseX - 110).toString() + "px" }, 300,
                 function() { SS.radialAnimating = false; } 
             );    
         } else {
@@ -186,7 +186,7 @@ SS.launchRadial = function() {
     
 }
 
-
+SS.wasPressed = false;
 SS.p.draw = function() {
   SS.setscale();
   SS.p.background(0, 0);     
@@ -203,17 +203,22 @@ SS.p.draw = function() {
           //or manipulate onclick
       }
   } else {
+      
       if (SS.mouseDown) {
-          SS.launchRadial();
-      }
+          if (SS.wasPressed) {
+            SS.launchRadial();
+          } else {
+            SS.launchRadial(true);   
+          }
+      } 
   }
-  
+  SS.wasPressed = SS.mouseDown;
   //SS.p.fill(255, 20);  
   //SS.p.rect(SS.mouseX, SS.mouseY, 20, 20);  
  }
 
+
 SS.p.mousePressed = function() {
-    SS.launchRadial();
     if (SS.action["task"] && !SS.action["task"] == "radial_select") {
       task = SS.action["task"];
       
@@ -222,7 +227,7 @@ SS.p.mousePressed = function() {
           //or manipulate onclick
       }
     } else {
-      SS.launchRadial();
+      SS.launchRadial(true);
     }
 } 
 
