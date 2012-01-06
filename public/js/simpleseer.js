@@ -161,8 +161,8 @@ SS.launchRadial = function() {
     oldtask = SS.action["task"];
     
     if (oldtask == "radial_select") {
-        distance = SS.euclidean(SS.action["startpx"], [SS.mouseX, SS.mouseY]);
-        if (distance > 75) { //TODO we should really change this based on real px, not image pics
+        distance = SS.xscalefactor * SS.euclidean(SS.action["startpx"], [SS.mouseX, SS.mouseY]);
+        if (distance > 75) { 
             SS.radialAnimating = true;
             $("#radial_container").animate( {
                 top: (SS.p.mouseY - 110).toString() + "px", 
