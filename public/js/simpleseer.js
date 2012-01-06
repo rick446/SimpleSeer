@@ -145,7 +145,7 @@ SS.taskhandler = {
             }
             
             SS.addInspection("region", {x: startx, y: starty, w: w, h: h});
-            
+
             
         }
     }

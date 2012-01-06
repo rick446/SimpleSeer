@@ -84,5 +84,5 @@ class SimpleDoc(mongoengine.Document):
 
 import SimpleCV
 #from SimpleCV.Shell import *
-from SimpleCV import Image, JpegStreamer, Camera, Color, cv
+from SimpleCV import Image, JpegStreamer, Camera, Color, cv, VirtualCamera, Kinect
 #from SimpleCV.Display import Display

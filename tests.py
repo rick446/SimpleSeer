@@ -15,7 +15,7 @@ SimpleSeer()
 Frame.objects.delete()
 Inspection.objects.delete()
 Measurement.objects.delete()
-Watcher.objects.delete()
+#Watcher.objects.delete()
 
 frame = Frame.capture()[0]  #test capture method
 frame.save() #test save
