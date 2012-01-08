@@ -54,25 +54,30 @@ except ImportError:
 
 #little wrapper functions to set defaults for dumps/loads behavior
 def jsonencode(obj):
-    return jsonpickle.encode(obj, unpicklable=False)
+    return jsonpickle.encode(obj)
 
 def jsondecode(data):
     return json.loads(data)
-
-#this generic SimpleDoc JSON handler should be able to handle most cases
-class SimpleDocJSONHandler(jsonpickle.handlers.BaseHandler):
-    def flatten(self, obj):
-        if (hasattr(obj, "__json__")):
-            return obj.__json__()  #let the object overload if it wants
         
+class SimpleDoc(mongoengine.Document):
+    """
+    All Seer objects should extend SimpleDoc, which wraps mongoengine.Document
+    """
+    _jsonignore = [None]
+    
+    
+    def __getstate__(self):  
         ret = {}
-        for (k,v) in obj._data:
-            if k[0] == "_" or k in obj._jsonignore:
+        ret["id"] = self._data[None]
+        for k in self._data.keys():
+            if not k:
+                continue
+              
+            v = self._data[k]
+            if k[0] == "_" or k in self._jsonignore:
                 continue
             if (hasattr(v, "__json__")):
                 ret[k] = v.__json__()
-            elif isinstance(v, bson.objectid.ObjectId):
-                ret[k] = str(v)
             elif isinstance(v, SimpleCV.Image):
                 ret[k] = v.applyLayers().getBitmap().tostring().encode("base64")
             elif isinstance(v, datetime):
@@ -80,18 +85,7 @@ class SimpleDocJSONHandler(jsonpickle.handlers.BaseHandler):
             else:
                 ret[k] = v
             
-        return ret   
-        
-    def restore(self, obj):
-        #generally shouldn't be needed, since we're defaulting to one-ways
-        #if we decide we want to do this, we need to back-out the recipie above
-        pass
-        
-class SimpleDoc(mongoengine.Document):
-    """
-    All Seer objects should extend SimpleDoc, which wraps mongoengine.Document
-    """
-    _jsonignore = [None]
+        return ret 
         
 class SimpleEmbeddedDoc(mongoengine.EmbeddedDocument):
     """
@@ -99,15 +93,16 @@ class SimpleEmbeddedDoc(mongoengine.EmbeddedDocument):
     """
     _jsonignore = [None]
     
-class BSONObjectIDHandler:
-    def flatten(obj):
-        return str(obj)
+    
+    
+class BSONObjectIDHandler(jsonpickle.handlers.BaseHandler):
+    def flatten(self, obj, data):
+        data['id'] = str(obj)
+        return data
     
 jsonpickle.handlers.Registry().register(bson.objectid.ObjectId, BSONObjectIDHandler)   
-jsonpickle.handlers.Registry().register(SimpleDoc, SimpleDocJSONHandler)
-jsonpickle.handlers.Registry().register(SimpleEmbeddedDoc, SimpleDocJSONHandler)
 
 import SimpleCV
 #from SimpleCV.Shell import *
-from SimpleCV import Image, JpegStreamer, Camera, Color, cv
+from SimpleCV import Image, JpegStreamer, Camera, Color, cv, VirtualCamera
 #from SimpleCV.Display import Display

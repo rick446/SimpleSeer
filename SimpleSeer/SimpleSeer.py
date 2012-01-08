@@ -34,7 +34,7 @@ class SimpleSeer(threading.Thread):
         for camera in self.config.cameras:
             camerainfo = camera.copy()
             if camerainfo.has_key('virtual'):
-                self.cameras.append(VirtualCamera(camerainfo['source'], camerainfo))
+                self.cameras.append(VirtualCamera(camerainfo['source'], camerainfo['virtual']))
             else:
                 id = camerainfo['id']
                 del camerainfo['id']

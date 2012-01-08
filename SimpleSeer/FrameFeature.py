@@ -71,7 +71,7 @@ class FrameFeature(SimpleEmbeddedDoc):
         return self._featurebuffer
     
 
-    def __json__(self):
+    def __getstate__(self):
         ret = {}
         
         skipfields = ["featurepickle", "featuredata", "children"]

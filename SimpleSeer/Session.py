@@ -30,7 +30,7 @@ class SmartJSONRedis(redis.Redis):
     """
     
     def set(self, key, val):
-        return super(SmartJSONRedis, self).set(key,jsonpickle.encode(val))
+        return super(SmartJSONRedis, self).set(key,jsonencode(val))
             
 
 class Session():
