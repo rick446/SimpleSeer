@@ -33,17 +33,20 @@ class SimpleSeer(threading.Thread):
         
         for camera in self.config.cameras:
             camerainfo = camera.copy()
-            id = camerainfo['id']
-            del camerainfo['id']
-            if camerainfo.has_key('crop'):
-                del camerainfo['crop']
-            self.cameras.append(Camera(id, camerainfo))
+            if camerainfo.has_key('virtual'):
+                self.cameras.append(VirtualCamera(camerainfo['source'], camerainfo))
+            else:
+                id = camerainfo['id']
+                del camerainfo['id']
+                if camerainfo.has_key('crop'):
+                    del camerainfo['crop']
+                self.cameras.append(Camera(id, camerainfo))
         #log initialized camera X
     
         Session().redis.set("cameras", self.config.cameras)
         #tell redis what cameras we have
         
-        self.inspections = Inspection.objects#all root level inspections
+        self.inspections = list(Inspection.objects)#all root level inspections
         
         Session().redis.set("inspections", self.inspections) 
          

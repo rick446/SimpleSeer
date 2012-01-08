@@ -98,7 +98,12 @@ class SimpleEmbeddedDoc(mongoengine.EmbeddedDocument):
     Any embedded docs (for object trees) should extend SimpleEmbeddedDoc
     """
     _jsonignore = [None]
-        
+    
+class BSONObjectIDHandler:
+    def flatten(obj):
+        return str(obj)
+    
+jsonpickle.handlers.Registry().register(bson.objectid.ObjectId, BSONObjectIDHandler)   
 jsonpickle.handlers.Registry().register(SimpleDoc, SimpleDocJSONHandler)
 jsonpickle.handlers.Registry().register(SimpleEmbeddedDoc, SimpleDocJSONHandler)
 
