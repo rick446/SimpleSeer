@@ -28,6 +28,7 @@ except:
 import redis
 import mongoengine
 import bson
+import jsonpickle
 
 #cribbed from
 #http://stackoverflow.com/questions/1254454/fastest-way-to-convert-a-dicts-keys-values-from-unicode-to-str
@@ -42,47 +43,66 @@ def utf8convert(data):
         return data
 
 
+try:
+    import ujson
+    jsonpickle.load_backend("ujson", "dumps", "loads", ValueError)
+    jsonpickle.set_preferred_backend("ujson")
 
-class SimpleDocJSONEncoder(json.JSONEncoder):
-    def default(self, obj, **kwargs):
-        
+except ImportError:
+    import json
+
+
+#little wrapper functions to set defaults for dumps/loads behavior
+def jsonencode(obj):
+    return jsonpickle.encode(obj, unpicklable=False)
+
+def jsondecode(data):
+    return json.loads(data)
+
+#this generic SimpleDoc JSON handler should be able to handle most cases
+class SimpleDocJSONHandler(jsonpickle.handlers.BaseHandler):
+    def flatten(self, obj):
         if (hasattr(obj, "__json__")):
-            return json.loads(obj.__json__()) #TODO that's a bit crap
-            
-        if isinstance(obj, SimpleCV.Image):
-            return obj.applyLayers().getBitmap().tostring().encode("base64")
+            return obj.__json__()  #let the object overload if it wants
         
-        if isinstance(obj, bson.objectid.ObjectId):
-            return str(obj)
+        ret = {}
+        for (k,v) in obj._data:
+            if k[0] == "_" or k in obj._jsonignore:
+                continue
+            if (hasattr(v, "__json__")):
+                ret[k] = v.__json__()
+            elif isinstance(v, bson.objectid.ObjectId):
+                ret[k] = str(v)
+            elif isinstance(v, SimpleCV.Image):
+                ret[k] = v.applyLayers().getBitmap().tostring().encode("base64")
+            elif isinstance(v, datetime):
+                ret[k] = int(time.mktime(v.timetuple()) + v.microsecond/1e6)
+            else:
+                ret[k] = v
             
-        if isinstance(obj, datetime):
-            return int(time.mktime(obj.timetuple()) + obj.microsecond/1e6)
-        else:            
-            return json.JSONEncoder.default(obj, **kwargs)
-
+        return ret   
+        
+    def restore(self, obj):
+        #generally shouldn't be needed, since we're defaulting to one-ways
+        #if we decide we want to do this, we need to back-out the recipie above
+        pass
+        
 class SimpleDoc(mongoengine.Document):
     """
     All Seer objects should extend SimpleDoc, which wraps mongoengine.Document
     """
     _jsonignore = [None]
         
-    def __json__(self):
-        data = deepcopy(self._data)
+class SimpleEmbeddedDoc(mongoengine.EmbeddedDocument):
+    """
+    Any embedded docs (for object trees) should extend SimpleEmbeddedDoc
+    """
+    _jsonignore = [None]
         
-        data["id"] = str(self.id)
-        for ignore in self._jsonignore:
-            del data[ignore]
-        
-        #remove private data
-        for k in [k for k in data.keys() if k[0] == "_"]:
-          del data[k]
-        
-        
-        return SimpleDocJSONEncoder().encode(data)
-        
-            
+jsonpickle.handlers.Registry().register(SimpleDoc, SimpleDocJSONHandler)
+jsonpickle.handlers.Registry().register(SimpleEmbeddedDoc, SimpleDocJSONHandler)
 
 import SimpleCV
 #from SimpleCV.Shell import *
-from SimpleCV import Image, JpegStreamer, Camera, Color, cv, VirtualCamera, Kinect
+from SimpleCV import Image, JpegStreamer, Camera, Color, cv
 #from SimpleCV.Display import Display

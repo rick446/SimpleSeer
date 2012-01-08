@@ -43,7 +43,7 @@ class Inspection(SimpleDoc):
     
     Measurement(..., inspection_id = insp.id )
     
-    results = insp.execute()
+    results = insp.execute()       
     
     """
     name = mongoengine.StringField()
@@ -62,7 +62,7 @@ class Inspection(SimpleDoc):
     morphs = mongoengine.ListField()
     #list of dicts for morph operations
     #TODO validate agains morph operations
-    
+
                                            
     def execute(self, image, parents = {}):
         """
