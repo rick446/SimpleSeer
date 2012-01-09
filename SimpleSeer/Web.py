@@ -1,5 +1,5 @@
 from base import *
-
+from Session import *
 
 
 atexit.register(cherrypy.engine.exit)
@@ -13,7 +13,7 @@ class Web():
                 {
                 'server.socket_port': 53317,
                 'server.socket_host' : '0.0.0.0',
-                'log.screen' : False,
+                'log.screen' : True,
                 'tools.staticdir.on': True,
                 'tools.staticdir.dir': os.getcwd() + "/public/",
                 }
@@ -44,11 +44,32 @@ class WebInterface(object):
         return s
 
     @cherrypy.expose
+    def inspection_add(self, **params):
+        
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        
+        #try:
+        Inspection(
+            name = params["name"],
+            camera = params["camera"],
+            method = params["method"],
+            parameters = json.loads(params["parameters"])).save()
+        #except Exception as e:
+        #    return dict( error = e )
+        
+        SimpleSeer.SimpleSeer().inspections = Inspection.objects[:]
+        
+        Session().redis.set("inspections", SimpleSeer.SimpleSeer().inspections)
+                
+        return Session().redis.get("inspections") #cheaper than re-rendering
+
+
+
+    @cherrypy.expose
     def poll(self):
         text = "Wow, this is some fun stuff"
         return json.dumps(text)
 
 
-    
-
-    
+import SimpleSeer
+from Inspection import Inspection

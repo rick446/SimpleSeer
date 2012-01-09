@@ -46,7 +46,7 @@ class SimpleSeer(threading.Thread):
         Session().redis.set("cameras", json.dumps(self.config.cameras))
         #tell redis what cameras we have
         
-        self.inspections = Inspection.objects#all root level inspections
+        self.inspections = Inspection.objects[:]#all root level inspections
         
         Session().redis.set("inspections", self.inspections) 
          

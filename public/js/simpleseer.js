@@ -39,6 +39,12 @@ $(function(){
 
 });
 
+
+SimpleSeer.resetAction = function() {
+    SS.action = { startpx: [0,0], task: "" };
+}
+
+
 //function to retrieve data from webdis
 SimpleSeer.getValue = function(key) {
     returndata = $.parseJSON(
@@ -49,6 +55,32 @@ SimpleSeer.getValue = function(key) {
     );
     return returndata['GET'];
 };
+
+
+SimpleSeer.addInspection = function(method, parameters) {
+    inspection_names = {};
+    for (i in SS.inspections) {
+        inspection_names[i.name] = 1;
+    } //build a table of names
+    
+    counter = 1;
+    name = method + counter.toString();
+    while (name in inspection_names) {
+        counter++;
+        name = method + counter.toString();
+    } //Find the lowest available number for a default name
+    
+    camera = SS.framedata[0]['camera'];
+    
+    $.post("/inspection_add", { name: name, camera: camera, method: method, parameters: JSON.stringify(parameters)}, 
+        function(data) {  SS.renderInspections() });
+    
+};
+
+SimpleSeer.renderInspections = function() {
+    //alert("rendered!");
+};
+
 
 //math helper functions
 SimpleSeer.euclidean = function(pt1, pt2) {
@@ -61,7 +93,11 @@ SimpleSeer.cameras = SimpleSeer.getValue('cameras');
 SimpleSeer.framecount = SimpleSeer.getValue('framecount');
 SimpleSeer.framedata = [$.parseJSON(SimpleSeer.getValue('currentframedata_0'))];
 SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
+//SimpleSeer.inspections = SimpleSeer.getValue('inspections');
+
 SimpleSeer.radialAnimating = false;
+
+
 
 /* //check the frame id, if it increments, reload context
 setInterval(function(){
@@ -83,7 +119,7 @@ SS.p = new Processing('display');
 
 SS.p.setup = function() {
   SS.p.size($('#maindisplay > img').width(), $('#maindisplay > img').height());
-  SS.action = { startpx: [0,0], task: "" }
+  SS.resetAction()
 }
 
 SS.setscale = function() {
@@ -94,7 +130,7 @@ SS.setscale = function() {
 
 //these get registered to with each handler
 SS.taskhandler = {
-    ROI: {
+    roi: {
         render: function() {
             
             
@@ -145,7 +181,7 @@ SS.taskhandler = {
             }
             
             SS.addInspection("region", {x: startx, y: starty, w: w, h: h});
-
+            SS.resetAction();
             
         }
     }
@@ -153,7 +189,6 @@ SS.taskhandler = {
 
 
 SS.launchRadial = function(animate) {
-    
     
     if (SS.radialAnimating) {
         return;
@@ -191,7 +226,7 @@ SS.p.draw = function() {
   SS.setscale();
   SS.p.background(0, 0);     
     
-  if (SS.action["task"] && !SS.action["task"] == "radial_select") {
+  if (SS.action["task"] && SS.action["task"] != "radial_select") {
       task = SS.action["task"];
       
       if (task in SS.taskhandler) {
@@ -218,19 +253,6 @@ SS.p.draw = function() {
  }
 
 
-SS.p.mousePressed = function() {
-    if (SS.action["task"] && !SS.action["task"] == "radial_select") {
-      task = SS.action["task"];
-      
-      if (task in SS.taskhandler) {
-          SS.taskhandler[task].manipulate_onclick();
-          //or manipulate onclick
-      }
-    } else {
-      SS.launchRadial(true);
-    }
-} 
-
 
 //this executes at document.ready
 SimpleSeer.setup = function(){
@@ -253,10 +275,6 @@ SimpleSeer.setup = function(){
    });
 /*end processing helpers*/
 
-   $(".radialitem > a").mouseenter( function(e) {
-      alert("hi");
-       
-   });
     
 
    $("#radial_container").radmenu({
@@ -265,12 +283,13 @@ SimpleSeer.setup = function(){
         radius: 68, // radius in pixels
         centerX: 10, // the center x axis offset
         centerY: -6, // the center y axis offset
-        selectEvent: "click", // the select event (click)
+        selectEvent: "mousedown", // the select event (click)
         onSelect: function($selected){ // show what is returned 
-          alert("you clicked on .. " + $selected.index());
+          $('#radial_container').radmenu("hide");
+          SS.action['task'] = $selected.children()[0].id.substr(7); //remove the #radial prefix
         },
         onShow: function($items){$items.show();$('#radial_container').fadeIn(500);},
-        onHide: function($items){$items.hide();$('#radial_container').hide();}
+        onHide: function($items){$items.hide();$('#radial_container').fadeOut(500);}
       });
 
 }
