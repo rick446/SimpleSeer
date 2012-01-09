@@ -40,6 +40,8 @@ Mac OS X (Using homebrew)
 > easy_install mongoengine
 > easy_install cherrypy
 > easy_install redis
+> easy_install jsonpickle
+> easy_install ujson
 > hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.py install
 > git clone git://github.com/nicolasff/webdis.git && cd webdis && make && ./webdis &
 
@@ -51,6 +53,8 @@ Linux (Using apt-get)
 > easy_install python-pymongo
 > easy_install mongoengine
 > easy_install cherrypy
+> easy_install jsonpickle
+> easy_install ujson
 > hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.
 py install
 > git clone git://github.com/nicolasff/webdis.git && cd webdis && make && ./webdis &

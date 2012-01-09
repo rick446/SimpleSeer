@@ -2,7 +2,7 @@ from base import *
 from Session import *
 
 
-class FrameFeature(mongoengine.EmbeddedDocument):
+class FrameFeature(SimpleEmbeddedDoc):
    
     featuretype = mongoengine.StringField()
     featuredata = mongoengine.DictField()  #this holds any type-specific feature data
@@ -71,11 +71,36 @@ class FrameFeature(mongoengine.EmbeddedDocument):
         return self._featurebuffer
     
 
-    def __json__(self):
-        data = deepcopy(self._data)
-        del data['featurepickle']
-        #do something with image refs
-        return SimpleDocJSONEncoder().encode(data)
+    def __getstate__(self):
+        ret = {}
+        
+        skipfields = ["featurepickle", "featuredata", "children"]
+        
+        #handle all the normal fields
+        for k,v in self._data:
+            if k in skipfields:
+                continue
+            elif k == "inspection":
+                ret[k] = str(v)
+            else:
+                ret[k] = v
+        
+        #handle all the simpleCV featuredata
+        ret["featuredata"] = {}
+        for k,v in self.featuredata:
+            if k in self.featuredata_mask:
+                continue
+            elif isinstance(v, SimpleCV.Image):
+                ret["featuredata"][k] = v.applyLayers().getBitmap().tostring().encode("base64")
+            elif isinstance(v, cv.iplimage):
+                ret["featuredata"][k] = v.tostring().encode("base64")
+            else:
+                ret["featuredata"][k] = v
+        
+        #handle all children
+        ret["children"] = [c.__json__() for c in self.children]
+
+        return ret
 
     #cribbed from http://www.ariel.com.au/a/python-point-int-poly.html
     #should be moved to SimpleCV/Features
