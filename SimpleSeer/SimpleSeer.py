@@ -133,7 +133,7 @@ class SimpleSeer(threading.Thread):
         for f in self.lastframes[-1]:
             jpgdata = StringIO()
             f.image.applyLayers().getPIL().save(jpgdata, "jpeg", quality = 95)
-            Session().redis.set("currentframe_%d" % count, jpgdata.getvalue())
+            Session().redis.setraw("currentframe_%d" % count, jpgdata.getvalue())
             Session().redis.set("histogram_%d" % count, f.image.histogram(20))
             Session().redis.set("currentframedata_%d" % count, f)
             count = count + 1

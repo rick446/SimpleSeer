@@ -54,7 +54,7 @@ except ImportError:
 
 #little wrapper functions to set defaults for dumps/loads behavior
 def jsonencode(obj):
-    return jsonpickle.encode(obj)
+    return jsonpickle.encode(obj, unpicklable=False)
 
 def jsondecode(data):
     return json.loads(data)
@@ -99,8 +99,29 @@ class BSONObjectIDHandler(jsonpickle.handlers.BaseHandler):
     def flatten(self, obj, data):
         data['id'] = str(obj)
         return data
+
+class MongoEngineBaseListHandler(jsonpickle.handlers.BaseHandler):
+    def flatten(self, obj, data):
+        #data["values"] = list(obj)
+        ret = []
+        for i in obj:
+            if hasattr(i, "__getstate__"):
+                ret.append(i.__getstate__())
+            else:
+                ret.append(i)
+        return ret
+
+class MongoEngineBaseDictHandler(jsonpickle.handlers.BaseHandler):
+    def flatten(self, obj, data):
+        data.update(obj)
+        return data
+    
     
 jsonpickle.handlers.Registry().register(bson.objectid.ObjectId, BSONObjectIDHandler)   
+jsonpickle.handlers.Registry().register(mongoengine.base.BaseList, MongoEngineBaseListHandler)
+jsonpickle.handlers.Registry().register(mongoengine.base.BaseDict, MongoEngineBaseDictHandler)
+
+
 
 import SimpleCV
 #from SimpleCV.Shell import *

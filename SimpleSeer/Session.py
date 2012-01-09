@@ -31,6 +31,9 @@ class SmartJSONRedis(redis.Redis):
     
     def set(self, key, val):
         return super(SmartJSONRedis, self).set(key,jsonencode(val))
+        
+    def setraw(self, key, val):
+        return super(SmartJSONRedis, self).set(key,val)
             
 
 class Session():
