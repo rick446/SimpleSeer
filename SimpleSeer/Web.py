@@ -57,11 +57,7 @@ class WebInterface(object):
         #except Exception as e:
         #    return dict( error = e )
         
-        SimpleSeer.SimpleSeer().inspections = Inspection.objects[:]
-        
-        Session().redis.set("inspections", SimpleSeer.SimpleSeer().inspections)
-                
-        return Session().redis.get("inspections") #cheaper than re-rendering
+        return jsonencode(SimpleSeer.SimpleSeer().inspections)
 
 
 

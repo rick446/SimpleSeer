@@ -117,6 +117,12 @@ class Inspection(SimpleDoc):
     def inspect(self):
         return SimpleSeer.SimpleSeer().inspect()
 
+    #overload the save function so that all inspections are reloaded if one is updated
+    def save(self):
+        ret = super(Inspection, self).save()
+        SimpleSeer.SimpleSeer().reloadInspections()
+        return ret  
+        
     #below are "core" inspection functions
     def region(self, image):        
         params = utf8convert(self.parameters)

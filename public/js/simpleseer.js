@@ -50,7 +50,7 @@ SimpleSeer.getValue = function(key) {
     returndata = $.ajax({ url: "/GET/" + key + ".txt", 
                 async: false, 
                 dataType: 'json'
-            })
+            }).responseText
     return returndata;
 };
 
@@ -91,9 +91,9 @@ SimpleSeer.euclidean = function(pt1, pt2) {
 
 
 //import some context from webdis
-SimpleSeer.cameras = SimpleSeer.getValue('cameras');
+SimpleSeer.cameras = SimpleSeer.getJSON('cameras');
 SimpleSeer.framecount = SimpleSeer.getValue('framecount');
-SimpleSeer.framedata = [$.parseJSON(SimpleSeer.getValue('currentframedata_0'))];
+SimpleSeer.framedata = [SimpleSeer.getJSON('currentframedata_0')];
 SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
 //SimpleSeer.inspections = SimpleSeer.getValue('inspections');
 
