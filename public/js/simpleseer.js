@@ -40,6 +40,12 @@ $(function(){
 });
 
 
+SimpleSeer.waitForClick = function() {
+    if (SS.mouseDown) {
+        SS.mouseWait = true;
+    }
+}
+
 SimpleSeer.resetAction = function() {
     SS.action = { startpx: [0,0], task: "" };
 }
@@ -75,13 +81,26 @@ SimpleSeer.addInspection = function(method, parameters) {
     camera = SS.framedata[0]['camera'];
     
     $.post("/inspection_add", { name: name, camera: camera, method: method, parameters: JSON.stringify(parameters)}, 
-        function(data) {  SS.renderInspections() });
+        function(data) { 
+            SS.inspections = data; });
     
 };
 
 SimpleSeer.renderInspections = function() {
-    //alert("rendered!");
+    for (i in SS.inspections) {
+        insp = SS.inspections[i]
+        if (insp["method"] in SS.inspectionhandlers) {
+            SS.inspectionhandlers[insp["method"]].render(insp) 
+        }
+    }
 };
+
+
+SimpleSeer.renderFeatures = function() {
+    
+    
+    
+}
 
 
 //math helper functions
@@ -95,7 +114,7 @@ SimpleSeer.cameras = SimpleSeer.getJSON('cameras');
 SimpleSeer.framecount = SimpleSeer.getValue('framecount');
 SimpleSeer.framedata = [SimpleSeer.getJSON('currentframedata_0')];
 SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
-//SimpleSeer.inspections = SimpleSeer.getValue('inspections');
+SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
 
 SimpleSeer.radialAnimating = false;
 
@@ -121,26 +140,31 @@ SS.p = new Processing('display');
 
 SS.p.setup = function() {
   SS.p.size($('#maindisplay > img').width(), $('#maindisplay > img').height());
-  SS.resetAction()
+  SS.resetAction();
 }
 
-SS.setscale = function() {
+SS.setScale = function() {
   SS.p.scale(SS.xscalefactor, SS.yscalefactor)
   SS.mouseX = Math.round(SS.p.mouseX / SS.xscalefactor);
   SS.mouseY = Math.round(SS.p.mouseY / SS.yscalefactor);
 }
 
 //these get registered to with each handler
-SS.taskhandler = {
-    roi: {
-        render: function() {
-            
-            
+SS.inspectionhandlers = {
+    region: {
+        render: function(insp) {
+            SS.p.fill(0, 128, 0, 20);
+            p = insp.parameters;
+            SS.p.rect(p.x, p.y, p.w, p.h);
+        },
+        renderfeature: function(feat, insp) {
+            SS.p.fill(0, 128, 0, 20);
             
             
             
             
         },
+        
         callback: function() {
             
             
@@ -184,7 +208,7 @@ SS.taskhandler = {
             
             SS.addInspection("region", {x: startx, y: starty, w: w, h: h});
             SS.resetAction();
-            
+            SS.waitForClick();
         }
     }
 }
@@ -225,23 +249,24 @@ SS.launchRadial = function(animate) {
 
 SS.wasPressed = false;
 SS.p.draw = function() {
-  SS.setscale();
+  SS.setScale();
   SS.p.background(0, 0);     
+   
     
   if (SS.action["task"] && SS.action["task"] != "radial_select") {
       task = SS.action["task"];
       
-      if (task in SS.taskhandler) {
+      if (task in SS.inspectionhandlers) {
           if (SS.mouseDown) {
-              SS.taskhandler[task].manipulate_onclick();
+              SS.inspectionhandlers[task].manipulate_onclick();
           } else {
-              SS.taskhandler[task].manipulate();
+              SS.inspectionhandlers[task].manipulate();
           } 
           //or manipulate onclick
       }
   } else {
-      
-      if (SS.mouseDown) {
+      SS.renderInspections();  
+      if (SS.mouseDown && !SS.mouseWait) {
           if (SS.wasPressed) {
             SS.launchRadial();
           } else {
@@ -250,8 +275,7 @@ SS.p.draw = function() {
       } 
   }
   SS.wasPressed = SS.mouseDown;
-  //SS.p.fill(255, 20);  
-  //SS.p.rect(SS.mouseX, SS.mouseY, 20, 20);  
+ 
  }
 
 
@@ -267,11 +291,12 @@ SimpleSeer.setup = function(){
    });
 
    $("#maindisplay").mouseup( function(e) {
-      SS.mouseDown = false; 
+      SS.mouseDown = false;
+      SS.mouseWait = false; 
    });
 
    $("#maindisplay").mousemove(function(e) {
-  //SS.setscale();
+  //SS.setScale();
     SS.p.mouseX = e.pageX - $("#display").offset()["left"];
     SS.p.mouseY = e.pageY - $("#display").offset()["top"];
    });
@@ -293,5 +318,12 @@ SimpleSeer.setup = function(){
         onShow: function($items){$items.show();$('#radial_container').fadeIn(500);},
         onHide: function($items){$items.hide();$('#radial_container').fadeOut(500);}
       });
+
+   $("nav").draggable( {
+        start: function(event, ui) { SS.action.task = "dragnav"; SS.waitForClick(); }, 
+        stop: function(event, ui) { SS.action.task = ""; }    
+   });
+
+
 
 }
