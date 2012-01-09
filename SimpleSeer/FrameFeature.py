@@ -77,17 +77,20 @@ class FrameFeature(SimpleEmbeddedDoc):
         skipfields = ["featurepickle", "featuredata", "children"]
         
         #handle all the normal fields
-        for k,v in self._data:
+        for k in self._data.keys():
             if k in skipfields:
                 continue
-            elif k == "inspection":
+            
+            v = self._data[k]
+            if k == "inspection":
                 ret[k] = str(v)
             else:
                 ret[k] = v
         
         #handle all the simpleCV featuredata
         ret["featuredata"] = {}
-        for k,v in self.featuredata:
+        for k in self.featuredata.keys():
+            v = self.featuredata[k]
             if k in self.featuredata_mask:
                 continue
             elif isinstance(v, SimpleCV.Image):
@@ -98,7 +101,7 @@ class FrameFeature(SimpleEmbeddedDoc):
                 ret["featuredata"][k] = v
         
         #handle all children
-        ret["children"] = [c.__json__() for c in self.children]
+        ret["children"] = [c.__getstate__() for c in self.children]
 
         return ret
 

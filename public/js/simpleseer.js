@@ -47,13 +47,15 @@ SimpleSeer.resetAction = function() {
 
 //function to retrieve data from webdis
 SimpleSeer.getValue = function(key) {
-    returndata = $.parseJSON(
-        $.ajax({ url: "/GET/" + key + ".json", 
+    returndata = $.ajax({ url: "/GET/" + key + ".txt", 
                 async: false, 
                 dataType: 'json'
-            }).responseText
-    );
-    return returndata['GET'];
+            })
+    return returndata;
+};
+
+SimpleSeer.getJSON = function(key) {
+    return $.parseJSON(SS.getValue(key));  
 };
 
 

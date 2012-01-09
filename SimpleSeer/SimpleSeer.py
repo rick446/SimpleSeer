@@ -46,9 +46,7 @@ class SimpleSeer(threading.Thread):
         Session().redis.set("cameras", self.config.cameras)
         #tell redis what cameras we have
         
-        self.inspections = list(Inspection.objects)#all root level inspections
-        
-        Session().redis.set("inspections", self.inspections) 
+        init = self.inspections  #initialize inspections so they get saved to redis
          
         
         self.lastframes = []
@@ -70,6 +68,14 @@ class SimpleSeer(threading.Thread):
 
         self.web_interface = Web()
 
+
+    #i don't really like this too much -- it should really update on
+    #an Inspection load/save
+    @property
+    def inspections(self):
+        i = list(Inspection.objects)
+        Session().redis.set("inspections", i)
+        return i
 
     def capture(self):
         count = 0
