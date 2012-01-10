@@ -1022,4 +1022,10 @@ transform:rotate(45deg);
     .chat {background: url("/img/08-chat.png") no-repeat 50% 50%;}
     .crop {background: url("/img/292-crop.png") no-repeat 50% 50%;}
 
-
+#histogram {
+   width: 150px;
+   height: 36px;
+   position: absolute;
+   top: -10px;
+   left: 0px;
+}

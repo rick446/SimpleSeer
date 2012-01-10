@@ -319,7 +319,7 @@ SimpleSeer.framecount = SimpleSeer.getValue('framecount');
 SimpleSeer.framedata = [SimpleSeer.getJSON('currentframedata_0')];
 SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
 SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
-
+SimpleSeer.histogram = SimpleSeer.getJSON('histogram');
 SimpleSeer.radialAnimating = false;
 
 
@@ -420,3 +420,30 @@ SimpleSeer.setup = function(){
 
 }
 
+
+//histogram
+SS.histgraph = new Processing("histogram");
+
+SS.histgraph.setup = function() {
+    h = SS.histgraph;
+    h.size(150, 48);
+    h.background(0,0);
+    h.stroke(255);
+}
+
+
+SS.histgraph.draw = function() {
+    h = SS.histgraph;
+
+    h.yscalefactor =  h.height / Math.max.apply(Math, SS.histogram);
+    h.xstep = h.width / SS.histogram.length;
+    
+    for (i in SS.histogram) {
+        x = h.xstep * i + 1;
+        y = SS.histogram[i] * h.yscalefactor;
+        
+        h.line(x, h.height, x, h.height - y);
+    }
+}
+SS.histgraph.setup();
+SS.histgraph.draw();
