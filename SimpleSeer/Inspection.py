@@ -86,9 +86,12 @@ class Inspection(SimpleDoc):
         if not results:
             return []
         
+        #we're executing an unsaved inspection, which can have no children
+        if not self.id:
+            return results
+        
         for r in results:
             r.inspection = self.id
-        
         
         children = self.children
         

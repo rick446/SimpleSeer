@@ -44,6 +44,22 @@ class WebInterface(object):
         return s
 
     @cherrypy.expose
+    def inspection_preview(self, **params):
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        
+        insp = Inspection(
+            name = params["name"],
+            camera = params["camera"],
+            method = params["method"],
+            parameters = json.loads(params["parameters"]))
+            #TODO fix for different cameras
+            #TODO catch malformed data
+        
+        features = insp.execute(SimpleSeer.SimpleSeer().lastframes[-1][0].image)
+        
+        return jsonencode({ "inspection": insp, "features": features})
+
+    @cherrypy.expose
     def inspection_add(self, **params):
         
         cherrypy.response.headers['Content-Type'] = 'application/json'
@@ -56,6 +72,8 @@ class WebInterface(object):
             parameters = json.loads(params["parameters"])).save()
         #except Exception as e:
         #    return dict( error = e )
+        #TODO catch malformed data
+        #TODO add parameters for morphs, parent etc
         
         return jsonencode(SimpleSeer.SimpleSeer().inspections)
 

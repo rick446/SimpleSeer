@@ -51,6 +51,8 @@ SimpleSeer.resetAction = function() {
 }
 
 
+
+
 //function to retrieve data from webdis
 SimpleSeer.getValue = function(key) {
     returndata = $.ajax({ url: "/GET/" + key + ".txt", 
@@ -79,12 +81,21 @@ SimpleSeer.addInspection = function(method, parameters) {
     } //Find the lowest available number for a default name
     
     camera = SS.framedata[0]['camera'];
+    //TODO actually look up which display we're on
     
     $.post("/inspection_add", { name: name, camera: camera, method: method, parameters: JSON.stringify(parameters)}, 
         function(data) { 
             SS.inspections = data; });
-    
 };
+
+SimpleSeer.previewInspection = function (method, parameters) {
+    camera = SS.framedata[0]['camera'];
+    
+    $.post("/inspection_preview", { name: "preview", camera: camera, method: method, parameters: JSON.stringify(parameters)},
+        function(data) {   
+            SS.inspectionhandlers[method].render_features(data["features"], data["inspection"]);
+            });
+}
 
 SimpleSeer.renderInspections = function() {
     for (i in SS.inspections) {
@@ -107,6 +118,11 @@ SimpleSeer.renderFeatures = function() {
 SimpleSeer.euclidean = function(pt1, pt2) {
     return Math.sqrt(Math.pow(pt1[0] - pt2[0], 2) + Math.pow(pt1[1] - pt2[1], 2));
 }
+
+SimpleSeer.clamp = function(val, min, max) {
+    return Math.max(min, Math.min(max, val))
+}
+
 
 
 //import some context from webdis
@@ -157,7 +173,7 @@ SS.inspectionhandlers = {
             p = insp.parameters;
             SS.p.rect(p.x, p.y, p.w, p.h);
         },
-        renderfeature: function(feat, insp) {
+        render_features: function(feats, insp) {
             SS.p.fill(0, 128, 0, 20);
             
             
@@ -165,13 +181,6 @@ SS.inspectionhandlers = {
             
         },
         
-        callback: function() {
-            
-            
-            
-            
-            
-        },
         
         manipulate: function() {
             startx = SS.action['startpx'][0];
@@ -209,6 +218,46 @@ SS.inspectionhandlers = {
             SS.addInspection("region", {x: startx, y: starty, w: w, h: h});
             SS.resetAction();
             SS.waitForClick();
+        }
+    },
+    blob: {
+        render: function () {
+            
+            
+            
+        },
+        render_features: function (features, inspection) {
+            if (features.length == 0) {
+                return;
+            }
+            SS.p.fill(255, 80);
+            for (i in features) {
+                f = features[i];
+                SS.p.beginShape();
+                for (c in b.featuredata.mContour) {
+                    pt = b.featuredata.mContour[c];
+                    SS.p.vertex(pt[0], pt[1]);
+                }
+                SS.p.endShape();
+            }
+        },
+        manipulate: function() {
+            startx = SS.action['startpx'][0];
+            starty = SS.action['startpx'][1];
+            
+            xdiff = startx - SS.mouseX;
+            ydiff = starty - SS.mouseY;
+            
+            diff = xdiff * SS.xscalefactor;
+            
+            thresh = SS.clamp(128 + diff, 1, 254);
+            
+            SS.previewInspection("blob", { threshval: thresh });            
+        },
+        manipulate_onclick: function() {
+            
+            
+            
         }
     }
 }
