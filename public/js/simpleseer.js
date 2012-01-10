@@ -37,7 +37,7 @@ SimpleSeer.getJSON = function(key) {
 
 
 
-#functions to deal with adding/previewing/updating/deleting models
+//functions to deal with adding/previewing/updating/deleting models
 SimpleSeer.Inspection = {}
 
 SimpleSeer.Inspection.add = function(method, parameters) {
@@ -64,15 +64,21 @@ SimpleSeer.Inspection.add = function(method, parameters) {
 SimpleSeer.Inspection.preview = function (method, parameters) {
     camera = SS.framedata[0]['camera'];
     
+    data = SS.preview_data[camera];
+    
+    if (data) {
+        SS.inspectionhandlers[method].render_features(data.features, data.inspection);
+    }
+    
     if (SS.previews_running[camera]) {
         return; //if there's already a preview running on this screen, wait
     }
     
-    SS.previews_running[camera] = True;
+    SS.previews_running[camera] = true;
     $.post("/inspection_preview", { name: "preview", camera: camera, method: method, parameters: JSON.stringify(parameters)},
         function(data) {   
-            SS.inspectionhandlers[method].render_features(data["features"], data["inspection"]);
-            SS.previews_running[camera] = False;
+            SS.preview_data[camera] = data;
+            SS.previews_running[camera] = false;
             });
 }
 
@@ -85,30 +91,19 @@ SimpleSeer.Inspection.render = function() {
     }
 };
 
-
+SimpleSeer.Feature = {};
 SimpleSeer.Feature.render = function() {
     
     
     
 }
 
+SimpleSeer.Measurement = {};
 SimpleSeer.Measurement.render = function() {
     
 }
 
 
-//import some context from webdis, 
-SimpleSeer.cameras = SimpleSeer.getJSON('cameras');
-for (c in SS.cameras) {
-    SimpleSeer.previews_running[c] = False;
-}
-
-SimpleSeer.framecount = SimpleSeer.getValue('framecount');
-SimpleSeer.framedata = [SimpleSeer.getJSON('currentframedata_0')];
-SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
-SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
-
-SimpleSeer.radialAnimating = false;
 
 
 
@@ -150,7 +145,7 @@ SS.inspectionhandlers = {
             SS.p.rect(p.x, p.y, p.w, p.h);
         },
         render_features: function(feats, insp) {
-            SS.p.fill(0, 128, 0, 20);
+            SS.p.fill(255, 20);
             
             
             
@@ -206,12 +201,12 @@ SS.inspectionhandlers = {
             if (features.length == 0) {
                 return;
             }
-            SS.p.fill(255, 80);
+            SS.p.fill(0, 128, 0 , 80);
             for (i in features) {
                 f = features[i];
                 SS.p.beginShape();
-                for (c in b.featuredata.mContour) {
-                    pt = b.featuredata.mContour[c];
+                for (c in f.featuredata.mContour) {
+                    pt = f.featuredata.mContour[c];
                     SS.p.vertex(pt[0], pt[1]);
                 }
                 SS.p.endShape();
@@ -231,9 +226,14 @@ SS.inspectionhandlers = {
             SS.Inspection.preview("blob", { threshval: thresh });            
         },
         manipulate_onclick: function() {
+            //clean out the preview mode
+            camera = SS.framedata[0]['camera'];
+            insp = SS.preview_data[camera].inspection;
+            SS.preview_data[camera] = false;
             
-            
-            
+            SS.Inspection.add("blob", insp.parameters);
+            SS.resetAction();
+            SS.waitForClick();
         }
     }
 }
@@ -273,7 +273,7 @@ SS.launchRadial = function(animate) {
 }
 
 
-#the draw function is the loop() it can be enabled and disabled with SS.p.noLoop()
+//the draw function is the loop() it can be enabled and disabled with SS.p.noLoop()
 SS.p.draw = function() {
   SS.setScale();
   SS.p.background(0, 0);     
@@ -305,7 +305,25 @@ SS.p.draw = function() {
  }
 
 
-#TODO PUT ALL THESE in a "STATEMACHINE" object that gets backed up to redis
+//TODO PUT ALL THESE in a "STATEMACHINE" object that gets backed up to redis
+//import some context from webdis, 
+SimpleSeer.cameras = SimpleSeer.getJSON('cameras');
+SimpleSeer.previews_running = {};
+SimpleSeer.preview_data = {}
+for (c in SS.cameras) {
+    SimpleSeer.previews_running[c] = false;
+    SimpleSeer.previews_running[c] = false;
+}
+
+SimpleSeer.framecount = SimpleSeer.getValue('framecount');
+SimpleSeer.framedata = [SimpleSeer.getJSON('currentframedata_0')];
+SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
+SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
+
+SimpleSeer.radialAnimating = false;
+
+
+
 SS.wasPressed = false;
 
 
@@ -318,11 +336,7 @@ SimpleSeer.waitForClick = function() {
 SimpleSeer.resetAction = function() {
     SS.action = { startpx: [0,0], task: "" };
 }
-#
 
-SimpleSeer.previews_running = {
-    
-}
 
 
 //initalize the display and the resize function

@@ -90,15 +90,13 @@ class FrameFeature(SimpleEmbeddedDoc):
         #handle all the simpleCV featuredata
         ret["featuredata"] = {}
         for k in self.featuredata.keys():
-            v = self.featuredata[k]
+            v = getattr(self.feature, k)
             if k in self.featuredata_mask:
                 continue
             elif isinstance(v, SimpleCV.Image):
                 ret["featuredata"][k] = v.applyLayers().getBitmap().tostring().encode("base64")
             elif isinstance(v, cv.iplimage):
                 ret["featuredata"][k] = v.tostring().encode("base64")
-            elif hasattr(v, "__getstate__"):
-                ret["featuredata"][k] = v.__getstate__()
             else:
                 ret["featuredata"][k] = v
         
