@@ -4,51 +4,20 @@
 
 SS = SimpleSeer = new Object();
 
-//initalize the display and the resize function
-$(function(){
-
-    var stretcher = $('#maindisplay > img'),
-        element = stretcher[0],
-        currentSize = { width: 0, height: 0 },
-        $document = $(document);
-
-    $(window).resize(function () {
-        stretcher.width(1).height('auto');
-        var w = $document.width();
-        var h = $document.height();
-
-        if (currentSize.width != w || currentSize.height != h) {
-            stretcher.width(w).height('auto');
-            if (h < element.height) {
-                stretcher.width('auto').height(h);
-            }
-            currentSize.width = element.width;
-            currentSize.height = element.height;
-            
-        }
-        $('#display').height = stretcher.height();
-        $('#display').width = stretcher.width();
-        SS.p.size(stretcher.width(), stretcher.height());
-        SS.xscalefactor = stretcher.width() /  SS.framedata[0].width
-        SS.yscalefactor = stretcher.height() / SS.framedata[0].height
-    })
-
-    $(window).load(function () {
-        $(this).trigger('resize');
-    });
-
-});
 
 
-SimpleSeer.waitForClick = function() {
-    if (SS.mouseDown) {
-        SS.mouseWait = true;
-    }
+//math helper functions
+SimpleSeer.euclidean = function(pt1, pt2) {
+    return Math.sqrt(Math.pow(pt1[0] - pt2[0], 2) + Math.pow(pt1[1] - pt2[1], 2));
 }
 
-SimpleSeer.resetAction = function() {
-    SS.action = { startpx: [0,0], task: "" };
+SimpleSeer.clamp = function(val, min, max) {
+    return Math.max(min, Math.min(max, val))
 }
+
+
+
+
 
 
 
@@ -67,7 +36,11 @@ SimpleSeer.getJSON = function(key) {
 };
 
 
-SimpleSeer.addInspection = function(method, parameters) {
+
+#functions to deal with adding/previewing/updating/deleting models
+SimpleSeer.Inspection = {}
+
+SimpleSeer.Inspection.add = function(method, parameters) {
     inspection_names = {};
     for (i in SS.inspections) {
         inspection_names[i.name] = 1;
@@ -88,16 +61,22 @@ SimpleSeer.addInspection = function(method, parameters) {
             SS.inspections = data; });
 };
 
-SimpleSeer.previewInspection = function (method, parameters) {
+SimpleSeer.Inspection.preview = function (method, parameters) {
     camera = SS.framedata[0]['camera'];
     
+    if (SS.previews_running[camera]) {
+        return; //if there's already a preview running on this screen, wait
+    }
+    
+    SS.previews_running[camera] = True;
     $.post("/inspection_preview", { name: "preview", camera: camera, method: method, parameters: JSON.stringify(parameters)},
         function(data) {   
             SS.inspectionhandlers[method].render_features(data["features"], data["inspection"]);
+            SS.previews_running[camera] = False;
             });
 }
 
-SimpleSeer.renderInspections = function() {
+SimpleSeer.Inspection.render = function() {
     for (i in SS.inspections) {
         insp = SS.inspections[i]
         if (insp["method"] in SS.inspectionhandlers) {
@@ -107,26 +86,23 @@ SimpleSeer.renderInspections = function() {
 };
 
 
-SimpleSeer.renderFeatures = function() {
+SimpleSeer.Feature.render = function() {
     
     
     
 }
 
-
-//math helper functions
-SimpleSeer.euclidean = function(pt1, pt2) {
-    return Math.sqrt(Math.pow(pt1[0] - pt2[0], 2) + Math.pow(pt1[1] - pt2[1], 2));
-}
-
-SimpleSeer.clamp = function(val, min, max) {
-    return Math.max(min, Math.min(max, val))
+SimpleSeer.Measurement.render = function() {
+    
 }
 
 
-
-//import some context from webdis
+//import some context from webdis, 
 SimpleSeer.cameras = SimpleSeer.getJSON('cameras');
+for (c in SS.cameras) {
+    SimpleSeer.previews_running[c] = False;
+}
+
 SimpleSeer.framecount = SimpleSeer.getValue('framecount');
 SimpleSeer.framedata = [SimpleSeer.getJSON('currentframedata_0')];
 SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
@@ -215,7 +191,7 @@ SS.inspectionhandlers = {
                 starty = SS.mouseY;
             }
             
-            SS.addInspection("region", {x: startx, y: starty, w: w, h: h});
+            SS.Inspection.add("region", {x: startx, y: starty, w: w, h: h});
             SS.resetAction();
             SS.waitForClick();
         }
@@ -252,7 +228,7 @@ SS.inspectionhandlers = {
             
             thresh = SS.clamp(128 + diff, 1, 254);
             
-            SS.previewInspection("blob", { threshval: thresh });            
+            SS.Inspection.preview("blob", { threshval: thresh });            
         },
         manipulate_onclick: function() {
             
@@ -262,7 +238,7 @@ SS.inspectionhandlers = {
     }
 }
 
-
+//interface helpers, functions to control aspects of interface state
 SS.launchRadial = function(animate) {
     
     if (SS.radialAnimating) {
@@ -296,7 +272,8 @@ SS.launchRadial = function(animate) {
     
 }
 
-SS.wasPressed = false;
+
+#the draw function is the loop() it can be enabled and disabled with SS.p.noLoop()
 SS.p.draw = function() {
   SS.setScale();
   SS.p.background(0, 0);     
@@ -314,7 +291,7 @@ SS.p.draw = function() {
           //or manipulate onclick
       }
   } else {
-      SS.renderInspections();  
+      SS.Inspection.render();  
       if (SS.mouseDown && !SS.mouseWait) {
           if (SS.wasPressed) {
             SS.launchRadial();
@@ -328,8 +305,63 @@ SS.p.draw = function() {
  }
 
 
+#TODO PUT ALL THESE in a "STATEMACHINE" object that gets backed up to redis
+SS.wasPressed = false;
 
-//this executes at document.ready
+
+SimpleSeer.waitForClick = function() {
+    if (SS.mouseDown) {
+        SS.mouseWait = true;
+    }
+}
+
+SimpleSeer.resetAction = function() {
+    SS.action = { startpx: [0,0], task: "" };
+}
+#
+
+SimpleSeer.previews_running = {
+    
+}
+
+
+//initalize the display and the resize function
+//TODO add any other independent behaviors
+$(function(){
+
+    var stretcher = $('#maindisplay > img'),
+        element = stretcher[0],
+        currentSize = { width: 0, height: 0 },
+        $document = $(document);
+
+    $(window).resize(function () {
+        stretcher.width(1).height('auto');
+        var w = $document.width();
+        var h = $document.height();
+
+        if (currentSize.width != w || currentSize.height != h) {
+            stretcher.width(w).height('auto');
+            if (h < element.height) {
+                stretcher.width('auto').height(h);
+            }
+            currentSize.width = element.width;
+            currentSize.height = element.height;
+            
+        }
+        $('#display').height = stretcher.height();
+        $('#display').width = stretcher.width();
+        SS.p.size(stretcher.width(), stretcher.height());
+        SS.xscalefactor = stretcher.width() /  SS.framedata[0].width
+        SS.yscalefactor = stretcher.height() / SS.framedata[0].height
+    })
+
+    $(window).load(function () {
+        $(this).trigger('resize');
+    });
+
+});
+
+//Setup executes when the display is ready to be initialized
 SimpleSeer.setup = function(){
     SS.p.setup();
     SS.p.loop();
@@ -349,10 +381,9 @@ SimpleSeer.setup = function(){
     SS.p.mouseX = e.pageX - $("#display").offset()["left"];
     SS.p.mouseY = e.pageY - $("#display").offset()["top"];
    });
-/*end processing helpers*/
 
     
-
+   //initialize the radial menu
    $("#radial_container").radmenu({
         listClass: 'radiallist', // the list class to look within for items
         itemClass: 'radialitem', // the items - NOTE: the HTML inside the item is copied into the menu item
@@ -373,6 +404,5 @@ SimpleSeer.setup = function(){
         stop: function(event, ui) { SS.action.task = ""; }    
    });
 
-
-
 }
+
