@@ -94,12 +94,11 @@ class SimpleEmbeddedDoc(mongoengine.EmbeddedDocument):
     _jsonignore = [None]
     
     
-    
+#note these handlers are not ok for "picklable" stuff
 class BSONObjectIDHandler(jsonpickle.handlers.BaseHandler):
     def flatten(self, obj, data):
-        data['id'] = str(obj)
-        return data
-
+        return str(obj)
+        
 class MongoEngineBaseListHandler(jsonpickle.handlers.BaseHandler):
     def flatten(self, obj, data):
         #data["values"] = list(obj)

@@ -143,6 +143,28 @@ SS.inspectionhandlers = {
             SS.p.fill(0, 128, 0, 20);
             p = insp.parameters;
             SS.p.rect(p.x, p.y, p.w, p.h);
+            
+            id = insp.id;
+            
+            if (!$("#inspection_" + id).length){
+                css_attr  = {
+                    top: Math.round(p.y * SS.xscalefactor).toString() + "px",
+                    left: Math.round(p.x * SS.yscalefactor),
+                    width: Math.round(p.w * SS.xscalefactor),
+                    height: Math.round(p.h * SS.yscalefactor)
+                };
+
+                $("<div/>", {
+                    id: "inspection_" + id,
+                    class: "stretchee"
+                }).appendTo('#maindisplay').css(css_attr).append(
+                    $("<div/>", {
+                        id: "manage_" + id,
+                        class: "inspectionmanage", 
+                    }).append('<a class="inspectionmanage_info" href="">(info)</a> <a class="inspectionmanage_zoom" href="">(zoom)</a> <a class="inspectionmanage_delete" href="">X</a>'));
+            }
+        
+            
         },
         render_features: function(feats, insp) {
             SS.p.fill(255, 20);
@@ -319,7 +341,7 @@ SimpleSeer.framecount = SimpleSeer.getValue('framecount');
 SimpleSeer.framedata = [SimpleSeer.getJSON('currentframedata_0')];
 SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
 SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
-SimpleSeer.histogram = SimpleSeer.getJSON('histogram');
+SimpleSeer.histogram = SimpleSeer.getJSON('histogram_0');
 SimpleSeer.radialAnimating = false;
 
 
@@ -367,6 +389,7 @@ $(function(){
         SS.p.size(stretcher.width(), stretcher.height());
         SS.xscalefactor = stretcher.width() /  SS.framedata[0].width
         SS.yscalefactor = stretcher.height() / SS.framedata[0].height
+        $('.stretchee').remove();
     })
 
     $(window).load(function () {

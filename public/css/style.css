@@ -1029,3 +1029,24 @@ transform:rotate(45deg);
    top: -10px;
    left: 0px;
 }
+
+.stretchee {
+    opacity: 0%;
+    position: absolute;
+    z-index: 80;
+}
+
+.inspectionmanage {
+    background: #000;
+    z-index: 81;
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    color: #FFF;
+}
+
+.inspectionmanage a {
+    color: #FFF;
+    text-decoration: none;
+    
+}

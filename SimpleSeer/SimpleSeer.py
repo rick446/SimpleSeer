@@ -135,7 +135,7 @@ class SimpleSeer(threading.Thread):
             jpgdata = StringIO()
             f.image.applyLayers().getPIL().save(jpgdata, "jpeg", quality = 95)
             Session().redis.setraw("currentframe_%d" % count, jpgdata.getvalue())
-            Session().redis.set("histogram_%d" % count, f.image.histogram(20))
+            Session().redis.set("histogram_%d" % count, f.image.histogram(50))
             Session().redis.set("currentframedata_%d" % count, f)
             count = count + 1
     
