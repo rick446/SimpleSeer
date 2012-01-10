@@ -93,7 +93,7 @@ SimpleSeer.Inspection.render = function() {
 
 SimpleSeer.Feature = {};
 SimpleSeer.Feature.render = function() {
-    
+    //for (i in 
     
     
 }
@@ -223,7 +223,7 @@ SS.inspectionhandlers = {
             
             thresh = SS.clamp(128 + diff, 1, 254);
             
-            SS.Inspection.preview("blob", { threshval: thresh });            
+            SS.Inspection.preview("blob", { threshval: thresh, minsize: 1000 });            
         },
         manipulate_onclick: function() {
             //clean out the preview mode

@@ -65,7 +65,8 @@ class SimpleSeer(threading.Thread):
             self.shell_thread = Shell.ShellThread()
             self.shell_thread.start()
 
-
+        self.capture()
+        self.update()
         self.web_interface = Web()
 
 
