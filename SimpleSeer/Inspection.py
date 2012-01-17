@@ -5,7 +5,7 @@ from FrameFeature import FrameFeature
 
 class Region(SimpleCV.Feature):
     
-    def __init__(self, startx, starty, width, height):
+    def __init__(self, image, startx, starty, width, height):
         
         point = (startx, starty)
         self.x = point[0] + width / 2
@@ -14,6 +14,12 @@ class Region(SimpleCV.Feature):
             (point[0] + width, point[1]),
             (point[0] + width, point[1] + height),
             (point[0], point[1] + height)]
+            
+        self.image = image
+    
+    def meanColor(self):
+        return self.crop().meanColor()
+
 
 class Inspection(SimpleDoc):
     """
@@ -134,7 +140,7 @@ class Inspection(SimpleDoc):
             return []
         
         ff = FrameFeature()
-        ff.setFeature(Region(params['x'], params['y'], params['w'], params['h']))
+        ff.setFeature(Region(image, params['x'], params['y'], params['w'], params['h']))
         return [ff]
         
     def blob(self, image):

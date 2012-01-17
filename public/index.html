@@ -20,14 +20,14 @@
     <script src="js/dialog.js"></script>
     <script src="js/dash.js"></script>
     <script src="js/progress.js"></script>    
-    <script src="js/processing.min.js"></script> 
+    <script src="js/processing.min.js"></script>
     
 </head>
 <body id="index">
 <div class="tour" id="message">
     <section><h2>This is a message</h2><a href="" class="btn tour">Next Step</a></section>
 </div>
-    <div id="maindisplay"><img src="/GET/currentframe_0.jpg" /><canvas id="display"></canvas>
+    <div id="maindisplay"><div id="zoomer"><img src="/GET/currentframe_0.jpg" /><canvas id="display"></canvas></div>
    <div id="radial_container">
     <ul class="radiallist">
       <li class="radialitem"><a id="radial_region" href="" title="Add"><b class="ico crop"></b></a></li>
@@ -38,6 +38,7 @@
       <li class="radialitem"><a id="radial_gear" href="" title="Add"><b class="ico gear"></b></a></li>
     </ul>
   </div>
+    </div>
     <header>
         <hgroup class="clearfix">
             <h1 class="hidden"><a href="index.html">Ingenuitas</a></h1>
@@ -82,9 +83,11 @@
     </footer> 
 </body>
 
-<script src="js/simpleseer.js"></script>    
+<script src="js/simpleseer.js"></script>   
+    <script src="js/zoom.js"></script>  
+ 
 <script type="text/javascript">
-  
+  $(".tour").hide();
   $(document).ready( SimpleSeer.setup );
 </script>
 </html>

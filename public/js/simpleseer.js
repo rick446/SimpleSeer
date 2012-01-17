@@ -177,15 +177,15 @@ SS.inspectionhandlers = {
                     height: Math.round(p.h * SS.yscalefactor)
                 };
 
-                $("<div/>", {
+                inspdiv = $("<div/>", {
                     id: "inspection_" + id,
                     class: "stretchee object"
-                }).appendTo('#maindisplay').css(css_attr).append(
+                }).appendTo('#zoomer').css(css_attr).append(
                     $("<nav>", {
                         id: "manage_" + id,
                         class: "hidden", 
-                    }).append('<a href="" title="Zoom"><b class="ico zoom-in"></b></a>'
-                    ).append('<a href="" title="Zoom"><b class="ico zoom-out"></b></a>'
+                    }).append('<a class="inspection_zoomin" href="" title="Zoom"><b class="ico zoom-in"></b></a>'
+                    ).append('<a class="inspection_zoomout" href="" title="Zoom"><b class="ico zoom-out"></b></a>'
                     ).append('<a href="" title="Info"><b class="ico info"></b></a>'
                     ).append('<a class="inspection_remove" href="" title="Close"><b class="ico close"></b></a>'));
             
@@ -199,15 +199,27 @@ SS.inspectionhandlers = {
                     $(this).find('nav').addClass('hidden');
                 });
                 
-                $("#inspection_" + id + " > nav").hover( function() {
+                $("#inspection_" + id).find("nav").hover( function() {
                     SS.mouseBlock = true;
                 }, function() {
                     SS.mouseBlock = false;
                 });
                 
                 
-                $(".inspection_remove").click(function() {
+                $("#inspection_" + id).find(".inspection_remove").click(function() {
                     SS.Inspection.remove(insp);
+                    SS.mouseBlock = false;
+                    return false;
+                });
+                
+                $("#inspection_" + id).find(".inspection_zoomin").click(function() {
+                    SS.zoomer.in( { element: $("#inspection_" + id)[0] } );
+                    SS.mouseBlock = false;
+                    return false;
+                });
+                
+                $("#inspection_" + id).find(".inspection_zoomout").click(function() {
+                    SS.zoomer.out();
                     SS.mouseBlock = false;
                     return false;
                 });
@@ -417,7 +429,7 @@ SimpleSeer.resetAction = function() {
 //TODO add any other independent behaviors
 $(function(){
 
-    var stretcher = $('#maindisplay > img'),
+    var stretcher = $('#maindisplay').find('img'),
         element = stretcher[0],
         currentSize = { width: 0, height: 0 },
         $document = $(document);
@@ -454,6 +466,7 @@ $(function(){
 SimpleSeer.setup = function(){
     SS.p.setup();
     SS.p.loop();
+    SS.zoomer = zoom($("#zoomer")[0]);
 
 
     SS.mouseBlock = false;

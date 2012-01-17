@@ -52,11 +52,14 @@
  * @author Hakim El Hattab | http://hakim.se
  * @version 0.1
  */
-var zoom = (function(){
+var zoom = function(zoomer){
 
 	// The current zoom level (scale)
 	var level = 1;
 	
+    var offsetx = 0, offsety = 0;
+    
+    
 	// The current mouse position, used for panning
 	var mouseX = 0,
 		mouseY = 0;
@@ -66,19 +69,19 @@ var zoom = (function(){
 		panUpdateInterval = -1;
 
 	// Check for transform support so that we can fallback otherwise
-	var supportsTransforms =  document.body.style.transform !== undefined ||
-                    		  document.body.style.OTransform !== undefined ||
-                    		  document.body.style.msTransform !== undefined ||
-                    		  document.body.style.MozTransform !== undefined ||
-                    		  document.body.style.WebkitTransform !== undefined;
+	var supportsTransforms =  zoomer.style.transform !== undefined ||
+                    		  zoomer.style.OTransform !== undefined ||
+                    		  zoomer.style.msTransform !== undefined ||
+                    		  zoomer.style.MozTransform !== undefined ||
+                    		  zoomer.style.WebkitTransform !== undefined;
     
 	if( supportsTransforms ) {
 		// The easing that will be applied when we zoom in/out
-		document.body.style.transition = 'transform 0.8s ease';
-		document.body.style.OTransition = '-o-transform 0.8s ease';
-		document.body.style.msTransition = '-ms-transform 0.8s ease';
-		document.body.style.MozTransition = '-moz-transform 0.8s ease';
-		document.body.style.WebkitTransition = '-webkit-transform 0.8s ease';
+		zoomer.style.transition = 'transform 0.8s ease';
+		zoomer.style.OTransition = '-o-transform 0.8s ease';
+		zoomer.style.msTransition = '-ms-transform 0.8s ease';
+		zoomer.style.MozTransition = '-moz-transform 0.8s ease';
+		zoomer.style.WebkitTransition = '-webkit-transform 0.8s ease';
 	}
 	
 	// Zoom out if the user hits escape
@@ -112,40 +115,42 @@ var zoom = (function(){
 			var origin = pageOffsetX +'px '+ pageOffsetY +'px',
 				transform = 'translate('+ -elementOffsetX +'px,'+ -elementOffsetY +'px) scale('+ scale +')';
 			
-			document.body.style.transformOrigin = origin;
-			document.body.style.OTransformOrigin = origin;
-			document.body.style.msTransformOrigin = origin;
-			document.body.style.MozTransformOrigin = origin;
-			document.body.style.WebkitTransformOrigin = origin;
+			zoomer.style.transformOrigin = origin;
+			zoomer.style.OTransformOrigin = origin;
+			zoomer.style.msTransformOrigin = origin;
+			zoomer.style.MozTransformOrigin = origin;
+			zoomer.style.WebkitTransformOrigin = origin;
 
-			document.body.style.transform = transform;
-			document.body.style.OTransform = transform;
-			document.body.style.msTransform = transform;
-			document.body.style.MozTransform = transform;
-			document.body.style.WebkitTransform = transform;
+			zoomer.style.transform = transform;
+			zoomer.style.OTransform = transform;
+			zoomer.style.msTransform = transform;
+			zoomer.style.MozTransform = transform;
+			zoomer.style.WebkitTransform = transform;
 		}
 		else {
 			// Reset all values
 			if( scale === 1 ) {
-				document.body.style.position = '';
-				document.body.style.left = '';
-				document.body.style.top = '';
-				document.body.style.width = '';
-				document.body.style.height = '';
-				document.body.style.zoom = '';
+				zoomer.style.position = '';
+				zoomer.style.left = '';
+				zoomer.style.top = '';
+				zoomer.style.width = '';
+				zoomer.style.height = '';
+				zoomer.style.zoom = '';
 			}
 			// Apply scale
 			else {
-				document.body.style.position = 'relative';
-				document.body.style.left = ( - ( pageOffsetX + elementOffsetX ) / scale ) + 'px';
-				document.body.style.top = ( - ( pageOffsetY + elementOffsetY ) / scale ) + 'px';
-				document.body.style.width = ( scale * 100 ) + '%';
-				document.body.style.height = ( scale * 100 ) + '%';
-				document.body.style.zoom = scale;
+				zoomer.style.position = 'relative';
+				zoomer.style.left = ( - ( pageOffsetX + elementOffsetX ) / scale ) + 'px';
+				zoomer.style.top = ( - ( pageOffsetY + elementOffsetY ) / scale ) + 'px';
+				zoomer.style.width = ( scale * 100 ) + '%';
+				zoomer.style.height = ( scale * 100 ) + '%';
+				zoomer.style.zoom = scale;
 			}
 		}
 
 		level = scale;
+        offsetx = elementOffsetX;
+        offsety = -elementOffsetY;
 	}
 
 	/**
@@ -257,8 +262,12 @@ var zoom = (function(){
 		
 		'zoomLevel': function() {
 			return level;
-		}
+		},
+        
+        'offset': function() {
+            return [offsetx, offsety];
+        }
 	}
 	
-})();
+};
 
