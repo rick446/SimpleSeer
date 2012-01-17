@@ -91,6 +91,21 @@ SimpleSeer.Inspection.render = function() {
     }
 };
 
+SimpleSeer.Inspection.remove = function(insp) {
+    if (insp["method"] in SS.inspectionhandlers && "remove" in SS.inspectionhandlers[insp["method"]]) {
+        SS.inspectionhandlers[insp["method"]].remove(insp);
+    } 
+    
+    SS.action.task = "inspection_remove";
+    
+    $.post("/inspection_remove", { id: insp.id }, function(data) {
+        SS.inspections = data;
+        SS.resetAction();           
+    });
+};
+
+
+
 SimpleSeer.Feature = {};
 SimpleSeer.Feature.render = function() {
     //for (i in 
@@ -140,9 +155,7 @@ SS.setScale = function() {
 SS.inspectionhandlers = {
     
     default: {
-        delete: function(insp) {
-            SS.Inspection.delete(insp);
-        }
+
     },
     
     
@@ -174,7 +187,7 @@ SS.inspectionhandlers = {
                     }).append('<a href="" title="Zoom"><b class="ico zoom-in"></b></a>'
                     ).append('<a href="" title="Zoom"><b class="ico zoom-out"></b></a>'
                     ).append('<a href="" title="Info"><b class="ico info"></b></a>'
-                    ).append('<a href="" title="Close"><b class="ico close"></b></a>'));
+                    ).append('<a class="inspection_remove" href="" title="Close"><b class="ico close"></b></a>'));
             
         
                 $("#inspection_" + id).hover(function(){    /* shows the object nav bar */
@@ -185,10 +198,17 @@ SS.inspectionhandlers = {
                     $(this).find('nav').addClass('hidden');
                 });
                 
-                $(".close").click(function() {
-                    SS.Inspection.delete(insp);
+                $(".inspection_remove").click(function() {
+                    SS.Inspection.remove(insp);
+                    
+                    return false;
                 });
             }
+        },
+        
+        remove: function(insp) {
+            $("#inspection_" + insp.id).remove();
+            SS.waitForClick();
         },
         render_features: function(feats, insp) {
             SS.p.fill(255, 20);
