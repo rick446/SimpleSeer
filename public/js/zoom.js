@@ -150,7 +150,7 @@ var zoom = function(zoomer){
 
 		level = scale;
         offsetx = elementOffsetX;
-        offsety = -elementOffsetY;
+        offsety = elementOffsetY;
 	}
 
 	/**
