@@ -3,13 +3,17 @@ $(document).ready(function() {
         var trig, purl;
         trig = $(this).attr('title');
         purl = $(this).attr('href');
+        info = $(this).next('.hidden').html();
         $('.active').removeClass('active');
         $('.dash, .dialog').remove();
         $(this).addClass('active');
-        $(this).parent().before('<div class="dash"><div class="content clearfix"></div></div>').show( function () {
-            $('.dash .content').load(purl + ' .maincontent', function() {
+        $(this).parent().parent().after('<div class="dash"><div class="content clearfix"></div></div>').show( function () {
+            if (info) {$('.content').prepend(info);$('.content').find('textarea').focus();}
+            else {
+              $('.dash .content').load(purl + ' .maincontent', function() {
                 $.ajax({ url: '/js/modernizr2.js', dataType: 'script', cache: true});
-            });
+              });
+            }
             $('.dash').prepend('<h1>'+trig+'</h1>');
             $('.dash').prepend('<div class="close">X</div>');
             $('.close, input[value="Cancel"]').bind('click', function() {

@@ -12,9 +12,4 @@ $(document).ready(function() {
         $(this).next('.hidden').toggleClass('hidden');
         e.preventDefault();
     });
-    $('.object').hover(function(){    /* shows the object nav bar */
-        $(this).find('.hidden').removeClass('hidden');
-    },
-    function(){
-        $(this).find('nav').addClass('hidden');
-    });
+});

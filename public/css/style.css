@@ -461,8 +461,8 @@ section {height: 100%;}
 }
 .object nav {
   position: absolute; 
-  top: 0; 
-  right: -42px;
+  top: -1px; 
+  right: -46px;
   z-index: 3;
   min-width: 26px;
   -moz-border-radius: 0 4px 4px 0;
@@ -504,7 +504,7 @@ margin: 4px 0;
   top: 0;
   left: 48px;
 }
-.object nav.expand {right: -42px;}
+.object nav.expand {right: -45px;}
 
 .emboss {padding: 20px;}
 article {

@@ -138,9 +138,19 @@ SS.setScale = function() {
 
 //these get registered to with each handler
 SS.inspectionhandlers = {
+    
+    default: {
+        delete: function(insp) {
+            SS.Inspection.delete(insp);
+        }
+    },
+    
+    
+    
+    
     region: {
         render: function(insp) {
-            SS.p.fill(0, 128, 0, 20);
+            SS.p.fill(255, 255, 255, 20);
             p = insp.parameters;
             SS.p.rect(p.x, p.y, p.w, p.h);
             
@@ -156,15 +166,29 @@ SS.inspectionhandlers = {
 
                 $("<div/>", {
                     id: "inspection_" + id,
-                    class: "stretchee"
+                    class: "stretchee object"
                 }).appendTo('#maindisplay').css(css_attr).append(
-                    $("<div/>", {
+                    $("<nav>", {
                         id: "manage_" + id,
-                        class: "inspectionmanage", 
-                    }).append('<a class="inspectionmanage_info" href="">(info)</a> <a class="inspectionmanage_zoom" href="">(zoom)</a> <a class="inspectionmanage_delete" href="">X</a>'));
-            }
-        
+                        class: "hidden", 
+                    }).append('<a href="" title="Zoom"><b class="ico zoom-in"></b></a>'
+                    ).append('<a href="" title="Zoom"><b class="ico zoom-out"></b></a>'
+                    ).append('<a href="" title="Info"><b class="ico info"></b></a>'
+                    ).append('<a href="" title="Close"><b class="ico close"></b></a>'));
             
+        
+                $("#inspection_" + id).hover(function(){    /* shows the object nav bar */
+                    $(this).css({ "z-index": 99 });
+                    $(this).find('.hidden').removeClass('hidden');
+                }, function(){
+                    $(this).css({ "z-index": 80 });
+                    $(this).find('nav').addClass('hidden');
+                });
+                
+                $(".close").click(function() {
+                    SS.Inspection.delete(insp);
+                });
+            }
         },
         render_features: function(feats, insp) {
             SS.p.fill(255, 20);
