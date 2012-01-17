@@ -214,8 +214,8 @@ SS.inspectionhandlers = {
         }
     },
     blob: {
-        render: function () {
             
+        render: function () {
             
             
         },
@@ -442,6 +442,22 @@ SimpleSeer.setup = function(){
    });
 
 }
+
+
+/*
+$(document).ready(function() {
+    $('.info').bind('click', function() {
+        $(this).parent().parent().parent().find('.detail').toggle();
+        $(this).parent().parent().addClass('expand');
+        return false;
+    });
+});
+
+SS.message = 
+*/
+
+
+
 
 
 //histogram

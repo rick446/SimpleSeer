@@ -25,5 +25,4 @@ $(document).ready(function() {
         purl.abort();
         $(this).unbind('click');
     });
-    $('nav').draggable();
 });

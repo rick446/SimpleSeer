@@ -16,6 +16,7 @@
     <script src="js/jQuery.radmenu.min.js"></script> 
     <script src="js/global.js"></script>
     <script src="js/modal.js"></script>
+    <script src="js/info.js"></script>
     <script src="js/dialog.js"></script>
     <script src="js/dash.js"></script>
     <script src="js/progress.js"></script>    
@@ -23,15 +24,18 @@
     
 </head>
 <body id="index">
+<div class="tour" id="message">
+    <section><h2>Step 1 - Hover over the image to get image specific items.</h2><a href="" class="btn tour">Next Step</a></section>
+</div>
     <div id="maindisplay"><img src="/GET/currentframe_0.jpg" /><canvas id="display"></canvas>
    <div id="radial_container">
     <ul class="radiallist">
-      <li class="radialitem"><a id="radial_region" href="" title="Add"><b class="radico crop"></b></a></li>
-      <li class="radialitem"><a id="radial_blob" href="" title="Add"><b class="radico contrast"></b></a></li>
-      <li class="radialitem"><a id="radial_bright" href="" title="Add"><b class="radico bright"></b></a></li>
-      <li class="radialitem"><a id="radial_chat" href="" title="Add"><b class="radico chat"></b></a></li>
-      <li class="radialitem"><a id="radial_sliders" href="" title="Add"><b class="radico sliders"></b></a></li>
-      <li class="radialitem"><a id="radial_gear" href="" title="Add"><b class="radico gear"></b></a></li>
+      <li class="radialitem"><a id="radial_region" href="" title="Add"><b class="ico crop"></b></a></li>
+      <li class="radialitem"><a id="radial_blob" href="" title="Add"><b class="ico contrast"></b></a></li>
+      <li class="radialitem"><a id="radial_bright" href="" title="Add"><b class="ico bright"></b></a></li>
+      <li class="radialitem"><a id="radial_chat" href="" title="Add"><b class="ico chat"></b></a></li>
+      <li class="radialitem"><a id="radial_sliders" href="" title="Add"><b class="ico sliders"></b></a></li>
+      <li class="radialitem"><a id="radial_gear" href="" title="Add"><b class="ico gear"></b></a></li>
     </ul>
   </div>
     <header>
@@ -39,18 +43,35 @@
             <h1 class="hidden"><a href="index.html">Ingenuitas</a></h1>
         </hgroup>
         <nav>
+            <h1><input type="text" value="Item Title"></span></h1>
             <ul>
-                <li><a href="options.html" title="index" class="options"><b class="ico home" data-icon="A"></b> <span>Action 1</span></a></li>
-                <!--- <li><a href="modal.html" title="index" class="trig"><b class="ico home" data-icon="y"></b> <span>Action 2</span></a></li>
-                <li><a href="products.html" title="index" class="info"><b class="ico home" data-icon="a"></b> <span>Action 3</span></a><div class="hidden">Featured things can go here</div></li>
-                <li><a href="products.html" title="index" class="info"><b class="ico home" data-icon="b"></b> <span>Action 4</span></a><div class="hidden">List items as well <ul><li>item 1</li><li>item 2</li></ul></div></li> -->
-                <li><span><canvas id="histogram"></canvas></span></li>
+                 <li>
+                  <a href="" title="Fail" class="options btn fail on"></a>
+                </li>
+                <li>
+                  <a href="" title="Warning" class="options btn warn off"></a>
+                </li>
+                <li>
+                  <a href="" title="Good" class="options btn good off"></a>
+                </li>
+                <li>
+                  <a href="" title="Histogram" class="options info btn"><span><canvas id="histogram"></canvas></span
+></a>
+                  <div class="hidden">
+                    <p>This will have more options and detail</p>
+                    <p>Will expand to a max height of 466px</p>
+                  </div>
+                </li>
             </ul>
             
             <ul class="btngrp">
-                <li><a href="modal.html" title="Add" class="trig"><b class="ico add" data-icon="+"></b> <span>Add</span></a></li>
-                <li><a href="modal.html" title="Remove" class="trig"><b class="ico remove" data-icon="-"></b> <span>Remove</span></a></li>
-                <li><a href="modal.html" title="Close" class="trig"><b class="ico close" data-icon="*"></b> <span>Close</span></a></li>
+                <li><a href="" title="Previous Frame" class="ico prev"></a></li>
+                <li><a href="" title="Next Frame" class="ico next"></a></li>
+                <li><a href="options.html" title="Options" class="options ico gear"></a></li>
+                <li>
+                  <a href="" title="Console" class="options info ico code"></a>
+                  <div class="hidden"><textarea></textarea></div>
+                </li>
             </ul>
         </nav>        
     </header>
@@ -60,7 +81,6 @@
     <footer>
     </footer> 
 </body>
-<script src="js/zoom.js"></script>
 
 <script src="js/simpleseer.js"></script>    
 <script type="text/javascript">
