@@ -190,6 +190,7 @@ SS.inspectionhandlers = {
                     ).append('<a class="inspection_remove" href="" title="Close"><b class="ico close"></b></a>'));
             
         
+                
                 $("#inspection_" + id).hover(function(){    /* shows the object nav bar */
                     $(this).css({ "z-index": 99 });
                     $(this).find('.hidden').removeClass('hidden');
@@ -198,9 +199,16 @@ SS.inspectionhandlers = {
                     $(this).find('nav').addClass('hidden');
                 });
                 
+                $("#inspection_" + id + " > nav").hover( function() {
+                    SS.mouseBlock = true;
+                }, function() {
+                    SS.mouseBlock = false;
+                });
+                
+                
                 $(".inspection_remove").click(function() {
                     SS.Inspection.remove(insp);
-                    
+                    SS.mouseBlock = false;
                     return false;
                 });
             }
@@ -447,18 +455,31 @@ SimpleSeer.setup = function(){
     SS.p.setup();
     SS.p.loop();
 
+
+    SS.mouseBlock = false;
 /* these functions just give us a little extra context for when processing doesn't pick up events*/
    $("#maindisplay").mousedown( function(e) {
+      if (SS.mouseBlock) {
+        return;
+      } 
       SS.mouseDown = true;
    });
 
    $("#maindisplay").mouseup( function(e) {
+      if (SS.mouseBlock) {
+        return;
+      } 
+      
       SS.mouseDown = false;
       SS.mouseWait = false; 
    });
 
    $("#maindisplay").mousemove(function(e) {
   //SS.setScale();
+    if (SS.mouseBlock) {
+        return;
+    } 
+    
     SS.p.mouseX = e.pageX - $("#display").offset()["left"];
     SS.p.mouseY = e.pageY - $("#display").offset()["top"];
    });
