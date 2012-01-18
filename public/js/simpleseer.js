@@ -197,7 +197,7 @@ SS.inspectionhandlers = {
                 }).appendTo('#zoomer').css(css_attr).append(
                     $("<nav>", {
                         id: "manage_" + id,
-                        class: "hidden", 
+                        style: "display: none", 
                     }).append('<a class="inspection_zoomin" href="" title="Zoom"><b class="ico zoom-in"></b></a>'
                     ).append('<a class="inspection_zoomout" href="" title="Zoom"><b class="ico zoom-out"></b></a>'
                     ).append('<a href="" title="Info"><b class="ico info"></b></a>'
@@ -205,13 +205,14 @@ SS.inspectionhandlers = {
             
         
                 
-                $("#inspection_" + id).hover(function(){    /* shows the object nav bar */
+                $("#inspection_" + id).hoverIntent({
+                  over: function(){    /* shows the object nav bar */
                     $(this).css({ "z-index": 99 });
-                    $(this).find('.hidden').removeClass('hidden');
-                }, function(){
+                    $(this).find('nav').fadeIn(500);
+                }, out: function(){
                     $(this).css({ "z-index": 80 });
-                    $(this).find('nav').addClass('hidden');
-                });
+                    $(this).find('nav').fadeOut(500);
+                }, timeout: 600});
                 
                 $("#inspection_" + id).find("nav").hover( function() {
                     SS.mouseBlock = true;
