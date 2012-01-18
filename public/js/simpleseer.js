@@ -145,10 +145,23 @@ SS.p.setup = function() {
   SS.resetAction();
 }
 
+SS.processingToImageCoordinates = function(x, y) {
+    return [Math.round(x / (SS.xscalefactor * SS.zoomer.zoomLevel())), 
+        Math.round(y / (SS.yscalefactor * SS.zoomer.zoomLevel()))];
+    
+}
+
+SS.imageToProcessingCoordinates = function(x, y) {
+    return [Math.round(x * (SS.xscalefactor * SS.zoomer.zoomLevel())), 
+        Math.round(y * (SS.yscalefactor * SS.zoomer.zoomLevel()))];
+}
+
 SS.setScale = function() {
-  SS.p.scale(SS.xscalefactor, SS.yscalefactor)
-  SS.mouseX = Math.round(SS.p.mouseX / SS.xscalefactor);
-  SS.mouseY = Math.round(SS.p.mouseY / SS.yscalefactor);
+  SS.p.scale(SS.xscalefactor, SS.yscalefactor);
+  
+  mousePoints = SS.processingToImageCoordinates(SS.p.mouseX, SS.p.mouseY);
+  SS.mouseX = mousePoints[0];
+  SS.mouseY = mousePoints[1];
 }
 
 //these get registered to with each handler
@@ -168,6 +181,7 @@ SS.inspectionhandlers = {
             SS.p.rect(p.x, p.y, p.w, p.h);
             
             id = insp.id;
+            zoomlevel = SS.zoomer.zoomLevel();
             
             if (!$("#inspection_" + id).length){
                 css_attr  = {
@@ -206,19 +220,20 @@ SS.inspectionhandlers = {
                 });
                 
                 
-                $("#inspection_" + id).find(".inspection_remove").click(function() {
+                $("#inspection_" + id).find(".inspection_remove").click(function(e) {
                     SS.Inspection.remove(insp);
                     SS.mouseBlock = false;
                     return false;
                 });
                 
-                $("#inspection_" + id).find(".inspection_zoomin").click(function() {
-                    SS.zoomer.in( { element: $("#inspection_" + id)[0] } );
+                $("#inspection_" + id).find(".inspection_zoomin").click(function(e) {
+                    
+                    SS.zoomer.in( { element:$(e.target).parent().parent().parent()[0] } );
                     SS.mouseBlock = false;
                     return false;
                 });
                 
-                $("#inspection_" + id).find(".inspection_zoomout").click(function() {
+                $("#inspection_" + id).find(".inspection_zoomout").click(function(e) {
                     SS.zoomer.out();
                     SS.mouseBlock = false;
                     return false;
@@ -332,25 +347,28 @@ SS.launchRadial = function(animate) {
     }
     oldtask = SS.action["task"];
     
+    radius = 110;
+    offset = SS.zoomer.offset()
+    
     if (oldtask == "radial_select") {
         distance = SS.xscalefactor * SS.euclidean(SS.action["startpx"], [SS.mouseX, SS.mouseY]);
         if (distance > 75 && animate) { 
             SS.radialAnimating = true;
             $("#radial_container").animate( {
-                top: (SS.p.mouseY - 110).toString() + "px", 
-                left: (SS.p.mouseX - 110).toString() + "px" }, 300,
+                top: (SS.p.mouseY - radius - offset[1]).toString() + "px", 
+                left: (SS.p.mouseX - radius - offset[0]).toString() + "px" }, 300,
                 function() { SS.radialAnimating = false; } 
             );    
         } else {
             $("#radial_container").css( {
-                top: (SS.p.mouseY - 110).toString() + "px", 
-                left: (SS.p.mouseX - 110).toString() + "px" 
+                top: (SS.p.mouseY - radius - offset[1]).toString() + "px", 
+                left: (SS.p.mouseX - radius - offset[0]).toString() + "px" 
             });   
         }   
     } else {
         $("#radial_container").radmenu("show").css( { zIndex: 99,
-            top: (SS.p.mouseY - 110).toString() + "px", 
-            left: (SS.p.mouseX - 110).toString() + "px" } );
+            top: (SS.p.mouseY - radius - offset[1]).toString() + "px", 
+            left: (SS.p.mouseX - radius - offset[0]).toString() + "px" } );
     }
 
 
