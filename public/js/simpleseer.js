@@ -36,6 +36,46 @@ SimpleSeer.getJSON = function(key) {
 };
 
 
+SimpleSeer.Frame = {}
+
+
+
+SimpleSeer.Frame.refresh = function() {
+    SimpleSeer.framecount = SimpleSeer.getValue('framecount');
+
+    SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
+    SimpleSeer.histogram = SimpleSeer.getJSON('histogram_0');
+   
+    SS.Feature.refresh();
+    SS.histgraph.draw();
+    $("#maindisplay").find("img").attr("src", "/GET/currentframe_0.jpg?" + new Date().getTime().toString());    
+}
+
+
+SimpleSeer.Frame.capture = function() {
+    $.post("/frame_capture", {}, function(data) {
+        SS.Frame.refresh();
+        if (SS.continuousCapture) {
+            SS.Frame.capture();
+        }
+    });
+    return false;
+}
+
+
+SimpleSeer.Frame.inspect = function() {
+    $.post("/frame_capture", {}, function(data) {
+        SS.Frame.refresh(); })
+    
+    return false;
+}
+
+
+
+
+
+
+
 
 //functions to deal with adding/previewing/updating/deleting models
 SimpleSeer.Inspection = {}
@@ -107,6 +147,31 @@ SimpleSeer.Inspection.remove = function(insp) {
 
 
 SimpleSeer.Feature = {};
+
+SS.Feature._mapFeaturesets = function(feat) {
+    if (feat.inspection in SS.featuresets) {
+        SS.featuresets[feat.inspection].push(feat);
+    } else {
+        SS.featuresets[feat.inspection] = [ feat ];
+    }
+    
+    for (i in feat.children) {
+        SS.Feature._mapFeaturesets(feat.children[i]);
+    }
+}
+
+
+
+SimpleSeer.Feature.refresh = function() {
+    SimpleSeer.framedata = [SimpleSeer.getJSON('currentframedata_0')];
+    //build a hash of inspection_id -> featureset
+    SimpleSeer.featuresets = {};
+    for (i in SS.framedata[0].features) {
+        SS.Feature._mapFeaturesets(SS.framedata[0].features[i]);
+    }
+}
+
+
 SimpleSeer.Feature.render = function() {
     //for (i in 
     
@@ -138,13 +203,14 @@ setInterval(function(){
 SS.p = new Processing('display');
 //coloquially, we'll probably always refer to this as SS.p
 
-//this is the "main" loop of the processing app
 
 SS.p.setup = function() {
   SS.p.size($('#maindisplay > img').width(), $('#maindisplay > img').height());
   SS.resetAction();
 }
 
+//to/from functions to map canvas and image.  We have to include a special factor
+//for zooming
 SS.processingToImageCoordinates = function(x, y) {
     return [Math.round(x / (SS.xscalefactor * SS.zoomer.zoomLevel())), 
         Math.round(y / (SS.yscalefactor * SS.zoomer.zoomLevel()))];
@@ -164,82 +230,98 @@ SS.setScale = function() {
   SS.mouseY = mousePoints[1];
 }
 
+
+SS.renderInspectionTools = function(insp) {
+
+    id = insp.id;
+
+    zoomlevel = SS.zoomer.zoomLevel();
+    p = insp.parameters;
+
+
+    if ($("#inspection_" + id).length){
+        return;
+    }
+    css_attr  = {
+        top: Math.round(p.y * SS.xscalefactor).toString() + "px",
+        left: Math.round(p.x * SS.yscalefactor),
+        width: Math.round(p.w * SS.xscalefactor),
+        height: Math.round(p.h * SS.yscalefactor)
+    };
+
+    inspdiv = $("<div/>", {
+        id: "inspection_" + id,
+        class: "stretchee object"
+    }).appendTo('#zoomer').css(css_attr).append(
+        $("<nav>", {
+            id: "manage_" + id,
+            style: "display: none", 
+        }).append('<a class="inspection_zoomin" href="" title="Zoom"><b class="ico zoom-in"></b></a>'
+        ).append('<a class="inspection_zoomout" href="" title="Zoom"><b class="ico zoom-out"></b></a>'
+        ).append('<a href="" title="Info"><b class="ico info"></b></a>'
+        ).append('<a class="inspection_remove" href="" title="Close"><b class="ico close"></b></a>'));
+
+    $("#inspection_" + id).hoverIntent({
+      over: function(){    /* shows the object nav bar */
+        $(this).css({ "z-index": 99 });
+        $(this).find('nav').fadeIn(200);
+    }, out: function(){
+        $(this).css({ "z-index": 80 });
+        $(this).find('nav').fadeOut(300);
+    }, timeout: 500});
+
+    $("#inspection_" + id).find("nav").hover( function() {
+        SS.mouseBlock = true;
+    }, function() {
+        SS.mouseBlock = false;
+    });
+
+
+    $("#inspection_" + id).find(".inspection_remove").click(function(e) {
+        SS.Inspection.remove(insp);
+        SS.mouseBlock = false;
+        return false;
+    });
+
+    $("#inspection_" + id).find(".inspection_zoomin").click(function(e) {
+        
+        SS.zoomer.in( { element:$(e.target).parent().parent().parent()[0] } );
+        SS.mouseBlock = false;
+        return false;
+    });
+
+    $("#inspection_" + id).find(".inspection_zoomout").click(function(e) {
+        SS.zoomer.out();
+        SS.mouseBlock = false;
+        return false;
+    });
+    
+    
+    inspnav = $("#inspection_" + id).find("nav");
+    
+    for (i in SS.framedata[0].features) {
+        feat = SS.framedata[0].features[i];
+        if (feat.inspection != id) {
+            continue;
+        }
+        
+    }
+}
+
+
 //these get registered to with each handler
 SS.inspectionhandlers = {
     
     default: {
 
     },
-    
-    
-    
-    
     region: {
         render: function(insp) {
             SS.p.fill(255, 255, 255, 20);
             p = insp.parameters;
             SS.p.rect(p.x, p.y, p.w, p.h);
             
-            id = insp.id;
-            zoomlevel = SS.zoomer.zoomLevel();
-            
-            if (!$("#inspection_" + id).length){
-                css_attr  = {
-                    top: Math.round(p.y * SS.xscalefactor).toString() + "px",
-                    left: Math.round(p.x * SS.yscalefactor),
-                    width: Math.round(p.w * SS.xscalefactor),
-                    height: Math.round(p.h * SS.yscalefactor)
-                };
-
-                inspdiv = $("<div/>", {
-                    id: "inspection_" + id,
-                    class: "stretchee object"
-                }).appendTo('#zoomer').css(css_attr).append(
-                    $("<nav>", {
-                        id: "manage_" + id,
-                        style: "display: none", 
-                    }).append('<a class="inspection_zoomin" href="" title="Zoom"><b class="ico zoom-in"></b></a>'
-                    ).append('<a class="inspection_zoomout" href="" title="Zoom"><b class="ico zoom-out"></b></a>'
-                    ).append('<a href="" title="Info"><b class="ico info"></b></a>'
-                    ).append('<a class="inspection_remove" href="" title="Close"><b class="ico close"></b></a>'));
-            
-        
-                
-                $("#inspection_" + id).hoverIntent({
-                  over: function(){    /* shows the object nav bar */
-                    $(this).css({ "z-index": 99 });
-                    $(this).find('nav').fadeIn(500);
-                }, out: function(){
-                    $(this).css({ "z-index": 80 });
-                    $(this).find('nav').fadeOut(500);
-                }, timeout: 600});
-                
-                $("#inspection_" + id).find("nav").hover( function() {
-                    SS.mouseBlock = true;
-                }, function() {
-                    SS.mouseBlock = false;
-                });
-                
-                
-                $("#inspection_" + id).find(".inspection_remove").click(function(e) {
-                    SS.Inspection.remove(insp);
-                    SS.mouseBlock = false;
-                    return false;
-                });
-                
-                $("#inspection_" + id).find(".inspection_zoomin").click(function(e) {
-                    
-                    SS.zoomer.in( { element:$(e.target).parent().parent().parent()[0] } );
-                    SS.mouseBlock = false;
-                    return false;
-                });
-                
-                $("#inspection_" + id).find(".inspection_zoomout").click(function(e) {
-                    SS.zoomer.out();
-                    SS.mouseBlock = false;
-                    return false;
-                });
-            }
+            SS.renderInspectionTools(insp);
         },
         
         remove: function(insp) {
@@ -349,7 +431,7 @@ SS.launchRadial = function(animate) {
     oldtask = SS.action["task"];
     
     radius = 110;
-    offset = SS.zoomer.offset()
+    offset = SS.zoomer.offset();
     
     if (oldtask == "radial_select") {
         distance = SS.xscalefactor * SS.euclidean(SS.action["startpx"], [SS.mouseX, SS.mouseY]);
@@ -414,20 +496,28 @@ SS.p.draw = function() {
 //import some context from webdis, 
 SimpleSeer.cameras = SimpleSeer.getJSON('cameras');
 SimpleSeer.previews_running = {};
-SimpleSeer.preview_data = {}
+SimpleSeer.preview_data = {};
 for (c in SS.cameras) {
     SimpleSeer.previews_running[c] = false;
     SimpleSeer.previews_running[c] = false;
 }
 
-SimpleSeer.framecount = SimpleSeer.getValue('framecount');
-SimpleSeer.framedata = [SimpleSeer.getJSON('currentframedata_0')];
 SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
-SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
-SimpleSeer.histogram = SimpleSeer.getJSON('histogram_0');
+
+
+
+SimpleSeer.featuresets = {}
+
+
+
+
+
+
+
+
 SimpleSeer.radialAnimating = false;
 
-
+SS.continuousCapture = false;
 
 SS.wasPressed = false;
 
@@ -488,6 +578,9 @@ SimpleSeer.setup = function(){
     SS.zoomer = zoom($("#zoomer")[0]);
 
 
+    SS.histgraph.setup();
+
+
     SS.mouseBlock = false;
 /* these functions just give us a little extra context for when processing doesn't pick up events*/
    $("#maindisplay").mousedown( function(e) {
@@ -533,10 +626,11 @@ SimpleSeer.setup = function(){
         onHide: function($items){$items.hide();$('#radial_container').fadeOut(500);}
       });
 
-   $("nav").draggable( {
-        start: function(event, ui) { SS.action.task = "dragnav"; SS.waitForClick(); }, 
-        stop: function(event, ui) { SS.action.task = ""; }    
-   });
+
+   $(".ico.play").click( SS.Frame.capture );
+
+
+   SimpleSeer.Frame.refresh();
 
 }
 
@@ -563,13 +657,13 @@ SS.histgraph = new Processing("histogram");
 SS.histgraph.setup = function() {
     h = SS.histgraph;
     h.size(150, 48);
-    h.background(0,0);
-    h.stroke(255);
 }
-
 
 SS.histgraph.draw = function() {
     h = SS.histgraph;
+
+    h.background(0,0);
+    h.stroke(255);
 
     h.yscalefactor =  h.height / Math.max.apply(Math, SS.histogram);
     h.xstep = h.width / SS.histogram.length;
@@ -581,5 +675,4 @@ SS.histgraph.draw = function() {
         h.line(x, h.height, x, h.height - y);
     }
 }
-SS.histgraph.setup();
-SS.histgraph.draw();
+

@@ -92,10 +92,27 @@ class WebInterface(object):
 
     @cherrypy.expose
     @jsonify
-    def poll(self):
-        text = "Wow, this is some fun stuff"
+    def frame_capture(self, **params):
+        Frame.capture()
+        Inspection.inspect()
+        SimpleSeer.SimpleSeer().update()
+        return dict( capture = "ok" )
+        
+    @cherrypy.expose
+    @jsonify
+    def frame_inspect(self, **params):
+        Inspection.inspect()
+        SimpleSeer.SimpleSeer().update()
+        return dict( inspect = "ok" )    
+    
+
+    @cherrypy.expose
+    @jsonify
+    def ping(self):
+        text = "pong"
         return {"text": text }
 
 
 import SimpleSeer
 from Inspection import Inspection
+from Frame import Frame

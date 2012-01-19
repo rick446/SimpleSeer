@@ -19,7 +19,7 @@ class Region(SimpleCV.Feature):
     
     def meanColor(self):
         return self.crop().meanColor()
-
+        
 
 class Inspection(SimpleDoc):
     """

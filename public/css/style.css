@@ -531,8 +531,7 @@ article, aside, .modal, .emboss {
     background: -ms-linear-gradient(top, #fff 0%,#def 50%,#cde 51%,#def 100%); /* IE10+ */
     background: linear-gradient(top, #fff 0%,#def 50%,#def 51%,#def 100%); /* W3C */
  }
-
-
+ 
 /* forms */
 input, textarea, select {
     border: 1px solid #ccc;
@@ -1046,6 +1045,10 @@ h1 input:hover {
     .ico.close {background: url("/img/298-circlex.png") no-repeat 50% 50%;}
     .ico.info {background: url("/img/42-info.png") no-repeat 50% 50%;}
     .ico.code {background: url("/img/code.png") no-repeat 50% 50%;}
+    .ico.play {background: url("../img/30-circle-play.png") no-repeat 50% 50%;}
+    .ico.watch {background: url("/img/13-eye.png") no-repeat 50% 50%;}
+    .ico.watched {background: url("/img/13-eye.png") no-repeat 50% 50%;}
+
 
 
 /* tablet ----------- */
