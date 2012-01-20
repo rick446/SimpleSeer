@@ -461,14 +461,15 @@ section {height: 100%;}
 }
 .object nav {
   position: absolute; 
-  top: -1px; 
+  top: 0; 
   right: -46px;
-  z-index: 3;
+  z-index: 99;
+  min-height: 76px;
   min-width: 26px;
   -moz-border-radius: 0 4px 4px 0;
   -webkit-border-radius: 0 4px 4px 0;
   border-radius: 0 4px 4px 0;
-  margin: 0 auto;
+  margin: 0;
   padding: 10px;
   -moz-box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 0;
   -webkit-box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 0;

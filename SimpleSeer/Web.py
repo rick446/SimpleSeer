@@ -88,6 +88,9 @@ class WebInterface(object):
         Inspection.objects(id = bson.ObjectId(params["id"])).delete()
         SimpleSeer.SimpleSeer().reloadInspections()
         
+        SimpleSeer.SimpleSeer().update()
+        
+        
         return SimpleSeer.SimpleSeer().inspections
 
     @cherrypy.expose
