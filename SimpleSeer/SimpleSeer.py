@@ -65,7 +65,8 @@ class SimpleSeer(threading.Thread):
             self.shell_thread = Shell.ShellThread()
             self.shell_thread.start()
 
-        self.capture()
+        Frame.capture()
+        Inspection.inspect()
         self.update()
         self.web_interface = Web()
 
@@ -98,7 +99,6 @@ class SimpleSeer(threading.Thread):
             
             while len(self.lastframes) > self.config.max_frames:
                 self.lastframes.pop(0)
-                self.results.pop(0)
                             
             self.framecount = self.framecount + 1
             Session().redis.set("framecount", self.framecount)
@@ -109,8 +109,12 @@ class SimpleSeer(threading.Thread):
             
         return currentframes
             
-    def inspect(self):
-        frames = self.capture()
+    def inspect(self, frames = []):
+        if not len(frames) and not len(self.lastframes):
+            frames = self.capture()
+        elif not len(frames):
+            frames = self.lastframes[-1]
+        
         for frame in frames:   
             for inspection in self.inspections:
                 if inspection.parent:  #root parents only
@@ -121,6 +125,7 @@ class SimpleSeer(threading.Thread):
                 
                 results = inspection.execute(frame.image)
                 frame.features.extend(results)
+        
         return frames
                 
     def check(self):

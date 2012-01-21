@@ -3,6 +3,13 @@ from Session import *
 
 
 atexit.register(cherrypy.engine.exit)
+
+def jsonify(fn):
+    def new(*args, **kwargs):
+        cherrypy.response.headers['Content-Type'] = 'application/json'
+        return jsonencode(fn(*args, **kwargs))
+    return new
+
 class Web():
     """
     This is the abstract web interface to handle event callbacks for Seer
@@ -44,9 +51,8 @@ class WebInterface(object):
         return s
 
     @cherrypy.expose
-    def inspection_preview(self, **params):
-        cherrypy.response.headers['Content-Type'] = 'application/json'
-        
+    @jsonify
+    def inspection_preview(self, **params):        
         insp = Inspection(
             name = params["name"],
             camera = params["camera"],
@@ -57,13 +63,11 @@ class WebInterface(object):
         
         features = insp.execute(SimpleSeer.SimpleSeer().lastframes[-1][0].image)
         
-        return jsonencode({ "inspection": insp, "features": features})
+        return { "inspection": insp, "features": features}
 
     @cherrypy.expose
-    def inspection_add(self, **params):
-        
-        cherrypy.response.headers['Content-Type'] = 'application/json'
-        
+    @jsonify
+    def inspection_add(self, **params):        
         #try:
         Inspection(
             name = params["name"],
@@ -74,16 +78,44 @@ class WebInterface(object):
         #    return dict( error = e )
         #TODO catch malformed data
         #TODO add parameters for morphs, parent etc
+        SimpleSeer.SimpleSeer().reloadInspections()
         
-        return jsonencode(SimpleSeer.SimpleSeer().inspections)
-
-
+        return SimpleSeer.SimpleSeer().inspections
 
     @cherrypy.expose
-    def poll(self):
-        text = "Wow, this is some fun stuff"
-        return json.dumps(text)
+    @jsonify
+    def inspection_remove(self, **params):
+        Inspection.objects(id = bson.ObjectId(params["id"])).delete()
+        SimpleSeer.SimpleSeer().reloadInspections()
+        
+        SimpleSeer.SimpleSeer().update()
+        
+        
+        return SimpleSeer.SimpleSeer().inspections
+
+    @cherrypy.expose
+    @jsonify
+    def frame_capture(self, **params):
+        Frame.capture()
+        Inspection.inspect()
+        SimpleSeer.SimpleSeer().update()
+        return dict( capture = "ok" )
+        
+    @cherrypy.expose
+    @jsonify
+    def frame_inspect(self, **params):
+        Inspection.inspect()
+        SimpleSeer.SimpleSeer().update()
+        return dict( inspect = "ok" )    
+    
+
+    @cherrypy.expose
+    @jsonify
+    def ping(self):
+        text = "pong"
+        return {"text": text }
 
 
 import SimpleSeer
 from Inspection import Inspection
+from Frame import Frame

@@ -37,6 +37,151 @@ SimpleSeer.getJSON = function(key) {
 
 
 
+SimpleSeer.DisplayObject = {};
+
+
+SimpleSeer.DisplayObject.addNavItem = function(id, iconcls, title, clickmethod) {
+    $("#" + id).find("nav").append(
+       $("<a/>", { title: title, href: "" }).append($("<b/>", { class: "ico " +iconcls })).click(clickmethod)
+    );
+}
+
+SimpleSeer.DisplayObject.addNavZoomIn = function(id) {
+    SS.DisplayObject.addNavItem(id, "zoom-in", "Zoom", function(e) {
+        SS.zoomer.in( { element:$(e.target).parent().parent().parent()[0] } );
+        SS.mouseBlock = false;
+        return false;
+    });
+}
+
+SimpleSeer.DisplayObject.addNavZoomOut = function(id) {
+    SS.DisplayObject.addNavItem(id, "zoom-out", "Zoom Out", function(e) {
+        SS.zoomer.out();
+        SS.mouseBlock = false;
+        return false;
+    });
+}
+
+
+SimpleSeer.Display = {};
+
+
+SimpleSeer.Display.renderObjectFocus = function(id) {
+      focusdiv = $("#" + id);
+      offset = focusdiv.offset();
+      
+      xy = SS.processingToImageCoordinates(offset.left, offset.top);
+      wh = SS.processingToImageCoordinates(focusdiv.width(), focusdiv.height());
+      
+      x = xy[0];
+      y = xy[1];
+      w = wh[0];
+      h = wh[1]; 
+
+      var imgw = SS.framedata[0].width;
+      var imgh = SS.framedata[0].height;
+      
+      
+      SS.p.fill(0, 80);
+      SS.p.noStroke();
+      
+      SS.p.beginShape();
+      
+      SS.p.vertex(0,0);
+      SS.p.vertex(x, 0);
+      SS.p.vertex(x, y + h);
+      SS.p.vertex(imgw, y + h);
+      SS.p.vertex(imgw, imgh);
+      SS.p.vertex(0, imgh);
+      SS.p.endShape(SS.p.CLOSE);
+    
+      SS.p.beginShape();
+      SS.p.vertex(x, 0);
+      SS.p.vertex(imgw, 0);
+      SS.p.vertex(imgw, y + h);
+      SS.p.vertex(x + w, y + h);
+      SS.p.vertex(x + w, y);
+      SS.p.vertex(x, y);
+      SS.p.endShape(SS.p.CLOSE);
+}
+
+
+SimpleSeer.Display.addDisplayObject = function(id, x, y, w, h) {
+
+    $("#" + id).remove(); //delete any existing object with this ID
+    
+    objdiv = $("<div/>", {
+        id: id,
+        class: "stretchee object"
+    }).css({
+        top: Math.round(y * SS.xscalefactor).toString() + "px",
+        left: Math.round(x * SS.yscalefactor),
+        width: Math.round(w * SS.xscalefactor),
+        height: Math.round(h * SS.yscalefactor)
+    }).appendTo('#zoomer').append(
+        $("<nav>", {
+            id: "manage_" + id,
+            style: "display: none", 
+        }).hover( function() {
+                SS.mouseBlock = true;
+            }, function() {
+                SS.mouseBlock = false;
+            })
+        );
+    
+    $("#" + id).hoverIntent({
+       over: function(){    /* shows the object nav bar */
+        $(this).css({ "z-index": 99 });
+        $(this).find('nav').fadeIn(200);
+        SS.action["focus"] = id;
+    }, out: function(){
+        $(this).css({ "z-index": 80 });
+        $(this).find('nav').fadeOut(300);
+        if (SS.action["focus"] == id) {
+            SS.action["focus"] = "";
+        }
+    }, timeout: 500});
+    
+    
+    $("#inspection_" + id).find("nav")
+    
+    return objdiv;
+};
+
+SimpleSeer.Frame = {};
+
+
+SimpleSeer.Frame.refresh = function() {
+    SimpleSeer.framecount = SimpleSeer.getValue('framecount');
+
+    SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
+    SimpleSeer.histogram = SimpleSeer.getJSON('histogram_0');
+   
+    SS.Feature.refresh();
+    SS.histgraph.draw();
+    $("#maindisplay").find("img").attr("src", "/GET/currentframe_0.jpg?" + new Date().getTime().toString());    
+};
+
+
+SimpleSeer.Frame.capture = function() {
+    $.post("/frame_capture", {}, function(data) {
+        SS.Frame.refresh();
+        if (SS.continuousCapture) {
+            SS.Frame.capture();
+        }
+    });
+    return false;
+}
+
+
+SimpleSeer.Frame.inspect = function() {
+    $.post("/frame_capture", {}, function(data) {
+        SS.Frame.refresh(); })
+    
+    return false;
+}
+
+
 //functions to deal with adding/previewing/updating/deleting models
 SimpleSeer.Inspection = {}
 
@@ -91,9 +236,62 @@ SimpleSeer.Inspection.render = function() {
     }
 };
 
+SimpleSeer.Inspection.remove = function(insp) {
+    if (insp["method"] in SS.inspectionhandlers && "remove" in SS.inspectionhandlers[insp["method"]]) {
+        SS.inspectionhandlers[insp["method"]].remove(insp);
+    } 
+    
+    SS.action.task = "inspection_remove";
+    if (SS.action.focus == "inspection_" +insp.id) {
+        SS.action.focus = "";
+    }
+    
+    
+    $.post("/inspection_remove", { id: insp.id }, function(data) {
+        SS.inspections = data;
+        SS.resetAction();           
+    });
+};
+
+
+
 SimpleSeer.Feature = {};
+
+SS.Feature._mapFeaturesets = function(feat) {
+    if (feat.inspection in SS.featuresets) {
+        SS.featuresets[feat.inspection].push(feat);
+    } else {
+        SS.featuresets[feat.inspection] = [ feat ];
+    }
+    
+    for (i in feat.children) {
+        SS.Feature._mapFeaturesets(feat.children[i]);
+    }
+}
+
+
+
+SimpleSeer.Feature.refresh = function() {
+    SimpleSeer.framedata = [SimpleSeer.getJSON('currentframedata_0')];
+    //build a hash of inspection_id -> featureset
+    SimpleSeer.featuresets = {};
+    for (i in SS.framedata[0].features) {
+        SS.Feature._mapFeaturesets(SS.framedata[0].features[i]);
+    }
+}
+
+
 SimpleSeer.Feature.render = function() {
-    //for (i in 
+    for (i in SS.inspections) {
+        insp = SS.inspections[i];
+        
+        if (insp.method in SS.inspectionhandlers && 'render_features' in SS.inspectionhandlers[insp.method]) {
+            SS.inspectionhandlers[insp.method]["render_features"](SS.featuresets[insp.id], insp);
+        } else {
+                
+        }
+        
+    }
     
     
 }
@@ -123,51 +321,78 @@ setInterval(function(){
 SS.p = new Processing('display');
 //coloquially, we'll probably always refer to this as SS.p
 
-//this is the "main" loop of the processing app
 
 SS.p.setup = function() {
   SS.p.size($('#maindisplay > img').width(), $('#maindisplay > img').height());
   SS.resetAction();
 }
 
-SS.setScale = function() {
-  SS.p.scale(SS.xscalefactor, SS.yscalefactor)
-  SS.mouseX = Math.round(SS.p.mouseX / SS.xscalefactor);
-  SS.mouseY = Math.round(SS.p.mouseY / SS.yscalefactor);
+//to/from functions to map canvas and image.  We have to include a special factor
+//for zooming
+SS.processingToImageCoordinates = function(x, y) {
+    return [Math.round(x / (SS.xscalefactor * SS.zoomer.zoomLevel())), 
+        Math.round(y / (SS.yscalefactor * SS.zoomer.zoomLevel()))];
+    
 }
+
+SS.imageToProcessingCoordinates = function(x, y) {
+    return [Math.round(x * (SS.xscalefactor * SS.zoomer.zoomLevel())), 
+        Math.round(y * (SS.yscalefactor * SS.zoomer.zoomLevel()))];
+}
+
+SS.setScale = function() {
+  SS.p.scale(SS.xscalefactor, SS.yscalefactor);
+  
+  mousePoints = SS.processingToImageCoordinates(SS.p.mouseX, SS.p.mouseY);
+  SS.mouseX = mousePoints[0];
+  SS.mouseY = mousePoints[1];
+}
+
 
 //these get registered to with each handler
 SS.inspectionhandlers = {
+    
+    default: {
+
+    },
     region: {
         render: function(insp) {
-            SS.p.fill(0, 128, 0, 20);
+            if (SS.action["focus"] != "inspection_" + insp.id) {
+                SS.p.fill(255, 255, 255, 20);
+            } else {
+                SS.p.noFill();
+            }
+            SS.p.stroke(0);
             p = insp.parameters;
             SS.p.rect(p.x, p.y, p.w, p.h);
-            
             id = insp.id;
-            
-            if (!$("#inspection_" + id).length){
-                css_attr  = {
-                    top: Math.round(p.y * SS.xscalefactor).toString() + "px",
-                    left: Math.round(p.x * SS.yscalefactor),
-                    width: Math.round(p.w * SS.xscalefactor),
-                    height: Math.round(p.h * SS.yscalefactor)
-                };
 
-                $("<div/>", {
-                    id: "inspection_" + id,
-                    class: "stretchee"
-                }).appendTo('#maindisplay').css(css_attr).append(
-                    $("<div/>", {
-                        id: "manage_" + id,
-                        class: "inspectionmanage", 
-                    }).append('<a class="inspectionmanage_info" href="">(info)</a> <a class="inspectionmanage_zoom" href="">(zoom)</a> <a class="inspectionmanage_delete" href="">X</a>'));
+            zoomlevel = SS.zoomer.zoomLevel();
+
+            if ($("#inspection_" + id).length){
+                return;
             }
-        
+            
+            div_id = "inspection_" + id;
+            inspdiv = SS.Display.addDisplayObject(div_id, p.x, p.y, p.w, p.h);
+
+            SS.DisplayObject.addNavZoomIn(div_id); 
+            SS.DisplayObject.addNavZoomOut(div_id);
+            SS.DisplayObject.addNavItem(div_id, "info", "Info", function () { });
+            SS.DisplayObject.addNavItem(div_id, "close", "Remove", function(e) {
+                SS.Inspection.remove(insp);
+                SS.mouseBlock = false;
+                return false;
+            });
+            
             
         },
+        
+        remove: function(insp) {
+            $("#inspection_" + insp.id).remove();
+            SS.waitForClick();
+        },
         render_features: function(feats, insp) {
-            SS.p.fill(255, 20);
             
             
             
@@ -190,6 +415,7 @@ SS.inspectionhandlers = {
             }
             
             SS.p.fill(255, 20);
+            SS.p.stroke(0);
             SS.p.rect(startx, starty, w, h);
         },
         
@@ -214,8 +440,8 @@ SS.inspectionhandlers = {
         }
     },
     blob: {
-        render: function () {
             
+        render: function () {
             
             
         },
@@ -224,6 +450,7 @@ SS.inspectionhandlers = {
                 return;
             }
             SS.p.fill(0, 128, 0 , 80);
+            SS.p.stroke(0);
             for (i in features) {
                 f = features[i];
                 SS.p.beginShape();
@@ -233,6 +460,7 @@ SS.inspectionhandlers = {
                 }
                 SS.p.endShape();
             }
+        
         },
         manipulate: function() {
             startx = SS.action['startpx'][0];
@@ -268,25 +496,28 @@ SS.launchRadial = function(animate) {
     }
     oldtask = SS.action["task"];
     
+    radius = 110;
+    offset = SS.zoomer.offset();
+    
     if (oldtask == "radial_select") {
         distance = SS.xscalefactor * SS.euclidean(SS.action["startpx"], [SS.mouseX, SS.mouseY]);
         if (distance > 75 && animate) { 
             SS.radialAnimating = true;
             $("#radial_container").animate( {
-                top: (SS.p.mouseY - 110).toString() + "px", 
-                left: (SS.p.mouseX - 110).toString() + "px" }, 300,
+                top: (SS.p.mouseY - radius - offset[1]).toString() + "px", 
+                left: (SS.p.mouseX - radius - offset[0]).toString() + "px" }, 300,
                 function() { SS.radialAnimating = false; } 
             );    
         } else {
             $("#radial_container").css( {
-                top: (SS.p.mouseY - 110).toString() + "px", 
-                left: (SS.p.mouseX - 110).toString() + "px" 
+                top: (SS.p.mouseY - radius - offset[1]).toString() + "px", 
+                left: (SS.p.mouseX - radius - offset[0]).toString() + "px" 
             });   
         }   
     } else {
         $("#radial_container").radmenu("show").css( { zIndex: 99,
-            top: (SS.p.mouseY - 110).toString() + "px", 
-            left: (SS.p.mouseX - 110).toString() + "px" } );
+            top: (SS.p.mouseY - radius - offset[1]).toString() + "px", 
+            left: (SS.p.mouseX - radius - offset[0]).toString() + "px" } );
     }
 
 
@@ -300,7 +531,6 @@ SS.p.draw = function() {
   SS.setScale();
   SS.p.background(0, 0);     
    
-    
   if (SS.action["task"] && SS.action["task"] != "radial_select") {
       task = SS.action["task"];
       
@@ -313,7 +543,8 @@ SS.p.draw = function() {
           //or manipulate onclick
       }
   } else {
-      SS.Inspection.render();  
+      SS.Inspection.render();
+      SS.Feature.render();  
       if (SS.mouseDown && !SS.mouseWait) {
           if (SS.wasPressed) {
             SS.launchRadial();
@@ -322,6 +553,12 @@ SS.p.draw = function() {
           }
       } 
   }
+  
+  if (SS.action.focus) {
+      SS.Display.renderObjectFocus(SS.action.focus);
+  }
+  
+  
   SS.wasPressed = SS.mouseDown;
  
  }
@@ -331,20 +568,28 @@ SS.p.draw = function() {
 //import some context from webdis, 
 SimpleSeer.cameras = SimpleSeer.getJSON('cameras');
 SimpleSeer.previews_running = {};
-SimpleSeer.preview_data = {}
+SimpleSeer.preview_data = {};
 for (c in SS.cameras) {
     SimpleSeer.previews_running[c] = false;
     SimpleSeer.previews_running[c] = false;
 }
 
-SimpleSeer.framecount = SimpleSeer.getValue('framecount');
-SimpleSeer.framedata = [SimpleSeer.getJSON('currentframedata_0')];
 SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
-SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
-SimpleSeer.histogram = SimpleSeer.getJSON('histogram_0');
+
+
+
+SimpleSeer.featuresets = {}
+
+
+
+
+
+
+
+
 SimpleSeer.radialAnimating = false;
 
-
+SS.continuousCapture = false;
 
 SS.wasPressed = false;
 
@@ -356,7 +601,7 @@ SimpleSeer.waitForClick = function() {
 }
 
 SimpleSeer.resetAction = function() {
-    SS.action = { startpx: [0,0], task: "" };
+    SS.action = { startpx: [0,0], task: "", focus: "" };
 }
 
 
@@ -365,7 +610,7 @@ SimpleSeer.resetAction = function() {
 //TODO add any other independent behaviors
 $(function(){
 
-    var stretcher = $('#maindisplay > img'),
+    var stretcher = $('#maindisplay').find('img'),
         element = stretcher[0],
         currentSize = { width: 0, height: 0 },
         $document = $(document);
@@ -402,19 +647,36 @@ $(function(){
 SimpleSeer.setup = function(){
     SS.p.setup();
     SS.p.loop();
+    SS.zoomer = zoom($("#zoomer")[0]);
 
+
+    SS.histgraph.setup();
+
+
+    SS.mouseBlock = false;
 /* these functions just give us a little extra context for when processing doesn't pick up events*/
    $("#maindisplay").mousedown( function(e) {
+      if (SS.mouseBlock) {
+        return;
+      } 
       SS.mouseDown = true;
    });
 
    $("#maindisplay").mouseup( function(e) {
+      if (SS.mouseBlock) {
+        return;
+      } 
+      
       SS.mouseDown = false;
       SS.mouseWait = false; 
    });
 
    $("#maindisplay").mousemove(function(e) {
   //SS.setScale();
+    if (SS.mouseBlock) {
+        return;
+    } 
+    
     SS.p.mouseX = e.pageX - $("#display").offset()["left"];
     SS.p.mouseY = e.pageY - $("#display").offset()["top"];
    });
@@ -436,12 +698,29 @@ SimpleSeer.setup = function(){
         onHide: function($items){$items.hide();$('#radial_container').fadeOut(500);}
       });
 
-   $("nav").draggable( {
-        start: function(event, ui) { SS.action.task = "dragnav"; SS.waitForClick(); }, 
-        stop: function(event, ui) { SS.action.task = ""; }    
-   });
+
+   $(".ico.play").click( SS.Frame.capture );
+
+
+   SimpleSeer.Frame.refresh();
 
 }
+
+
+/*
+$(document).ready(function() {
+    $('.info').bind('click', function() {
+        $(this).parent().parent().parent().find('.detail').toggle();
+        $(this).parent().parent().addClass('expand');
+        return false;
+    });
+});
+
+SS.message = 
+*/
+
+
+
 
 
 //histogram
@@ -450,13 +729,13 @@ SS.histgraph = new Processing("histogram");
 SS.histgraph.setup = function() {
     h = SS.histgraph;
     h.size(150, 48);
-    h.background(0,0);
-    h.stroke(255);
 }
-
 
 SS.histgraph.draw = function() {
     h = SS.histgraph;
+
+    h.background(0,0);
+    h.stroke(255);
 
     h.yscalefactor =  h.height / Math.max.apply(Math, SS.histogram);
     h.xstep = h.width / SS.histogram.length;
@@ -468,5 +747,4 @@ SS.histgraph.draw = function() {
         h.line(x, h.height, x, h.height - y);
     }
 }
-SS.histgraph.setup();
-SS.histgraph.draw();
+

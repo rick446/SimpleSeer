@@ -49,7 +49,7 @@ class FrameFeature(SimpleEmbeddedDoc):
         self.width = data.width()
         self.height = data.height()
         self.angle = data.angle()
-        #self.meancolor = data.meanColor()
+        self.meancolor = list(data.meanColor())
         self.featuretype = data.__class__.__name__
         
         for k in data.__dict__:
