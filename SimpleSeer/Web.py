@@ -2,7 +2,8 @@ from base import *
 from Session import *
 
 
-atexit.register(cherrypy.engine.exit)
+#atexit.register(cherrypy.engine.exit)
+
 
 def jsonify(fn):
     def new(*args, **kwargs):
@@ -16,11 +17,14 @@ class Web():
     all it does is basically fire up a webserver on port 53317 to allow you
     to start interacting with Seer via a web interface
     """
+    
     config =  { 'global' :
                 {
                 'server.socket_port': 53317,
                 'server.socket_host' : '0.0.0.0',
-                'log.screen' : True,
+                'log.access_file' : "seer.access_log",
+                'log.error_file' : "seer.error_log",
+                'log.screen' : False,
                 'tools.staticdir.on': True,
                 'tools.staticdir.dir': os.getcwd() + "/public/",
                 }
