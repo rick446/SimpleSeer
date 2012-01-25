@@ -20,7 +20,7 @@ except(ImportError):
   import PIL.Image as pil
 
 import cv
-import IPython.Shell
+
 try:
     import pyfirmata
 except:

@@ -207,6 +207,7 @@ SimpleSeer.Inspection.add = function(method, parameters) {
 };
 
 SimpleSeer.Inspection.preview = function (method, parameters) {
+    //TODO make this pause if parameters haven't changed
     camera = SS.framedata[0]['camera'];
     
     data = SS.preview_data[camera];
@@ -254,6 +255,122 @@ SimpleSeer.Inspection.remove = function(insp) {
 };
 
 
+SimpleSeer.Inspection.control = function(insp, x, y) {
+    
+    var div_id = "inspectioncontrol_" + insp.id;
+    
+    if ($("#" + div_id).length > 0) {
+        if (insp.method in SS.inspectionhandlers && "updatecontrol" in SS.inspectionhandlers[insp.method]) {
+            SS.inspectionhandlers[insp.method].updatecontrol(insp);
+        }
+        return;
+    }
+    
+    $("#maindisplay").append($("<div/>", { id: div_id, class: "inspectioncontrol" }));
+    
+    if (insp.method in SS.inspectionhandlers && "rendercontrols" in SS.inspectionhandlers[insp.method]) {
+        SS.inspectionhandlers[insp.method].rendercontrols(insp, div_id);
+    }
+    
+    point = [0,0];
+    //TODO, find the view area if we are zoomed in
+
+    if (x == undefined) {
+        point[0] = $("#maindisplay").width() - $(div_id).width();
+        point[1] = $("#maindisplay").height() / 2 - $(div_id).height() / 2;
+    } else {
+        point = SS.imageToProcessingCoordinates(x,y);
+    }
+    $("#" + div_id).css({ top: point[0].toString() + "px", left: point[1].toString() + "px"}).draggable().hover( function() {
+                SS.mouseBlock = true;
+            }, function() {
+                SS.mouseBlock = false;
+            });
+};
+
+SimpleSeer.InspectionControl = {};
+
+SimpleSeer.InspectionControl.controlBox = function(id, title, controls) {
+    cb = $("<div/>", { id: id, class: "controlblock"}).append(title);
+    
+    if (controls != undefined) {
+        for (i in controls) {
+            cb.append(controls[i]);   
+        }
+    }
+    
+    return cb;
+}
+
+
+SimpleSeer.InspectionControl.checkbox = function(id, param, label, checked, onchange) {
+    return $("<div/>", { class: "control" }).append(
+        $("<input/>", { id: id, type: "checkbox"}).change(onchange)
+    ).append(
+        $("<label/>", { for: id }).append(label).css({ right: "0px" })
+    );
+}
+
+SimpleSeer.InspectionControl.slider = function(id, param, title, defaultval, min, max, step, onchange) {
+    return $("<div/>", { class: "control" }).append(
+        $("<label/>", { for: id  }).append(title)
+    ).append(
+        $("<div/>", { id: id }).css({ height: "10px", width: "100%" }).slider({
+            value: defaultval,
+            min: min,
+            max: max,
+            step: step,
+            slide: onchange})
+    );
+};
+
+SimpleSeer.InspectionControl.button = function(id, title, onclick) {    
+    return $("<div/>", { class: "control" }).append(
+        $("<button/>", { id: id }).append(title).button().click(onclick)
+    );
+};
+
+SimpleSeer.InspectionControl.applyCancelButton = function(id) {  
+    
+    return $("<div/>", { class: "control" }).append(
+        $("<button/>", { id: id }).append("Apply").button().click(function () { alert("ok") })
+    ).append(
+        $("<button/>", { id: id }).append("Cancel").button().click(function () { alert("no") })
+    );  
+};
+
+SimpleSeer.InspectionControl.cancelButton = function(id) {
+    return SS.InspectionControl.button(id, "Cancel", function(e) {
+    
+    });
+};
+
+SimpleSeer.InspectionControl.rangeSlider = function(id, param1, param2, title, default1, default2, min, max, step, onchange) {
+    return $("<div/>", { class: "control" }).append(
+        $("<label/>", { for: id  }).append("title")
+    ).append(
+        $("<div/>", { id: id }).slider({
+            range: true,
+            values: [default1, default2],
+            min: min,
+            max: max,
+            step: step,
+            slide: onchange})
+    );
+};
+
+
+SimpleSeer.InspectionControl.histogramSlider = function(id, param1, title, histogram, min, max, step, onchange) {
+    
+    
+};
+
+//SimpleSeer.InspectionControl.addSelect
+
+//SimpleSeer.InspectionControl.addNumber = function
+
+
+
 
 SimpleSeer.Feature = {};
 
@@ -285,7 +402,9 @@ SimpleSeer.Feature.render = function() {
     for (i in SS.inspections) {
         insp = SS.inspections[i];
         
-        if (insp.method in SS.inspectionhandlers && 'render_features' in SS.inspectionhandlers[insp.method]) {
+        if (insp.method in SS.inspectionhandlers 
+           && 'render_features' in SS.inspectionhandlers[insp.method]
+           && SS.featuresets[insp.id]) {
             SS.inspectionhandlers[insp.method]["render_features"](SS.featuresets[insp.id], insp);
         } else {
                 
@@ -440,7 +559,28 @@ SS.inspectionhandlers = {
         }
     },
     blob: {
+        rendercontrols: function(insp, div_id) {
+            $("#" + div_id).append($("<h2/>").append("Blob Controls"));
+
             
+            onchange = function(e, ui) {
+                params = { 
+                    threshval: $("#"+insp.id+"_threshval").value,
+                    invert: $("#"+insp.id+"_invert").innerHTML
+                };
+                
+                SS.Inspection.preview("blob", params);
+            };
+            
+            $("#" + div_id).append(
+                SS.InspectionControl.checkbox(insp.id + "_invert", "invert", "Dark Areas", onchange) 
+            ).append(
+                SS.InspectionControl.slider(insp.id + "_threshval", "threshval", "Threshold", 127, 0, 255, 1, onchange)
+            ).append(
+                SS.InspectionControl.applyCancelButton(insp)
+            );
+        },
+        
         render: function () {
             
             
@@ -466,6 +606,7 @@ SS.inspectionhandlers = {
             startx = SS.action['startpx'][0];
             starty = SS.action['startpx'][1];
             
+            /*
             xdiff = startx - SS.mouseX;
             ydiff = starty - SS.mouseY;
             
@@ -474,6 +615,10 @@ SS.inspectionhandlers = {
             thresh = SS.clamp(128 + diff, 1, 254);
             
             SS.Inspection.preview("blob", { threshval: thresh, minsize: 1000 });            
+            */
+            
+            insp = { id: "preview", method: "blob" };
+            SS.Inspection.control(insp, startx, starty);
         },
         manipulate_onclick: function() {
             //clean out the preview mode
