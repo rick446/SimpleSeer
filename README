@@ -50,17 +50,44 @@ Linux (Using apt-get)
 > apt-get install mongodb-server nginx
 > cp etc/nginx/sites-enabled/default /etc/nginx/sites-enabled
 > /etc/init.d/nginx restart
-> easy_install python-pymongo
-> easy_install mongoengine
-> easy_install cherrypy
-> easy_install jsonpickle
-> easy_install ujson
-> hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.
-py install
+> pip install -r pip.requirements
 > git clone git://github.com/nicolasff/webdis.git && cd webdis && make && ./webdis &
 
+
+[Post Installation]
+
+SuperVisor
+============
+This is used to start, stop, and autostart processes used for Seer. It should
+have been installed as part of the pip requirements but if for some reason
+it did not you can run
+
+> pip install supervisor
+
+
+Then you need to copy the config file:
+
+> cp etc/supervisord.conf /etc/
+
+
+Now you should be able to run:
+
+> sudo supervisord
+
+and it should start redis, webdis, and any other external processes SimpleSeer
+may require.  To make sure they are running type:
+
+> pgrep redis
+
+If it is running you should get a process number in return.
+
+To have supervisor automatically start (so it starts all your processes)
+do the following:
+
+> sudo cp etc/supervisord /etc/init.d/
+> sudo chmod +x /etc/init.d/supervisord
+> sudo update-rc.d supervisord defaults
 
 
 *NOTE: Don't install python-pymongo from the repos as it is much too far out of date and requires 2+
 =======
-

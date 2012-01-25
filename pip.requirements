@@ -1,0 +1,7 @@
+python-pymongo
+mongoengine
+cherrypy
+jsonpickle
+ujson
+supervisor
+https://bitbucket.org/tino/pyfirmata/get/0.9.4.tar.gz
