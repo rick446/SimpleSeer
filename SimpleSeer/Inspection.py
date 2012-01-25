@@ -148,7 +148,17 @@ class Inspection(SimpleDoc):
         
         
         #if we have a color parameter, lets threshold        
-        blobs = image.findBlobs(**params)
+        blobs = []
+        invert = False
+        if params.has_key("invert"):
+            invert = params["invert"]
+            del params["invert"]
+            
+        if invert:
+            blobs = image.invert().findBlobs(**params)
+        else:    
+            blobs = image.findBlobs(**params)
+        
         if not blobs:
             return []
         

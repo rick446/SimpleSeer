@@ -1,4 +1,12 @@
 
+isEmpty = function(obj) {
+    for (var prop in obj) {
+        if (obj.hasOwnProperty(prop)) return false;
+    }
+    return true;
+};
+
+
 /* Make sure the display is always relevant to the browser size
  * parts cribbed from http://jsfiddle.net/gaby/3YLQf/ */
 
@@ -203,38 +211,59 @@ SimpleSeer.Inspection.add = function(method, parameters) {
     
     $.post("/inspection_add", { name: name, camera: camera, method: method, parameters: JSON.stringify(parameters)}, 
         function(data) { 
-            SS.inspections = data; });
+            SS.inspections = data; 
+            SS.Frame.refresh();
+            SS.Inspection.cancelPreview();
+
+            });
 };
 
 SimpleSeer.Inspection.preview = function (method, parameters) {
-    //TODO make this pause if parameters haven't changed
-    camera = SS.framedata[0]['camera'];
-    
-    data = SS.preview_data[camera];
-    
-    if (data) {
-        SS.inspectionhandlers[method].render_features(data.features, data.inspection);
-    }
-    
-    if (SS.previews_running[camera]) {
+    if (SS.preview_running) {
+        SS.preview_queue = [method, parameters];
         return; //if there's already a preview running on this screen, wait
     }
     
-    SS.previews_running[camera] = true;
-    $.post("/inspection_preview", { name: "preview", camera: camera, method: method, parameters: JSON.stringify(parameters)},
+    SS.preview_queue = [];
+    SS.preview_running = true;
+    $.post("/inspection_preview", { name: "preview", camera: SS.framedata[0].camera, method: method, parameters: JSON.stringify(parameters)},
         function(data) {   
-            SS.preview_data[camera] = data;
-            SS.previews_running[camera] = false;
+            if ("halt" in SS.preview_data) {
+                SS.preview_data = {};
+            } else {
+                SS.preview_data = data;
+            }
+            SS.preview_running = false;
             });
 }
 
+SimpleSeer.Inspection.cancelPreview = function () {
+    SS.preview_queue = [];
+    if (SS.preview_running) {
+        SS.preview_data["halt"] = true;
+    } else {
+        SS.preview_data = {};
+    }
+}
+
 SimpleSeer.Inspection.render = function() {
+    //render any active inspections
     for (i in SS.inspections) {
-        insp = SS.inspections[i]
+        insp = SS.inspections[i];
         if (insp["method"] in SS.inspectionhandlers) {
-            SS.inspectionhandlers[insp["method"]].render(insp) 
+            SS.inspectionhandlers[insp["method"]].render(insp); 
         }
     }
+    
+    //render any active previews
+    if (!isEmpty(SS.preview_data)) {
+        pv = SS.preview_data;
+        if (pv.inspection.method in SS.inspectionhandlers) {
+            SS.inspectionhandlers[pv.inspection.method].render_features(pv.features, pv.inspection)
+        }
+    }
+    
+    
 };
 
 SimpleSeer.Inspection.remove = function(insp) {
@@ -246,7 +275,6 @@ SimpleSeer.Inspection.remove = function(insp) {
     if (SS.action.focus == "inspection_" +insp.id) {
         SS.action.focus = "";
     }
-    
     
     $.post("/inspection_remove", { id: insp.id }, function(data) {
         SS.inspections = data;
@@ -330,12 +358,12 @@ SimpleSeer.InspectionControl.button = function(id, title, onclick) {
     );
 };
 
-SimpleSeer.InspectionControl.applyCancelButton = function(id) {  
+SimpleSeer.InspectionControl.applyCancelButton = function(id, onapply, oncancel) {  
     
     return $("<div/>", { class: "control" }).append(
-        $("<button/>", { id: id }).append("Apply").button().click(function () { alert("ok") })
+        $("<button/>", { id: id }).append("Apply").button().click(onapply)
     ).append(
-        $("<button/>", { id: id }).append("Cancel").button().click(function () { alert("no") })
+        $("<button/>", { id: id }).append("Cancel").button().click(oncancel)
     );  
 };
 
@@ -565,19 +593,46 @@ SS.inspectionhandlers = {
             
             onchange = function(e, ui) {
                 params = { 
-                    threshval: $("#"+insp.id+"_threshval").value,
-                    invert: $("#"+insp.id+"_invert").innerHTML
+                    threshval: $("#"+insp.id+"_threshval").slider("value"),
+                    invert: $("#"+insp.id+"_invert").is(":checked")
                 };
-                
                 SS.Inspection.preview("blob", params);
             };
             
+            
+            onapply = function() {
+                params = { 
+                    threshval: $("#"+insp.id+"_threshval").slider("value"),
+                    invert: $("#"+insp.id+"_invert").is(":checked")
+                };
+                
+                if (insp.id == "preview") {
+                    SS.Inspection.add(insp.method, params);
+                } else {
+                    method = insp.method;
+                    SS.Inspection.remove(insp);
+                    SS.Inspection.add(method, params);
+                }
+                
+                $("#" + div_id).fadeOut(500).remove();
+                SS.resetAction(); 
+                
+            }
+            
+            oncancel = function() {
+                SS.Inspection.cancelPreview();
+                $("#" + div_id).fadeOut(500).remove();
+                SS.resetAction();   
+            };
+            
+            
+            
             $("#" + div_id).append(
-                SS.InspectionControl.checkbox(insp.id + "_invert", "invert", "Dark Areas", onchange) 
+                SS.InspectionControl.checkbox(insp.id + "_invert", "invert", "Find Dark Blobs", onchange) 
             ).append(
                 SS.InspectionControl.slider(insp.id + "_threshval", "threshval", "Threshold", 127, 0, 255, 1, onchange)
             ).append(
-                SS.InspectionControl.applyCancelButton(insp)
+                SS.InspectionControl.applyCancelButton(insp, onapply, oncancel)
             );
         },
         
@@ -617,19 +672,14 @@ SS.inspectionhandlers = {
             SS.Inspection.preview("blob", { threshval: thresh, minsize: 1000 });            
             */
             
-            insp = { id: "preview", method: "blob" };
+            insp = { id: "preview", method: "blob", threshval: 127 };
             SS.Inspection.control(insp, startx, starty);
-        },
-        manipulate_onclick: function() {
-            //clean out the preview mode
-            camera = SS.framedata[0]['camera'];
-            insp = SS.preview_data[camera].inspection;
-            SS.preview_data[camera] = false;
             
-            SS.Inspection.add("blob", insp.parameters);
-            SS.resetAction();
-            SS.waitForClick();
-        }
+            if (isEmpty(SS.preview_data)) {
+                SS.Inspection.preview("blob", { threshval: 127 });            
+            }
+        },
+
     }
 }
 
@@ -680,50 +730,51 @@ SS.p.draw = function() {
       task = SS.action["task"];
       
       if (task in SS.inspectionhandlers) {
-          if (SS.mouseDown) {
+          if (SS.mouseDown && "manipulate_onclick" in SS.inspectionhandlers[task]) {
               SS.inspectionhandlers[task].manipulate_onclick();
           } else {
               SS.inspectionhandlers[task].manipulate();
           } 
           //or manipulate onclick
       }
-  } else {
-      SS.Inspection.render();
-      SS.Feature.render();  
-      if (SS.mouseDown && !SS.mouseWait) {
-          if (SS.wasPressed) {
-            SS.launchRadial();
-          } else {
-            SS.launchRadial(true);   
-          }
-      } 
-  }
+  } 
+  SS.Inspection.render();
+  SS.Feature.render();  
+  if (SS.mouseDown && !SS.mouseWait) {
+      if (SS.wasPressed) {
+        SS.launchRadial();
+      } else {
+        SS.launchRadial(true);   
+      }
+  } 
+
   
   if (SS.action.focus) {
       SS.Display.renderObjectFocus(SS.action.focus);
   }
   
+  if (SS.preview_queue.length) {
+      SS.Inspection.preview(SS.preview_queue[0], SS.preview_queue[1]);
+  }
+  
   
   SS.wasPressed = SS.mouseDown;
  
- }
+}
 
 
 //TODO PUT ALL THESE in a "STATEMACHINE" object that gets backed up to redis
 //import some context from webdis, 
 SimpleSeer.cameras = SimpleSeer.getJSON('cameras');
-SimpleSeer.previews_running = {};
+SimpleSeer.preview_running = false;
 SimpleSeer.preview_data = {};
-for (c in SS.cameras) {
-    SimpleSeer.previews_running[c] = false;
-    SimpleSeer.previews_running[c] = false;
-}
+SimpleSeer.preview_queue = [];
 
 SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
 
 
 
-SimpleSeer.featuresets = {}
+SimpleSeer.featuresets = {};
 
 
 
