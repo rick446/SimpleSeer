@@ -67,7 +67,7 @@ class WebInterface(object):
         
         features = insp.execute(SimpleSeer.SimpleSeer().lastframes[-1][0].image)
         
-        return { "inspection": insp, "features": features}
+        return { "inspection": insp, "features": features }
 
     @cherrypy.expose
     @jsonify
@@ -83,6 +83,8 @@ class WebInterface(object):
         #TODO catch malformed data
         #TODO add parameters for morphs, parent etc
         SimpleSeer.SimpleSeer().reloadInspections()
+        Inspection.inspect()
+        SimpleSeer.SimpleSeer().update()
         
         return SimpleSeer.SimpleSeer().inspections
 
@@ -91,7 +93,7 @@ class WebInterface(object):
     def inspection_remove(self, **params):
         Inspection.objects(id = bson.ObjectId(params["id"])).delete()
         SimpleSeer.SimpleSeer().reloadInspections()
-        
+        Inspection.inspect()
         SimpleSeer.SimpleSeer().update()
         
         
