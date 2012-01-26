@@ -70,11 +70,31 @@ SimpleSeer.DisplayObject.addNavZoomOut = function(id) {
     });
 }
 
+SimpleSeer.DisplayObject.addInfo = function(id, info) {
+    SS.DisplayObject.addNavItem(id, "info", "Info", function(e) {
+        $(e.target).parent().parent().find(".detail").fadeIn(300);
+    });
+    
+    watchlist = $("<div/>", { class: "detail" }).append("Properties");
+    for (i in info) {
+        watchlist.append($("<p/>").append( i + ": " + info[i]).append(
+            $("<a/>", { href: "", title: "Watch" }).append($("<b/>", { class: "ico watch"}))
+        ));
+    }
+    
+    $("#" + id).find("nav").append(watchlist)
+}
+
+
 
 SimpleSeer.Display = {};
 
 
 SimpleSeer.Display.renderObjectFocus = function(id) {
+    
+      if (SS.zoomer.zoomLevel() > 1) {
+            return;
+      } 
       focusdiv = $("#" + id);
       offset = focusdiv.offset();
       
@@ -111,11 +131,17 @@ SimpleSeer.Display.renderObjectFocus = function(id) {
       SS.p.vertex(x + w, y);
       SS.p.vertex(x, y);
       SS.p.endShape(SS.p.CLOSE);
+      
+      SS.p.stroke(0);
+      SS.p.noFill();
+      SS.p.rect(x,y,w,h);
+      
 }
 
 
 SimpleSeer.Display.addDisplayObject = function(id, x, y, w, h) {
 
+    
     $("#" + id).remove(); //delete any existing object with this ID
     
     objdiv = $("<div/>", {
@@ -167,6 +193,7 @@ SimpleSeer.Frame.refresh = function() {
    
     SS.Feature.refresh();
     SS.histgraph.draw();
+    $(".object").remove();
     $("#maindisplay").find("img").attr("src", "/GET/currentframe_0.jpg?" + new Date().getTime().toString());    
 };
 
@@ -525,7 +552,7 @@ SS.inspectionhandlers = {
 
             SS.DisplayObject.addNavZoomIn(div_id); 
             SS.DisplayObject.addNavZoomOut(div_id);
-            SS.DisplayObject.addNavItem(div_id, "info", "Info", function () { });
+            SS.DisplayObject.addInfo(div_id, { left: p.x, top: p.y, width: p.w, height: p.h });
             SS.DisplayObject.addNavItem(div_id, "close", "Remove", function(e) {
                 SS.Inspection.remove(insp);
                 SS.mouseBlock = false;
@@ -644,17 +671,44 @@ SS.inspectionhandlers = {
             if (features.length == 0) {
                 return;
             }
-            SS.p.fill(0, 128, 0 , 80);
+            
             SS.p.stroke(0);
             for (i in features) {
                 f = features[i];
+                clr = f.meancolor;
+                for (index in clr) {
+                    clr[index] = Math.round(clr[index]);
+                }
+                //alert(JSON.stringify(clr));
+                SS.p.stroke(0, 255, 255);
+                SS.p.fill(0, 128, 128, 60);
+            
                 SS.p.beginShape();
                 for (c in f.featuredata.mContour) {
                     pt = f.featuredata.mContour[c];
                     SS.p.vertex(pt[0], pt[1]);
                 }
                 SS.p.endShape();
+            
+                div_id = "inspection_" + inspection.id + "_feature_"+i.toString();
+                
+                if ($("#"+div_id).length) {
+                    continue;
+                }
+                
+                SS.Display.addDisplayObject(div_id, f.points[0][0], f.points[0][1], f.width, f.height);
+                SS.DisplayObject.addNavZoomIn(div_id);
+                SS.DisplayObject.addNavZoomOut(div_id);
+                SS.DisplayObject.addNavItem(div_id, "info", "Info", function () { });
+                SS.DisplayObject.addNavItem(div_id, "gear", "Edit", function () { });
             }
+            
+            if (inspection.id == "preview") {
+                return;
+            }
+            
+            
+            
         
         },
         manipulate: function() {

@@ -165,6 +165,7 @@ class Inspection(SimpleDoc):
         feats = []
         for b in blobs:
             ff = FrameFeature()
+            b.image = image
             ff.setFeature(b)
             feats.append(ff)
             
