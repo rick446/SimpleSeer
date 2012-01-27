@@ -475,7 +475,7 @@ margin: 4px 0;
   width: 136px !important;
   z-index: 3;
   min-width: 26px;
-  height: 100%;
+  height: auto;
   margin: 0 auto;
   padding: 16px;
       -moz-border-radius: 4px;
@@ -492,6 +492,15 @@ margin: 4px 0;
   top: 0;
   left: 48px;
 }
+
+.detail div {
+    max-height: 348px;
+    padding-right: 16px;
+    overflow: auto;
+} 
+.detail p {position: relative;}
+.detail p .ico {position: absolute; top: 0; right: 0; height: 16px; width: 16px;}
+
 .object nav.expand {right: -45px;}
 
 .emboss {padding: 20px;}

@@ -50,7 +50,7 @@ SimpleSeer.DisplayObject = {};
 
 SimpleSeer.DisplayObject.addNavItem = function(id, iconcls, title, clickmethod) {
     $("#" + id).find("nav").append(
-       $("<a/>", { title: title, href: "" }).append($("<b/>", { class: "ico " +iconcls })).click(clickmethod)
+       $("<a/>", { title: title, href: "#" }).append($("<b/>", { class: "ico " +iconcls })).click(clickmethod)
     );
 }
 
@@ -70,22 +70,35 @@ SimpleSeer.DisplayObject.addNavZoomOut = function(id) {
     });
 }
 
-SimpleSeer.DisplayObject.addInfo = function(id, info) {
+SimpleSeer.DisplayObject.addNavInfo = function(id, info, inspection, featureindex) {
     SS.DisplayObject.addNavItem(id, "info", "Info", function(e) {
         $(e.target).parent().parent().find(".detail").fadeIn(300);
+        return false;
     });
     
     watchlist = $("<div/>", { class: "detail" }).append("Properties");
     for (i in info) {
-        watchlist.append($("<p/>").append( i + ": " + info[i]).append(
-            $("<a/>", { href: "", title: "Watch" }).append($("<b/>", { class: "ico watch"}))
+        value = SS.featuresets[inspection.id][featureindex][i];
+        label = info[i].label;
+        
+        units = ''
+        if ("units" in info[i]) {
+            units = info[i].units;
+        } 
+        
+        if ("handler" in info[i]) {
+            value = info[i].handler(value);
+        }
+        
+        watchlist.append($("<p/>").append(label + ": " + value + units).append(
+            $("<a/>", { href: "", title: "Watch" }).append($("<b/>", { class: "ico watch"})).click(function() {
+                SS.Measurement.add(inspection, { index: featureindex}, i);
+            })
         ));
     }
     
     $("#" + id).find("nav").append(watchlist)
 }
-
-
 
 SimpleSeer.Display = {};
 
@@ -471,6 +484,15 @@ SimpleSeer.Feature.render = function() {
 }
 
 SimpleSeer.Measurement = {};
+
+SimpleSeer.Measurement.add = function() {
+    
+    
+    
+}
+
+
+
 SimpleSeer.Measurement.render = function() {
     
 }
@@ -542,6 +564,8 @@ SS.inspectionhandlers = {
             id = insp.id;
 
             zoomlevel = SS.zoomer.zoomLevel();
+            
+            feat = SS.featuresets[id].inspection;
 
             if ($("#inspection_" + id).length){
                 return;
@@ -552,7 +576,17 @@ SS.inspectionhandlers = {
 
             SS.DisplayObject.addNavZoomIn(div_id); 
             SS.DisplayObject.addNavZoomOut(div_id);
-            SS.DisplayObject.addInfo(div_id, { left: p.x, top: p.y, width: p.w, height: p.h });
+            SS.DisplayObject.addNavInfo(div_id, {
+                x: { label: "top", units: "px" },
+                y: { label: "left", units: "px"},
+                width: { label: "width", units: "px"},
+                height: { label: "height", units: "px"},
+                meancolor: { label: "color", handler: function(clr) { 
+                    clrhex = [];  
+                    for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
+                    return "#" + clrhex.join("");
+                    }, units: ""}
+                }, insp, 0);
             SS.DisplayObject.addNavItem(div_id, "close", "Remove", function(e) {
                 SS.Inspection.remove(insp);
                 SS.mouseBlock = false;
@@ -699,7 +733,18 @@ SS.inspectionhandlers = {
                 SS.Display.addDisplayObject(div_id, f.points[0][0], f.points[0][1], f.width, f.height);
                 SS.DisplayObject.addNavZoomIn(div_id);
                 SS.DisplayObject.addNavZoomOut(div_id);
-                SS.DisplayObject.addNavItem(div_id, "info", "Info", function () { });
+                SS.DisplayObject.addNavInfo(div_id, {
+                    x: { label: "top", units: "px" },
+                    y: { label: "left", units: "px"},
+                    width: { label: "width", units: "px"},
+                    height: { label: "height", units: "px"},
+                    angle: { label: "angle", units: "&deg;"},
+                    meancolor: { label: "color", handler: function(clr) { 
+                        clrhex = [];  
+                        for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
+                        return "#" + clrhex.join("");
+                        }, units: ""}
+                }, inspection, i);
                 SS.DisplayObject.addNavItem(div_id, "gear", "Edit", function () { });
             }
             

@@ -114,7 +114,34 @@ class WebInterface(object):
         SimpleSeer.SimpleSeer().update()
         return dict( inspect = "ok" )    
     
-
+    @cherrypy.expose
+    @jsonify
+    def measurement_add(self, **params):
+        if not params.has_key('units'):
+            params['units'] = 'px';
+        
+        m = Measurement(name = params["name"],
+            label = params['label'],
+            method = params['method'],
+            featurecriteria = json.loads(params["featurecriteria"]),
+            parameters = json.loads(params["parameters"]),
+            units = params['units'],
+            inspection = bson.ObjectId(params['inspection']))
+        m.save()
+        return jsonencode(m)
+    
+    @cherrypy.expose
+    @jsonify
+    def measurement_remove(self, **params):
+        Measurement.objects(id = bson.ObjectId(params["id"])).delete()
+        Result.objects(measurement = bson.ObjectId(params["id"])).delete()
+        return dict( remove = "ok")
+    
+    @cherrypy.expose
+    @jsonify
+    def measurement_results(self, **params):
+        return list(Result.objects(measurement = bson.ObjectId(params["id"])).order_by("-capturetime"))
+    
     @cherrypy.expose
     @jsonify
     def ping(self):
@@ -124,4 +151,6 @@ class WebInterface(object):
 
 import SimpleSeer
 from Inspection import Inspection
+from Measurement import Measurement
+from Result import Result
 from Frame import Frame

@@ -50,6 +50,7 @@ class SimpleSeer(threading.Thread):
          
         
         self.lastframes = []
+        self.results = {}
         self.framecount = 0
         
         #log display started
@@ -78,7 +79,10 @@ class SimpleSeer(threading.Thread):
     def reloadInspections(self):
         i = list(Inspection.objects)
         Session().redis.set("inspections", i)
+        m = list(Measurement.objects)
+        Session().redis.set("measurements", m)
         self.inspections = i
+        self.measurements = m
         return i
 
     def capture(self):
@@ -125,7 +129,13 @@ class SimpleSeer(threading.Thread):
                 
                 results = inspection.execute(frame.image)
                 frame.features.extend(results)
-        
+                for m in inspection.measurements:
+                    results = m.execute(frame)
+                    for r in results:
+                        if not self.results.has_key(r.capturetime):
+                            self.results[r.capturetime] = []
+                        self.results[r.capturetime].append(r)
+                        
         return frames
                 
     def check(self):
@@ -142,6 +152,7 @@ class SimpleSeer(threading.Thread):
             Session().redis.setraw("currentframe_%d" % count, jpgdata.getvalue())
             Session().redis.set("histogram_%d" % count, f.image.histogram(50))
             Session().redis.set("currentframedata_%d" % count, f)
+            Session().redis.set("results", self.results) #TODO, PUT A LIMIT (last 50 readings?  time?)
             count = count + 1
     
     def run(self):
