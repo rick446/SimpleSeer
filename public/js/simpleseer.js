@@ -739,6 +739,7 @@ SS.inspectionhandlers = {
                     width: { label: "width", units: "px"},
                     height: { label: "height", units: "px"},
                     angle: { label: "angle", units: "&deg;"},
+                    area: { label: "area", units: "px"},
                     meancolor: { label: "color", handler: function(clr) { 
                         clrhex = [];  
                         for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
