@@ -50,7 +50,6 @@ class SimpleSeer(threading.Thread):
          
         
         self.lastframes = []
-        self.results = {}
         self.framecount = 0
         
         #log display started
@@ -119,7 +118,9 @@ class SimpleSeer(threading.Thread):
         elif not len(frames):
             frames = self.lastframes[-1]
         
-        for frame in frames:   
+        for frame in frames:
+            frame.features = []
+            frame.results = []
             for inspection in self.inspections:
                 if inspection.parent:  #root parents only
                     continue
@@ -130,13 +131,10 @@ class SimpleSeer(threading.Thread):
                 results = inspection.execute(frame.image)
                 frame.features.extend(results)
                 for m in inspection.measurements:
-                    results = m.execute(frame)
-                    for r in results:
-                        if not self.results.has_key(r.capturetime):
-                            self.results[r.capturetime] = []
-                        self.results[r.capturetime].append(r)
+                    frame.results += m.execute(frame, results)
+                    
                         
-        return frames
+        return 
                 
     def check(self):
         for watcher in self.watchers:
@@ -154,6 +152,23 @@ class SimpleSeer(threading.Thread):
             Session().redis.set("currentframedata_%d" % count, f)
             Session().redis.set("results", self.results) #TODO, PUT A LIMIT (last 50 readings?  time?)
             count = count + 1
+    
+    def refresh(self):
+        self.reloadInspections()
+        self.inspect()
+        self.update()
+    
+    @property
+    def results(self):
+        ret = []
+        for frameset in self.lastframes:
+            results = []
+            for f in frameset:
+                results += [f.results for f in frameset]
+            
+            ret.append(results)
+            
+        return ret
     
     def run(self):
         while not self.halt:

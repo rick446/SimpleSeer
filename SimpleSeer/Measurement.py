@@ -30,7 +30,7 @@ class Measurement(SimpleDoc):
     inspection = mongoengine.ObjectIdField()
     featurecriteria = mongoengine.DictField()
 
-    def execute(self, frame):
+    def execute(self, frame, features):
         
         if hasattr(self, self.method):
             function_ref = getattr(self, self.method)
@@ -38,11 +38,7 @@ class Measurement(SimpleDoc):
 
             return self.toResults(frame, values)
 
-        
-        
-        
-        
-        featureset = self.findFeatureset(frame.features)
+        featureset = self.findFeatureset(features)
         #this will catch nested features
         
         if not len(featureset):
@@ -82,7 +78,7 @@ class Measurement(SimpleDoc):
         def numeric(val):
             try:
                 return float(val)
-            except ValueError:
+            except TypeError:
                 return None
 
         return [ Result(
@@ -93,6 +89,8 @@ class Measurement(SimpleDoc):
             inspection = self.inspection,
             measurement = self.id,
             frame = frame.id) for v in values ]
-            
+    
+    def __repr__(self):
+        return "<Measurement: " + str(self.inspection) + " " + self.method + " " + str(self.featurecriteria) + ">"
             
 from Result import Result

@@ -11,6 +11,7 @@ class Result(SimpleDoc):
     """
     #this needs some work yet, should be much simpler
     numeric = mongoengine.FloatField()
+    #list = mongoEngine.ListField()  #todo encode results as lists or dicts
     string = mongoengine.StringField()
     capturetime = mongoengine.DateTimeField()
     camera = mongoengine.StringField()

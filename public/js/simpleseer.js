@@ -6,6 +6,11 @@ isEmpty = function(obj) {
     return true;
 };
 
+//http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
+capitalize = function(){
+   return this.replace( /(^|\s)([a-z])/g , function(m,p1,p2){ return p1+p2.toUpperCase(); } );
+};
+
 
 /* Make sure the display is always relevant to the browser size
  * parts cribbed from http://jsfiddle.net/gaby/3YLQf/ */
@@ -49,6 +54,8 @@ SimpleSeer.DisplayObject = {};
 
 
 SimpleSeer.DisplayObject.addNavItem = function(id, iconcls, title, clickmethod) {
+    //TODO, when nav is close to right side, flip to left-nav (css class)
+    
     $("#" + id).find("nav").append(
        $("<a/>", { title: title, href: "#" }).append($("<b/>", { class: "ico " +iconcls })).click(clickmethod)
     );
@@ -70,37 +77,53 @@ SimpleSeer.DisplayObject.addNavZoomOut = function(id) {
     });
 }
 
-SimpleSeer.DisplayObject.addNavInfo = function(id, info, inspection, featureindex) {
+SimpleSeer.DisplayObject.addNavInfo = function(id, title, info, inspection, featureindex) {
     SS.DisplayObject.addNavItem(id, "info", "Info", function(e) {
         $(e.target).parent().parent().find(".detail").fadeIn(300);
         return false;
     });
     
-    watchlist = $("<div/>", { class: "detail" }).append("Properties");
-    for (i in info) {
-        value = SS.featuresets[inspection.id][featureindex][i];
-        label = info[i].label;
-        method = i;
+    
+    watchlist = $("<div/>", { class: "detail" }).append(title);
+    for (prop in info) {
+        value = SS.featuresets[inspection.id][featureindex][prop];
+        label = info[prop].label;
+        method = prop;
         
         units = ''
-        if ("units" in info[i]) {
-            units = info[i].units;
+        if ("units" in info[prop]) {
+            units = info[prop].units;
         } 
         
-        if ("handler" in info[i]) {
-            value = info[i].handler(value);
+        if ("handler" in info[prop]) {
+            value = info[prop].handler(value);
+        }
+        
+        var watchclass = "ico watch";
+        
+        
+        //TODO make the eye toggle properly onclick
+        var watchfunction = function(i, fc, m) { return function() {
+            SS.Measurement.add({ inspection: i,
+                featurecriteria: fc,
+                method: m
+            });
+            return false;
+        } }(inspection, { index: featureindex}, method);
+        
+        meas = SS.Inspection.findMeasurement(inspection, { index: featureindex }, prop);
+        if (meas) {
+            watchclass = "ico watched"
+            watchfunction = function(m) { return function() {
+                SS.Measurement.remove(m);
+                return false;
+            }}(meas);
         }
         
         watchlist.append($("<p/>").append(label + ": " + value + units).append(
-            $("<a/>", { href: "", title: "Watch" }).append($("<b/>", { class: "ico watch"})).click(function() {
-                SS.Measurement.add({ inspection: inspection,
-                    featurecriteria: { index: featureindex},
-                    method: method,
-                    units: units
-                });
-                
-                return false;
-            })
+            $("<a/>", { href: "", title: "Watch" }).append(
+                $("<b/>", { class: watchclass})
+            ).click(watchfunction)
         ));
     }
     
@@ -175,7 +198,7 @@ SimpleSeer.Display.addDisplayObject = function(id, x, y, w, h) {
     }).appendTo('#zoomer').append(
         $("<nav>", {
             id: "manage_" + id,
-            style: "display: none", 
+            style: "display: none" 
         }).hover( function() {
                 SS.mouseBlock = true;
             }, function() {
@@ -209,6 +232,8 @@ SimpleSeer.Frame.refresh = function() {
     SimpleSeer.framecount = SimpleSeer.getValue('framecount');
 
     SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
+    SimpleSeer.measurements = SimpleSeer.getJSON('measurements');
+    SimpleSeer.results = SimpleSeer.getJSON('results');
     SimpleSeer.histogram = SimpleSeer.getJSON('histogram_0');
    
     SS.Feature.refresh();
@@ -362,6 +387,21 @@ SimpleSeer.Inspection.control = function(insp, x, y) {
                 SS.mouseBlock = false;
             });
 };
+
+SimpleSeer.Inspection.findMeasurement = function(inspection, featurecriteria, method) {
+    for (i in SS.measurements) {
+        measurement = SS.measurements[i];
+        if (measurement.inspection == inspection.id &&
+            measurement.method == method &&
+            _.isEqual(featurecriteria, measurement.featurecriteria)) {
+            return measurement;
+        }
+        
+    }
+    return null;
+}
+
+
 
 SimpleSeer.InspectionControl = {};
 
@@ -608,7 +648,7 @@ SS.inspectionhandlers = {
 
             SS.DisplayObject.addNavZoomIn(div_id); 
             SS.DisplayObject.addNavZoomOut(div_id);
-            SS.DisplayObject.addNavInfo(div_id, {
+            SS.DisplayObject.addNavInfo(div_id, "Region Properties", {
                 x: { label: "top", units: "px" },
                 y: { label: "left", units: "px"},
                 width: { label: "width", units: "px"},
@@ -768,7 +808,7 @@ SS.inspectionhandlers = {
                 SS.Display.addDisplayObject(div_id, f.points[0][0], f.points[0][1], f.width, f.height);
                 SS.DisplayObject.addNavZoomIn(div_id);
                 SS.DisplayObject.addNavZoomOut(div_id);
-                SS.DisplayObject.addNavInfo(div_id, {
+                SS.DisplayObject.addNavInfo(div_id, "Blob " + i.toString() + " Properties", {
                     x: { label: "top", units: "px" },
                     y: { label: "left", units: "px"},
                     width: { label: "width", units: "px"},

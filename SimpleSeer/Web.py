@@ -92,6 +92,8 @@ class WebInterface(object):
     @jsonify
     def inspection_remove(self, **params):
         Inspection.objects(id = bson.ObjectId(params["id"])).delete()
+        Measurement.objects(inspection = bson.ObjectId(params["id"])).delete()
+        Result.objects(inspection = bson.ObjectId(params["id"])).delete()
         SimpleSeer.SimpleSeer().reloadInspections()
         Inspection.inspect()
         SimpleSeer.SimpleSeer().update()
@@ -128,6 +130,13 @@ class WebInterface(object):
             units = params['units'],
             inspection = bson.ObjectId(params['inspection']))
         m.save()
+        
+        #backfill?
+        
+        SimpleSeer.SimpleSeer().reloadInspections()
+        Inspection.inspect()
+        SimpleSeer.SimpleSeer().update()
+        
         return jsonencode(m)
     
     @cherrypy.expose
@@ -135,6 +144,10 @@ class WebInterface(object):
     def measurement_remove(self, **params):
         Measurement.objects(id = bson.ObjectId(params["id"])).delete()
         Result.objects(measurement = bson.ObjectId(params["id"])).delete()
+        
+        SimpleSeer.SimpleSeer().reloadInspections()
+        SimpleSeer.SimpleSeer().update()
+
         return dict( remove = "ok")
     
     @cherrypy.expose

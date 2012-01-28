@@ -25,6 +25,7 @@ class Frame(SimpleDoc):
     _image = mongoengine.BinaryField() #binary image data
     _layer = mongoengine.BinaryField(default = '') #layer data
     _imgcache = ''
+    results = [] #cache for result objects when frame is unsaved
 
     @apply
     def image():
@@ -67,8 +68,16 @@ class Frame(SimpleDoc):
         if self._imgcache != '':
             self.image = self._imgcache #encode any layer changes made before save
             self._imgcache = ''
+        
+        results = self.results
+        self.results = []
 
         super(Frame, self).save()
+        
+        for r in results:
+            if not r.frame:  
+                r.frame = self.id
+                r.save()  #TODO, check to make sure measurement/inspection are saved
         
     @classmethod
     def capture(cls):
