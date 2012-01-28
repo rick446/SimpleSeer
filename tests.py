@@ -47,7 +47,7 @@ insp2 = Inspection(
    name = "Light Blobs",
    method = "blob",
    camera = "Default Camera",
-   parameters = dict( minsize = 1000 ),
+   parameters = dict( minsize = 100 ),
    parent = insp.id)
 
 insp2.save()
@@ -58,8 +58,17 @@ frames[0].save()  #test save
 Frame.objects.order_by("-capturetime").first().features[0].children[0].feature
 #reload the most recent frame, and check to see if we can retrieve a blob from it
 
-#TODO, test Redis/Webdis storage
-#TODO, call cherrypy controllers
+meas = Measurement(name =  "blob_largest_area",
+        label = "Blob Area",
+        method = "area",
+        parameters = dict(),
+        featurecriteria = dict( index = -1 ),
+        units =  "px",
+        inspection = insp2.id)
+meas.save()
+results = meas.execute(frames[0])
+[r.save() for r in results]
+
 
 import cherrypy
 cherrypy.engine.stop()

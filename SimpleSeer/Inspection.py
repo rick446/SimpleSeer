@@ -87,27 +87,27 @@ class Inspection(SimpleDoc):
         #get the ROI function that we want
         #note that we should validate/roi method
  
-        results = method_ref(image)
+        featureset = method_ref(image)
         
-        if not results:
+        if not featureset:
             return []
         
         #we're executing an unsaved inspection, which can have no children
         if not self.id:
-            return results
+            return featureset
         
-        for r in results:
+        for r in featureset:
             r.inspection = self.id
         
         children = self.children
         
         if not children:
-            return results
+            return featureset
         
         if children:
             newparents = deepcopy(parents)
             newparents[self.id] = True
-            for r in results:
+            for r in featureset:
                 f = r.feature
                 f.image = image
                 roi = f.crop()
@@ -116,11 +116,15 @@ class Inspection(SimpleDoc):
                     r.children.extend(child.execute(roi, newparents))
                 
         
-        return results
+        return featureset
     
     @property
     def children(self):
         return Inspection.objects(parent = self.id)
+        
+    @property
+    def measurements(self):
+        return Measurement.objects(inspection = self.id)
         
     @classmethod    
     def inspect(self):
@@ -165,6 +169,7 @@ class Inspection(SimpleDoc):
         feats = []
         for b in blobs:
             ff = FrameFeature()
+            b.image = image
             ff.setFeature(b)
             feats.append(ff)
             
