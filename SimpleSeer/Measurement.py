@@ -46,7 +46,11 @@ class Measurement(SimpleDoc):
          
         if self.featurecriteria.has_key("index"):
             i = int(self.featurecriteria['index'])
-            featureset = [featureset[i]]
+            
+            if len(featureset) > i:
+                featureset = [featureset[i]]
+            else:
+                return []
         #TODO more advanced filtering options here
         
         values = []
