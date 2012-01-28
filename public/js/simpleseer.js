@@ -80,6 +80,7 @@ SimpleSeer.DisplayObject.addNavInfo = function(id, info, inspection, featureinde
     for (i in info) {
         value = SS.featuresets[inspection.id][featureindex][i];
         label = info[i].label;
+        method = i;
         
         units = ''
         if ("units" in info[i]) {
@@ -92,7 +93,13 @@ SimpleSeer.DisplayObject.addNavInfo = function(id, info, inspection, featureinde
         
         watchlist.append($("<p/>").append(label + ": " + value + units).append(
             $("<a/>", { href: "", title: "Watch" }).append($("<b/>", { class: "ico watch"})).click(function() {
-                SS.Measurement.add(inspection, { index: featureindex}, i);
+                SS.Measurement.add({ inspection: inspection,
+                    featurecriteria: { index: featureindex},
+                    method: method,
+                    units: units
+                });
+                
+                return false;
             })
         ));
     }
@@ -485,10 +492,35 @@ SimpleSeer.Feature.render = function() {
 
 SimpleSeer.Measurement = {};
 
-SimpleSeer.Measurement.add = function() {
+SimpleSeer.Measurement.add = function(params) {
+    //name, label, units, featurecriteria, method, parameters, inspection
+    if (!("name" in params)) {
+        params.name = params.inspection.name + " " + params.method;
+    }
     
+    if (!("label" in params)) {
+        params.label = params.method.charAt(0).toUpperCase() + params.method.slice(1)
+    }
     
+    if ("featurecriteria" in params) {
+        params.featurecriteria = JSON.stringify(params.featurecriteria);
+    } else {
+        params.featurecriteria = '{}';
+    }
     
+    if ("parameters" in params) {
+        params.parameters = JSON.stringify(params.parameters);
+    } else {
+        params.parameters = '{}';
+    }
+    
+    params.inspection = params.inspection.id;
+    
+    $.post("/measurement_add", params, 
+        function(data) { 
+            SS.measurements = data; 
+            SS.Frame.refresh();
+        });
 }
 
 
@@ -724,6 +756,9 @@ SS.inspectionhandlers = {
                 }
                 SS.p.endShape();
             
+                if (!inspection.id || inspection.id == "preview") {
+                    continue;
+                }
                 div_id = "inspection_" + inspection.id + "_feature_"+i.toString();
                 
                 if ($("#"+div_id).length) {
@@ -749,9 +784,7 @@ SS.inspectionhandlers = {
                 SS.DisplayObject.addNavItem(div_id, "gear", "Edit", function () { });
             }
             
-            if (inspection.id == "preview") {
-                return;
-            }
+            
             
             
             
@@ -853,7 +886,7 @@ SS.p.draw = function() {
       SS.Display.renderObjectFocus(SS.action.focus);
   }
   
-  if (SS.preview_queue.length) {
+  if (SS.preview_queue.length && SS.preview_queue.length == 2) {
       SS.Inspection.preview(SS.preview_queue[0], SS.preview_queue[1]);
   }
   
