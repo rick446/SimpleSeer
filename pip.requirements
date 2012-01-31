@@ -3,4 +3,5 @@ cherrypy
 jsonpickle
 ujson
 supervisor
+redis
 https://bitbucket.org/tino/pyfirmata/get/0.9.4.tar.gz
