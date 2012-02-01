@@ -1051,7 +1051,8 @@ h1 input:hover {
     .ico.play {background: url("../img/30-circle-play.png") no-repeat 50% 50%;}
     .ico.watch {background: url("../img/13-eye.png") no-repeat 50% 50%;}
     .ico.watched {background: url("../img/13-eye-b.png") no-repeat 50% 50%;}
-
+    .ico.lock {background: url("../img/lock.png") no-repeat 50% 50%;}
+    .ico.unlock {background: url("../img/unlock.png") no-repeat 50% 50%;}
 
 
 /* tablet ----------- */
