@@ -33,6 +33,9 @@ class SimpleSeer(threading.Thread):
 
         self.cameras = []
         
+        #TODO, make this sensitive to module.__path__
+        self.pluginpath = "./SimpleSeer/plugins"
+        
         for camera in self.config.cameras:
             camerainfo = camera.copy()
             if camerainfo.has_key('virtual'):
@@ -113,7 +116,8 @@ class SimpleSeer(threading.Thread):
         self.plugins = {}
         plugins = self.plugins
 
-        for plugin in [ name for name in os.listdir('./SimpleSeer/plugins') if os.path.isdir(os.path.join('./SimpleSeer/plugins', name)) ]:
+        
+        for plugin in [ name for name in os.listdir(self.pluginpath) if os.path.isdir(os.path.join(self.pluginpath, name)) ]:
             plugin = plugin.split()[0]
             try:
                 plugins[plugin] = __import__("SimpleSeer.plugins."+plugin)

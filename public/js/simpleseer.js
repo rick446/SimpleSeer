@@ -746,143 +746,9 @@ SS.inspectionhandlers = {
             SS.resetAction();
             SS.waitForClick();
         }
-    },
-    blob: {
-        rendercontrols: function(insp, div_id) {
-            $("#" + div_id).append($("<h2/>").append("Blob Controls"));
-
-            
-            onchange = function(e, ui) {
-                params = { 
-                    threshval: $("#"+insp.id+"_threshval").slider("value"),
-                    invert: $("#"+insp.id+"_invert").is(":checked")
-                };
-                SS.Inspection.preview("blob", params);
-            };
-            
-            
-            onapply = function() {
-                params = { 
-                    threshval: $("#"+insp.id+"_threshval").slider("value"),
-                    invert: $("#"+insp.id+"_invert").is(":checked")
-                };
-                
-                if (insp.id == "preview") {
-                    SS.Inspection.add(insp.method, params);
-                } else {
-                    method = insp.method;
-                    SS.Inspection.remove(insp);
-                    SS.Inspection.add(method, params);
-                }
-                
-                $("#" + div_id).fadeOut(500).remove();
-                SS.resetAction(); 
-                
-            }
-            
-            oncancel = function() {
-                SS.Inspection.cancelPreview();
-                $("#" + div_id).fadeOut(500).remove();
-                SS.resetAction();   
-            };
-            
-            
-            
-            $("#" + div_id).append(
-                SS.InspectionControl.checkbox(insp.id + "_invert", "invert", "Find Dark Blobs", onchange) 
-            ).append(
-                SS.InspectionControl.slider(insp.id + "_threshval", "threshval", "Threshold", 127, 0, 255, 1, onchange)
-            ).append(
-                SS.InspectionControl.applyCancelButton(insp, onapply, oncancel)
-            );
-        },
-        
-        render: function () {
-            
-            
-        },
-        render_features: function (features, inspection) {
-            if (features.length == 0) {
-                return;
-            }
-            
-            SS.p.stroke(0);
-            for (i in features) {
-                f = features[i];
-                clr = f.meancolor;
-                for (index in clr) {
-                    clr[index] = Math.round(clr[index]);
-                }
-                //alert(JSON.stringify(clr));
-                SS.p.stroke(0, 255, 255);
-                SS.p.fill(0, 128, 128, 60);
-            
-                SS.p.beginShape();
-                for (c in f.featuredata.mContour) {
-                    pt = f.featuredata.mContour[c];
-                    SS.p.vertex(pt[0], pt[1]);
-                }
-                SS.p.endShape();
-            
-                if (!inspection.id || inspection.id == "preview") {
-                    continue;
-                }
-                div_id = "inspection_" + inspection.id + "_feature_"+i.toString();
-                
-                if ($("#"+div_id).length) {
-                    continue;
-                }
-                
-                SS.Display.addDisplayObject(div_id, f.points[0][0], f.points[0][1], f.width, f.height);
-                SS.DisplayObject.addNavZoomIn(div_id);
-                SS.DisplayObject.addNavZoomOut(div_id);
-                SS.DisplayObject.addNavInfo(div_id, "Blob " + i.toString() + " Properties", {
-                    x: { label: "top", units: "px" },
-                    y: { label: "left", units: "px"},
-                    width: { label: "width", units: "px"},
-                    height: { label: "height", units: "px"},
-                    angle: { label: "angle", units: "&deg;"},
-                    area: { label: "area", units: "px"},
-                    meancolor: { label: "color", handler: function(clr) { 
-                        clrhex = [];  
-                        for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
-                        return "#" + clrhex.join("");
-                        }, units: ""}
-                }, inspection, i);
-                SS.DisplayObject.addNavItem(div_id, "gear", "Edit", function () { });
-            }
-            
-            
-            
-            
-            
-        
-        },
-        manipulate: function() {
-            startx = SS.action['startpx'][0];
-            starty = SS.action['startpx'][1];
-            
-            /*
-            xdiff = startx - SS.mouseX;
-            ydiff = starty - SS.mouseY;
-            
-            diff = xdiff * SS.xscalefactor;
-            
-            thresh = SS.clamp(128 + diff, 1, 254);
-            
-            SS.Inspection.preview("blob", { threshval: thresh, minsize: 1000 });            
-            */
-            
-            insp = { id: "preview", method: "blob", threshval: 127 };
-            SS.Inspection.control(insp, startx, starty);
-            
-            if (isEmpty(SS.preview_data)) {
-                SS.Inspection.preview("blob", { threshval: 127 });            
-            }
-        },
-
     }
-}
+    
+};
 
 //interface helpers, functions to control aspects of interface state
 SS.launchRadial = function(animate) {
@@ -1001,6 +867,10 @@ SimpleSeer.resetAction = function() {
     SS.action = { startpx: [0,0], task: "", focus: "" };
 }
 
+SimpleSeer.loadPlugins = function() {
+    
+}
+
 
 
 //initalize the display and the resize function
@@ -1041,10 +911,11 @@ $(function(){
 });
 
 //Setup executes when the display is ready to be initialized
-SimpleSeer.setup = function(){
+SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
     SS.p.setup();
     SS.p.loop();
     SS.zoomer = zoom($("#zoomer")[0]);
+    SS.loadPlugins();
 
 
     SS.histgraph.setup();
@@ -1101,7 +972,7 @@ SimpleSeer.setup = function(){
 
    SimpleSeer.Frame.refresh();
 
-}
+})};
 
 
 /*
