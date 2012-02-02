@@ -50,7 +50,7 @@ class SimpleSeer(threading.Thread):
         
         self.reloadInspections() #initialize inspections so they get saved to redis
          
-        #self.loadPlugins()
+        self.loadPlugins()
         self.lastframes = []
         self.framecount = 0
         
@@ -87,16 +87,15 @@ class SimpleSeer(threading.Thread):
         return i
 
     def loadPlugins(self):
-      self.plugins = {}
-      plugins = self.plugins
-      print os.getcwd()
-      #~ try:
-      for plugin in os.listdir('./SimpleSeer/plugins'):
-          plugin = plugin.split()[0]
-          print "plugin:",plugin
-          plugins[plugin] = __import__(plugin)
-      #~ except:
-        #~ print "Couldn't load plugins"
+        self.plugins = {}
+        plugins = self.plugins
+        print os.getcwd()
+        #try:
+        for plugin in [ name for name in os.listdir('./SimpleSeer/plugins') if os.path.isdir(os.path.join('./SimpleSeer/plugins', name)) ]:
+            plugin = plugin.split()[0]
+            plugins[plugin] = __import__("SimpleSeer.plugins."+plugin)
+        #except:
+           # print "Couldn't load plugins"
 
         
 
