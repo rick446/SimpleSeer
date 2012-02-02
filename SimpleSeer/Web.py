@@ -31,6 +31,7 @@ class Web():
             }
 
     def __init__(self):
+        log("web service started")
         cherrypy.tree.mount(WebInterface())
         cherrypy.config.update(self.config)
         cherrypy.engine.start()

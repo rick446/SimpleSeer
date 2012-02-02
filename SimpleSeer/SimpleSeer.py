@@ -44,7 +44,7 @@ class SimpleSeer(threading.Thread):
                     del camerainfo['crop']
                 self.cameras.append(Camera(id, camerainfo))
         #log initialized camera X
-    
+        self.init_logging()
         Session().redis.set("cameras", self.config.cameras)
         #tell redis what cameras we have
         
@@ -76,7 +76,30 @@ class SimpleSeer(threading.Thread):
     #i don't really like this too much -- it should really update on
     #an Inspection load/save
 
-        
+    def init_logging(self):
+      # set up logging to file - see previous section for more details
+      logging.basicConfig(level=logging.DEBUG,
+                          format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                          datefmt='%m-%d %H:%M',
+                          filename='seer.log',
+                          filemode='w')
+      # define a Handler which writes INFO messages or higher to the sys.stderr
+      console = logging.StreamHandler()
+      console.setLevel(logging.INFO)
+      # set a format which is simpler for console use
+      formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+      # tell the handler to use this format
+      console.setFormatter(formatter)
+      # add the handler to the root logger
+      logging.getLogger('').addHandler(console)
+
+
+    def log(self, param = None):
+      if param:
+        logging.debug(param)
+
+
+
     def reloadInspections(self):
         i = list(Inspection.objects)
         Session().redis.set("inspections", i)
@@ -210,6 +233,10 @@ class SimpleSeer(threading.Thread):
         self.join()
         
     
-    
+def log_wrapper(self, *arg, **kwargs):
+  return SimpleSeer().log(*arg, **kwargs)
+
+
+SimpleLog.__call__ = log_wrapper
 from Frame import Frame
 import Shell
