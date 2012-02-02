@@ -44,7 +44,22 @@ class WebInterface(object):
     This is where all the event call backs and data handling happen for the
     internal webserver for Seer
     """
-
+    
+    
+    @cherrypy.expose
+    def plugin_js(self, **params):
+        cherrypy.response.headers['Content-Type'] = 'application/javascript'
+        
+        js = ''
+        for plugin in SimpleSeer.SimpleSeer().plugins.keys():
+            path = SimpleSeer.SimpleSeer().pluginpath + "/" + plugin
+            js += "//SimpleSeer plugin " + plugin + "\n\n"
+            for f in [file for file in os.listdir(path) if re.search("js$", file)]:
+                js += open(path + "/" + f).read()
+        js += "\n\n\n";
+        return js
+    
+    
     @cherrypy.expose
     def index(self):
         filename = "index.html"
