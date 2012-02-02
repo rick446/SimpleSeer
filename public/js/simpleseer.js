@@ -623,6 +623,34 @@ SS.inspectionhandlers = {
     default: {
 
     },
+    
+    face: {
+        render_features: function(feats, insp) {
+            SS.p.stroke(255, 0, 0, 75);
+            SS.p.strokeWeight(6);
+            SS.p.noFill();
+            
+
+            
+            for (i in feats) {
+                f = feats[i];
+                SS.p.rect(f.points[0][0], f.points[0][1], f.width, f.height, 6);
+            
+                div_id = "inspection_" + insp.id + "_" + i.toString();
+
+                inspdiv = SS.Display.addDisplayObject(div_id, f.points[0][0], f.points[0][1], f.width, f.height);
+                SS.DisplayObject.addNavZoomIn(div_id); 
+                SS.DisplayObject.addNavZoomOut(div_id);
+            }
+            
+            
+        },
+        
+        render: function(insp) {
+            
+        
+        }
+    },
     region: {
         render: function(insp) {
             if (SS.action["focus"] != "inspection_" + insp.id) {
