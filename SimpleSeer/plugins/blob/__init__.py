@@ -29,3 +29,6 @@ def blob(self, image):
 				feats.append(ff)
 				
 		return feats
+
+
+Inspection.blob = blob

@@ -89,12 +89,13 @@ class SimpleSeer(threading.Thread):
       self.plugins = {}
       plugins = self.plugins
       print os.getcwd()
-      try:
-        for plugin in os.listdir('SimpleCV/plugins'):
-            plugin = plugin.split()[0]
-            plugins[plugin] = __import__(plugin)
-      except:
-        print "Couldn't load plugins"
+      #~ try:
+      for plugin in os.listdir('./SimpleSeer/plugins'):
+          plugin = plugin.split()[0]
+          print "plugin:",plugin
+          plugins[plugin] = __import__(plugin)
+      #~ except:
+        #~ print "Couldn't load plugins"
 
         
 
