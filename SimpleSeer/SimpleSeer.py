@@ -4,6 +4,7 @@ from Inspection import Inspection
 from Web import *
 
 
+
 class SimpleSeer(threading.Thread):
     """
     The SimpleSeer object 
@@ -49,7 +50,7 @@ class SimpleSeer(threading.Thread):
         
         self.reloadInspections() #initialize inspections so they get saved to redis
          
-        self.loadPlugins()
+        #self.loadPlugins()
         self.lastframes = []
         self.framecount = 0
         

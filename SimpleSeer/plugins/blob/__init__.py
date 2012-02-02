@@ -1,6 +1,8 @@
-from base import *
-from Session import *
-from FrameFeature import FrameFeature
+from SimpleSeer.base import *
+from SimpleSeer.Session import *
+from SimpleSeer.FrameFeature import FrameFeature
+from SimpleSeer.Inspection import Inspection
+
 
 def blob(self, image):
 		params = utf8convert(self.parameters)
