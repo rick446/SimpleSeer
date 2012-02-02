@@ -12,6 +12,7 @@ class SimpleSeer(threading.Thread):
     __shared_state = { "initialized": False }
     web_interface = None
     halt = False
+    plugins = {}
 #    cameras = []
 #    shell_thread = ''
 #    display = ''
@@ -48,7 +49,7 @@ class SimpleSeer(threading.Thread):
         
         self.reloadInspections() #initialize inspections so they get saved to redis
          
-        
+        self.loadPlugins()
         self.lastframes = []
         self.framecount = 0
         
@@ -83,6 +84,19 @@ class SimpleSeer(threading.Thread):
         self.inspections = i
         self.measurements = m
         return i
+
+    def loadPlugins(self):
+      self.plugins = {}
+      plugins = self.plugins
+      print os.getcwd()
+      try:
+        for plugin in os.listdir('SimpleCV/plugins'):
+            plugin = plugin.split()[0]
+            plugins[plugin] = __import__(plugin)
+      except:
+        print "Couldn't load plugins"
+
+        
 
     def capture(self):
         count = 0
