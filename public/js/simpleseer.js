@@ -239,7 +239,8 @@ SimpleSeer.Frame.refresh = function() {
     SS.Feature.refresh();
     SS.histgraph.draw();
     $(".object").remove();
-    $("#maindisplay").find("img").attr("src", "/GET/currentframe_0.jpg?" + new Date().getTime().toString());    
+    $("#maindisplay").find("img").attr("src", "/GET/currentframe_0.jpg?" + new Date().getTime().toString());
+    SS.p.refresh();
 };
 
 
@@ -521,13 +522,9 @@ SimpleSeer.Feature.render = function() {
            && 'render_features' in SS.inspectionhandlers[insp.method]
            && SS.featuresets[insp.id]) {
             SS.inspectionhandlers[insp.method]["render_features"](SS.featuresets[insp.id], insp);
-        } else {
-                
-        }
-        
+        } 
     }
-    
-    
+
 }
 
 SimpleSeer.Measurement = {};
@@ -686,50 +683,73 @@ SS.launchRadial = function(animate) {
     }
 
 
-    SS.action = { startpx: [SS.mouseX, SS.mouseY], task: "radial_select" };
+    SS.action.startpx = [SS.mouseX, SS.mouseY];
+    SS.action.task = "radial_select";
     
 }
+
+SS.p.render = function() {
+    
+    SS.p.background(0, 0); 
+      
+        
+    SS.Inspection.render();
+    SS.Feature.render();  
+  
+    task = SS.action["task"];
+        
+    if (task in SS.inspectionhandlers) {
+        if (SS.mouseDown && "manipulate_onclick" in SS.inspectionhandlers[task]) {
+            SS.inspectionhandlers[task].manipulate_onclick();
+        } else {
+            SS.inspectionhandlers[task].manipulate();
+        } 
+        //or manipulate onclick
+    }
+    
+    if (SS.action.focus) {
+        SS.Display.renderObjectFocus(SS.action.focus);
+    }
+    
+    if (SS.preview_queue.length && SS.preview_queue.length == 2) {
+        SS.Inspection.preview(SS.preview_queue[0], SS.preview_queue[1]);
+    }
+
+};
+
+
+SS.p.refresh = function () {
+    SS.forcerender = true;
+};
 
 
 //the draw function is the loop() it can be enabled and disabled with SS.p.noLoop()
 SS.p.draw = function() {
   SS.setScale();
-  SS.p.background(0, 0);     
-   
-  if (SS.action["task"] && SS.action["task"] != "radial_select") {
-      task = SS.action["task"];
-      
-      if (task in SS.inspectionhandlers) {
-          if (SS.mouseDown && "manipulate_onclick" in SS.inspectionhandlers[task]) {
-              SS.inspectionhandlers[task].manipulate_onclick();
-          } else {
-              SS.inspectionhandlers[task].manipulate();
-          } 
-          //or manipulate onclick
-      }
-  } 
-  SS.Inspection.render();
-  SS.Feature.render();  
-  if (SS.mouseDown && !SS.mouseWait) {
+
+  
+  if ((!SS.action["task"] || SS.action["task"] == "radial_select") && SS.mouseDown && !SS.mouseWait) {
       if (SS.wasPressed) {
         SS.launchRadial();
       } else {
         SS.launchRadial(true);   
       }
   } 
+  SS.wasPressed = SS.mouseDown;
+
+
+
+  if ((SS.action["task"] && SS.action["task"] != "radial_select") ||
+      (SS.preview_queue.length && SS.preview_queue.length == 2) ||
+      SS.action.focus != SS.lastfocus ||
+      SS.forcerender) {
+      
+      SS.p.render();
+      SS.forcerender = false;
+      SS.lastfocus = SS.action.focus;
+  }
 
   
-  if (SS.action.focus) {
-      SS.Display.renderObjectFocus(SS.action.focus);
-  }
-  
-  if (SS.preview_queue.length && SS.preview_queue.length == 2) {
-      SS.Inspection.preview(SS.preview_queue[0], SS.preview_queue[1]);
-  }
-  
-  
-  SS.wasPressed = SS.mouseDown;
- 
 }
 
 
@@ -756,8 +776,10 @@ SimpleSeer.featuresets = {};
 SimpleSeer.radialAnimating = false;
 
 SS.continuousCapture = false;
+SS.forcerender = false;
 
 SS.wasPressed = false;
+SS.lastfocus = "";
 
 
 SimpleSeer.waitForClick = function() {
@@ -767,11 +789,12 @@ SimpleSeer.waitForClick = function() {
 }
 
 SimpleSeer.resetAction = function() {
+    SS.p.refresh();
     SS.action = { startpx: [0,0], task: "", focus: "" };
 }
 
 SimpleSeer.loadPlugins = function() {
-    
+    $.getScript("/plugin_js");
 }
 
 
@@ -805,6 +828,7 @@ $(function(){
         SS.xscalefactor = stretcher.width() /  SS.framedata[0].width
         SS.yscalefactor = stretcher.height() / SS.framedata[0].height
         $('.stretchee').remove();
+        SS.p.refresh();
     })
 
     $(window).load(function () {
@@ -813,12 +837,14 @@ $(function(){
 
 });
 
+
+
+
 //Setup executes when the display is ready to be initialized
 SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
     SS.p.setup();
     SS.p.loop();
     SS.zoomer = zoom($("#zoomer")[0]);
-    SS.loadPlugins();
 
 
     SS.histgraph.setup();
@@ -874,24 +900,9 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
 
 
    SimpleSeer.Frame.refresh();
+   SS.p.render();
 
 })};
-
-
-/*
-$(document).ready(function() {
-    $('.info').bind('click', function() {
-        $(this).parent().parent().parent().find('.detail').toggle();
-        $(this).parent().parent().addClass('expand');
-        return false;
-    });
-});
-
-SS.message = 
-*/
-
-
-
 
 
 //histogram
