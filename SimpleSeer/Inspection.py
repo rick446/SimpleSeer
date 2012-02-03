@@ -115,8 +115,27 @@ class Inspection(SimpleDoc):
     def save(self):
         ret = super(Inspection, self).save()
         SimpleSeer.SimpleSeer().reloadInspections()
-        return ret  
+        return ret
+    
+    
+    def face(self, image):
+        params = utf8convert(self.parameters)
         
+        faces = image.findHaarFeatures("/usr/local/share/opencv/haarcascades/haarcascade_frontalface_alt.xml")
+        
+        if not faces:
+            return []
+        
+        features = []
+        for f in faces:
+            ff = FrameFeature()
+            ff.setFeature(f)
+            features.append(ff)
+        
+        return features
+        
+    
+
 
 from Measurement import Measurement
 import SimpleSeer

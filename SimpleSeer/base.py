@@ -1,4 +1,4 @@
-import sys, time, os, collections
+import sys, time, os, collections, re, warnings
 from copy import copy, deepcopy
 from datetime import datetime
 import threading
@@ -29,6 +29,9 @@ import redis
 import mongoengine
 import bson
 import jsonpickle
+import logging
+
+
 
 #cribbed from
 #http://stackoverflow.com/questions/1254454/fastest-way-to-convert-a-dicts-keys-values-from-unicode-to-str
@@ -119,6 +122,14 @@ class MongoEngineBaseDictHandler(jsonpickle.handlers.BaseHandler):
 jsonpickle.handlers.Registry().register(bson.objectid.ObjectId, BSONObjectIDHandler)   
 jsonpickle.handlers.Registry().register(mongoengine.base.BaseList, MongoEngineBaseListHandler)
 jsonpickle.handlers.Registry().register(mongoengine.base.BaseDict, MongoEngineBaseDictHandler)
+
+
+class SimpleLog(object):
+  def __call__(self, *args, **kwargs):
+    pass
+
+
+log = SimpleLog()
 
 
 

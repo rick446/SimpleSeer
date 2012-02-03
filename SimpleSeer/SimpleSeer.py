@@ -4,6 +4,7 @@ from Inspection import Inspection
 from Web import *
 
 
+
 class SimpleSeer(threading.Thread):
     """
     The SimpleSeer object 
@@ -12,6 +13,7 @@ class SimpleSeer(threading.Thread):
     __shared_state = { "initialized": False }
     web_interface = None
     halt = False
+    plugins = {}
 #    cameras = []
 #    shell_thread = ''
 #    display = ''
@@ -31,6 +33,9 @@ class SimpleSeer(threading.Thread):
 
         self.cameras = []
         
+        #TODO, make this sensitive to module.__path__
+        self.pluginpath = "./SimpleSeer/plugins"
+        
         for camera in self.config.cameras:
             camerainfo = camera.copy()
             if camerainfo.has_key('virtual'):
@@ -42,13 +47,13 @@ class SimpleSeer(threading.Thread):
                     del camerainfo['crop']
                 self.cameras.append(Camera(id, camerainfo))
         #log initialized camera X
-    
+        self.init_logging()
         Session().redis.set("cameras", self.config.cameras)
         #tell redis what cameras we have
         
         self.reloadInspections() #initialize inspections so they get saved to redis
          
-        
+        self.loadPlugins()
         self.lastframes = []
         self.framecount = 0
         
@@ -74,7 +79,30 @@ class SimpleSeer(threading.Thread):
     #i don't really like this too much -- it should really update on
     #an Inspection load/save
 
-        
+    def init_logging(self):
+      # set up logging to file - see previous section for more details
+      logging.basicConfig(level=logging.DEBUG,
+                          format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+                          datefmt='%m-%d %H:%M',
+                          filename='seer.log',
+                          filemode='w')
+      # define a Handler which writes INFO messages or higher to the sys.stderr
+      console = logging.StreamHandler()
+      console.setLevel(logging.INFO)
+      # set a format which is simpler for console use
+      formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+      # tell the handler to use this format
+      console.setFormatter(formatter)
+      # add the handler to the root logger
+      logging.getLogger('').addHandler(console)
+
+
+    def log(self, param = None):
+      if param:
+        logging.debug(param)
+
+
+
     def reloadInspections(self):
         i = list(Inspection.objects)
         Session().redis.set("inspections", i)
@@ -83,6 +111,22 @@ class SimpleSeer(threading.Thread):
         self.inspections = i
         self.measurements = m
         return i
+
+    def loadPlugins(self):
+        self.plugins = {}
+        plugins = self.plugins
+
+        
+        for plugin in [ name for name in os.listdir(self.pluginpath) if os.path.isdir(os.path.join(self.pluginpath, name)) ]:
+            plugin = plugin.split()[0]
+            try:
+                plugins[plugin] = __import__("SimpleSeer.plugins."+plugin)
+            except:
+                warnings.warn("Couldn't load plugin " + plugin)
+                
+        return self.plugins
+
+        
 
     def capture(self):
         count = 0
@@ -193,6 +237,10 @@ class SimpleSeer(threading.Thread):
         self.join()
         
     
-    
+def log_wrapper(self, *arg, **kwargs):
+  return SimpleSeer().log(*arg, **kwargs)
+
+
+SimpleLog.__call__ = log_wrapper
 from Frame import Frame
 import Shell
