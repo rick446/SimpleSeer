@@ -2,25 +2,6 @@ from base import *
 from Session import *
 from FrameFeature import FrameFeature
 
-
-class Region(SimpleCV.Feature):
-    
-    def __init__(self, image, startx, starty, width, height):
-        
-        point = (startx, starty)
-        self.x = point[0] + width / 2
-        self.y = point[1] + height / 2
-        self.points = [tuple(point),
-            (point[0] + width, point[1]),
-            (point[0] + width, point[1] + height),
-            (point[0], point[1] + height)]
-            
-        self.image = image
-    
-    def meanColor(self):
-        return self.crop().meanColor()
-        
-
 class Inspection(SimpleDoc):
     """
     
@@ -136,44 +117,6 @@ class Inspection(SimpleDoc):
         SimpleSeer.SimpleSeer().reloadInspections()
         return ret  
         
-    #below are "core" inspection functions
-    def region(self, image):        
-        params = utf8convert(self.parameters)
-        
-        if params['x'] + params['w'] > image.width or params['y'] + params['h'] > image.height:
-            return []
-        
-        ff = FrameFeature()
-        ff.setFeature(Region(image, params['x'], params['y'], params['w'], params['h']))
-        return [ff]
-        
-    def blob(self, image):
-        params = utf8convert(self.parameters)
-        
-        
-        #if we have a color parameter, lets threshold        
-        blobs = []
-        invert = False
-        if params.has_key("invert"):
-            invert = params["invert"]
-            del params["invert"]
-            
-        if invert:
-            blobs = image.invert().findBlobs(**params)
-        else:    
-            blobs = image.findBlobs(**params)
-        
-        if not blobs:
-            return []
-        
-        feats = []
-        for b in blobs:
-            ff = FrameFeature()
-            b.image = image
-            ff.setFeature(b)
-            feats.append(ff)
-            
-        return feats
 
 from Measurement import Measurement
 import SimpleSeer
