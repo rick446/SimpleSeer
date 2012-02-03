@@ -118,11 +118,10 @@ class SimpleSeer(threading.Thread):
 
         
         for plugin in [ name for name in os.listdir(self.pluginpath) if os.path.isdir(os.path.join(self.pluginpath, name)) ]:
-            plugin = plugin.split()[0]
             try:
                 plugins[plugin] = __import__("SimpleSeer.plugins."+plugin)
-            except:
-                warnings.warn("Couldn't load plugin " + plugin)
+            except ImportError as e:
+                warnings.warn(e)
                 
         return self.plugins
 
