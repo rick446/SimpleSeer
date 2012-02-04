@@ -651,42 +651,36 @@ SS.inspectionhandlers = {
 };
 
 //interface helpers, functions to control aspects of interface state
-SS.launchRadial = function(animate) {
-    
-    if (SS.radialAnimating) {
-        return;
-    }
-    oldtask = SS.action["task"];
-    
-    radius = 110;
-    offset = SS.zoomer.offset();
-    
-    if (oldtask == "radial_select") {
-        distance = SS.xscalefactor * SS.euclidean(SS.action["startpx"], [SS.mouseX, SS.mouseY]);
-        if (distance > 75 && animate) { 
-            SS.radialAnimating = true;
-            $("#radial_container").animate( {
-                top: (SS.p.mouseY - radius - offset[1]).toString() + "px", 
-                left: (SS.p.mouseX - radius - offset[0]).toString() + "px" }, 300,
-                function() { SS.radialAnimating = false; } 
-            );    
-        } else {
-            $("#radial_container").css( {
-                top: (SS.p.mouseY - radius - offset[1]).toString() + "px", 
-                left: (SS.p.mouseX - radius - offset[0]).toString() + "px" 
-            });   
-        }   
-    } else {
-        $("#radial_container").radmenu("show").css( { zIndex: 99,
-            top: (SS.p.mouseY - radius - offset[1]).toString() + "px", 
-            left: (SS.p.mouseX - radius - offset[0]).toString() + "px" } );
-    }
+//TODO - make icons bigger
+//TODO figure out why titles aren't hovering (hover() does work)
+//TODO choose relevant icons
+$("#maindisplay").prettypiemenu({
+    buttons: [
+        { img: "ui-icon-minus", title: "plaah1" }, 
+        { img: "ui-icon-plus",  title: "plaah2" },
+        { img: "ui-icon-close", title: "plaah3" },
+        { img: "ui-icon-check", title: "plaah4" }
+    ],
+    onSelection: function(item) {
+        alert (item + ' was clickedoo!'); 
+    },
+    closeRadius: 25,
+    showTitles: true
+});
+
+SS.radial_actions = ["region", "blob", "", ""];
 
 
+SS.launchRadial = function() {
+    //SS.action.task = "radial_select";
     SS.action.startpx = [SS.mouseX, SS.mouseY];
-    SS.action.task = "radial_select";
-    
+    $("#maindisplay").prettypiemenu("show", {top: SS.p.mouseY, left: SS.p.mouseX});
+    $(".ui-ppmenu-iconBg").mouseup(function(e) {
+        index = parseInt($(e.target).attr("id").split("_")[3]);    
+        SS.action.task = SS.radial_actions[index];
+    });
 }
+
 
 SS.p.render = function() {
     
@@ -727,19 +721,18 @@ SS.p.refresh = function () {
 SS.p.draw = function() {
   SS.setScale();
 
-  
-  if ((!SS.action["task"] || SS.action["task"] == "radial_select") && SS.mouseDown && !SS.mouseWait) {
-      if (SS.wasPressed) {
+
+  if (!SS.action.task && SS.mouseDown && !SS.mouseWait) {
+      if (!SS.wasPressed) {
         SS.launchRadial();
-      } else {
-        SS.launchRadial(true);   
-      }
-  } 
+      } 
+  }
+  
   SS.wasPressed = SS.mouseDown;
 
 
 
-  if ((SS.action["task"] && SS.action["task"] != "radial_select") ||
+  if (SS.action.task ||
       (SS.preview_queue.length && SS.preview_queue.length == 2) ||
       SS.action.focus != SS.lastfocus ||
       SS.forcerender) {
@@ -789,8 +782,9 @@ SimpleSeer.waitForClick = function() {
 }
 
 SimpleSeer.resetAction = function() {
-    SS.p.refresh();
     SS.action = { startpx: [0,0], task: "", focus: "" };
+    SS.p.refresh();
+
 }
 
 SimpleSeer.loadPlugins = function() {
@@ -859,7 +853,8 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
       SS.mouseDown = true;
    });
 
-   $("#maindisplay").mouseup( function(e) {
+   
+   $(window).mouseup( function(e) {
       if (SS.mouseBlock) {
         return;
       } 
@@ -877,23 +872,6 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
     SS.p.mouseX = e.pageX - $("#display").offset()["left"];
     SS.p.mouseY = e.pageY - $("#display").offset()["top"];
    });
-
-    
-   //initialize the radial menu
-   $("#radial_container").radmenu({
-        listClass: 'radiallist', // the list class to look within for items
-        itemClass: 'radialitem', // the items - NOTE: the HTML inside the item is copied into the menu item
-        radius: 68, // radius in pixels
-        centerX: 10, // the center x axis offset
-        centerY: -6, // the center y axis offset
-        selectEvent: "mousedown", // the select event (click)
-        onSelect: function($selected){ // show what is returned 
-          $('#radial_container').radmenu("hide");
-          SS.action['task'] = $selected.children()[0].id.substr(7); //remove the #radial prefix
-        },
-        onShow: function($items){$items.show();$('#radial_container').fadeIn(500);},
-        onHide: function($items){$items.hide();$('#radial_container').fadeOut(500);}
-      });
 
 
    $(".ico.play").click( SS.Frame.capture );

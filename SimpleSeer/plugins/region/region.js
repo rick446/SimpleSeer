@@ -1,4 +1,5 @@
 SimpleSeer.inspectionhandlers.region = {
+    
     render: function(insp) {
         if (SS.action["focus"] != "inspection_" + insp.id) {
             SS.p.fill(255, 255, 255, 20);
