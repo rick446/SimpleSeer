@@ -927,10 +927,16 @@ SS.histgraph.newHistogram = function(hist) {
     if (!hist) {
         h.hist = SS.histogram;
         if (!h.last) {
-            h.last = new Array(h.hist.length);   
+            h.last = SS.histogram;   
         }
     } else {
         h.hist = hist;
+    }
+    
+    h.oldscalefactor =  h.height / Math.max.apply(Math, h.last);
+    h.newscalefactor =  h.height / Math.max.apply(Math, h.hist);
+    if (!h.oldscalefactor) {
+        h.oldscalefactor = 1;
     }
     h.loop();
 }
@@ -946,27 +952,27 @@ SS.histgraph.draw = function() {
     
     h.background(0,0);
     var hist = new Array(h.hist.length)
+
+ 
     
     for (i in h.hist) {
         diff = h.maxstep - h.step;
-        hist[i] = (h.step / h.maxstep) * h.hist[i] + (diff / h.maxstep) * h.last[i];
-    }
+        hist[i] = (h.step / h.maxstep) * h.hist[i] * h.newscalefactor +
+            (diff / h.maxstep) * h.last[i] * h.oldscalefactor;
+    }  
     
-    if (h.step == h.maxstep) {
+   if (h.step == h.maxstep) {
         h.noLoop();
-        hist = h.hist;
         h.last = h.hist;
         h.step = 0;
     }
-    
-    h.yscalefactor =  h.height / Math.max.apply(Math, hist);
     h.xstep = h.width / hist.length;
     h.strokeWeight(h.xstep -1);
 
     
     for (i in hist) {
           x = h.xstep * i + 1;
-          y = hist[i] * h.yscalefactor;
+          y = hist[i];
           h.line(x, h.height, x, h.height - y);
     }
     h.step++;
