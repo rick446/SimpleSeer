@@ -93,12 +93,19 @@ SimpleSeer.DisplayObject.addNavItem = function(id, iconcls, title, clickmethod) 
     //TODO, when nav is close to right side, flip to left-nav (css class)
     
     $("#" + id).find("nav").append(
-       $("<a/>", { title: title, href: "#" }).append($("<b/>", { class: "ico " +iconcls })).click(clickmethod)
+       $("<a/>", { title: title, href: "#" }).append(
+            $("<b/>", { class: "ico " +iconcls })
+        ).click(clickmethod).tooltip({
+            position: "right" ,
+            offset: [0, -10],
+            predelay: 400,
+            effect: "fade"}
+        ).dynamic({right: { direction: "left" }})
     );
 }
 
 SimpleSeer.DisplayObject.addNavZoom = function(id) {
-    SS.DisplayObject.addNavItem(id, "zoom-in", "Zoom", function(e) {
+    SS.DisplayObject.addNavItem(id, "zoom-in", "Zoom In on this Region", function(e) {
         
         icon = $(e.target);
         if (icon.hasClass("zoom-in")) {
@@ -116,7 +123,7 @@ SimpleSeer.DisplayObject.addNavZoom = function(id) {
 
 
 SimpleSeer.DisplayObject.addNavLock = function(id) {
-    SS.DisplayObject.addNavItem(id, "unlock", "Lock Focus", function(e) {
+    SS.DisplayObject.addNavItem(id, "unlock", "Lock Focus on this Region", function(e) {
         icon = $(e.target);
         if (icon.hasClass("lock")) {
             icon.removeClass("lock").addClass("unlock");
@@ -136,7 +143,7 @@ SimpleSeer.DisplayObject.addNavLock = function(id) {
 
 
 SimpleSeer.DisplayObject.addNavInfo = function(id, title, info, inspection, featureindex) {
-    SS.DisplayObject.addNavItem(id, "info", "Info", function(e) {
+    SS.DisplayObject.addNavItem(id, "info", "View Attributes of this Region", function(e) {
         $(e.target).parent().parent().find(".detail").fadeIn(300);
         return false;
     });
@@ -736,6 +743,8 @@ $("#maindisplay").prettypiemenu({
     closeRadius: 5,
     showTitles: true
 });
+
+//$(".ui-ppmenu-iconBg").tooltip();
 
 SS.radial_actions = ["region", "blob", "", ""];
 

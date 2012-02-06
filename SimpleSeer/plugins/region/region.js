@@ -35,7 +35,7 @@ SimpleSeer.inspectionhandlers.region = {
                 return "#" + clrhex.join("");
                 }, units: ""}
             }, insp, 0);
-        SS.DisplayObject.addNavItem(div_id, "close", "Remove", function(e) {
+        SS.DisplayObject.addNavItem(div_id, "close", "Remove this Region", function(e) {
             SS.Inspection.remove(insp);
             SS.mouseBlock = false;
             return false;
