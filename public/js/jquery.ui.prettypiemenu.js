@@ -25,8 +25,8 @@ $.widget("ui.prettypiemenu", {
 	    backgroundColor: 'transparent',
 	    iconW: 16,
 	    iconH: 16,
-		centerIconW: 30,
-		centerIconH: 30,	    
+			centerIconW: 30,
+			centerIconH: 30,	    
 	    showAnimationSpeed: 300,
 	    showStartAnimation: true,
         showTitles: false
@@ -106,7 +106,8 @@ $.widget("ui.prettypiemenu", {
 			var pieSegmentIcon = $(document.createElement("span"))
 				.attr( { id: idPrefix + i })
 				.appendTo($(pieSegment))
-				.addClass("ui-icon " + img.img);
+				.addClass("ui-ppmenu-iconFg " + img.img);
+				//.addClass("ui-icon " + img.img);  NJO -- remove ui-icon prefix
 		});		
 		
 		$(self.element).mousedown(function(e) {

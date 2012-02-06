@@ -1035,6 +1035,7 @@ h1 input:hover {
 /* icons */
 	.ico + em {text-indent: -1000;}
     .ico, a b.ico {opacity: .9; display: inline-block; height: 26px; width: 26px;}
+
     .btn .ico {margin-right: 5px; position: absolute; left: 5px; top: 3px; }
     .ico:hover, a b.ico:hover {opacity: .6;}
     .ico.contrast {background: url("../img/62-contrast.png") no-repeat 50% 50%;}
@@ -1053,6 +1054,25 @@ h1 input:hover {
     .ico.watched {background: url("../img/13-eye-b.png") no-repeat 50% 50%;}
     .ico.lock {background: url("../img/lock.png") no-repeat 50% 50%;}
     .ico.unlock {background: url("../img/unlock.png") no-repeat 50% 50%;}
+    
+    .smico, a b.smico {opacity: .9; display: inline-block; height: 22px; width: 22px;}
+    .smico:hover, a b.smico:hover {opacity: .6;}
+    .smico.crop {background: url("../img/292-crop.png") no-repeat 75% 75%;
+       background-size: 75%; }
+    .smico.contrast {background: url("../img/62-contrast.png") no-repeat 75% 75%;
+       background-size: 75%; }
+    .smico.chat {background: url("../img/08-chat.png") no-repeat 75% 75%;
+       background-size: 75%; }
+    .smico.info {background: url("../img/42-info.png") no-repeat 75% 75%;
+       background-size: 75%; }
+    .smico.sliders {background: url("../img/106-sliders.png") no-repeat 75% 75%;
+       background-size: 75%; }
+    .smico.bright {background: url("../img/61-brightness.png") no-repeat 75% 75%;
+       background-size: 75%; }
+       
+       
+
+
 
 
 /* tablet ----------- */

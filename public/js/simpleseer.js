@@ -53,6 +53,9 @@ SimpleSeer.getJSON = function(key) {
 SimpleSeer.DisplayObject = {};
 
 SimpleSeer.DisplayObject.setFocus = function(id) {
+    if (SS.action.focuslock) {
+        return;
+    }
     $("#" + id).css({ "z-index": 99 }).find('nav').fadeIn(200);    
     SS.action.focus = id;
     index = SS.Inspection.getIndex(id.split("_")[1]);
@@ -62,12 +65,28 @@ SimpleSeer.DisplayObject.setFocus = function(id) {
 }
 
 SimpleSeer.DisplayObject.loseFocus = function(id) {
+    if (SS.action.focuslock) {
+        return;
+    }
     $("#" + id).css({ "z-index": 80 }).find('nav').fadeOut(300);
     if (SS.action.focus == id) {
         SS.action.focus = "";
         SS.histgraph.newHistogram();   
     }
 }
+
+SS.DisplayObject.lockFocus = function(id) {
+    if (SS.action.focus != id) {
+        SS.DisplayObject.setFocus(id);
+    }
+    SS.action.focuslock = true;
+}
+
+SS.DisplayObject.unlockFocus = function() {
+    SS.action.focuslock = false
+}
+
+
 
 
 SimpleSeer.DisplayObject.addNavItem = function(id, iconcls, title, clickmethod) {
@@ -78,21 +97,43 @@ SimpleSeer.DisplayObject.addNavItem = function(id, iconcls, title, clickmethod) 
     );
 }
 
-SimpleSeer.DisplayObject.addNavZoomIn = function(id) {
+SimpleSeer.DisplayObject.addNavZoom = function(id) {
     SS.DisplayObject.addNavItem(id, "zoom-in", "Zoom", function(e) {
-        SS.zoomer.in( { element:$(e.target).parent().parent().parent()[0] } );
+        
+        icon = $(e.target);
+        if (icon.hasClass("zoom-in")) {
+            icon.removeClass("zoom-in").addClass("zoom-out");
+            SS.zoomer.in( { element:$(e.target).parent().parent().parent()[0] } );
+        } else {
+            icon.removeClass("zoom-out").addClass("zoom-in");
+            SS.zoomer.out();
+        }
+        
         SS.mouseBlock = false;
         return false;
     });
 }
 
-SimpleSeer.DisplayObject.addNavZoomOut = function(id) {
-    SS.DisplayObject.addNavItem(id, "zoom-out", "Zoom Out", function(e) {
-        SS.zoomer.out();
-        SS.mouseBlock = false;
+
+SimpleSeer.DisplayObject.addNavLock = function(id) {
+    SS.DisplayObject.addNavItem(id, "unlock", "Lock Focus", function(e) {
+        icon = $(e.target);
+        if (icon.hasClass("lock")) {
+            icon.removeClass("lock").addClass("unlock");
+            SS.DisplayObject.unlockFocus();
+        } else {
+            icon.removeClass("unlock").addClass("lock");
+            SS.DisplayObject.lockFocus(icon.parent().parent().parent().attr('id'));
+            //TODO, will only work for region right now.  need to come up with a more
+            //generalizable object id lookup
+        }
+        
         return false;
     });
 }
+
+
+
 
 SimpleSeer.DisplayObject.addNavInfo = function(id, title, info, inspection, featureindex) {
     SS.DisplayObject.addNavItem(id, "info", "Info", function(e) {
@@ -212,6 +253,8 @@ SimpleSeer.Display.addDisplayObject = function(id, x, y, w, h) {
         left: Math.round(x * SS.yscalefactor),
         width: Math.round(w * SS.xscalefactor),
         height: Math.round(h * SS.yscalefactor)
+    }).mouseup(function() {
+        $(window).mouseup(); 
     }).appendTo('#zoomer').append(
         $("<nav>", {
             id: "manage_" + id,
@@ -678,15 +721,19 @@ SS.inspectionhandlers = {
 //TODO choose relevant icons
 $("#maindisplay").prettypiemenu({
     buttons: [
-        { img: "ui-icon-minus", title: "plaah1" }, 
-        { img: "ui-icon-plus",  title: "plaah2" },
-        { img: "ui-icon-close", title: "plaah3" },
-        { img: "ui-icon-check", title: "plaah4" }
+        { img: "smico crop", title: "plaah1" }, 
+        { img: "smico contrast",  title: "plaah2" },
+        { img: "smico sliders",  title: "plaah2" },
+        { img: "smico chat",  title: "plaah2" },
+        { img: "smico bright", title: "plaah3" },
+        { img: "smico info", title: "plaah4" },
     ],
-    onSelection: function(item) {
-        alert (item + ' was clickedoo!'); 
-    },
-    closeRadius: 25,
+    iconW: 30,
+    iconH: 30,
+    closeRadius: 12,
+    outerPadding: 4,
+    showAnimationSpeed: 250,
+    closeRadius: 5,
     showTitles: true
 });
 
@@ -737,6 +784,10 @@ SS.p.render = function() {
 SS.p.refresh = function () {
     SS.forcerender = true;
 };
+
+SS.p.mouseReleased = function() {
+    $(window).mouseup();
+}
 
 
 //the draw function is the loop() it can be enabled and disabled with SS.p.noLoop()
@@ -804,7 +855,7 @@ SimpleSeer.waitForClick = function() {
 }
 
 SimpleSeer.resetAction = function() {
-    SS.action = { startpx: [0,0], task: "", focus: "" };
+    SS.action = { startpx: [0,0], task: "", focus: "", focuslock: false };
     SS.p.refresh();
 
 }
@@ -877,12 +928,14 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
 
    
    $(window).mouseup( function(e) {
+        console.log("mouseup");
       if (SS.mouseBlock) {
         return;
       } 
       
       SS.mouseDown = false;
-      SS.mouseWait = false; 
+      SS.mouseWait = false;
+      $("#maindisplay").prettypiemenu("hide");
    });
 
    $("#maindisplay").mousemove(function(e) {
@@ -944,9 +997,7 @@ SS.histgraph.newHistogram = function(hist) {
 
 SS.histgraph.draw = function() {
     h = SS.histgraph;
-    console.log("draw start");
     if (!SS.histogram) {
-        console.log("no histogram");
         return;
     }
     

@@ -85,8 +85,7 @@ SimpleSeer.inspectionhandlers.blob = {
                 }
                 
                 SS.Display.addDisplayObject(div_id, f.points[0][0], f.points[0][1], f.width, f.height);
-                SS.DisplayObject.addNavZoomIn(div_id);
-                SS.DisplayObject.addNavZoomOut(div_id);
+                SS.DisplayObject.addNavZoom(div_id);
                 SS.DisplayObject.addNavInfo(div_id, "Blob " + i.toString() + " Properties", {
                     x: { label: "top", units: "px" },
                     y: { label: "left", units: "px"},

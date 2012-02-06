@@ -22,8 +22,8 @@ SimpleSeer.inspectionhandlers.region = {
         div_id = "inspection_" + id;
         inspdiv = SS.Display.addDisplayObject(div_id, p.x, p.y, p.w, p.h);
 
-        SS.DisplayObject.addNavZoomIn(div_id); 
-        SS.DisplayObject.addNavZoomOut(div_id);
+        SS.DisplayObject.addNavLock(div_id);
+        SS.DisplayObject.addNavZoom(div_id); 
         SS.DisplayObject.addNavInfo(div_id, "Region Properties", {
             x: { label: "top", units: "px" },
             y: { label: "left", units: "px"},
