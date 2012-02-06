@@ -171,6 +171,28 @@ class WebInterface(object):
     def measurement_results(self, **params):
         return list(Result.objects(measurement = bson.ObjectId(params["id"])).order_by("-capturetime"))
     
+    
+    @cherrypy.expose
+    @jsonify
+    def histogram(self, bins = 50, channel = '', focus = "", camera = 0, index = -1, frameid = ''):
+        #TODO, cache in redis
+        #(and potentially just return keys)
+        
+        #if not frameid:
+        frame = SimpleSeer.SimpleSeer().lastframes[index][camera];
+        #else:  #TODO allow sending a frame id
+        #    frame = Frame.objects(id = bson.ObjectId(frameid))
+        #TODO this focus stuff doesn't seem to work yet
+        if focus != "" and int(focus) < len(frame.features):
+            feature = frame.features[int(focus)].feature
+            feature.image = frame.image
+            img = feature.crop()
+        else:
+            img = frame.image
+        
+        return img.histogram(bins)
+    
+    
     @cherrypy.expose
     @jsonify
     def ping(self):

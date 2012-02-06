@@ -52,6 +52,23 @@ SimpleSeer.getJSON = function(key) {
 
 SimpleSeer.DisplayObject = {};
 
+SimpleSeer.DisplayObject.setFocus = function(id) {
+    $("#" + id).css({ "z-index": 99 }).find('nav').fadeIn(200);    
+    SS.action.focus = id;
+    index = SS.Inspection.getIndex(id.split("_")[1]);
+    $.getJSON("/histogram?focus=" + index.toString(), function(data) {
+        SS.histgraph.newHistogram(data);      
+    });
+}
+
+SimpleSeer.DisplayObject.loseFocus = function(id) {
+    $("#" + id).css({ "z-index": 80 }).find('nav').fadeOut(300);
+    if (SS.action.focus == id) {
+        SS.action.focus = "";
+        SS.histgraph.newHistogram();   
+    }
+}
+
 
 SimpleSeer.DisplayObject.addNavItem = function(id, iconcls, title, clickmethod) {
     //TODO, when nav is close to right side, flip to left-nav (css class)
@@ -208,15 +225,10 @@ SimpleSeer.Display.addDisplayObject = function(id, x, y, w, h) {
     
     $("#" + id).hoverIntent({
        over: function(){    /* shows the object nav bar */
-        $(this).css({ "z-index": 99 });
-        $(this).find('nav').fadeIn(200);
-        SS.action["focus"] = id;
+        SS.DisplayObject.setFocus($(this).attr('id'));
+
     }, out: function(){
-        $(this).css({ "z-index": 80 });
-        $(this).find('nav').fadeOut(300);
-        if (SS.action["focus"] == id) {
-            SS.action["focus"] = "";
-        }
+        SS.DisplayObject.loseFocus($(this).attr('id'));
     }, timeout: 500});
     
     
@@ -237,7 +249,7 @@ SimpleSeer.Frame.refresh = function() {
     SimpleSeer.histogram = SimpleSeer.getJSON('histogram_0');
    
     SS.Feature.refresh();
-    SS.histgraph.draw();
+    SS.histgraph.newHistogram();
     $(".object").remove();
     $("#maindisplay").find("img").attr("src", "/GET/currentframe_0.jpg?" + new Date().getTime().toString());
     SS.p.refresh();
@@ -260,11 +272,22 @@ SimpleSeer.Frame.inspect = function() {
         SS.Frame.refresh(); })
     
     return false;
-}
+};
+
 
 
 //functions to deal with adding/previewing/updating/deleting models
 SimpleSeer.Inspection = {}
+
+SimpleSeer.Inspection.getIndex = function(id) {
+    for (i in SS.inspections) {
+        if (SS.inspections[i].id == id) {
+            return i;
+        }  //TODO, need to crawl children as well
+    }
+    
+    return undefined;
+};
 
 SimpleSeer.Inspection.add = function(method, parameters) {
     inspection_names = {};
@@ -401,7 +424,6 @@ SimpleSeer.Inspection.findMeasurement = function(inspection, featurecriteria, me
     }
     return null;
 }
-
 
 
 SimpleSeer.InspectionControl = {};
@@ -889,22 +911,64 @@ SS.histgraph = new Processing("histogram");
 SS.histgraph.setup = function() {
     h = SS.histgraph;
     h.size(150, 48);
+    h.last = "";
+    h.hist = [];
+    h.maxstep = 12;
+    h.frameRate(20);
+    h.step = 0;
+    //h.noLoop();
+    h.stroke(255);
+    h.strokeCap(h.PROJECT);
+};
+
+SS.histgraph.newHistogram = function(hist) {
+    h = SS.histgraph;
+    h.step = 0;
+    if (!hist) {
+        h.hist = SS.histogram;
+        if (!h.last) {
+            h.last = new Array(h.hist.length);   
+        }
+    } else {
+        h.hist = hist;
+    }
+    h.loop();
 }
+
 
 SS.histgraph.draw = function() {
     h = SS.histgraph;
-
-    h.background(0,0);
-    h.stroke(255);
-
-    h.yscalefactor =  h.height / Math.max.apply(Math, SS.histogram);
-    h.xstep = h.width / SS.histogram.length;
-    
-    for (i in SS.histogram) {
-        x = h.xstep * i + 1;
-        y = SS.histogram[i] * h.yscalefactor;
-        
-        h.line(x, h.height, x, h.height - y);
+    console.log("draw start");
+    if (!SS.histogram) {
+        console.log("no histogram");
+        return;
     }
+    
+    h.background(0,0);
+    var hist = new Array(h.hist.length)
+    
+    for (i in h.hist) {
+        diff = h.maxstep - h.step;
+        hist[i] = (h.step / h.maxstep) * h.hist[i] + (diff / h.maxstep) * h.last[i];
+    }
+    
+    if (h.step == h.maxstep) {
+        h.noLoop();
+        hist = h.hist;
+        h.last = h.hist;
+        h.step = 0;
+    }
+    
+    h.yscalefactor =  h.height / Math.max.apply(Math, hist);
+    h.xstep = h.width / hist.length;
+    h.strokeWeight(h.xstep -1);
+
+    
+    for (i in hist) {
+          x = h.xstep * i + 1;
+          y = hist[i] * h.yscalefactor;
+          h.line(x, h.height, x, h.height - y);
+    }
+    h.step++;
 }
 
