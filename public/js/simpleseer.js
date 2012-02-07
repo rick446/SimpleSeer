@@ -361,8 +361,21 @@ SimpleSeer.Inspection.add = function(method, parameters) {
             SS.Frame.refresh();
             SS.Inspection.cancelPreview();
 
-            });
+    });
 };
+
+SimpleSeer.Inspection.update = function(inspection){
+    $.post("/inspection_update", {
+        id: inspection.id,
+        name: inspection.name,
+        parameters: JSON.stringify(inspection.parameters)
+    },function(data) {
+        SS.inspections = data;
+        SS.Frame.refresh();
+        SS.Inspection.cancelPreview();
+    });   
+}
+
 
 SimpleSeer.Inspection.preview = function (method, parameters) {
     if (SS.preview_running) {
@@ -728,12 +741,12 @@ SS.inspectionhandlers = {
 //TODO choose relevant icons
 $("#maindisplay").prettypiemenu({
     buttons: [
-        { img: "smico crop", title: "plaah1" }, 
-        { img: "smico contrast",  title: "plaah2" },
-        { img: "smico sliders",  title: "plaah2" },
-        { img: "smico chat",  title: "plaah2" },
-        { img: "smico bright", title: "plaah3" },
-        { img: "smico info", title: "plaah4" },
+        { img: "smico crop", title: "Select a Region" }, 
+        { img: "smico contrast",  title: "Find a light or dark Object" },
+        { img: "smico sliders",  title: "Find an object by Color" },
+        { img: "smico bright", title: "Look for Changes" },
+        { img: "smico chat",  title: "Leave an Annotation" },
+        { img: "smico info", title: "View Attributes" },
     ],
     iconW: 30,
     iconH: 30,
@@ -937,7 +950,6 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
 
    
    $(window).mouseup( function(e) {
-        console.log("mouseup");
       if (SS.mouseBlock) {
         return;
       } 

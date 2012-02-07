@@ -106,6 +106,25 @@ class WebInterface(object):
 
     @cherrypy.expose
     @jsonify
+    def inspection_update(self, **params):
+        results = Inspection.objects(id = bson.ObjectId(params["id"]))
+        if not len(results):
+            return { "error": "no inspection id"}
+        
+        insp = results[0]
+        
+        if params.has_key("name"):
+            insp.name = params["name"]
+            
+        if params.has_key("parameters"):
+            insp.parameters = json.loads(params["parameters"])
+            
+        #TODO, add sorts, filters etc
+        insp.save()
+        return SimpleSeer.SimpleSeer().inspections
+            
+    @cherrypy.expose
+    @jsonify
     def inspection_remove(self, **params):
         Inspection.objects(id = bson.ObjectId(params["id"])).delete()
         Measurement.objects(inspection = bson.ObjectId(params["id"])).delete()

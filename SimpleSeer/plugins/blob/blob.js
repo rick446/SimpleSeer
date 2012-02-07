@@ -1,8 +1,6 @@
 SimpleSeer.inspectionhandlers.blob = {
         rendercontrols: function(insp, div_id) {
-            $("#" + div_id).append($("<h2/>").append("Blob Controls"));
 
-            
             onchange = function(e, ui) {
                 params = { 
                     threshval: $("#"+insp.id+"_threshval").slider("value"),
@@ -13,6 +11,7 @@ SimpleSeer.inspectionhandlers.blob = {
             
             
             onapply = function() {
+                insp.norender = false;
                 params = { 
                     threshval: $("#"+insp.id+"_threshval").slider("value"),
                     invert: $("#"+insp.id+"_invert").is(":checked")
@@ -21,9 +20,8 @@ SimpleSeer.inspectionhandlers.blob = {
                 if (insp.id == "preview") {
                     SS.Inspection.add(insp.method, params);
                 } else {
-                    method = insp.method;
-                    SS.Inspection.remove(insp);
-                    SS.Inspection.add(method, params);
+                    insp.parameters = params;
+                    SS.Inspection.update(insp);
                 }
                 
                 $("#" + div_id).fadeOut(500).remove();
@@ -32,12 +30,14 @@ SimpleSeer.inspectionhandlers.blob = {
             }
             
             oncancel = function() {
+                insp.norender = false;
                 SS.Inspection.cancelPreview();
                 $("#" + div_id).fadeOut(500).remove();
                 SS.resetAction();   
             };
             
-            
+            $("#" + div_id).append($("<h2/>").append("Blob Controls"));
+
             
             $("#" + div_id).append(
                 SS.InspectionControl.checkbox(insp.id + "_invert", "invert", "Find Dark Blobs", onchange) 
@@ -49,11 +49,15 @@ SimpleSeer.inspectionhandlers.blob = {
         },
         
         render: function () {
-            
+
             
         },
         render_features: function (features, inspection) {
             if (features.length == 0) {
+                return;
+            }
+            
+            if (insp.norender) {
                 return;
             }
             
@@ -99,7 +103,18 @@ SimpleSeer.inspectionhandlers.blob = {
                         return "#" + clrhex.join("");
                         }, units: ""}
                 }, inspection, i);
-                SS.DisplayObject.addNavItem(div_id, "gear", "Edit", function () { });
+                SS.DisplayObject.addNavItem(div_id, "gear", "Edit this Inspection", function (e) {
+                        disp_object_id = $(e.target).parent().parent().parent().attr("id");
+                        id = disp_object_id.split("_")[1];
+                        feature_index = disp_object_id.split("_")[3];
+                        console.log(id);
+                        index = SS.Inspection.getIndex(id);
+                        insp = SS.inspections[index];
+                        feat = SS.featuresets[id][feature_index];
+                        console.log(feat);
+                        SS.Inspection.control(insp, feat.x, feat.y);
+                        insp.norender = true;
+                });
             }
             
             
