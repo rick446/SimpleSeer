@@ -1057,16 +1057,16 @@ h1 input:hover {
     
     .smico, a b.smico {opacity: .9; display: inline-block; height: 22px; width: 22px;}
     .smico:hover, a b.smico:hover {opacity: .6;}
-    .smico.crop {background: url("../img/292-crop.png") no-repeat 75% 75%;
-       background-size: 75%; }
-    .smico.contrast {background: url("../img/62-contrast.png") no-repeat 75% 75%;
-       background-size: 75%; }
-    .smico.chat {background: url("../img/08-chat.png") no-repeat 75% 75%;
-       background-size: 75%; }
-    .smico.info {background: url("../img/42-info.png") no-repeat 75% 75%;
-       background-size: 75%; }
-    .smico.sliders {background: url("../img/106-sliders.png") no-repeat 75% 75%;
-       background-size: 75%; }
+    .smico.crop {background: url("../img/292-crop.png") no-repeat 70% 70%;
+       background-size: 70%; }
+    .smico.contrast {background: url("../img/62-contrast.png") no-repeat 70% 70%;
+       background-size: 65%; }
+    .smico.chat {background: url("../img/08-chat.png") no-repeat 70% 70%;
+       background-size: 65%; }
+    .smico.info {background: url("../img/42-info.png") no-repeat 140% 140%;
+       background-size: 95%; }
+    .smico.sliders {background: url("../img/106-sliders.png") no-repeat 65% 70%;
+       background-size: 55%; }
     .smico.bright {background: url("../img/61-brightness.png") no-repeat 75% 75%;
        background-size: 75%; }
        

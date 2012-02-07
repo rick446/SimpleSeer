@@ -1,28 +1,40 @@
 .ui-ppmenu-pieBg {
-	
+    z-index:99;
 }
 
 .ui-ppmenu-iconFg {
 	margin: 2px;
+
 }
 
+.ui-ppmenu-hover {
+    opacity: 0.7;
+}
+
+.ui-ppmenu-active {
+    opacity: 1;
+    border: 1px solid #EEE !important;
+}
 
 
 .ui-ppmenu-iconBg {
     border-radius: 20px;
-		-moz-border-radius: 20px; 
+    -moz-border-radius: 20px; 
     -webkit-border-radius: 20px; 
     position: absolute;
+    z-index:100;
+    background: #111;
+    border: 1px solid #555;
 }
 
 .ui-ppmenu-tooltip {
     z-index: 10000;
     position: absolute;
-    font-size: 0.8em !important; 
-	padding: 4px;
+    font-size: 1.2em !important;
+	padding: 4px 12px;
     width: auto;
     white-space: nowrap;
-	opacity: .85;
+
 	filter: alpha(opacity = 85);
 	-moz-opacity: 0.85;
     -moz-border-radius: 6px;

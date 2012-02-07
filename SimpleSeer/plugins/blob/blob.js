@@ -34,15 +34,25 @@ SimpleSeer.inspectionhandlers.blob = {
                 SS.Inspection.cancelPreview();
                 $("#" + div_id).fadeOut(500).remove();
                 SS.resetAction();   
+                SS.Frame.refresh();
             };
             
-            $("#" + div_id).append($("<h2/>").append("Blob Controls"));
-
+            var defaults = {threshval: 127, invert: false};
+            if (insp.id != "preview") {
+                defaults["threshval"] = insp.parameters.threshval;
+                defaults["invert"] = insp.parameters.invert;
+            } 
             
+            
+            
+            $("#" + div_id).append($("<h2/>").append("Blob Controls"));
+            //TODO make this an editable text field for "name"
+
+    
             $("#" + div_id).append(
-                SS.InspectionControl.checkbox(insp.id + "_invert", "invert", "Find Dark Blobs", onchange) 
+                SS.InspectionControl.checkbox(insp.id + "_invert", "invert", "Find Dark Blobs", defaults.invert, onchange) 
             ).append(
-                SS.InspectionControl.slider(insp.id + "_threshval", "threshval", "Threshold", 127, 0, 255, 1, onchange)
+                SS.InspectionControl.slider(insp.id + "_threshval", "threshval", "Threshold", defaults.threshval, 0, 255, 1, onchange)
             ).append(
                 SS.InspectionControl.applyCancelButton(insp, onapply, oncancel)
             );
@@ -107,42 +117,35 @@ SimpleSeer.inspectionhandlers.blob = {
                         disp_object_id = $(e.target).parent().parent().parent().attr("id");
                         id = disp_object_id.split("_")[1];
                         feature_index = disp_object_id.split("_")[3];
-                        console.log(id);
                         index = SS.Inspection.getIndex(id);
                         insp = SS.inspections[index];
                         feat = SS.featuresets[id][feature_index];
-                        console.log(feat);
-                        SS.Inspection.control(insp, feat.x, feat.y);
+                        SS.mouseBlock = false;             
+                        SS.action.task = "blob";
+                        SS.action.update = id;
+                        
                         insp.norender = true;
                 });
             }
             
-            
-            
-            
-            
-        
         },
-        manipulate: function() {
+        
+        manipulate: function() { 
             startx = SS.action['startpx'][0];
             starty = SS.action['startpx'][1];
+            insp = '';
+            if (!SS.action.update) {
+                insp = { id: "preview", method: "blob", parameters: {threshval: 127 }};
+                SS.Inspection.control(insp, startx, starty);
+            } else {
+                insp = SS.Inspection.fromId(id);
+                SS.Inspection.control(insp, startx, starty);
+            }
             
-            /*
-            xdiff = startx - SS.mouseX;
-            ydiff = starty - SS.mouseY;
-            
-            diff = xdiff * SS.xscalefactor;
-            
-            thresh = SS.clamp(128 + diff, 1, 254);
-            
-            SS.Inspection.preview("blob", { threshval: thresh, minsize: 1000 });            
-            */
-            
-            insp = { id: "preview", method: "blob", threshval: 127 };
-            SS.Inspection.control(insp, startx, starty);
             
             if (isEmpty(SS.preview_data)) {
-                SS.Inspection.preview("blob", { threshval: 127 });            
+                console.log("launch_preview");
+                SS.Inspection.preview("blob", insp.parameters);            
             }
         },
 

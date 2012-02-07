@@ -87,7 +87,8 @@ $.widget("ui.prettypiemenu", {
 				top: radius - options.centerIconH/2,
 				left: radius - options.centerIconW/2,
 				position: "absolute",
-				border: 0
+				border: 0,
+                opacity: .75
 			});
 
 		// segments
@@ -95,7 +96,7 @@ $.widget("ui.prettypiemenu", {
 			var pos = self._iconPos(radius, i, nSegments, options.outerPadding, options, 50, 2);
 			var pieSegment = $(document.createElement("div"))
 				.appendTo($(pieArea))
-				.addClass("ui-ppmenu-iconBg ui-state-hover")
+				.addClass("ui-ppmenu-iconBg ui-ppmenu-hover")
 				.css({
 					top:  pos.top,
 					left: pos.left,
@@ -148,7 +149,7 @@ $.widget("ui.prettypiemenu", {
 		$(self.options.buttons).each( function(i, img) {   
 			var pos = self._iconPos(self.radius, i, self.nSegments, self.options.outerPadding, self.options, 50, 2);
 			$("#" + self.idPrefix + i).parent().animate({ top: pos.top, left: pos.left }, 500);
-			$("#" + self.idPrefix + i).parent().switchClass("ui-state-active", "ui-state-hover", 0);
+			$("#" + self.idPrefix + i).parent().switchClass("ui-ppmenu-active", "ui-ppmenu-hover", 0);
 		});
 		
 		self.pieArea.fadeOut(400, function() {
@@ -245,11 +246,12 @@ $.widget("ui.prettypiemenu", {
 			 }, false);
 	   
 	   self.pieArea.mousemove(function(event) {
+            console.log('mousemove');
 			self._changeHighlight(event); 
-		}, false)
+		})
 		.bind('mouseup', self.options, function(event) {
 			self._onClick(event); 
-		}, false);	   
+		});	   
 	   
 	   self.pieArea.fadeIn(self.options.showAnimationSpeed);
 	   self.showStartAnimation = self.options.showStartAnimation;;
@@ -277,13 +279,14 @@ $.widget("ui.prettypiemenu", {
 
 		   if (i === self.highlight)
 		   {
-			   $(icon).parent().switchClass("ui-state-hover", "ui-state-active", 0);
+			   $(icon).parent().switchClass("ui-ppmenu-hover", "ui-ppmenu-active", 0);
+			   
 			   if (self.options.showTitles)
 			   {
 				   var tooltipPos = self._iconPos(self.radius, i, self.nSegments, self.options.outerPadding, self.options, 0, 0);
 				   self.tooltip.html(img.title);
-				   var tooltipLeftside  = { top: tooltipPos.top, left: tooltipPos.left - self.tooltip.width() - self.options.iconW*2 }
-				   var tooltipRightside = { top: tooltipPos.top, left: tooltipPos.left + self.options.iconW*2 }
+				   var tooltipLeftside  = { top: tooltipPos.top, left: tooltipPos.left - self.tooltip.width() - self.options.iconW * 1.2 }
+				   var tooltipRightside = { top: tooltipPos.top, left: tooltipPos.left + self.options.iconW * 1.2 }
 				   
 				   if (tooltipPos.left < self.radius)
 				   {
@@ -295,26 +298,26 @@ $.widget("ui.prettypiemenu", {
 				   }
 				   
 				   // have to calculate if the title is going outside of the window				   
-				   self.tooltip.animate({
+				   self.tooltip.css({
 					   top:  tooltipPos.top,
 					   left: tooltipPos.left
-				   }, 300, function() { 
-					   if (self.tooltip.offset().left < 0)
-					   {
-						   self.tooltip.css({top: tooltipRightside.top, left: tooltipRightside.left});
-					   }
-					   else if (self.tooltip.offset().left + self.tooltip.width() > $(window).width())
-					   {
-						   self.tooltip.css({top: tooltipLeftside.top, left: tooltipLeftside.left});
-					   }
-				   });
+				   }).fadeIn();					   
+                   
+                   if (self.tooltip.offset().left < 0)
+                    {
+                        self.tooltip.css({top: tooltipRightside.top, left: tooltipRightside.left});
+                    }
+                    else if (self.tooltip.offset().left + self.tooltip.width() > $(window).width())
+                    {
+                        self.tooltip.css({top: tooltipLeftside.top, left: tooltipLeftside.left});
+                    }
 
 
 			   }
 		   }
 		   else
 		   {
-			   $(icon).parent().switchClass("ui-state-active", "ui-state-hover", 0);
+			   $(icon).parent().switchClass("ui-ppmenu-active", "ui-ppmenu-hover", 0);
 		   }
 	   });
 	   self.showStartAnimation = false;

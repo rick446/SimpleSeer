@@ -95,12 +95,12 @@ SimpleSeer.DisplayObject.addNavItem = function(id, iconcls, title, clickmethod) 
     $("#" + id).find("nav").append(
        $("<a/>", { title: title, href: "#" }).append(
             $("<b/>", { class: "ico " +iconcls })
-        ).click(clickmethod).tooltip({
+        ).click(clickmethod) /*.tooltip({
             position: "right" ,
             offset: [0, -10],
             predelay: 400,
             effect: "fade"}
-        ).dynamic({right: { direction: "left" }})
+        ).dynamic({right: { direction: "left" }})*/
     );
 }
 
@@ -301,6 +301,7 @@ SimpleSeer.Frame.refresh = function() {
     SS.Feature.refresh();
     SS.histgraph.newHistogram();
     $(".object").remove();
+    $(".tooltip").remove();
     $("#maindisplay").find("img").attr("src", "/GET/currentframe_0.jpg?" + new Date().getTime().toString());
     SS.p.refresh();
 };
@@ -338,6 +339,12 @@ SimpleSeer.Inspection.getIndex = function(id) {
     
     return undefined;
 };
+
+SimpleSeer.Inspection.fromId = function(id) {
+    return SS.inspections[SS.Inspection.getIndex(id)];
+}
+
+
 
 SimpleSeer.Inspection.add = function(method, parameters) {
     inspection_names = {};
@@ -437,13 +444,13 @@ SimpleSeer.Inspection.remove = function(insp) {
     
     $.post("/inspection_remove", { id: insp.id }, function(data) {
         SS.inspections = data;
-        SS.resetAction();           
+        SS.resetAction();    
+        SS.Frame.refresh();       
     });
 };
 
 
 SimpleSeer.Inspection.control = function(insp, x, y) {
-    
     var div_id = "inspectioncontrol_" + insp.id;
     
     if ($("#" + div_id).length > 0) {
@@ -468,11 +475,7 @@ SimpleSeer.Inspection.control = function(insp, x, y) {
     } else {
         point = SS.imageToProcessingCoordinates(x,y);
     }
-    $("#" + div_id).css({ top: point[0].toString() + "px", left: point[1].toString() + "px"}).draggable().hover( function() {
-                SS.mouseBlock = true;
-            }, function() {
-                SS.mouseBlock = false;
-            });
+    $("#" + div_id).css({ top: point[0].toString() + "px", left: point[1].toString() + "px"}).draggable();
 };
 
 SimpleSeer.Inspection.findMeasurement = function(inspection, featurecriteria, method) {
@@ -505,8 +508,13 @@ SimpleSeer.InspectionControl.controlBox = function(id, title, controls) {
 
 
 SimpleSeer.InspectionControl.checkbox = function(id, param, label, checked, onchange) {
+    attrs = { id: id, type: "checkbox"};
+    if (checked) {
+        attrs.checked = "";
+    }
+    
     return $("<div/>", { class: "control" }).append(
-        $("<input/>", { id: id, type: "checkbox"}).change(onchange)
+        $("<input/>", attrs).change(onchange)
     ).append(
         $("<label/>", { for: id }).append(label).css({ right: "0px" })
     );
@@ -743,21 +751,21 @@ $("#maindisplay").prettypiemenu({
     buttons: [
         { img: "smico crop", title: "Select a Region" }, 
         { img: "smico contrast",  title: "Find a light or dark Object" },
-        { img: "smico sliders",  title: "Find an object by Color" },
-        { img: "smico bright", title: "Look for Changes" },
+        { img: "smico sliders",  title: "Find an Object by color" },
+        { img: "smico bright", title: "Look for Movement" },
         { img: "smico chat",  title: "Leave an Annotation" },
         { img: "smico info", title: "View Attributes" },
     ],
     iconW: 30,
     iconH: 30,
-    closeRadius: 12,
-    outerPadding: 4,
+    outerPadding: 100,
     showAnimationSpeed: 250,
     closeRadius: 5,
+    onSelection: function (index) { console.log("hi " + index); },
     showTitles: true
 });
 
-//$(".ui-ppmenu-iconBg").tooltip();
+//$(".ui-ppmenu-iconBg").hover(function(e) { console.log("hovering"); });
 
 SS.radial_actions = ["region", "blob", "", ""];
 
@@ -766,10 +774,11 @@ SS.launchRadial = function() {
     //SS.action.task = "radial_select";
     SS.action.startpx = [SS.mouseX, SS.mouseY];
     $("#maindisplay").prettypiemenu("show", {top: SS.p.mouseY, left: SS.p.mouseX});
-    $(".ui-ppmenu-iconBg").mouseup(function(e) {
+    /* $(".ui-ppmenu-iconBg").mouseup(function(e) {
+        console.log("ppmenu icon mouseup");
         index = parseInt($(e.target).attr("id").split("_")[3]);    
         SS.action.task = SS.radial_actions[index];
-    });
+    }); */
 }
 
 
@@ -781,7 +790,7 @@ SS.p.render = function() {
     SS.Inspection.render();
     SS.Feature.render();  
   
-    task = SS.action["task"];
+    task = SS.action.task;
         
     if (task in SS.inspectionhandlers) {
         if (SS.mouseDown && "manipulate_onclick" in SS.inspectionhandlers[task]) {
@@ -877,7 +886,7 @@ SimpleSeer.waitForClick = function() {
 }
 
 SimpleSeer.resetAction = function() {
-    SS.action = { startpx: [0,0], task: "", focus: "", focuslock: false };
+    SS.action = { startpx: [0,0], task: "", focus: "", focuslock: false, update: "" };
     SS.p.refresh();
 
 }
@@ -965,8 +974,11 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
         return;
     } 
     
+    $("#maindisplay").prettypiemenu("_changeHighlight", e);
     SS.p.mouseX = e.pageX - $("#display").offset()["left"];
     SS.p.mouseY = e.pageY - $("#display").offset()["top"];
+   
+   
    });
 
 
