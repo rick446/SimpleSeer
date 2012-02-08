@@ -322,7 +322,7 @@ nav li {
 header nav ul { padding: 4px 0 16px; }	
 header nav ul.btngrp {
     left: .6em;
-    top: 5px;
+    top: 3px;
     padding: 0;
     background: none;
 }
@@ -1137,8 +1137,8 @@ h1 input:hover {
 }
 
 #inspectionname {
-    right: 6px;
-    top: 10px;
+    right: 20px;
+    bottom: 10px;
     position: absolute;
     display: inline;
     width: 200px;
