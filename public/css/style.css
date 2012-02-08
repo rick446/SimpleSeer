@@ -1131,6 +1131,32 @@ h1 input:hover {
    top: 10px;
 }
 
+#statebar {
+   padding: 8px;
+}
+
+.dashobject {
+    top: 2px;
+    min-width: 80px;
+    font-size: 1.2em;
+    padding: 6px;
+    margin: 4px;
+    background: #AAA;
+    border: 2px solid #111;
+    color: #222;
+    -moz-border-radius: 4px;
+    -webkit-border-radius: 4px;
+    border-radius: 4px;
+    opacity: .60;
+
+}
+
+.dashobject-hover {
+    opacity: 1;
+
+}
+
+
 .stretchee {
     opacity: 0%;
     position: absolute;

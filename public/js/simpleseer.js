@@ -48,7 +48,35 @@ SimpleSeer.getJSON = function(key) {
     return $.parseJSON(SS.getValue(key));  
 };
 
+SimpleSeer.DashObject = {};
 
+SimpleSeer.DashObject.add = function(inspection, fadein){
+    if (fadein == undefined) {
+        fadein = 300;
+    }
+    $("#statebar").append(
+        $("<li/>", {
+            id: "dash_" + inspection.id,
+            class: "dashobject"
+        }).append(inspection.name).fadeIn(fadein).hoverIntent({
+            over: function(){
+                $(this).addClass("dashobject-hover");
+            }, out: function(){
+                $(this).removeClass("dashobject-hover");
+            }, timeout: 100})
+        );
+};
+
+SimpleSeer.DashObject.remove = function(inspection) {
+    
+};
+
+SimpleSeer.DashObject.refresh = function() {
+    $(".dashobject").remove();
+    for (i in SS.inspections) {
+        SS.DashObject.add(SS.inspections[i], 0);    
+    }
+};
 
 SimpleSeer.DisplayObject = {};
 
@@ -299,6 +327,7 @@ SimpleSeer.Frame.refresh = function() {
     SimpleSeer.histogram = SimpleSeer.getJSON('histogram_0');
    
     SS.Feature.refresh();
+    SS.DashObject.refresh();
     SS.histgraph.newHistogram();
     $(".object").remove();
     $(".tooltip").remove();
