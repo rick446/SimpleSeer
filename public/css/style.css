@@ -198,6 +198,7 @@ body {
 
 button, input[type=button], input[type=submit], input[type=reset], .btn {
     position: relative;
+    display: inline-block;
     -moz-box-shadow: inset rgba(0,0,0,.2) 1px 1px 0, inset rgba(0,0,0,.2) -1px -1px 0;
     -webkit-box-shadow: inset rgba(0,0,0,.2) 1px 1px 0, inset rgba(0,0,0,.2) -1px -1px 0;
     box-shadow: inset rgba(0,0,0,.2) 1px 1px 0, inset rgba(0,0,0,.2) -1px -1px 0;
@@ -210,6 +211,8 @@ button, input[type=button], input[type=submit], input[type=reset], .btn {
     -webkit-border-radius: 4px;
     border-radius: 4px;
 	color: #fff !important;
+        height: 26px;
+
     background-color: #222;
     text-shadow: #000 0 -1px 0;
     background-image: -moz-linear-gradient(top, #444, #222);/* FF3.6 */
@@ -226,9 +229,10 @@ button, input[type=button], input[type=submit], input[type=reset], .btn {
     position: absolute;
     top: 10px;
     right: 10px;
+
  }
 header {position: fixed; z-index: 10000; bottom: 0px; width: 100%; left: 0px;}
-hgroup h1 { z-index: 1; text-transform: uppercase; margin-left: 20px;}
+hgroup h1 { z-index: 1; text-transform: uppercase; margin-right: 20px; }
 hgroup h1 a {color: #fff !important; text-decoration: none; text-shadow: #abc 0 -1px 1px; margin: 0 auto;}
 
 nav li a.btn:active, nav li a.btn:hover, nav li a.btn.active {
@@ -296,6 +300,7 @@ nav li {
     text-shadow: #000 0 -1px 0;
 }
  nav li a.btn {
+    margin: .5em;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     border-radius: 4px;
@@ -303,7 +308,6 @@ nav li {
     -moz-box-shadow: #000 0 1px 8px, inset #000 0 1px 1px, #666 0 1px 0;
     -webkit-box-shadow: #000 0 1px 8px, inset #000 0 1px 1px, #666 0 1px 0;
     box-shadow:  inset #000 0 1px 8px, inset #000 0 1px 1px, #666 0 1px 0;
-    min-width: 4em;
     text-shadow: #111 0 1px 0;
     background: #111;
     background-image: -moz-linear-gradient(top, #333, #222);
@@ -312,36 +316,37 @@ nav li {
     background-image: -webkit-linear-gradient(top, #333, #222);
     background-image: linear-gradient(top, #333, #232323);
  }
- .btngrp { background: none; display: block;}
- .btngrp .btn, .btngrp input { margin-right: 5px }
-
+ .btngrp { background: none; display: inline-block;}
+ .btngrp .btn, .btngrp input { margin-left: 5px }
+ .btngrp li { height: 26px; padding: 14px 0; }
 header nav ul { padding: 4px 0 16px; }	
 header nav ul.btngrp {
-    position: absolute;
-    right: .6em;
+    left: .6em;
     top: 5px;
     padding: 0;
     background: none;
 }
+
+.btngrp .ico {
+    top: -7px;
+}
+
 /* status */
 .btn.fail {
     background: #900;
     box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px;
-    width: 16px !important;
     padding: 8px;
     border-radius: 2px;
 }
 .btn.warn {
 background: #c60;
     box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px;
-    width: 16px !important;
     padding: 8px;
     border-radius: 2px;
 }
 .btn.good {
   background: #060;
     box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px;
-    width: 16px !important;
     padding: 8px;
     border-radius: 2px;
 
@@ -540,10 +545,11 @@ input, textarea, select {
     color: #444;
     background-color: #fff;
 }
+
 input[type=text], input[type=email], input[type=url], input[type=search], input[type=password], textarea {
 	width: 40%;
 	line-height: 26px;
-	min-width: 390px;
+	min-width: 165px;
 }
 
 .col input[type=text], .col input[type=email], .col input[type=url], .col input[type=search], .col input[type=password], .col textarea {
@@ -725,7 +731,6 @@ footer {}
     text-align: left;
 }
 .modal h1, .dialog h1, header nav h1, .progress {
-    padding: 10px;
     line-height:1.5;
     -moz-box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 0;
     -webkit-box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 0;
@@ -770,7 +775,7 @@ footer {}
 }
 .dash .content {padding: 16px;}
 .dash textarea {margin: -16px -16px -16px; padding: 16px; width: 100%; height: inherit; background:#000; color: #fff; border: none; font: 13px/1 'Courier New', monospace;}
-h1 input {background: none; border: none; color: #fff;}
+h1 input {background: none; border: none; color: #fff; }
 h1 input:hover {
       -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
@@ -1128,7 +1133,15 @@ h1 input:hover {
    width: 150px;
    height: 28px;
    position: relative;
-   top: 10px;
+   top: 5px;
+}
+
+#inspectionname {
+    right: 6px;
+    top: 10px;
+    position: absolute;
+    display: inline;
+    width: 200px;
 }
 
 #statebar {
@@ -1136,7 +1149,7 @@ h1 input:hover {
 }
 
 .dashobject {
-    top: 2px;
+    top: 1px;
     min-width: 80px;
     font-size: 1.2em;
     padding: 6px;
