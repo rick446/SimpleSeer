@@ -58,6 +58,19 @@ SimpleSeer.inspectionhandlers.blob = {
             );
         },
         
+        generate_name: function(parameters) {
+            if (parameters.invert) {
+                return "Dark Objects";    
+            } else {
+                return "Light Objects";
+            }
+            
+        },
+        
+        summary: function(insp) {
+            
+        },
+        
         render: function () {
 
             

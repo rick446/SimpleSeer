@@ -7,8 +7,8 @@ isEmpty = function(obj) {
 };
 
 //http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
-capitalize = function(){
-   return this.replace( /(^|\s)([a-z])/g , function(m,p1,p2){ return p1+p2.toUpperCase(); } );
+capitalize = function(word){
+   return word.replace( /(^|\s)([a-z])/g , function(m,p1,p2){ return p1+p2.toUpperCase(); } );
 };
 
 
@@ -226,6 +226,7 @@ SimpleSeer.DisplayObject.addNavInfo = function(id, title, info, inspection, feat
 SimpleSeer.Display = {};
 
 
+
 SimpleSeer.Display.renderObjectFocus = function(id) {
     
       if (SS.zoomer.zoomLevel() > 1) {
@@ -357,7 +358,24 @@ SimpleSeer.Frame.inspect = function() {
 
 
 //functions to deal with adding/previewing/updating/deleting models
-SimpleSeer.Inspection = {}
+SimpleSeer.Inspection = {};
+
+SimpleSeer.Inspection.fetchHandler = function(insp, handlername) {
+    if (insp["method"] in SS.inspectionhandlers && handlername in SS.inspectionhandlers[insp["method"]]) {
+        return SS.inspectionhandlers[insp["method"]][handlername];
+    } 
+    return function() { };
+};
+
+SimpleSeer.Inspection.fetchHandlerByMethod = function(method, handlername) {
+    if (method in SS.inspectionhandlers && handlername in SS.inspectionhandlers[method]) {
+        return SS.inspectionhandlers[method][handlername];
+    } 
+    return function() { };
+};
+
+
+
 
 SimpleSeer.Inspection.getIndex = function(id) {
     for (i in SS.inspections) {
@@ -378,14 +396,24 @@ SimpleSeer.Inspection.fromId = function(id) {
 SimpleSeer.Inspection.add = function(method, parameters) {
     inspection_names = {};
     for (i in SS.inspections) {
-        inspection_names[i.name] = 1;
+        insp = SS.inspections[i];
+        inspection_names[insp.name] = 1;
     } //build a table of names
     
     counter = 1;
-    name = method + counter.toString();
+    
+    generate_name = SS.Inspection.fetchHandlerByMethod(method, "generate_name");
+    nameroot = generate_name(parameters);
+    
+    if (!nameroot) {
+        nameroot = capitalize(method);
+    }
+    
+    name = nameroot + " " + counter.toString();
+    
     while (name in inspection_names) {
         counter++;
-        name = method + counter.toString();
+        name = nameroot + " " + counter.toString();
     } //Find the lowest available number for a default name
     
     camera = SS.framedata[0]['camera'];
@@ -445,27 +473,23 @@ SimpleSeer.Inspection.render = function() {
     //render any active inspections
     for (i in SS.inspections) {
         insp = SS.inspections[i];
-        if (insp["method"] in SS.inspectionhandlers) {
-            SS.inspectionhandlers[insp["method"]].render(insp); 
-        }
+        render = SS.Inspection.fetchHandler(insp, "render");
+        render(insp);
     }
     
     //render any active previews
     if (!isEmpty(SS.preview_data)) {
         pv = SS.preview_data;
-        if (pv.inspection.method in SS.inspectionhandlers) {
-            SS.inspectionhandlers[pv.inspection.method].render_features(pv.features, pv.inspection)
-        }
+        render_features = SS.Inspection.fetchHandler(pv.inspection, "render_features");
+        render_features(pv.features, pv.inspection);
     }
-    
     
 };
 
 SimpleSeer.Inspection.remove = function(insp) {
-    if (insp["method"] in SS.inspectionhandlers && "remove" in SS.inspectionhandlers[insp["method"]]) {
-        SS.inspectionhandlers[insp["method"]].remove(insp);
-    } 
-    
+    remove = SS.Inspection.fetchHandler(insp, "remove");
+    remove(insp);
+        
     SS.action.task = "inspection_remove";
     if (SS.action.focus == "inspection_" +insp.id) {
         SS.action.focus = "";
@@ -483,17 +507,15 @@ SimpleSeer.Inspection.control = function(insp, x, y) {
     var div_id = "inspectioncontrol_" + insp.id;
     
     if ($("#" + div_id).length > 0) {
-        if (insp.method in SS.inspectionhandlers && "updatecontrol" in SS.inspectionhandlers[insp.method]) {
-            SS.inspectionhandlers[insp.method].updatecontrol(insp);
-        }
+        updatecontrol =  SS.Inspection.fetchHandler(insp, "updatecontrol");
+        updatecontrol(insp);
         return;
     }
     
     $("#maindisplay").append($("<div/>", { id: div_id, class: "inspectioncontrol" }));
     
-    if (insp.method in SS.inspectionhandlers && "rendercontrols" in SS.inspectionhandlers[insp.method]) {
-        SS.inspectionhandlers[insp.method].rendercontrols(insp, div_id);
-    }
+    rendercontrols = SS.Inspection.fetchHandler(insp, "rendercontrols");
+    rendercontrols(insp, div_id);
     
     point = [0,0];
     //TODO, find the view area if we are zoomed in
@@ -640,10 +662,9 @@ SimpleSeer.Feature.render = function() {
     for (i in SS.inspections) {
         insp = SS.inspections[i];
         
-        if (insp.method in SS.inspectionhandlers 
-           && 'render_features' in SS.inspectionhandlers[insp.method]
-           && SS.featuresets[insp.id]) {
-            SS.inspectionhandlers[insp.method]["render_features"](SS.featuresets[insp.id], insp);
+        if (SS.featuresets[insp.id]) {
+            render_features =  SS.Inspection.fetchHandler(insp, "render_features");
+            render_features(SS.featuresets[insp.id], insp);
         } 
     }
 
@@ -785,8 +806,8 @@ $("#maindisplay").prettypiemenu({
         { img: "smico contrast",  title: "Find a light or dark Object" },
         { img: "smico sliders",  title: "Find an Object by color" },
         { img: "smico bright", title: "Look for Movement" },
-        { img: "smico chat",  title: "Leave an Annotation" },
-        { img: "smico info", title: "View Attributes" },
+        { img: "smico chat",  title: "Leave a Note" },
+        { img: "smico info", title: "View Properties" },
     ],
     iconW: 30,
     iconH: 30,
@@ -825,7 +846,7 @@ SS.p.render = function() {
         } else {
             SS.inspectionhandlers[task].manipulate();
         } 
-        //or manipulate onclick
+        //TODO combine these, letting the plugin check state of SS.mouseDown itself
     }
     
     if (SS.action.focus) {
@@ -849,6 +870,7 @@ SS.p.mouseReleased = function() {
 
 
 //the draw function is the loop() it can be enabled and disabled with SS.p.noLoop()
+//TODO eliminate this, relying instead on native javascript events
 SS.p.draw = function() {
   SS.setScale();
 
@@ -934,6 +956,10 @@ $(function(){
         $document = $(document);
 
     $(window).resize(function () {
+        if (!SS.framedata) {
+            return;
+        }
+        
         stretcher.width(1).height('auto');
         var w = $document.width();
         var h = $document.height();
