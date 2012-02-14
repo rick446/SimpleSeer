@@ -22,7 +22,7 @@ body {
     height: 100%;
     background-repeat: no-repeat;
 }
-h1,h2,h3,h4,h5,h6 {margin: 0 0 10px;}
+h1,h2,h3,h4,h5,h6 {margin: 0 0 0px;}
 body, button, input, select, textarea {
     font-family: 'Open Sans', sans-serif;
     color: #fff;
@@ -1146,22 +1146,37 @@ h1 input:hover {
 
 #statebar {
    padding: 8px;
+   position: relative;
+   z-index: 10001;
 }
 
 .dashobject {
+    position: relative;
     top: 1px;
     min-width: 80px;
-    font-size: 1.2em;
+    float: left;
+    font-size: 1.4em;
+    font-weight: bold;
     padding: 6px;
     margin: 4px;
-    background: #AAA;
+    background: #BBB;
     border: 2px solid #111;
     color: #222;
     -moz-border-radius: 4px;
     -webkit-border-radius: 4px;
     border-radius: 4px;
-    opacity: .60;
+    opacity: .50;
+    text-align: center;
+    white-space: nowrap;
+}
 
+.dashobject-summary {
+    margin: 0px;
+    padding: 0px;
+    font-size: 0.6em;
+    #display: inline-block;
+    text-align: center;
+    white-space: nowrap;
 }
 
 .dashobject-hover {
@@ -1169,6 +1184,20 @@ h1 input:hover {
 
 }
 
+.dashobject-nav {
+    position: absolute;
+    display: block;
+    font-size: 1.2em !important;
+    padding: 6px 6px;
+    width: auto;
+    white-space: nowrap;
+    background-color: rgba(0,0,0,.9);
+    border-radius: 0px 4px 4px 0px;
+    border: 2px solid #111;	
+    width: auto;
+    color:#EEE;
+    z-index: 10020;
+}
 
 .stretchee {
     opacity: 0%;
@@ -1218,14 +1247,16 @@ h1 input:hover {
     display: inline-block;
 }
 
+
+
+
 .tooltip {
     display:none;
-    position: absolute;
     font-size: 1.2em !important;
     padding: 4px 12px;
     width: auto;
     white-space: nowrap;
-    background-color: #222;
+    background-color: #000;
     filter: alpha(opacity = 85);
     -moz-opacity: 0.85;
     -moz-border-radius: 6px;
@@ -1233,8 +1264,8 @@ h1 input:hover {
     border-radius: 6px;	
     width: auto;
     padding:5px;
-    color:#fff;
-    z-index: 10001;
+    color:#EEE;
+    z-index: 50000;
     font-size: 1.2em !important;
 
 }

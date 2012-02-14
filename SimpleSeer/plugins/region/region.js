@@ -1,12 +1,18 @@
 SimpleSeer.inspectionhandlers.region = {
     
     render: function(insp) {
+        SS.p.stroke(0);
         if (SS.action["focus"] != "inspection_" + insp.id) {
-            SS.p.fill(255, 255, 255, 20);
+            if (SS.action.highlight == insp.id) {
+                SS.p.fill(255, 255, 255, 50);
+                SS.p.stroke(45);
+            } else {
+                SS.p.fill(255, 255, 255, 20);
+            }
         } else {
             SS.p.noFill();
         }
-        SS.p.stroke(0);
+        
         p = insp.parameters;
         SS.p.rect(p.x, p.y, p.w, p.h);
         id = insp.id;
@@ -44,6 +50,28 @@ SimpleSeer.inspectionhandlers.region = {
         
     },
     
+    dashboard: function(insp) {
+        div_id = "dash_" + insp.id;
+        SS.DisplayObject.addNavLock(div_id);
+        SS.DisplayObject.addNavZoom(div_id); 
+        SS.DisplayObject.addNavItem(div_id, "close", "Remove this Region", function(e) {
+            SS.Inspection.remove(insp);
+            SS.mouseBlock = false;
+            return false;
+        });  
+        /* SS.DisplayObject.addNavInfo(div_id, "Region Properties", {
+            x: { label: "top", units: "px" },
+            y: { label: "left", units: "px"},
+            width: { label: "width", units: "px"},
+            height: { label: "height", units: "px"},
+            meancolor: { label: "color", handler: function(clr) { 
+                clrhex = [];  
+                for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
+                return "#" + clrhex.join("");
+                }, units: ""}
+            }, insp, 0); */
+    },
+    
     remove: function(insp) {
         $("#inspection_" + insp.id).remove();
         SS.waitForClick();
@@ -54,7 +82,10 @@ SimpleSeer.inspectionhandlers.region = {
         
         
     },
-    
+    summary: function(insp) {
+        p = insp.parameters;
+        return p.w + "x" + p.h + " at (" + p.x + "," + p.y + ")";
+    },
     
     manipulate: function() {
         startx = SS.action['startpx'][0];

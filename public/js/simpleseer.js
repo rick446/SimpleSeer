@@ -50,22 +50,97 @@ SimpleSeer.getJSON = function(key) {
 
 SimpleSeer.DashObject = {};
 
+$("#statebar").hoverIntent({
+    out: function() {
+        dashnav = $(this).find(".dashobject-nav");
+        if (dashnav.length) {
+            dashobj = dashnav.parent();
+            dashobj.css({
+                "border-radius": 4 
+            });
+            dashobj.find(".dashobject-nav").animate({
+                width: 1
+            }, 400, function() { $(this).remove(); });
+            dashobj.animate({
+                left: 0
+            }, 300, function() { $(this).css( {left: ""} )});
+            dashobj.prevAll().animate({
+                left: 0
+            }, 300, function() { $(this).css( {left: ""} ) });
+            dashobj.nextAll().animate({
+                right: 0 
+            }, 300, function() { $(this).css( {right: ""} ) });
+        
+            $(".dashobject").removeClass("dashobject-hover");
+            SS.action.highlight = "";
+            SS.p.refresh();
+        }
+    }
+})
+
 SimpleSeer.DashObject.add = function(inspection, fadein){
     if (fadein == undefined) {
         fadein = 300;
     }
     $("#statebar").append(
-        $("<li/>", {
+        $("<div/>", {
             id: "dash_" + inspection.id,
             class: "dashobject"
-        }).append(inspection.name).fadeIn(fadein).hoverIntent({
+        
+        }).append(inspection.name).append(
+            $("<div/>", 
+                { class: "dashobject-summary" }).append(SS.Inspection.summary(inspection))
+        ).fadeIn(fadein).hoverIntent({
             over: function(){
                 $(this).addClass("dashobject-hover");
-            }, out: function(){
+                SS.action.highlight = $(this).attr('id').split("_")[1];
+                SS.p.refresh();
+                
+            }, 
+            out: function(){
+                if ($(this).find(".dashobject-nav").length) {
+                    return;
+                }
                 $(this).removeClass("dashobject-hover");
-            }, timeout: 100})
-        );
+                SS.action.highlight = "";
+                SS.p.refresh();
+                
+              
+            }, timeout: 300}
+        ).click(function() {
+            $(this).addClass("dashobject-hover");
+            var target = this;
+            $(this).css({
+                "border-radius": "4px 0px 0px 4px"
+            });
+            $(this).animate({
+                left: -$(this).offset().left + 12
+            }, 400, function() {
+                $(target).append(
+                    $("<div/>", { class: "dashobject-nav" }).append(
+                        $("<nav/>")
+                    ).css({
+                        "z-index": -1,
+                        left: 0,
+                        height: $(this).height(),
+                        top: -2,
+                    }).animate({
+                        left: $(this).outerWidth() - 4,
+                        width: $(this).parent().width() * .75 
+                    })
+                );
+                console.log($(target).attr("id"));
+                dashboard = SS.Inspection.fetchHandlerById($(target).attr("id").split("_")[1], "dashboard");
+                dashboard($(target).attr("id"));
+            });
+            $(this).prevAll().animate({ left: -2000 }, 800); 
+            $(this).nextAll().animate({ right: -2000 }, 800);
+        })
+    )
+    
+
 };
+
 
 SimpleSeer.DashObject.remove = function(inspection) {
     
@@ -76,6 +151,10 @@ SimpleSeer.DashObject.refresh = function() {
     for (i in SS.inspections) {
         SS.DashObject.add(SS.inspections[i], 0);    
     }
+    dobjs = $("#statebar > .dashobject");
+    var minwidth = 50;
+    dobjs.each(function(index) { if ($(this).width() > minwidth) { minwidth = $(this).width(); } });
+    dobjs.css("width", minwidth + "px"); //align width on all of them
 };
 
 SimpleSeer.DisplayObject = {};
@@ -321,7 +400,6 @@ SimpleSeer.Frame = {};
 
 SimpleSeer.Frame.refresh = function() {
     SimpleSeer.framecount = SimpleSeer.getValue('framecount');
-
     SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
     SimpleSeer.measurements = SimpleSeer.getJSON('measurements');
     SimpleSeer.results = SimpleSeer.getJSON('results');
@@ -331,7 +409,7 @@ SimpleSeer.Frame.refresh = function() {
     SS.DashObject.refresh();
     SS.histgraph.newHistogram();
     $(".object").remove();
-    $(".tooltip").remove();
+    //$(".tooltip").remove();
     $("#maindisplay").find("img").attr("src", "/GET/currentframe_0.jpg?" + new Date().getTime().toString());
     SS.p.refresh();
 };
@@ -364,18 +442,26 @@ SimpleSeer.Inspection.fetchHandler = function(insp, handlername) {
     if (insp["method"] in SS.inspectionhandlers && handlername in SS.inspectionhandlers[insp["method"]]) {
         return SS.inspectionhandlers[insp["method"]][handlername];
     } 
-    return function() { };
+    return function() { return ""; };
 };
 
 SimpleSeer.Inspection.fetchHandlerByMethod = function(method, handlername) {
     if (method in SS.inspectionhandlers && handlername in SS.inspectionhandlers[method]) {
         return SS.inspectionhandlers[method][handlername];
     } 
-    return function() { };
+    return function() { return ""; };
+};
+
+SimpleSeer.Inspection.fetchHandlerById = function(id, handlername) {
+    insp = SS.Inspection.fromId(id);
+    return SS.Inspection.fetchHandler(insp, handlername);
 };
 
 
-
+SimpleSeer.Inspection.summary = function(insp) {
+    summary = SS.Inspection.fetchHandler(insp, "summary");
+    return summary(insp);
+};
 
 SimpleSeer.Inspection.getIndex = function(id) {
     for (i in SS.inspections) {
@@ -662,7 +748,7 @@ SimpleSeer.Feature.render = function() {
     for (i in SS.inspections) {
         insp = SS.inspections[i];
         
-        if (SS.featuresets[insp.id]) {
+        if (insp.id in SS.featuresets) {
             render_features =  SS.Inspection.fetchHandler(insp, "render_features");
             render_features(SS.featuresets[insp.id], insp);
         } 
@@ -912,13 +998,6 @@ SimpleSeer.poll_interval = parseFloat(SimpleSeer.getValue('poll_interval'));
 
 SimpleSeer.featuresets = {};
 
-
-
-
-
-
-
-
 SimpleSeer.radialAnimating = false;
 
 SS.continuousCapture = false;
@@ -935,7 +1014,7 @@ SimpleSeer.waitForClick = function() {
 }
 
 SimpleSeer.resetAction = function() {
-    SS.action = { startpx: [0,0], task: "", focus: "", focuslock: false, update: "" };
+    SS.action = { startpx: [0,0], task: "", focus: "", focuslock: false, update: "", highlight: "" };
     SS.p.refresh();
 
 }

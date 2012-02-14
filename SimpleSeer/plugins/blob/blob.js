@@ -68,6 +68,16 @@ SimpleSeer.inspectionhandlers.blob = {
         },
         
         summary: function(insp) {
+            if (SS.featuresets && insp.id in SS.featuresets) {
+              return SS.featuresets[insp.id].length.toString() + " found";
+            } else {
+               return "none found";
+            }
+        },
+        
+        hover: function() {
+                
+            
             
         },
         
@@ -80,7 +90,7 @@ SimpleSeer.inspectionhandlers.blob = {
                 return;
             }
             
-            if (insp.norender) {
+            if (inspection.norender) {
                 return;
             }
             
@@ -91,15 +101,25 @@ SimpleSeer.inspectionhandlers.blob = {
                 for (index in clr) {
                     clr[index] = Math.round(clr[index]);
                 }
-                //alert(JSON.stringify(clr));
-                SS.p.stroke(0, 255, 255);
-                SS.p.fill(0, 128, 128, 60);
+
+                if (inspection.id != SS.action.highlight) {
+                    SS.p.stroke(0, 180, 180);
+                    SS.p.fill(0, 128, 128, 60);
+
+                } else {
+                    SS.p.stroke(0, 255, 255);
+                    SS.p.fill(0, 180, 180, 75);
+
+
+                }
             
                 SS.p.beginShape();
                 for (c in f.featuredata.mContour) {
                     pt = f.featuredata.mContour[c];
                     SS.p.vertex(pt[0], pt[1]);
                 }
+                pt = f.featuredata.mContour[0];
+                SS.p.vertex(pt[0], pt[1]);
                 SS.p.endShape();
             
                 if (!inspection.id || inspection.id == "preview") {
@@ -142,6 +162,8 @@ SimpleSeer.inspectionhandlers.blob = {
             }
             
         },
+        
+
         
         manipulate: function() { 
             startx = SS.action['startpx'][0];
