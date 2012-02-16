@@ -50,6 +50,8 @@ class Inspection(SimpleDoc):
     #list of dicts for morph operations
     #TODO validate agains morph operations
 
+    def __repr__(self):
+      return "[%s Object <%s> ]" % (self.__class__.__name__, self.name)
                                            
     def execute(self, image, parents = {}):
         """
