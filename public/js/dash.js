@@ -7,7 +7,7 @@ $(document).ready(function() {
         $('.active').removeClass('active');
         $('.dash, .dialog').remove();
         $(this).addClass('active');
-        $(this).parent().parent().after('<div class="dash"><div class="content clearfix"></div></div>').show( function () {
+        $(this).parent().parent().before('<div class="dash"><div class="content clearfix"></div></div>').show( function () {
             if (info) {$('.content').prepend(info);$('.content').find('textarea').focus();}
             else {
               $('.dash .content').load(purl + ' .maincontent', function() {

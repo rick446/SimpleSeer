@@ -246,7 +246,6 @@ $.widget("ui.prettypiemenu", {
 			 }, false);
 	   
 	   self.pieArea.mousemove(function(event) {
-            console.log('mousemove');
 			self._changeHighlight(event); 
 		})
 		.bind('mouseup', self.options, function(event) {

@@ -45,19 +45,66 @@ SimpleSeer.inspectionhandlers.blob = {
             
             
             
-            $("#" + div_id).append($("<h2/>").append("Blob Controls"));
+            $("#" + div_id).append($("<h2/>").append("Object Detection"));
             //TODO make this an editable text field for "name"
 
     
             $("#" + div_id).append(
+                $("<h3/>").append("Color")
+            ).append(
                 SS.InspectionControl.checkbox(insp.id + "_invert", "invert", "Find Dark Blobs", defaults.invert, onchange) 
             ).append(
-                SS.InspectionControl.slider(insp.id + "_threshval", "threshval", "Threshold", defaults.threshval, 0, 255, 1, onchange)
+                $("<h3/>").append("Threshold")
+            ).append(
+                SS.InspectionControl.slider(insp.id + "_threshval", "threshval", "", defaults.threshval, 0, 255, 1, onchange)
             ).append(
                 SS.InspectionControl.applyCancelButton(insp, onapply, oncancel)
             );
         },
-        
+        dashboard: function(insp) {
+            dash_id = "dash_" + insp.id;
+            
+            div = $("#" + dash_id + " > .dashobject-nav");
+            
+            div.append($("<nav/>").append(
+                SS.navItem("Remove Object Detection", "close", function(e) {
+                    SS.Inspection.remove(insp);
+                    SS.mouseBlock = false;
+                    $(".tooltip").remove();
+                    return false;
+
+                })
+            ));
+            
+            
+            info = $("<div/>", { class: "info"} );
+            div.append(info);
+                    
+            
+            
+            
+            info.append(
+                SS.Watchlist.renderItem({label: "objects", units: "", handler: function(arr) {
+                    return arr.length
+                    }}, SS.featuresets[insp.id], "count", insp)
+            /*).append(
+                SS.Watchlist.renderItem({label: "topmost", units: "px"}, SS.Feature.min(insp.id, "y").y, "y", insp, { max: "y" })
+            ).append(
+                SS.Watchlist.renderItem({label: "leftmost", units: "px"}, insp.parameters.w, "width", insp)
+            ).append(
+                SS.Watchlist.renderItem({label: "bottommost", units: "px"}, insp.parameters.h, "height", insp)
+            ).append(
+                SS.Watchlist.renderItem({label: "rightmost", units: "px"}, insp.parameters.h, "height", insp)
+            ).append(
+                SS.Watchlist.renderItem({label: "color", units: "", handler: function(clr) { 
+                    clrhex = [];  
+                    for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
+                    return "#" + clrhex.join("");
+                    }}, SS.featuresets[insp.id][0].meancolor, "meancolor", insp, { index: 0 })
+            */);
+            
+                  
+        },
         generate_name: function(parameters) {
             if (parameters.invert) {
                 return "Dark Objects";    

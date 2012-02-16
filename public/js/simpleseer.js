@@ -48,6 +48,9 @@ SimpleSeer.getJSON = function(key) {
     return $.parseJSON(SS.getValue(key));  
 };
 
+
+
+
 SimpleSeer.DashObject = {};
 
 $("#statebar").hoverIntent({
@@ -102,14 +105,22 @@ SimpleSeer.DashObject.add = function(inspection, fadein){
                     return;
                 }
                 $(this).removeClass("dashobject-hover");
-                SS.action.highlight = "";
+                if (SS.action.highlight == $(this).attr('id').split("_")[1]) {
+                    SS.action.highlight = "";
+                }
+                console.log("no highlight");
                 SS.p.refresh();
-                
-              
             }, timeout: 300}
         ).click(function() {
+            dashnav = $(this).find(".dashobject-nav");
+            if (dashnav.length) {
+                return;
+            }
             $(this).addClass("dashobject-hover");
             var target = this;
+            var insp_id = $(target).attr("id").split("_")[1];
+            SS.action.highlight = "";
+            //TODO, figure out how to give (lock?) and when to release focus.
             $(this).css({
                 "border-radius": "4px 0px 0px 4px"
             });
@@ -117,9 +128,7 @@ SimpleSeer.DashObject.add = function(inspection, fadein){
                 left: -$(this).offset().left + 12
             }, 400, function() {
                 $(target).append(
-                    $("<div/>", { class: "dashobject-nav" }).append(
-                        $("<nav/>")
-                    ).css({
+                    $("<div/>", { class: "dashobject-nav", id: "dashnav_" + insp_id }).css({
                         "z-index": -1,
                         left: 0,
                         height: $(this).height(),
@@ -130,8 +139,9 @@ SimpleSeer.DashObject.add = function(inspection, fadein){
                     })
                 );
                 console.log($(target).attr("id"));
-                dashboard = SS.Inspection.fetchHandlerById($(target).attr("id").split("_")[1], "dashboard");
-                dashboard($(target).attr("id"));
+                insp = SS.Inspection.fromId($(target).attr("id").split("_")[1]);
+                dashboard = SS.Inspection.fetchHandler(insp, "dashboard");
+                dashboard(insp);
             });
             $(this).prevAll().animate({ left: -2000 }, 800); 
             $(this).nextAll().animate({ right: -2000 }, 800);
@@ -195,25 +205,28 @@ SS.DisplayObject.unlockFocus = function() {
 
 
 
+SimpleSeer.navItem = function(title, iconcls, clickmethod) {
+    return $("<a/>", { title: title, href: "#" }).append(
+        $("<b/>", { class: "ico " +iconcls })
+    ).click(clickmethod).tooltip({
+        position: "right" ,
+        offset: [0, -10],
+        predelay: 200,
+        effect: "fade"}
+    ).dynamic({right: { direction: "left" }});
+};
+
 
 SimpleSeer.DisplayObject.addNavItem = function(id, iconcls, title, clickmethod) {
     //TODO, when nav is close to right side, flip to left-nav (css class)
     
     $("#" + id).find("nav").append(
-       $("<a/>", { title: title, href: "#" }).append(
-            $("<b/>", { class: "ico " +iconcls })
-        ).click(clickmethod).tooltip({
-            position: "right" ,
-            offset: [0, -10],
-            predelay: 200,
-            effect: "fade"}
-        ).dynamic({right: { direction: "left" }})
+       SS.navItem(title, iconcls, clickmethod)
     );
 }
 
 SimpleSeer.DisplayObject.addNavZoom = function(id) {
     SS.DisplayObject.addNavItem(id, "zoom-in", "Zoom In on this Region", function(e) {
-        
         icon = $(e.target);
         if (icon.hasClass("zoom-in")) {
             icon.removeClass("zoom-in").addClass("zoom-out");
@@ -255,52 +268,63 @@ SimpleSeer.DisplayObject.addNavInfo = function(id, title, info, inspection, feat
         return false;
     });
     
-    
     watchlist = $("<div/>", { class: "detail" }).append(title);
     for (prop in info) {
         value = SS.featuresets[inspection.id][featureindex][prop];
-        label = info[prop].label;
-        method = prop;
         
-        units = ''
-        if ("units" in info[prop]) {
-            units = info[prop].units;
-        } 
-        
-        if ("handler" in info[prop]) {
-            value = info[prop].handler(value);
-        }
-        
-        var watchclass = "ico watch";
-        
-        
-        //TODO make the eye toggle properly onclick
-        var watchfunction = function(i, fc, m) { return function() {
-            SS.Measurement.add({ inspection: i,
-                featurecriteria: fc,
-                method: m
-            });
-            return false;
-        } }(inspection, { index: featureindex}, method);
-        
-        meas = SS.Inspection.findMeasurement(inspection, { index: featureindex }, prop);
-        if (meas) {
-            watchclass = "ico watched"
-            watchfunction = function(m) { return function() {
-                SS.Measurement.remove(m);
-                return false;
-            }}(meas);
-        }
-        
-        watchlist.append($("<p/>").append(label + ": " + value + units).append(
-            $("<a/>", { href: "", title: "Watch" }).append(
-                $("<b/>", { class: watchclass})
-            ).click(watchfunction)
-        ));
+        watchlist.append(
+            SS.Watchlist.renderItem(info[prop], value, prop, inspection, { index: featureindex })
+        );
     }
     
     $("#" + id).find("nav").append(watchlist)
 }
+
+
+SimpleSeer.Watchlist = {}
+
+SimpleSeer.Watchlist.renderItem = function(info, value, method, inspection, featurecriteria) {
+    label = info.label;
+    
+    units = ''
+    if ("units" in info) {
+        units = info.units;
+    } 
+    
+    if ("handler" in info) {
+        value = info.handler(value);
+    }
+    
+    var watchclass = "ico watch";
+    
+    
+    //TODO make the eye toggle properly onclick
+    var watchfunction = function(i, fc, m) { return function() {
+        SS.Measurement.add({ inspection: i,
+            featurecriteria: fc,
+            method: m
+        });
+        return false;
+    } }(inspection, featurecriteria, method);
+    
+    meas = SS.Inspection.findMeasurement(inspection, featurecriteria, prop);
+    if (meas) {
+        watchclass = "ico watched"
+        watchfunction = function(m) { return function() {
+            SS.Measurement.remove(m);
+            return false;
+        }}(meas);
+    }
+    
+    
+    return $("<p/>").append(label + ": " + value + units).append(
+        $("<a/>", { href: "", title: "Watch" }).append(
+            $("<b/>", { class: watchclass})
+        ).click(watchfunction)
+    );  
+};
+
+
 
 SimpleSeer.Display = {};
 
@@ -754,7 +778,41 @@ SimpleSeer.Feature.render = function() {
         } 
     }
 
+};
+
+
+//return a new array with the features sorted
+SimpleSeer.Feature.sort = function(id, handler) {
+    arr = SS.featuresets[id].slice(0);  //copy the array
+    arr.sort(handler);
+    
+    return arr;
 }
+
+//return feature with the max
+SimpleSeer.Feature.min = function(id, property) {
+    if (!SS.featuresets[id].length) { return ; }
+    
+    
+    handler = function(a, b) {
+        return a[property] - b[property];
+    }
+    return SS.Feature.sort(id, handler)[0];
+};
+
+//find the feature with the maximum value of a property
+SimpleSeer.Feature.max = function(id, property) {
+    if (!SS.featuresets[id].length) { return ; }
+    
+    
+    handler = function(a, b) {
+        return b[property] - a[property];
+    }
+    return SS.Feature.sort(id, handler)[0];
+};
+
+
+
 
 SimpleSeer.Measurement = {};
 
@@ -1127,6 +1185,42 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
    SS.p.render();
 
 })};
+
+//dash
+
+$(document).ready(function() {
+    $('.options').bind('click', function() {
+        var trig, purl;
+        trig = $(this).attr('title');
+        purl = $(this).attr('href');
+        info = $(this).next('.hidden').html();
+        $('.active').removeClass('active');
+        $('.dash, .dialog').remove();
+        $(this).addClass('active');
+        $(this).parent().parent().before('<div class="dash"><div class="content clearfix"></div></div>').show( function () {
+            if (info) {$('.content').prepend(info);$('.content').find('textarea').focus();}
+            else {
+              $('.dash .content').load(purl + ' .maincontent', function() {
+                $.ajax({ url: '/js/modernizr2.js', dataType: 'script', cache: true});
+              });
+            }
+            $('.dash').prepend('<h1>'+trig+'</h1>');
+            $('.dash').prepend('<div class="close">X</div>');
+            $('.close, input[value="Cancel"]').bind('click', function() {
+                $('.dash').remove();
+                $('.active').removeClass('active');
+                return false;
+            });
+            $(document).keyup(function(e) {
+              if (e.keyCode == 27) { $('.close').click(); }   // esc
+            });
+        });
+        return false;
+        purl.abort();
+        $(this).unbind('click');
+    });
+});
+
 
 
 //histogram

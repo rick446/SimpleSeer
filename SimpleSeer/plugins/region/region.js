@@ -44,6 +44,7 @@ SimpleSeer.inspectionhandlers.region = {
         SS.DisplayObject.addNavItem(div_id, "close", "Remove this Region", function(e) {
             SS.Inspection.remove(insp);
             SS.mouseBlock = false;
+            $(".tooltip").remove();
             return false;
         });
         
@@ -51,14 +52,52 @@ SimpleSeer.inspectionhandlers.region = {
     },
     
     dashboard: function(insp) {
-        div_id = "dash_" + insp.id;
-        SS.DisplayObject.addNavLock(div_id);
+        dash_id = "dash_" + insp.id;
+        
+        div = $("#" + dash_id + " > .dashobject-nav");
+        
+        
+        nav = $("<nav/>").append(
+            SS.navItem("Remove this Region", "close", function(e) {
+                SS.Inspection.remove(insp);
+                SS.mouseBlock = false;
+                console.log("removed inspection");
+                console.log($(e.target).find(".tooltip"));
+                $(".tooltip").remove();
+                return false;
+            })
+        );
+        
+        div.append(nav);
+        
+        
+        info = $("<div/>", { class: "info"} );
+        div.append(info);
+        
+        info.append(
+            SS.Watchlist.renderItem({label: "top", units: "px"}, insp.parameters.y, "y", insp)
+        ).append(
+            SS.Watchlist.renderItem({label: "left", units: "px"}, insp.parameters.x, "x", insp)
+        ).append(
+            SS.Watchlist.renderItem({label: "width", units: "px"}, insp.parameters.w, "width", insp)
+        ).append(
+            SS.Watchlist.renderItem({label: "height", units: "px"}, insp.parameters.h, "height", insp)
+        ).append(
+            SS.Watchlist.renderItem({label: "color", units: "", handler: function(clr) { 
+                clrhex = [];  
+                for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
+                return "#" + clrhex.join("");
+                }}, SS.featuresets[insp.id][0].meancolor, "meancolor", insp, { index: 0 })
+        );
+        
+              
+        /* SS.DisplayObject.addNavLock(div_id);
         SS.DisplayObject.addNavZoom(div_id); 
         SS.DisplayObject.addNavItem(div_id, "close", "Remove this Region", function(e) {
             SS.Inspection.remove(insp);
             SS.mouseBlock = false;
             return false;
-        });  
+        }); */  
         /* SS.DisplayObject.addNavInfo(div_id, "Region Properties", {
             x: { label: "top", units: "px" },
             y: { label: "left", units: "px"},
