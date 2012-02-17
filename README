@@ -30,6 +30,8 @@ You must have SimpleCV installed first! http://simplecv.org
 You will also need to edit (or copy and edit) default.cfg for settings
 that reflect your Camera, database, and etc.
 
+Note: You can optionally install pyfirmata to interface with an arduino
+
 Mac OS X (Using homebrew)
 ========
 
@@ -37,21 +39,19 @@ Mac OS X (Using homebrew)
 > brew install mongodb
 > brew install redis (and follow directions to install redis as service)
 > brew install libevent
-> easy_install mongoengine
-> easy_install cherrypy
-> easy_install redis
-> easy_install jsonpickle
-> easy_install ujson
+> sudo easy_install pip
+> sudo pip install -r pip.requirements 
 > hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.py install
-> git clone git://github.com/nicolasff/webdis.git && cd webdis && make && ./webdis &
+> git clone git://github.com/nicolasff/webdis.git && cd webdis && make && sudo make install
 
 Linux (Using apt-get)
 =======
-> apt-get install mongodb-server nginx
+> apt-get install mongodb-server nginx libevent-dev
 > cp etc/nginx/sites-enabled/default /etc/nginx/sites-enabled
 > /etc/init.d/nginx restart
 > pip install -r pip.requirements
-> git clone git://github.com/nicolasff/webdis.git && cd webdis && make && ./webdis &
+> wget -O redis.tar.gz "http://redis.googlecode.com/files/redis-2.4.7.tar.gz" && tar zxvf redis.tar.gz && cd redis-2.4.7 && make && sudo make install
+> git clone git://github.com/nicolasff/webdis.git && cd webdis && make && sudo make install
 
 
 [Post Installation]
@@ -62,7 +62,7 @@ This is used to start, stop, and autostart processes used for Seer. It should
 have been installed as part of the pip requirements but if for some reason
 it did not you can run
 
-> pip install supervisor
+> sudo pip install supervisor
 
 
 Then you need to copy the config file:
