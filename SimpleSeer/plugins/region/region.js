@@ -30,17 +30,7 @@ SimpleSeer.inspectionhandlers.region = {
 
         SS.DisplayObject.addNavLock(div_id);
         SS.DisplayObject.addNavZoom(div_id); 
-        SS.DisplayObject.addNavInfo(div_id, "Region Properties", {
-            x: { label: "top", units: "px" },
-            y: { label: "left", units: "px"},
-            width: { label: "width", units: "px"},
-            height: { label: "height", units: "px"},
-            meancolor: { label: "color", handler: function(clr) { 
-                clrhex = [];  
-                for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
-                return "#" + clrhex.join("");
-                }, units: ""}
-            }, insp, 0);
+        SS.DisplayObject.addNavInfo(div_id, "Region Properties", insp, 0);
         SS.DisplayObject.addNavItem(div_id, "close", "Remove this Region", function(e) {
             SS.Inspection.remove(insp);
             SS.mouseBlock = false;
@@ -163,6 +153,25 @@ SimpleSeer.inspectionhandlers.region = {
         SS.Inspection.add("region", {x: startx, y: starty, w: w, h: h});
         SS.resetAction();
         SS.waitForClick();
+    },
+    
+    feature_measurements: function() {
+         return {
+            x: { label: "top", units: "px" },
+            y: { label: "left", units: "px"},
+            width: { label: "width", units: "px"},
+            height: { label: "height", units: "px"},
+            meancolor: { label: "color", handler: function(clr) { 
+                clrhex = [];  
+                for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
+                return "#" + clrhex.join("");
+                }, units: ""}
+            };
+        
+    },
+    
+    inspection_measurements: function() {
+        return SS.inspectionhandlers["feature_measurements"]();
     }
 };
 

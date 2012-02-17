@@ -83,10 +83,7 @@ SimpleSeer.inspectionhandlers.blob = {
             
             
             
-            info.append(
-                SS.Watchlist.renderItem({label: "objects", units: "", handler: function(arr) {
-                    return arr.length
-                    }}, SS.featuresets[insp.id], "count", insp)
+            info.append(SS.Watchlist.renderInspectionItems(insp));
             /*).append(
                 SS.Watchlist.renderItem({label: "topmost", units: "px"}, SS.Feature.min(insp.id, "y").y, "y", insp, { max: "y" })
             ).append(
@@ -101,7 +98,7 @@ SimpleSeer.inspectionhandlers.blob = {
                     for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
                     return "#" + clrhex.join("");
                     }}, SS.featuresets[insp.id][0].meancolor, "meancolor", insp, { index: 0 })
-            */);
+            );*/
             
                   
         },
@@ -180,19 +177,7 @@ SimpleSeer.inspectionhandlers.blob = {
                 
                 SS.Display.addDisplayObject(div_id, f.points[0][0], f.points[0][1], f.width, f.height);
                 SS.DisplayObject.addNavZoom(div_id);
-                SS.DisplayObject.addNavInfo(div_id, "Blob " + i.toString() + " Properties", {
-                    x: { label: "top", units: "px" },
-                    y: { label: "left", units: "px"},
-                    width: { label: "width", units: "px"},
-                    height: { label: "height", units: "px"},
-                    angle: { label: "angle", units: "&deg;"},
-                    area: { label: "area", units: "px"},
-                    meancolor: { label: "color", handler: function(clr) { 
-                        clrhex = [];  
-                        for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
-                        return "#" + clrhex.join("");
-                        }, units: ""}
-                }, inspection, i);
+                SS.DisplayObject.addNavInfo(div_id, "Object " + i.toString() + " Properties", inspection, i);
                 SS.DisplayObject.addNavItem(div_id, "gear", "Edit this Inspection", function (e) {
                         disp_object_id = $(e.target).parent().parent().parent().attr("id");
                         id = disp_object_id.split("_")[1];
@@ -230,5 +215,29 @@ SimpleSeer.inspectionhandlers.blob = {
                 SS.Inspection.preview("blob", insp.parameters);            
             }
         },
-
+        
+        
+        feature_measurements: function() {
+            return {
+                x: { label: "top", units: "px" },
+                y: { label: "left", units: "px"},
+                width: { label: "width", units: "px"},
+                height: { label: "height", units: "px"},
+                angle: { label: "angle", units: "&deg;"},
+                area: { label: "area", units: "px"},
+                meancolor: { label: "color", handler: function(clr) { 
+                    clrhex = [];  
+                    for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
+                    return "#" + clrhex.join("");
+                    }, units: ""}
+            };
+        },
+        
+        inspection_measurements: function() {
+            return  {
+                count: {label: "objects", units: "", handler: function(features) {
+                    return features.length
+                }}
+            };
+        }
 };

@@ -154,12 +154,13 @@ textarea {
 input:valid, textarea:valid { }
 input:invalid, textarea:invalid { background-color: #f0dddd }
 /* Tables */
-table {
+
+/* table {
 	width: 100%;
     border-spacing: 1px;
 	margin: 0 0 20px 0;
 	border-radius: 4px;
-}
+} */
 
 /* THEME */
 header nav  {
@@ -1337,6 +1338,26 @@ h1 input:hover {
     padding: 4px;
     font-weight: normal;
 }
+
+.watchlist {
+  position: absolute;
+  line-height: 1;
+  min-height: 115px; 
+  max-height: 466px; 
+  top: 5px;
+  width: 100%; 
+  overflow: auto;
+  margin: 0; 
+  z-index: 9998;
+  color: #eee;
+  padding: 0;
+  background: #111;
+}
+
+.watchlistcontent {
+  margin: 15px;
+}
+
 .tooltip {
     display:none;
     font-size: 1.2em !important;

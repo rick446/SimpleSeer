@@ -54,6 +54,7 @@ SimpleSeer.getJSON = function(key) {
 SimpleSeer.DashObject = {};
 
 $("#statebar").hoverIntent({
+    over: function() {},
     out: function() {
         dashnav = $(this).find(".dashobject-nav");
         if (dashnav.length) {
@@ -262,7 +263,10 @@ SimpleSeer.DisplayObject.addNavLock = function(id) {
 
 
 
-SimpleSeer.DisplayObject.addNavInfo = function(id, title, info, inspection, featureindex) {
+SimpleSeer.DisplayObject.addNavInfo = function(id, title, inspection, featureindex) {
+    feature_measurements = SS.Inspection.fetchHandler(inspection, "feature_measurements");
+    info = feature_measurements();
+    
     SS.DisplayObject.addNavItem(id, "info", "View Attributes of this Region", function(e) {
         $(e.target).parent().parent().find(".detail").fadeIn(300);
         return false;
@@ -280,8 +284,106 @@ SimpleSeer.DisplayObject.addNavInfo = function(id, title, info, inspection, feat
     $("#" + id).find("nav").append(watchlist)
 }
 
+SimpleSeer.Watchlist = {};
 
-SimpleSeer.Watchlist = {}
+
+SimpleSeer.Watchlist.showWatchedItems = function(){
+    $("#statebar > .dashobject").animate({
+        left: -999
+    });
+    $("#statebar").append(
+        $("<div/>", {class: "watchlist"}).css({
+            right: -3000
+        }).append(
+            SS.Watchlist.renderWatchedItems()
+        ).animate({
+            right: 0
+        })
+    );
+};
+
+SimpleSeer.Watchlist.hideWatchedItems = function() {
+    $(".watchlist").animate({
+        right: -3000
+    }, 600, function() {
+        $this.remove();
+    });
+    $("#statebar > .dashobject").animate({
+        left: 0
+    }, 600, function(n) {
+        $(this).css( { left: '' } );
+    });
+};
+
+SimpleSeer.Watchlist.renderWatchedItems = function() {
+    content = $("<table/>", { class: "watchlistcontent" });
+    
+    if (!SS.measurements.length) {
+        return "No watched items";
+    }
+    
+    tablecell = function(cls, i) {
+        return $("<td/>", { class: cls }).append(i);
+    };
+    
+    for (i in SS.measurements) {
+        m = SS.measurements[i];
+        value = "";
+        
+        result =  SS.Result.forLastFrame({ measurement: m });
+        
+        value = SS.Result.value(r, m); 
+
+        content.append(
+            $("<tr/>",  { class: "measurement", id: "measurement_" + m.id }).append(
+                tablecell("measurement_label", m.label)
+            ).append(
+                tablecell("measurement_value", value)
+            ).append(
+                tablecell("measurement_graph", $("<canvas/>", { id: "measurement_graph_" + m.id, class: "measurement_sparkline" })) 
+            )
+        );
+    }
+    return content;
+};
+
+SimpleSeer.Watchlist.renderSparklines = function() {
+    $(".measurement_sparkline").each(function(i){
+        id = $(this).attr("id").split("_")[2];
+        sl = new Sparkline("measurement_graph_" + id, SS.Result.data(SS.Measurement.fromId(id)));
+        sl.draw();
+    });  
+};
+
+SimpleSeer.Watchlist.renderInspectionItems = function(inspection) {
+    inspection_measurements = SS.Inspection.fetchHandler(inspection, "inspection_measurements");
+    info = inspection_measurements();
+    
+    return SS.WatchList.renderItems(info, inspection);
+}
+
+SimpleSeer.Watchlist.renderItems = function(info, inspection, featurecriteria) {
+    
+    if (!featurecriteria) {
+        featurecriteria = {};
+    }
+    
+    watchlist = [];
+    
+    for (prop in info) {
+        if (featurecriteria.index != undefined) {
+            value = SS.featuresets[inspection.id][featureindex][prop];
+        } else {
+            value = SS.featuresets[inspection.id];
+        }
+        
+        watchlist.push(
+            SS.Watchlist.renderItem(info[prop], value, prop, inspection, featurecriteria)
+        );
+    }
+    
+    return watchlist[0].after.apply(watchlist[0], watchlist.slice(1));
+}
 
 SimpleSeer.Watchlist.renderItem = function(info, value, method, inspection, featurecriteria) {
     label = info.label;
@@ -811,9 +913,6 @@ SimpleSeer.Feature.max = function(id, property) {
     return SS.Feature.sort(id, handler)[0];
 };
 
-
-
-
 SimpleSeer.Measurement = {};
 
 SimpleSeer.Measurement.add = function(params) {
@@ -847,15 +946,83 @@ SimpleSeer.Measurement.add = function(params) {
         });
 }
 
+SimpleSeer.Measurement.fromId = function(id) {
+    for (i in SS.measurements) {
+        m = SS.measurements[i];
+        if (m.id == id) {
+            return m;
+        }
+    }
+    
+    return;
+};
 
 
 SimpleSeer.Measurement.render = function() {
     
-}
+};
 
 
+SimpleSeer.Result = {};
+
+SimpleSeer.Result.value = function(result, measurement, measurement_handler) {
+    if (!measurement) {
+        measurement = SS.Measurement.fromId(result.measurement);
+    }
+    
+    if (!measurement_handler) {
+        measurement_handler = SS.Inspection.fetchHandlerById(measurement.inspection, "measurement_" + measurement.method);
+    }
+    value = measurement_handler(result);
+        
+    if (value == "") {
+        value = result.numeric;
+        if (value == "") {
+            value = result.string;
+        }
+    }
+    value = value + m.units;
+
+    return value;        
+};
 
 
+SimpleSeer.Result.data = function(measurement_id) {
+    data = [];
+    
+    measurement = SS.Measurement.fromId(measurement_id);
+    measurement_handler = SS.Inspection.fetchHandlerById(measurement.inspection, "measurement_" + measurement.method);
+    
+    for (i in SS.results) {
+        r = SS.results[i];
+        if (r.measurement == measurement_id) {
+            val = measurement_handler(data);
+            
+            if (val == "") {
+                val = r.numeric;
+            }
+            data.push(val);
+        }
+    }
+    
+};
+
+SimpleSeer.Result.forLastFrame = function(selector) {
+    var cls;
+    var obj;
+    for (k in selector) {
+        cls = k;
+        obj = selector[k];
+    }
+    
+    for (i in SS.results) {
+        r = SS.results[i];
+        if (r[cls] == obj.id) {
+            return r;
+        }
+    }
+    return "";
+};
 
 /* //check the frame id, if it increments, reload context
 setInterval(function(){
@@ -1178,7 +1345,9 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
         effect: "fade"}
     ).dynamic({right: { direction: "left" }})
    $(".ico.play").click( SS.Frame.capture );
-    
+   $(".tools").find(".ico.watch").click(function() {
+      SS.Watchlist.showWatchedItems(); 
+   });
 
 
    SimpleSeer.Frame.refresh();
