@@ -1,3 +1,4 @@
 *.pyc
 *.log
 *_log
+default.cfg
