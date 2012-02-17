@@ -77,41 +77,58 @@ SimpleSeer.inspectionhandlers.barcode = {
 
 	
                 
-								SS.Display.addDisplayObject(div_id, Math.min(ptsX), Math.max(ptsY), f.width, f.height);
-								//SS.DisplayObject.addNavZoom(div_id);
-								//~ SS.DisplayObject.addNavInfo(div_id,
-										//~ "Barcode " + i.toString() + " Properties",
-										//~ {
-											//~ x: { label: "top", units: "px" },
-											//~ y: { label: "left", units: "px"},
-											//~ width: { label: "width", units: "px"},
-											//~ height: { label: "height", units: "px"},
-											//~ angle: { label: "angle", units: "&deg;"},
-											//~ area: { label: "area", units: "px"},
-										//~ },
-										//~ inspection,
-										//~ i
-								//~ );
-								//~ SS.DisplayObject.addNavItem(div_id, "gear", "Edit this Inspection", function (e) {
-												//~ disp_object_id = $(e.target).parent().parent().parent().attr("id");
-												//~ id = disp_object_id.split("_")[1];
-												//~ feature_index = disp_object_id.split("_")[3];
-												//~ index = SS.Inspection.getIndex(id);
-												//~ insp = SS.inspections[index];
-												//~ feat = SS.featuresets[id][feature_index];
-												//~ SS.mouseBlock = false;             
-												//~ SS.action.task = "barcode";
-												//~ SS.action.update = id;
-												//~ 
-												//~ insp.norender = true;
-								//~ });
-								//~ 
-                
+								SS.Display.addDisplayObject(div_id, _.min(ptsX), _.min(ptsY), f.width, f.height);
+								SS.DisplayObject.addNavZoom(div_id);
+								SS.DisplayObject.addNavInfo(div_id,
+										"Barcode " + i.toString() + " Properties",
+										{
+											x: { label: "top", units: "px" },
+											y: { label: "left", units: "px"},
+											width: { label: "width", units: "px"},
+											height: { label: "height", units: "px"},
+											angle: { label: "angle", units: "&deg;"},
+											area: { label: "area", units: "px"},
+
+										},
+											
+										inspection,
+										i
+								);
             }
-
-
         },
-        
+
+				dashboard: function(insp) {
+            dash_id = "dash_" + insp.id;
+            
+            div = $("#" + dash_id + " > .dashobject-nav");
+            
+            div.append($("<nav/>").append(
+                SS.navItem("Remove Object Detection", "close", function(e) {
+                    SS.Inspection.remove(insp);
+                    SS.mouseBlock = false;
+                    $(".tooltip").remove();
+                    return false;
+
+                })
+            ));
+            
+            
+            info = $("<div/>", { class: "info"} );
+            div.append(info);
+
+						if(SS.featuresets[insp.id].length > 0 ){
+            info.append(
+                SS.Watchlist.renderItem({
+									label: "Barcode",
+									units: "",
+									handler: function(arr) {
+                    return arr[0].featuredata.data
+                    }},
+									SS.featuresets[insp.id],
+									"Data:",
+									insp));
+						}
+        },
 
         
         manipulate: function() { 
