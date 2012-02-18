@@ -286,6 +286,15 @@ SimpleSeer.DisplayObject.addNavInfo = function(id, title, inspection, featureind
 
 SimpleSeer.Watchlist = {};
 
+SimpleSeer.Watchlist.refresh = function() {
+    watchlist =$(".watchlist"); 
+    if (!watchlist.length) {
+        return; 
+    }
+    watchlist.html(SS.Watchlist.renderWatchedItems());
+    SS.Watchlist.renderSparklines();
+};
+
 
 SimpleSeer.Watchlist.showWatchedItems = function(){
     $("#statebar > .dashobject").animate({
@@ -307,7 +316,7 @@ SimpleSeer.Watchlist.hideWatchedItems = function() {
     $(".watchlist").animate({
         right: -3000
     }, 600, function() {
-        $this.remove();
+        $(this).remove();
     });
     $("#statebar > .dashobject").animate({
         left: 0
@@ -329,24 +338,38 @@ SimpleSeer.Watchlist.renderWatchedItems = function() {
     
     for (i in SS.measurements) {
         m = SS.measurements[i];
+        insp = SS.Inspection.fromId(m.inspection);
         value = "";
         
         result =  SS.Result.forLastFrame({ measurement: m });
         
-        value = SS.Result.value(r, m); 
+        value = SS.Result.value(r, m);
+        
+        if (m.featurecriteria && m.featurecriteria.index != undefined) {
+            label = insp.name + "Feature " + m.featurecriteria.index + " " + m.label
+        } else {
+            label = insp.name + m.label
+        }
 
         content.append(
             $("<tr/>",  { class: "measurement", id: "measurement_" + m.id }).append(
-                tablecell("measurement_label", m.label)
-            ).append(
-                tablecell("measurement_value", value)
+                tablecell("measurement_label", insp.name + m.label)
             ).append(
                 tablecell("measurement_graph",
                     $("<span/>", {
                         id: "measurement_graph_" + m.id,
                         class: "measurement_sparkline"
                     })
-                ) 
+                )
+            ).append(
+                tablecell("measurement_value", value)
+            ).append(
+                tablecell("measurement_remove",
+                    $("<a/>", {id: "measurementremove_" + m.id}).append("X").click(function(e) {
+                        SS.Measurement.remove($(this).attr("id").split("_")[1]);
+                        //SS.Watchlist.refresh();
+                    })
+                )
             )
         );
     }
@@ -357,7 +380,7 @@ SimpleSeer.Watchlist.renderSparklines = function() {
     $(".measurement_sparkline").each(function(i) {
         id = $(this).attr("id").split("_")[2];
         console.log("render sparkline for " + id);
-        $(this).sparkline(SS.Result.data(id), {
+        $(this).sparkline(SS.Result.data(id, 30), {
             type: "line",    
             lineColor: "#EEE"
         });
@@ -412,13 +435,14 @@ SimpleSeer.Watchlist.renderItem = function(info, value, method, inspection, feat
     
     
     //TODO make the eye toggle properly onclick
-    var watchfunction = function(i, fc, m) { return function() {
+    var watchfunction = function(i, fc, m, l) { return function() {
         SS.Measurement.add({ inspection: i,
             featurecriteria: fc,
-            method: m
+            method: m,
+            label: l
         });
         return false;
-    } }(inspection, featurecriteria, method);
+    } }(inspection, featurecriteria, method, label);
     
     meas = SS.Inspection.findMeasurement(inspection, featurecriteria, prop);
     if (meas) {
@@ -544,6 +568,7 @@ SimpleSeer.Frame.refresh = function() {
    
     SS.Feature.refresh();
     SS.DashObject.refresh();
+    SS.Watchlist.refresh();
     SS.histgraph.newHistogram();
     $(".object").remove();
     //$(".tooltip").remove();
@@ -957,6 +982,19 @@ SimpleSeer.Measurement.add = function(params) {
         });
 }
 
+SimpleSeer.Measurement.remove = function(m) {
+    if (typeof m != "string") {
+        m = m.id;
+    }
+    
+    $.post("/measurement_remove", {id: m}, 
+        function(data) { 
+            response = data; 
+            SS.Frame.refresh();
+        });
+}
+
+
 SimpleSeer.Measurement.fromId = function(id) {
     for (i in SS.measurements) {
         m = SS.measurements[i];
@@ -998,14 +1036,19 @@ SimpleSeer.Result.value = function(result, measurement, measurement_handler) {
 };
 
 
-SimpleSeer.Result.data = function(measurement_id) {
+SimpleSeer.Result.data = function(measurement_id, max) {
     data = [];
     
     measurement = SS.Measurement.fromId(measurement_id);
     measurement_handler = SS.Inspection.fetchHandlerById(measurement.inspection, "measurement_" + measurement.method);
     
-    for (i in SS.results) {
-        frame = SS.results[i][0];
+    if (!max) {
+        max = 0;
+    }
+    
+    resultset = SS.results.slice(-max);
+    for (i in resultset) {
+        frame = resultset[i][0];
         for (j in frame) {
             r = frame[j];
             if (r.measurement == measurement_id) {
@@ -1363,8 +1406,14 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
         effect: "fade"}
     ).dynamic({right: { direction: "left" }})
    $(".ico.play").click( SS.Frame.capture );
-   $(".tools").find(".ico.watch").click(function() {
-      SS.Watchlist.showWatchedItems(); 
+   $("#watchlist_control").click(function() {
+        if ($(this).hasClass("watch")) {
+            SS.Watchlist.showWatchedItems(); 
+        } else {
+            SS.Watchlist.hideWatchedItems(); 
+        }
+        $(this).toggleClass("watch");
+        $(this).toggleClass("watched");
    });
 
 
