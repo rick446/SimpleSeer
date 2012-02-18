@@ -300,6 +300,7 @@ SimpleSeer.Watchlist.showWatchedItems = function(){
             right: 0
         })
     );
+    SS.Watchlist.renderSparklines();
 };
 
 SimpleSeer.Watchlist.hideWatchedItems = function() {
@@ -340,7 +341,12 @@ SimpleSeer.Watchlist.renderWatchedItems = function() {
             ).append(
                 tablecell("measurement_value", value)
             ).append(
-                tablecell("measurement_graph", $("<canvas/>", { id: "measurement_graph_" + m.id, class: "measurement_sparkline" })) 
+                tablecell("measurement_graph",
+                    $("<span/>", {
+                        id: "measurement_graph_" + m.id,
+                        class: "measurement_sparkline"
+                    })
+                ) 
             )
         );
     }
@@ -348,12 +354,17 @@ SimpleSeer.Watchlist.renderWatchedItems = function() {
 };
 
 SimpleSeer.Watchlist.renderSparklines = function() {
-    $(".measurement_sparkline").each(function(i){
+    $(".measurement_sparkline").each(function(i) {
         id = $(this).attr("id").split("_")[2];
-        sl = new Sparkline("measurement_graph_" + id, SS.Result.data(SS.Measurement.fromId(id)));
-        sl.draw();
+        console.log("render sparkline for " + id);
+        $(this).sparkline(SS.Result.data(id), {
+            type: "line",    
+            lineColor: "#EEE"
+        });
     });  
 };
+
+
 
 SimpleSeer.Watchlist.renderInspectionItems = function(inspection) {
     inspection_measurements = SS.Inspection.fetchHandler(inspection, "inspection_measurements");
@@ -994,17 +1005,21 @@ SimpleSeer.Result.data = function(measurement_id) {
     measurement_handler = SS.Inspection.fetchHandlerById(measurement.inspection, "measurement_" + measurement.method);
     
     for (i in SS.results) {
-        r = SS.results[i];
-        if (r.measurement == measurement_id) {
-            val = measurement_handler(data);
-            
-            if (val == "") {
-                val = r.numeric;
+        frame = SS.results[i][0];
+        for (j in frame) {
+            r = frame[j];
+            if (r.measurement == measurement_id) {
+                val = measurement_handler(r);
+                
+                if (val == "") {
+                    val = r.numeric;
+                }
+                data.push(val);
             }
-            data.push(val);
-        }
+        }   
     }
     
+    return data;
 };
 
 SimpleSeer.Result.forLastFrame = function(selector) {
@@ -1015,13 +1030,16 @@ SimpleSeer.Result.forLastFrame = function(selector) {
         obj = selector[k];
     }
     
-    for (i in SS.results) {
-        r = SS.results[i];
-        if (r[cls] == obj.id) {
-            return r;
+    for (i in _.last(SS.results)) {
+        //framesets
+        frame = SS.results[i][0];
+        for (j in frame) {
+            r = frame[j];
+            if (r[cls] == obj.id) {
+                return r;
+            }
         }
     }
-    return "";
 };
 
 /* //check the frame id, if it increments, reload context
