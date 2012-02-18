@@ -382,7 +382,10 @@ SimpleSeer.Watchlist.renderSparklines = function() {
         console.log("render sparkline for " + id);
         $(this).sparkline(SS.Result.data(id, 30), {
             type: "line",    
-            lineColor: "#EEE"
+            lineColor: "#EEE",
+            defaultPixelsPerValue: 5,
+            width: "100px",
+            spotColor: "#07C"
         });
     });  
 };
@@ -393,7 +396,7 @@ SimpleSeer.Watchlist.renderInspectionItems = function(inspection) {
     inspection_measurements = SS.Inspection.fetchHandler(inspection, "inspection_measurements");
     info = inspection_measurements();
     
-    return SS.WatchList.renderItems(info, inspection);
+    return SS.Watchlist.renderItems(info, inspection);
 }
 
 SimpleSeer.Watchlist.renderItems = function(info, inspection, featurecriteria) {
