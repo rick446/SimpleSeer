@@ -1,6 +1,7 @@
 from base import *
 from Session import Session
 from Inspection import Inspection
+from Watcher import Watcher
 from Web import *
 
 
@@ -21,6 +22,9 @@ class SimpleSeer(threading.Thread):
 #    lastframes = []
 #    config = {}
 #    framecount = {}
+#    warnings = []
+#    alerts = []
+#    passed = []
 
     def __init__(self):
         self.__dict__ = self.__shared_state
@@ -48,6 +52,7 @@ class SimpleSeer(threading.Thread):
                 self.cameras.append(Camera(id, camerainfo))
         #log initialized camera X
         self.init_logging()
+        
         Session().redis.set("cameras", self.config.cameras)
         #tell redis what cameras we have
         
@@ -108,8 +113,11 @@ class SimpleSeer(threading.Thread):
         Session().redis.set("inspections", i)
         m = list(Measurement.objects)
         Session().redis.set("measurements", m)
+        w = list(Watcher.objects)
+        Session().redis.set("watchers", w)
         self.inspections = i
         self.measurements = m
+        self.watchers = w
         return i
 
     def loadPlugins(self):
@@ -130,6 +138,7 @@ class SimpleSeer(threading.Thread):
     def capture(self):
         count = 0
         currentframes = []
+        
         for c in self.cameras:
             img = c.getImage()
             if self.config.cameras[0].has_key('crop'):
@@ -176,7 +185,9 @@ class SimpleSeer(threading.Thread):
                 for m in inspection.measurements:
                     frame.results += m.execute(frame, results)
                     
-                        
+            for watcher in list(Watcher.objects):
+                watcher.check(frame.results)
+                    
         return 
                 
     def check(self):
@@ -235,6 +246,36 @@ class SimpleSeer(threading.Thread):
         cherrypy.engine.stop()
         self.join()
         
+    def passed(self, state = None):
+        if state == None:
+            return Session().redis.get("passed")
+        
+        Session().redis.set("passed", state)
+        return state
+    
+    def addWarning(self, warning):
+        #self.passed(False)
+        #TODO, move this to rpush/lrange
+        warnjson = Session().redis.get("warnings")
+        if warnjson:
+            warnings = json.loads(warnjson)
+        else:
+            warnings = []
+        warnings.append(warning)
+        Session().redis.set("warnings", warnings)
+        
+    def addFail(self, failure):
+        self.passed(False)
+        #TODO, move this to rpush/lrange
+        failurejson = Session().redis.get("failures")
+        if failurejson:
+            failures = json.loads(failurejson)
+        else:
+            failures = []
+        
+        failures.append(failure)
+        Session().redis.set("failures", failures)
+
     
 def log_wrapper(self, *arg, **kwargs):
   return SimpleSeer().log(*arg, **kwargs)

@@ -1345,13 +1345,16 @@ h1 input:hover {
   min-height: 115px; 
   max-height: 466px; 
   top: 5px;
-  width: 100%; 
+  width: 350px; 
   overflow: auto;
   margin: 0; 
   z-index: 9998;
   color: #eee;
   padding: 0;
   background: #111;
+  -moz-border-radius: 6px 0px 0px 6px;
+  -webkit-border-radius: 6px 0px 0px 6px;
+  border-radius: 6px 0px 0px 6px;	
 }
 
 .watchlistcontent {

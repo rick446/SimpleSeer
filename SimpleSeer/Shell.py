@@ -19,6 +19,7 @@ class ShellThread(threading.Thread):
 from SimpleSeer import SimpleSeer
 from Inspection import Inspection
 from Measurement import Measurement
+from Watcher import Watcher
 from Result import Result
 from Web import Web
 from Frame import Frame

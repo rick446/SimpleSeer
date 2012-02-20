@@ -1,88 +1,104 @@
-
 from base import *
 from Session import Session
 
 class Watcher(SimpleDoc):
     """
     The Watcher reviews results in SimpleSeer, and has two handler patterns:
-      - self.conditions takes any parameters in the Parameters object
-        and returns a Statistic object.  Multiple conditions can be added and
-        are considered implicitly ANDed.  It must refer to a class method.
-      - self.handlers are function references that are fired if all conditions return statistic objects,
-        and must be a class method.  They are sent the statistics as their parameter.
+      - self.conditions holds a list of conditions and parameters and returns a message pass or fail.
+        
+      - self.handlers are function references that receive all messages from the
+        conditions.  They can be wired and must be a class method.  
     
     A typical watcher will have a sample size, and wil look in the SimpleSeer() to see
     the most recently recorded measurements.  It can check state on the entire system,
     and may potentially reference the Web, Control, and Display interfaces.  They
     also are responsible for recording any Results and Statistics.    
     
+    #measurement = measurement
+    
     w = Watcher(
-        name = "blob is big enough",
-        enabled = 1,
-        parameters = { "threshold_greater": {
+        name = "blob is too big",
+        conditions = [
+            {"method": "greater_than",
             "threshold": 5000,
-            "samples": 5,
-            "measurement_name": "Largest Blob",
-            "label": "area" } },
-        conditions = ["threshold_greater"],
-        handlers = ["log_statistics"])
+            "measurement": measurement.id,
+            "label": "Object Too Large" }
+        ],
+        handlers = ["warning"])
     w.check()
     """
     name = mongoengine.StringField()
-    conditions = mongoengine.ListField(mongoengine.StringField())
+    conditions = mongoengine.ListField(mongoengine.DictField())
     handlers = mongoengine.ListField(mongoengine.StringField())#this might be a relation 
-    enabled = mongoengine.IntField()
-    parameters = mongoengine.DictField()
     
-    def check(self):
+    
+    def __repr__(self):
+        return "<Watcher object '%s' conditions: %d, handlers: %s>" % (self.name, len(self.conditions), ", ".join(self.handlers))
+    
+    
+    def check(self, results):
         """
         When the wather runs check, each of its conditions are checked.  If
         all conditions return Statistic objects, they are sent to each
         handler.
         """
-        statistics = []
+        outcomes = []
         for condition in self.conditions:
-            function_ref = getattr(self, condition)
-            stat = function_ref(**self.parameters[condition])
-            
-            if not stat:
-                return False
+            method_ref = getattr(self, condition["method"])
+            condition = utf8convert(condition)
+            outcomes.append(method_ref(results, **condition))
                 
-            statistics.append(stat)
+        for handler in self.handlers:
+            function_ref = getattr(self, handler)
+            function_ref(outcomes)
     
-        for handler in handlers:
-            function_ref = getattr(self, condition)
-            function_ref(statistics)
-        
-        return True
+        return outcomes
     
-    
-    def threshold_greater(self, threshold, measurement_name, label, samples = 1):
-        resultset = SimpleSeer().results[-samples:]
-        measurement = Measurement.m.get( name = measurement_name )
-        if not measurement:
-            return False
+    #conditions always have the first parameter as results
+    #the rest are sent in from the watcher parameters
+    #TODO, most of this stuff could move to a decorator
+    #TODO these condition messages should be broken out into an object
+    #TODO either weed out extra params or figure out an easy way to eliminate
+    #the catchall
+    def greater_than(self, results, **message):
+        for r in results:
+            if str(r.measurement) == str(message["measurement"]):
+                message["passed"] = False
+                if (r.numeric > message["threshold"]):
+                    message['passed'] = True
+                return message
+        return
+                    
+    def less_than(self, results, **message):
+        for r in results:
+            if str(r.measurement) == str(message["measurement"]):
+                message["passed"] = False
+                if (r.numeric < message["threshold"]):
+                    message['passed'] = True
+                return message
+        return
+     
+    def handler_passed(self, messages):
+        for m in messages:
+            if m and not m["passed"]:
+                SimpleSeer.SimpleSeer().passed(False)
+                return
             
-        result_index = measurement.result_labels.index(label)
-        if result_index == None:
-            return False
-        
-        result_set = [ r for r in list if r.measurement_id == measurement._id ]
-        
-        stat = Statistic( {
-            name: "Average of " + measurement_name,
-            capturetime: time.time()
-        })
-        #MOVE THE ABOVE STUFF TO A DECORATOR
-        
-        stat.calculate(result_set, 'mean', np.mean)
-        if stat.data[measurement._id][result_index] > threshold:
-            return stat
-        return False
+        SimpleSeer.SimpleSeer().passed(True)
+        #TODO, add a flag to record passes
     
-    def log_statistics(self, statistics):
-        for stat in statistics:
-            stat.saveResults()
-            stat.m.save()
+    #warn if any fail
+    def handler_warning(self, messages):
+        for m in messages:
+            if m and not m["passed"]:
+                SimpleSeer.SimpleSeer().addWarning(m)
+                #TODO, add a flag to record warnings
     
+    #alert if any pass            
+    def handler_fail(self, messages):
+        for m in messages:
+            if m and not m["passed"]:
+                SimpleSeer.SimpleSeer().addFailure(m)
+                #TODO, add a flag to record failures
     
+import SimpleSeer

@@ -4,7 +4,7 @@ from Session import Session
 
 class Statistic(SimpleDoc):
     """
-    
+    NOTE: this class is not tested code
     s = Statistic( {
        "name": "average of frame" + SimpleSeer().framecount,
        "capturetime": time.time() }) #we may want to put another ID field on here
@@ -58,3 +58,33 @@ class Statistic(SimpleDoc):
         if len(self.unsavedresults):
             self.saveResults()
             self.m.save()
+
+
+    #originally from the watcher function
+    def threshold_greater(self, threshold, measurement_name, label, samples = 1):
+        resultset = SimpleSeer().results[-samples:]
+        measurement = Measurement.m.get( name = measurement_name )
+        if not measurement:
+            return False
+            
+        result_index = measurement.result_labels.index(label)
+        if result_index == None:
+            return False
+        
+        result_set = [ r for r in list if r.measurement_id == measurement._id ]
+        
+        stat = Statistic( {
+            name: "Average of " + measurement_name,
+            capturetime: time.time()
+        })
+        #MOVE THE ABOVE STUFF TO A DECORATOR
+        
+        stat.calculate(result_set, 'mean', np.mean)
+        if stat.data[measurement._id][result_index] > threshold:
+            return stat
+        return False
+    
+    def log_statistics(self, statistics):
+        for stat in statistics:
+            stat.saveResults()
+            stat.m.save()

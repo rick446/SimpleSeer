@@ -211,6 +211,26 @@ class WebInterface(object):
         
         return img.histogram(bins)
     
+    @cherrypy.expose
+    @jsonify
+    def watcher_list_handlers(self):
+        return [s for s in dir(Watcher) if re.match("handler_", s)]
+     
+    @cherrypy.expose
+    @jsonify   
+    def watcher_add(self, **params):
+        Watcher(**params).save()
+        
+        SimpleSeer.SimpleSeer().reloadInspections()
+        return SimpleSeer.SimpleSeer().watchers
+    
+    @cherrypy.expose
+    @jsonify    
+    def watcher_remove(self, **params):
+        Watcher.objects(id = bson.ObjectId(params["id"])).delete()
+        
+        SimpleSeer.SimpleSeer().reloadInspections()
+        return SimpleSeer.SimpleSeer().watchers
     
     @cherrypy.expose
     @jsonify
@@ -224,3 +244,4 @@ from Inspection import Inspection
 from Measurement import Measurement
 from Result import Result
 from Frame import Frame
+from Watcher import Watcher

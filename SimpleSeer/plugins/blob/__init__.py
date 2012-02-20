@@ -21,7 +21,7 @@ def blob(self, image):
 				return []
 		
 		feats = []
-		for b in blobs:
+		for b in reversed(blobs): #change sort order to big->small
 				ff = FrameFeature()
 				b.image = image
 				ff.setFeature(b)

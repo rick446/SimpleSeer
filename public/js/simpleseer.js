@@ -297,9 +297,9 @@ SimpleSeer.Watchlist.refresh = function() {
 
 
 SimpleSeer.Watchlist.showWatchedItems = function(){
-    $("#statebar > .dashobject").animate({
+    /*$("#statebar > .dashobject").animate({
         left: -999
-    });
+    });*/
     $("#statebar").append(
         $("<div/>", {class: "watchlist"}).css({
             right: -3000
@@ -318,24 +318,25 @@ SimpleSeer.Watchlist.hideWatchedItems = function() {
     }, 600, function() {
         $(this).remove();
     });
-    $("#statebar > .dashobject").animate({
+    /*$("#statebar > .dashobject").animate({
         left: 0
     }, 600, function(n) {
         $(this).css( { left: '' } );
-    });
+    });*/
 };
 
 SimpleSeer.Watchlist.renderWatchedItems = function() {
     content = $("<table/>", { class: "watchlistcontent" });
     
     if (!SS.measurements.length) {
-        return "No watched items";
+        return $("<div/>", { class: "watchlistcontent" }).append("No watched items");
     }
     
     tablecell = function(cls, i) {
         return $("<td/>", { class: cls }).append(i);
     };
     
+    //TODO group these by feature and de-dupe insp labels on the same feature
     for (i in SS.measurements) {
         m = SS.measurements[i];
         insp = SS.Inspection.fromId(m.inspection);
@@ -343,7 +344,7 @@ SimpleSeer.Watchlist.renderWatchedItems = function() {
         
         result =  SS.Result.forLastFrame({ measurement: m });
         
-        value = SS.Result.value(r, m);
+        value = SS.Result.value(result, m);
         
         if (m.featurecriteria && m.featurecriteria.index != undefined) {
             label = insp.name + "Feature " + m.featurecriteria.index + " " + m.label
@@ -1419,9 +1420,10 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
         $(this).toggleClass("watched");
    });
 
-
    SimpleSeer.Frame.refresh();
    SS.p.render();
+   SS.Watchlist.showWatchedItems();
+
 
 })};
 
