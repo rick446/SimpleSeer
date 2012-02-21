@@ -70,6 +70,20 @@
 			</p>
 			</div>
 			<br>
+			<h2>Messaging</h2>
+			  <div class="error message">
+			    This is an error
+			    <a href="" class="close">x</a>			    
+			  </div>
+			  <div class="warn message">
+			    This is an warning
+			    <a href="" class="close">x</a>
+			  </div>
+			  <div class="good message">
+			    This is an success
+			    <a href="" class="close">x</a>
+			  </div>
+			<br>
 			<h2>Form Elements</h2>
 			<form>
 				<label>Text Input:</label>
@@ -79,6 +93,66 @@
 				<label>A Slider</label>
 				<div id="slider"></div>
 				<br><br>
+				<!-- Forms -->
+                <input type="password" class="input-small" placeholder="Password">
+                <button type="submit" class="btn">Go</button>
+
+
+                    <label class="control-label" for="input01">Text input</label>
+                      <input type="text" class="input-xlarge" id="input01">
+
+                    <label class="control-label" for="select01">Select list</label>
+                      <select id="select01">
+                        <option>something</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                      </select>
+
+                    <label class="control-label" for="multiSelect">Multicon-select</label>
+                      <select multiple="multiple" id="multiSelect">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                      </select>
+
+                    <label class="control-label" for="fileInput">File input</label>
+                    <input class="input-file" id="fileInput" type="file">
+
+                    <label class="control-label" for="textarea">Textarea</label>
+                    <textarea class="input-xlarge" id="textarea" rows="3"></textarea><br>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                    <button type="reset" class="btn">Cancel</button>
+                </fieldset>
+
+
+                <fieldset>
+                  <legend>Extending form controls</legend>
+                  <label class="control-label" for="inlineCheckboxes">Inline checkboxes</label>
+                    <label class="checkbox inline">
+                      <input type="checkbox" id="inlineCheckbox1" value="option1"> 1
+                    </label>
+                    <label class="checkbox inline">
+                      <input type="checkbox" id="inlineCheckbox2" value="option2"> 2
+                    </label>
+                    <label class="checkbox inline">
+                      <input type="checkbox" id="inlineCheckbox3" value="option3"> 3
+                    </label>
+
+                    <label class="control-label">Radio buttons</label>
+                      <label class="radio">
+                        <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+                        Option one is this and that&mdash;be sure to include why it's great
+                      </label>
+                      <label class="radio">
+                        <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
+                        Option two can is something else and selecting it will deselect option one
+                      </label>
+                </fieldset>
+
 				<a href="" class="btn primary">Submit</a>
 				<a href="" class="btn">Cancel</a>
 			</form>

@@ -333,25 +333,33 @@ header nav ul.btngrp {
 }
 
 /* status */
-.btn.fail {
-    background: #900;
-    box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px;
-    padding: 8px;
-    border-radius: 2px;
-}
-.btn.warn {
-background: #c60;
-    box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px;
-    padding: 8px;
-    border-radius: 2px;
-}
-.btn.good {
-  background: #060;
-    box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px;
-    padding: 8px;
-    border-radius: 2px;
 
+.fail {
+    background: #900;
 }
+.warn {
+	background: #c90;
+}
+.good {
+  background: #060;
+}
+.message {
+	padding: 8px;
+  border-radius: 2px;
+	margin: 20px auto;
+	box-shadow: inset rgba(255,255,255,.4) 0 1px 0, inset rgba(0,0,0,.4) 0 -10px 20px, #000 0 1px 1px, #000 0 -1px 3px;
+	position: relative;
+}
+.message .close { position: absolute; top: 6px; right: 10px; opacity: .6; text-decoration: none; color: rgba(0,0,0,.6); font-weight: 800;}
+.message .close:hover { opacity: 1; text-decoration: none; }
+
+.btn.fail, .btn.warn, .btn.good {
+	box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px;
+  width: 16px !important;
+  padding: 8px;
+  border-radius: 2px;
+}
+
 .btn.off {opacity: .2;}
 .btn.on {box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px,inset rgba(255,255,255,.4) 0 0 4px, inset rgba(255,255,255,.2) 0 -1px -1px, inset rgba(255,255,255,.2) 0 1px 1px;}
 
@@ -579,7 +587,7 @@ fieldset {
     border: none;
     padding-bottom: 20px;
     margin: 0;
-    color: #444;
+    color: #fff;
 }
 legend {
     margin: 0 auto;
