@@ -344,17 +344,23 @@ SimpleSeer.Watchlist.renderWatchedItems = function() {
         
         result =  SS.Result.forLastFrame({ measurement: m });
         
+        if (!result) {
+            continue;
+        }
+        
         value = SS.Result.value(result, m);
         
+        label = "";
         if (m.featurecriteria && m.featurecriteria.index != undefined) {
-            label = insp.name + "Feature " + m.featurecriteria.index + " " + m.label
+            label = insp.name + " (" + m.featurecriteria.index + ") -  " + m.label
         } else {
-            label = insp.name + m.label
-        }
+            label = insp.name + " - " + m.label
+        }  //TODO move this to where the measurement name is generated
+        console.log(m);
 
         content.append(
             $("<tr/>",  { class: "measurement", id: "measurement_" + m.id }).append(
-                tablecell("measurement_label", insp.name + m.label)
+                tablecell("measurement_label", label)
             ).append(
                 tablecell("measurement_graph",
                     $("<span/>", {
@@ -380,7 +386,6 @@ SimpleSeer.Watchlist.renderWatchedItems = function() {
 SimpleSeer.Watchlist.renderSparklines = function() {
     $(".measurement_sparkline").each(function(i) {
         id = $(this).attr("id").split("_")[2];
-        console.log("render sparkline for " + id);
         $(this).sparkline(SS.Result.data(id, 30), {
             type: "line",    
             lineColor: "#EEE",
@@ -439,14 +444,15 @@ SimpleSeer.Watchlist.renderItem = function(info, value, method, inspection, feat
     
     
     //TODO make the eye toggle properly onclick
-    var watchfunction = function(i, fc, m, l) { return function() {
+    var watchfunction = function(i, fc, m, l, u) { return function() {
         SS.Measurement.add({ inspection: i,
             featurecriteria: fc,
             method: m,
-            label: l
+            label: l,
+            units: u
         });
         return false;
-    } }(inspection, featurecriteria, method, label);
+    } }(inspection, featurecriteria, method, label, units);
     
     meas = SS.Inspection.findMeasurement(inspection, featurecriteria, prop);
     if (meas) {
@@ -1028,6 +1034,7 @@ SimpleSeer.Result.value = function(result, measurement, measurement_handler) {
     }
     value = measurement_handler(result);
         
+    console.log(result)
     if (value == "") {
         value = result.numeric;
         if (value == "") {
@@ -1079,7 +1086,7 @@ SimpleSeer.Result.forLastFrame = function(selector) {
     
     for (i in _.last(SS.results)) {
         //framesets
-        frame = SS.results[i][0];
+        frame = _.last(SS.results)[i];
         for (j in frame) {
             r = frame[j];
             if (r[cls] == obj.id) {

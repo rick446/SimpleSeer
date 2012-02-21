@@ -225,7 +225,7 @@ SimpleSeer.inspectionhandlers.blob = {
                 height: { label: "height", units: "px"},
                 angle: { label: "angle", units: "&deg;"},
                 area: { label: "area", units: "px"},
-                meancolor: { label: "color", handler: function(clr) { 
+                meancolor : { label: "color", handler: function(clr) { 
                     clrhex = [];  
                     for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
                     return "#" + clrhex.join("");
@@ -239,5 +239,10 @@ SimpleSeer.inspectionhandlers.blob = {
                     return features.length
                 }}
             };
+        },
+        
+        measurement_meancolor: function(result) {
+            arr = $.parseJSON(r.string);
+            return Math.round((arr[0] + arr[1] + arr[2]) / 3);
         }
 };

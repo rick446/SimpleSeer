@@ -70,8 +70,9 @@ class Session():
         mongoengine.connect(self.database)
         
         self.redis = SmartJSONRedis(**self.redis_config)
-        for k in config.keys():
-            self.redis.set(k, config[k])
+        #for k in config.keys():
+        #    self.redis.set(k, config[k])
+        # we need to do this selectively since we have twilio keys now
         
         self.log = logging.getLogger(__name__)
         
