@@ -400,7 +400,7 @@ SimpleSeer.Watchlist.renderSparklines = function() {
 
 SimpleSeer.Watchlist.renderInspectionItems = function(inspection) {
     inspection_measurements = SS.Inspection.fetchHandler(inspection, "inspection_measurements");
-    info = inspection_measurements();
+    info = inspection_measurements(inspection);
     
     return SS.Watchlist.renderItems(info, inspection);
 }
@@ -425,7 +425,11 @@ SimpleSeer.Watchlist.renderItems = function(info, inspection, featurecriteria) {
         );
     }
     
-    return watchlist[0].after.apply(watchlist[0], watchlist.slice(1));
+    if (watchlist.length > 1) {
+        return watchlist[0].after.apply(watchlist[0], watchlist.slice(1));
+    } else {
+        return watchlist[0];
+    }
 }
 
 SimpleSeer.Watchlist.renderItem = function(info, value, method, inspection, featurecriteria) {

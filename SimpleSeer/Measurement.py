@@ -32,15 +32,9 @@ class Measurement(SimpleDoc):
 
     def execute(self, frame, features):
         
-        if hasattr(self, self.method):
-            function_ref = getattr(self, self.method)
-            values = function_ref(frame, **self.parameters)
-
-            return self.toResults(frame, values)
-
         featureset = self.findFeatureset(features)
         #this will catch nested features
-        
+
         if not len(featureset):
             return []
          
@@ -52,6 +46,13 @@ class Measurement(SimpleDoc):
             else:
                 return []
         #TODO more advanced filtering options here
+        
+        if hasattr(self, self.method):
+            function_ref = getattr(self, self.method)
+            values = function_ref(frame, featureset)
+
+            return self.toResults(frame, values)
+        
         
         values = []
         

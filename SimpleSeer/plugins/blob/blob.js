@@ -6,6 +6,10 @@ SimpleSeer.inspectionhandlers.blob = {
                     threshval: $("#"+insp.id+"_threshval").slider("value"),
                     invert: $("#"+insp.id+"_invert").is(":checked")
                 };
+                if ($("#"+insp.id+"_pixel").is(":checked")) {
+                        params.pixel = SS.action.startpx.join(",");
+                }
+                
                 SS.Inspection.preview("blob", params);
             };
             
@@ -16,6 +20,9 @@ SimpleSeer.inspectionhandlers.blob = {
                     threshval: $("#"+insp.id+"_threshval").slider("value"),
                     invert: $("#"+insp.id+"_invert").is(":checked")
                 };
+                if ($("#"+insp.id+"_pixel").is(":checked")) {
+                        params.pixel = SS.action.startpx.join(",");
+                }
                 
                 if (insp.id == "preview") {
                     SS.Inspection.add(insp.method, params);
@@ -41,6 +48,8 @@ SimpleSeer.inspectionhandlers.blob = {
             if (insp.id != "preview") {
                 defaults["threshval"] = insp.parameters.threshval;
                 defaults["invert"] = insp.parameters.invert;
+                defaults["pixel"] = insp.parameters.pixel;
+
             } 
             
             
@@ -52,7 +61,9 @@ SimpleSeer.inspectionhandlers.blob = {
             $("#" + div_id).append(
                 $("<h3/>").append("Color")
             ).append(
-                SS.InspectionControl.checkbox(insp.id + "_invert", "invert", "Find Dark Blobs", defaults.invert, onchange) 
+                SS.InspectionControl.checkbox(insp.id + "_invert", "invert", "Find Dark Objects", defaults.invert, onchange)
+            ).append(
+                SS.InspectionControl.checkbox(insp.id + "_pixel", "pixel", "Use Reference Color", defaults.pixel, onchange) 
             ).append(
                 $("<h3/>").append("Threshold")
             ).append(
@@ -225,6 +236,9 @@ SimpleSeer.inspectionhandlers.blob = {
                 height: { label: "height", units: "px"},
                 angle: { label: "angle", units: "&deg;"},
                 area: { label: "area", units: "px"},
+                blob_length: { label: "length", units: "px", handler: function(und) {
+                   return "?";   
+                }},
                 meancolor : { label: "color", handler: function(clr) { 
                     clrhex = [];  
                     for (i in clr) { clrhex.push(Math.round(clr[i]).toString(16)); } 
@@ -233,10 +247,10 @@ SimpleSeer.inspectionhandlers.blob = {
             };
         },
         
-        inspection_measurements: function() {
+        inspection_measurements: function(insp) {
             return  {
-                count: {label: "objects", units: "", handler: function(features) {
-                    return features.length
+                blob_count: {label: "objects", units: "", handler: function(features) {
+                    return features.length;
                 }}
             };
         }

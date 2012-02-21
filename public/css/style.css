@@ -333,33 +333,25 @@ header nav ul.btngrp {
 }
 
 /* status */
-
-.fail {
+.btn.fail {
     background: #900;
+    box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px;
+    padding: 8px;
+    border-radius: 2px;
 }
-.warn {
-	background: #c90;
+.btn.warn {
+background: #c60;
+    box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px;
+    padding: 8px;
+    border-radius: 2px;
 }
-.good {
+.btn.good {
   background: #060;
-}
-.message {
-	padding: 8px;
-  border-radius: 2px;
-	margin: 20px auto;
-	box-shadow: inset rgba(255,255,255,.4) 0 1px 0, inset rgba(0,0,0,.4) 0 -10px 20px, #000 0 1px 1px, #000 0 -1px 3px;
-	position: relative;
-}
-.message .close { position: absolute; top: 6px; right: 10px; opacity: .6; text-decoration: none; color: rgba(0,0,0,.6); font-weight: 800;}
-.message .close:hover { opacity: 1; text-decoration: none; }
+    box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px;
+    padding: 8px;
+    border-radius: 2px;
 
-.btn.fail, .btn.warn, .btn.good {
-	box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px;
-  width: 16px !important;
-  padding: 8px;
-  border-radius: 2px;
 }
-
 .btn.off {opacity: .2;}
 .btn.on {box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 1px, #000 0 -1px 3px,inset rgba(255,255,255,.4) 0 0 4px, inset rgba(255,255,255,.2) 0 -1px -1px, inset rgba(255,255,255,.2) 0 1px 1px;}
 
@@ -587,7 +579,7 @@ fieldset {
     border: none;
     padding-bottom: 20px;
     margin: 0;
-    color: #fff;
+    color: #444;
 }
 legend {
     margin: 0 auto;
@@ -736,7 +728,6 @@ footer {}
     -webkit-border-radius: 4px 4px 0 0;
     border-radius: 4px 4px 0 0;
     margin: 0 auto;
-padding: 10px;
     position: relative;
     text-align: left;
 }
@@ -825,7 +816,7 @@ h1 input:hover {
 .dialog .content li {list-style: none; display: block; margin: 0 0 5px; padding: 2px 0; border-bottom: 1px solid #ddd;}
 
 .dialog .content {width: 180px; max-height: 112px; min-height: 112px; padding: 10px; text-align: left; color: #444; text-shadow: none;}
-.dialog {top: -190px; left: -80px; width: 200px; margin: 0; height: 170px;z-index: 1000000;
+.dialog {top: -190px; left: -80px; width: 200px; margin: 0; height: 170px;z-index: 9999;
 }
 
 .modal .btngrp, aside .btngrp .btn { 
