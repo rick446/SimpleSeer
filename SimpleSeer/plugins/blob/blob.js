@@ -239,10 +239,5 @@ SimpleSeer.inspectionhandlers.blob = {
                     return features.length
                 }}
             };
-        },
-        
-        measurement_meancolor: function(result) {
-            arr = $.parseJSON(r.string);
-            return Math.round((arr[0] + arr[1] + arr[2]) / 3);
         }
 };
