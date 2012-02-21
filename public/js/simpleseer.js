@@ -574,8 +574,32 @@ SimpleSeer.Frame.refresh = function() {
     SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
     SimpleSeer.measurements = SimpleSeer.getJSON('measurements');
     SimpleSeer.results = SimpleSeer.getJSON('results');
+    SimpleSeer.watchers = SimpleSeer.getJSON('watchers');
     SimpleSeer.histogram = SimpleSeer.getJSON('histogram_0');
+    SimpleSeer.failures = SimpleSeer.getJSON("failures");
+    
+    oldwarnings = SS.warnings;
+    SimpleSeer.warnings = SimpleSeer.getJSON("warnings");
+    SimpleSeer.passed = SimpleSeer.getJSON("passed");
    
+    if (SS.passed) {
+        $(".tools").find(".good").removeClass("off").addClass("on");
+    } else {
+        $(".tools").find(".good").removeClass("on").addClass("off");
+    }
+    
+    if (oldwarnings && oldwarnings.length < SS.warnings.length) {
+        $(".tools").find(".warn").removeClass("off").addClass("on");
+    } else {
+        $(".tools").find(".warn").removeClass("on").addClass("off");
+    }
+    
+    if (SS.failures) {
+        $(".tools").find(".fail").removeClass("off").addClass("on");
+    } else {
+        $(".tools").find(".fail").removeClass("on").addClass("off");
+    }
+    
     SS.Feature.refresh();
     SS.DashObject.refresh();
     SS.Watchlist.refresh();
@@ -1430,7 +1454,7 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
    SimpleSeer.Frame.refresh();
    SS.p.render();
    SS.Watchlist.showWatchedItems();
-
+   SS.Watcher.failbutton();
 
 })};
 
@@ -1541,4 +1565,114 @@ SS.histgraph.draw = function() {
     }
     h.step++;
 }
+
+
+//alerts
+SS.Watcher = {};
+
+SS.Watcher.render = function() {
+    watch = $("<form/>", {class: "watcher"});
+    
+    for (i in SS.watchers) {
+        w = SS.watchers[i];
+        watch.append(
+            $("<input/>", { type: "text", name: "name", value: w.name })
+        );
+        
+        for (j in w.conditions) {
+            c = w.conditions[j];
+            
+            index = w.id + "_" + j.toString() + "_";
+            
+            label = $("<input/>", {type: "text", value: c.label, name: index + "label"})
+
+            
+            selectmeas = $("<select/>", { name: index + "measurement" });
+            for (k in SS.measurements) {
+                m = SS.measurements[k];
+                val = { value: m.id };
+                
+                if (c.measurement == m.id) {
+                    val["selected"] = "";  
+                } 
+                selectmeas.append(
+                    $("<option/>", val).append(m.name)
+                );
+            }
+            
+            condition_ops = {
+                greater_than: "more than",
+                less_than: "less than"
+            }; //TODO load these
+            
+            selectop = $("<select/>", { name: index + "method"});
+            for (k in condition_ops) {
+                op = condition_ops[k];
+                val = { value: k };
+                if (c.method == val) {
+                    val["selected"] = "";
+                }
+                selectop.append(
+                    $("<option/>", val).append(op)
+                );
+            }
+            
+            thresh = $("<input/>", {type: "text", value: c.threshold, name: index + "threshold"})
+            
+            watch.append("<br>").append(label).append(selectmeas).append(selectop).append(thresh);
+            
+            
+            
+        }
+        
+    }
+    
+    return watch;
+}
+
+SS.Watcher.failbutton = function() {
+    $('.trig').bind('click', function() {
+        var trig = $(this).attr('title');
+        var purl = $(this).attr('href');
+        var info = $(this).next('.hidden').html();       
+        var howh = $(document).height();
+        $('.splash').css('height',+howh+'px');	
+        $("html, body").animate({ scrollTop: 0 }, "fast");
+        $('.modal, .splash').remove();
+        $('body').prepend('<span class="splash"></span>');
+        $('body').prepend('<div class="modal"><div class="content clearfix"></div></div>').show('fast', function () {
+            if (info) {$('.content').prepend("<H2>Configure Alerts</H2>");}
+            else {
+                $('.modal .content').load(purl + ' .maincontent', function() {
+                    $.ajax({ url: '/js/modernizr2.js', dataType: 'script', cache: true});
+                    $('input[value="Cancel"]').bind('click', function() {
+                        $('.modal, .splash').remove();
+                        return false;
+                    });
+                    $(".alerts").append(
+                        SS.Watcher.render()
+                    );
+                });
+            }
+            $('.modal').prepend('<h1>Configure Alerts</h1>');
+            $('.modal').prepend('<div class="close">X</div>');
+            $('.close, .splash, input[value="Cancel"]').bind('click', function() {
+                $('.modal, .splash').remove();
+                return false;
+            });    
+        });
+        return false;
+        purl.abort();
+        $(this).unbind('click');
+    });
+    $(document).keyup(function(e) {
+      if (e.keyCode == 27) { 
+          $('.close').click();
+       }
+    });    
+    $('#message .close').bind('click', function() {
+        $(this).parent().remove();
+        return false;
+    });    
+};
 

@@ -83,7 +83,10 @@ class Measurement(SimpleDoc):
             try:
                 return float(val)
             except TypeError:
-                return None
+                try:
+                    return float(val[0] + val[1] + val[2] / 3)
+                except Error:
+                    return None
 
         return [ Result(
             numeric = numeric(v),

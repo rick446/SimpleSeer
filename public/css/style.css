@@ -523,7 +523,7 @@ article, aside, .modal, .emboss {
     margin-top: 1px !important;
     margin-bottom: 20px;
     box-shadow: inset rgba(0,0,0,.2) 1px 1px 0, inset rgba(0,0,0,.2) -1px 0 0, inset rgba(0,0,0,.1) 0 -1px 0, inset rgba(0,0,0,.1) 0 -5px 0, rgba(0,0,0,.2) 0 1px 1px;
-    background-color: #fff;
+    background-color: #CCC;
 	color: #444;
 } 
 .chrome {
@@ -737,7 +737,7 @@ footer {}
     -webkit-box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 0;
     box-shadow: inset rgba(255,255,255,.2) 0 1px 0, #000 0 1px 0; 
     color: #fff;
-    font-size: 13px;
+    font-size: 18px;
     text-shadow: #000 0 -1px 0;
     background: #222;
     background-image: -moz-linear-gradient(top, #222, #111);

@@ -114,10 +114,10 @@ class SimpleSeer(threading.Thread):
         m = list(Measurement.objects)
         Session().redis.set("measurements", m)
         w = list(Watcher.objects)
-        Session().redis.set("watchers", w)
+        #Session().redis.set("watchers", w) #TODO Fix encoding
         self.inspections = i
         self.measurements = m
-        self.watchers = w
+        #self.watchers = w
         return i
 
     def loadPlugins(self):

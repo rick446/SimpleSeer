@@ -9,7 +9,7 @@ $(document).ready(function() {
         $('.modal, .splash').remove();
         $('body').prepend('<span class="splash"></span>');
         $('body').prepend('<div class="modal"><div class="content clearfix"></div></div>').show('fast', function () {
-            if (info) {$('.content').prepend(info);}
+            if (info) {$('.content').prepend("<H2>Configure Alerts</H2>");}
             else {
                 $('.modal .content').load(purl + ' .maincontent', function() {
                     $.ajax({ url: '/js/modernizr2.js', dataType: 'script', cache: true});
@@ -17,9 +17,13 @@ $(document).ready(function() {
                         $('.modal, .splash').remove();
                         return false;
                     });
+                    $(".alerts").append(
+                        
+                        
+                    )
                 });
             }
-            $('.modal').prepend('<h1>'+trig+'</h1>');
+            $('.modal').prepend('<h1>Configure Alerts</h1>');
             $('.modal').prepend('<div class="close">X</div>');
             $('.close, .splash, input[value="Cancel"]').bind('click', function() {
                 $('.modal, .splash').remove();

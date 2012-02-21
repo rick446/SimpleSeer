@@ -14,14 +14,13 @@ class Watcher(SimpleDoc):
     and may potentially reference the Web, Control, and Display interfaces.  They
     also are responsible for recording any Results and Statistics.    
     
-    #measurement = measurement
     
     w = Watcher(
-        name = "blob is too big",
+        name = "Lid test",
         conditions = [
             {"method": "greater_than",
-            "threshold": 5000,
-            "measurement": measurement.id,
+            "threshold": 100,
+            "measurement": Measurement.objects[0].id,
             "label": "Object Too Large" }
         ],
         handlers = ["warning"])

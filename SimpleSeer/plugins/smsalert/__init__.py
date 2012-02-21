@@ -13,8 +13,8 @@ def sendsms(number, text):
 
 def handler_smsalert(self, messages):
     for m in messages:
-        if not m.passed:
-            sendsms(m.number, "Houston, we have a problem")
+        if not m["passed"]:
+            sendsms(m["number"], "Houston, we have a problem")
             
 Watcher.handler_smsalert = handler_smsalert
 
