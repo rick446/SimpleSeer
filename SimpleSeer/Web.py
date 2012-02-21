@@ -127,8 +127,8 @@ class WebInterface(object):
     @jsonify
     def inspection_remove(self, **params):
         Inspection.objects(id = bson.ObjectId(params["id"])).delete()
-        for m in Measurement.objects(inspection = bson.ObjectId(params["id"])):
-            Watcher.objects(measurement = bson.ObjectId(m.id)).delete()
+        #for m in Measurement.objects(inspection = bson.ObjectId(params["id"])):
+        Watcher.objects.delete() #todo narrow by measurement
 
         Measurement.objects(inspection = bson.ObjectId(params["id"])).delete()
         Result.objects(inspection = bson.ObjectId(params["id"])).delete()
@@ -182,7 +182,7 @@ class WebInterface(object):
     def measurement_remove(self, **params):
         Measurement.objects(id = bson.ObjectId(params["id"])).delete()
         Result.objects(measurement = bson.ObjectId(params["id"])).delete()
-        Watcher.objects(measurement = bson.ObjectId(params["id"])).delete()
+        Watcher.objects.delete() #todo narrow by measurement
 
         
         
