@@ -107,6 +107,15 @@ class SimpleSeer(threading.Thread):
         logging.debug(param)
 
 
+    def clear(self):
+        Inspection.objects.delete()
+        Measurement.objects.delete()
+        Watcher.objects.delete()
+        Frame.objects.delete()
+        self.lastframes = []
+        Session().redis.flushdb()
+        self.reloadInspections()
+        
 
     def reloadInspections(self):
         i = list(Inspection.objects)

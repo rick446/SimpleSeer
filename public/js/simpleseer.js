@@ -1,3 +1,8 @@
+//TODO: port all models, collections to backbone
+//TODO: segment by function
+//TODO: see if my helpers can be replaced with underscore
+
+
 
 isEmpty = function(obj) {
     for (var prop in obj) {
@@ -30,12 +35,9 @@ SimpleSeer.clamp = function(val, min, max) {
 
 
 
-
-
-
-
-
 //function to retrieve data from webdis
+//TODO, get multiple values
+//TODO, optimize with a websocket to webdis: possible with nginx?
 SimpleSeer.getValue = function(key) {
     returndata = $.ajax({ url: "/GET/" + key + ".txt", 
                 async: false, 
@@ -49,8 +51,8 @@ SimpleSeer.getJSON = function(key) {
 };
 
 
-
-
+//TODO make the dashboard flexible so it can be moved
+//from top or side, depending on display mode (portrait or landscape)
 SimpleSeer.DashObject = {};
 
 $("#statebar").hoverIntent({
@@ -82,6 +84,9 @@ $("#statebar").hoverIntent({
     }
 })
 
+//TODO break out rendering of objects from their insertion
+//TODO be sensitive to other objects occupying the dash space
+//TODO make the dashobjects themselves more informative (sparklines?)
 SimpleSeer.DashObject.add = function(inspection, fadein){
     if (fadein == undefined) {
         fadein = 300;
@@ -133,7 +138,7 @@ SimpleSeer.DashObject.add = function(inspection, fadein){
                         "z-index": -1,
                         left: 0,
                         height: $(this).height(),
-                        top: -2,
+                        top: -2
                     }).animate({
                         left: $(this).outerWidth() - 4,
                         width: $(this).parent().width() * .75 
@@ -152,7 +157,7 @@ SimpleSeer.DashObject.add = function(inspection, fadein){
 
 };
 
-
+//TODO implement this rather than just re-creating all the dash objects
 SimpleSeer.DashObject.remove = function(inspection) {
     
 };
@@ -168,8 +173,12 @@ SimpleSeer.DashObject.refresh = function() {
     dobjs.css("width", minwidth + "px"); //align width on all of them
 };
 
+
+
 SimpleSeer.DisplayObject = {};
 
+
+//TODO make all actions inside an object focus respect the focus
 SimpleSeer.DisplayObject.setFocus = function(id) {
     if (SS.action.focuslock) {
         return;
@@ -180,7 +189,8 @@ SimpleSeer.DisplayObject.setFocus = function(id) {
     $.getJSON("/histogram?focus=" + index.toString(), function(data) {
         SS.histgraph.newHistogram(data);      
     });
-}
+};
+
 
 SimpleSeer.DisplayObject.loseFocus = function(id) {
     if (SS.action.focuslock) {
@@ -193,6 +203,8 @@ SimpleSeer.DisplayObject.loseFocus = function(id) {
     }
 }
 
+
+//TODO align this when the inspection's dashobject is expanded
 SS.DisplayObject.lockFocus = function(id) {
     if (SS.action.focus != id) {
         SS.DisplayObject.setFocus(id);
@@ -203,7 +215,6 @@ SS.DisplayObject.lockFocus = function(id) {
 SS.DisplayObject.unlockFocus = function() {
     SS.action.focuslock = false
 }
-
 
 
 SimpleSeer.navItem = function(title, iconcls, clickmethod) {
@@ -242,7 +253,7 @@ SimpleSeer.DisplayObject.addNavZoom = function(id) {
     });
 }
 
-
+//TODO, can we reuse this on dash objects
 SimpleSeer.DisplayObject.addNavLock = function(id) {
     SS.DisplayObject.addNavItem(id, "unlock", "Lock Focus on this Region", function(e) {
         icon = $(e.target);
@@ -260,9 +271,8 @@ SimpleSeer.DisplayObject.addNavLock = function(id) {
     });
 }
 
-
-
-
+//TODO consolidate this with the other watchlist stuff
+//only real difference is sparkline and contextual independence
 SimpleSeer.DisplayObject.addNavInfo = function(id, title, inspection, featureindex) {
     feature_measurements = SS.Inspection.fetchHandler(inspection, "feature_measurements");
     info = feature_measurements();
@@ -286,6 +296,7 @@ SimpleSeer.DisplayObject.addNavInfo = function(id, title, inspection, featureind
 
 SimpleSeer.Watchlist = {};
 
+//TODO: make this additive, so we're not re-rendering everything
 SimpleSeer.Watchlist.refresh = function() {
     watchlist =$(".watchlist"); 
     if (!watchlist.length) {
@@ -295,7 +306,7 @@ SimpleSeer.Watchlist.refresh = function() {
     SS.Watchlist.renderSparklines();
 };
 
-
+//TODO, respect other items in the dashboard space 
 SimpleSeer.Watchlist.showWatchedItems = function(){
     /*$("#statebar > .dashobject").animate({
         left: -999
@@ -312,6 +323,7 @@ SimpleSeer.Watchlist.showWatchedItems = function(){
     SS.Watchlist.renderSparklines();
 };
 
+//Do we really need this?
 SimpleSeer.Watchlist.hideWatchedItems = function() {
     $(".watchlist").animate({
         right: -3000
@@ -383,6 +395,7 @@ SimpleSeer.Watchlist.renderWatchedItems = function() {
     return content;
 };
 
+//TODO, add indications for watchers
 SimpleSeer.Watchlist.renderSparklines = function() {
     $(".measurement_sparkline").each(function(i) {
         id = $(this).attr("id").split("_")[2];
@@ -397,7 +410,8 @@ SimpleSeer.Watchlist.renderSparklines = function() {
 };
 
 
-
+//TODO, make this sync better with the Result/Measurement work that's already
+//being done on the backend
 SimpleSeer.Watchlist.renderInspectionItems = function(inspection) {
     inspection_measurements = SS.Inspection.fetchHandler(inspection, "inspection_measurements");
     info = inspection_measurements(inspection);
@@ -432,6 +446,8 @@ SimpleSeer.Watchlist.renderItems = function(info, inspection, featurecriteria) {
     }
 }
 
+//TODO add more visual elements (such as color)
+//TODO handle non-numeric types such as barcodes
 SimpleSeer.Watchlist.renderItem = function(info, value, method, inspection, featurecriteria) {
     label = info.label;
     
@@ -478,7 +494,6 @@ SimpleSeer.Watchlist.renderItem = function(info, value, method, inspection, feat
 
 
 SimpleSeer.Display = {};
-
 
 
 SimpleSeer.Display.renderObjectFocus = function(id) {
@@ -529,7 +544,8 @@ SimpleSeer.Display.renderObjectFocus = function(id) {
       
 }
 
-
+//TODO, resue display objects and change their CSS rather than
+//scrapping them and re-creating them every damn time
 SimpleSeer.Display.addDisplayObject = function(id, x, y, w, h) {
 
     
@@ -572,7 +588,7 @@ SimpleSeer.Display.addDisplayObject = function(id, x, y, w, h) {
 
 SimpleSeer.Frame = {};
 
-
+//TODO, add lock so we get through an entire refresh before it happens again!
 SimpleSeer.Frame.refresh = function() {
     SimpleSeer.framecount = SimpleSeer.getValue('framecount');
     SimpleSeer.inspections = SimpleSeer.getJSON('inspections');
@@ -614,28 +630,19 @@ SimpleSeer.Frame.refresh = function() {
     SS.p.refresh();
 };
 
-
+//TODO, support continuous capture
 SimpleSeer.Frame.capture = function() {
     $.post("/frame_capture", {}, function(data) {
         SS.Frame.refresh();
-        if (SS.continuousCapture) {
-            SS.Frame.capture();
-        }
+
     });
     return false;
 }
 
-
-SimpleSeer.Frame.inspect = function() {
-    $.post("/frame_capture", {}, function(data) {
-        SS.Frame.refresh(); })
-    
-    return false;
-};
-
-
-
+//MODEL SECTION
 //functions to deal with adding/previewing/updating/deleting models
+//TODO: convert to backbone, and share spec with the backend
+//TODO, figure out how to do a python like getattr which calls into the handlers
 SimpleSeer.Inspection = {};
 
 SimpleSeer.Inspection.fetchHandler = function(insp, handlername) {
@@ -714,6 +721,7 @@ SimpleSeer.Inspection.add = function(method, parameters) {
     });
 };
 
+//TODO, we gotta get this integrated with "inspector" form generation
 SimpleSeer.Inspection.update = function(inspection){
     $.post("/inspection_update", {
         id: inspection.id,
@@ -726,7 +734,8 @@ SimpleSeer.Inspection.update = function(inspection){
     });   
 }
 
-
+//TODO, recombine the preview/update thing
+//TODO, figure out how to get this loop tighter
 SimpleSeer.Inspection.preview = function (method, parameters) {
     if (SS.preview_running) {
         SS.preview_queue = [method, parameters];
@@ -745,6 +754,7 @@ SimpleSeer.Inspection.preview = function (method, parameters) {
             SS.preview_running = false;
             });
 }
+
 
 SimpleSeer.Inspection.cancelPreview = function () {
     SS.preview_queue = [];
@@ -828,7 +838,7 @@ SimpleSeer.Inspection.findMeasurement = function(inspection, featurecriteria, me
     return null;
 }
 
-
+//TODO there has got to be some kind of JQuery form builder we can use here.
 SimpleSeer.InspectionControl = {};
 
 SimpleSeer.InspectionControl.controlBox = function(id, title, controls) {
