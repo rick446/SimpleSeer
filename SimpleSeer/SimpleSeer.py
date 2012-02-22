@@ -142,8 +142,58 @@ class SimpleSeer(threading.Thread):
                 
         return self.plugins
 
-        
+    def loadImageSet(self, imgs = None):
+        '''
+        This function requires an SimpleCV image set to be passed in.
 
+        >>> imgs = SimpleCV.ImageSet()
+        >>> imgs.load('/path/to/dir')
+        >>> SS.loadImageSet(imgs)
+        '''
+
+        if imgs is None:
+          log("ImageSet cannot load: empty")
+          return
+
+        if not isinstance(imgs, SimpleCV.ImageSet):
+          log("ImageSet needs SimpleCV imageSet passed")
+          return
+
+        
+        for i in imgs:
+            img = i
+            frame = Frame(capturetime = datetime.now(), 
+                camera = self.cameras[-1])
+            frame.image = img
+            
+            if self.config.record_all:
+                frame.save()
+            
+             
+            while len(self.lastframes) > self.config.max_frames:
+                self.lastframes.pop(0)
+                            
+            self.framecount = self.framecount + 1
+            Session().redis.set("framecount", self.framecount)
+            self.lastframes.append(frame)
+
+    def loadImageDirectory(self, path = None):
+      '''
+      This function takes in a directory path of images to load
+      into seer.  It then converts them into SimpleSeer frames.
+
+      To use:
+      >>> ss = SimpleSeer()
+      >>> ss.loadImageDirectory('/path/to/imgs/')
+      >>> ss.lastframes
+      >>> ss.lastframes[-1].image.show()
+
+      '''
+
+      imgs = SimpleCV.ImageSet(path)
+      self.loadImageSet(imgs)
+      
+        
     def capture(self):
         count = 0
         currentframes = []
