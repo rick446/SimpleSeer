@@ -15,9 +15,23 @@ def blob(self, image):
     if params.has_key("pixel"):
         pixel = params['pixel'].split(",")
         del params["pixel"]
+        
+    if params.has_key("hue"):
+        image = image.hueDistance(int(params["hue"])).invert()
+        del params["hue"]
     
     if pixel:
-        image = image.colorDistance(image.getPixel(int(pixel[0]), int(pixel[1]))).invert()
+        color = str(image.getPixel(int(pixel[0]), int(pixel[1])))[1:-1]
+        params["color"] = color
+        self.parameters["color"] = color
+        del self.parameters["pixel"]
+        if self.id:
+            self.save()
+        
+    if params.has_key("color"):
+        r,g,b = params["color"].split(",")
+        image = image.colorDistance((float(r), float(g), float(b))).invert()
+        del params["color"]
         
     if invert:
         blobs = image.invert().findBlobs(**params)
