@@ -138,7 +138,7 @@ class SimpleSeer(threading.Thread):
             try:
                 plugins[plugin] = __import__("SimpleSeer.plugins."+plugin)
             except ImportError as e:
-                warnings.warn(e)
+                warnings.warn("Plugin " + plugin + " failed " + str(e))
                 
         return self.plugins
 
@@ -248,7 +248,10 @@ class SimpleSeer(threading.Thread):
                 watcher.check(frame.results)
                     
         return 
-                
+
+    def frame(self, index = 0):
+        return self.lastframes[-1][index]
+        
     def check(self):
         for watcher in self.watchers:
             if watcher.enabled:
