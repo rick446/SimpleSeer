@@ -104,7 +104,10 @@ class BSONObjectIDHandler(jsonpickle.handlers.BaseHandler):
     
 class MongoEngineFileFieldHandler(jsonpickle.handlers.BaseHandler):
     def flatten(self, obj, data):
-        return "this would translate to a url"
+        if not obj.grid_id:
+            return None
+        
+        return "/gridfs/" + str(obj.grid_id)
         
 class MongoEngineBaseListHandler(jsonpickle.handlers.BaseHandler):
     def flatten(self, obj, data):

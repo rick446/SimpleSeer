@@ -30,6 +30,9 @@ class Frame(SimpleDoc):
     results = [] #cache for result objects when frame is unsaved
 
     @apply
+    #TODO add a clean method
+    #TODO add a lossy image mode
+    #TODO add thumbs
     def image():
         def fget(self):
             if self._imgcache != '':
