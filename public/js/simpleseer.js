@@ -626,7 +626,7 @@ SimpleSeer.Frame.refresh = function() {
     SS.histgraph.newHistogram();
     $(".object").remove();
     //$(".tooltip").remove();
-    $("#maindisplay").find("img").attr("src", "/GET/currentframe_0.jpg?" + new Date().getTime().toString());
+    $("#maindisplay").find("img").attr("src", "/GET/frame?" + new Date().getTime().toString());
     SS.p.refresh();
 };
 

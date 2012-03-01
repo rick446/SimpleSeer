@@ -261,9 +261,6 @@ class SimpleSeer(threading.Thread):
         
         count = 0
         for f in self.lastframes[-1]:
-            jpgdata = StringIO()
-            f.image.applyLayers().getPIL().save(jpgdata, "jpeg", quality = 95)
-            Session().redis.setraw("currentframe_%d" % count, jpgdata.getvalue())
             Session().redis.set("histogram_%d" % count, f.image.histogram(50))
             Session().redis.set("currentframedata_%d" % count, f)
             Session().redis.set("results", self.results) #TODO, PUT A LIMIT (last 50 readings?  time?)

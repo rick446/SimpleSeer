@@ -24,23 +24,21 @@ class Frame(SimpleDoc):
     width = mongoengine.IntField(default = 0)
     imgfile = mongoengine.FileField()
     layerfile = mongoengine.FileField()
-    _image = mongoengine.BinaryField() #binary image data
-    _layer = mongoengine.BinaryField(default = '') #layer data
     _imgcache = ''
     results = [] #cache for result objects when frame is unsaved
 
     @apply
-    #TODO add a clean method
-    #TODO add a lossy image mode
     #TODO add thumbs
     def image():
         def fget(self):
             if self._imgcache != '':
                 return self._imgcache
             
+            self.imgfile.get().seek(0,0) #hackity hack, make sure the FP is at 0
             self._imgcache = Image(pil.open(StringIO(self.imgfile.read())))
             
             if self.layerfile:
+                self.layerfile.get().seek(0,0)
                 self._imgcache.dl()._mSurface = pygame.image.fromstring(self.layerfile.read(), self._imgcache.size(), "RGBA")
             
             return self._imgcache
@@ -48,22 +46,6 @@ class Frame(SimpleDoc):
           
         def fset(self, img):
             self.width, self.height = img.size()
-            
-            s = StringIO()
-            img.getPIL().save(s, "png", quality = 100)
-            self.imgfile.delete()
-            self.imgfile.put(s.getvalue())
-          
-            if len(img._mLayers):
-                if len(img._mLayers) > 1:
-                    mergedlayer = DrawingLayer(img.size())
-                    for layer in img._mLayers[::-1]:
-                        layer.renderToOtherLayer(mergedlayer)
-                else:
-                    mergedlayer = img.dl()
-                self.layerfile.delete()
-                self.layerfile.put(pygame.image.tostring(mergedlayer._mSurface, "RGBA"))
-                #TODO, make layerfile a compressed object
           
             self._imgcache = img
             
@@ -75,7 +57,22 @@ class Frame(SimpleDoc):
         
     def save(self):
         if self._imgcache != '':
-            self.image = self._imgcache #encode any layer changes made before save
+            s = StringIO()
+            img = self._imgcache
+            img.getPIL().save(s, "png", quality = 100)
+            self.imgfile.delete()
+            self.imgfile.put(s.getvalue(), content_type = "image/png")
+          
+            if len(img._mLayers):
+                if len(img._mLayers) > 1:
+                    mergedlayer = DrawingLayer(img.size())
+                    for layer in img._mLayers[::-1]:
+                        layer.renderToOtherLayer(mergedlayer)
+                else:
+                    mergedlayer = img.dl()
+                self.layerfile.delete()
+                self.layerfile.put(pygame.image.tostring(mergedlayer._mSurface, "RGBA"))
+                #TODO, make layerfile a compressed object
             self._imgcache = ''
         
         results = self.results

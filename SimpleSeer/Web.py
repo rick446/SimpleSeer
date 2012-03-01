@@ -243,6 +243,25 @@ class WebInterface(object):
     def ping(self):
         text = "pong"
         return {"text": text }
+        
+    @cherrypy.expose
+    def frame(self, index = -1, camera = 0, thumbnail = False, **params):
+        s = StringIO()
+        f = SimpleSeer.SimpleSeer().lastframes[index][0]
+        
+        try:
+            f.image.getPIL().save(s, "webp", quality = 80)
+            cherrypy.response.headers['Content-Type'] = 'image/webp'
+            return s.getvalue()
+
+        except:
+            f.image.getPIL().save(s, "jpeg", quality = 80)
+            cherrypy.response.headers['Content-Type'] = 'image/jpeg'
+            return s.getvalue()
+            
+    #TODO, make a gridfs controller (replacable by nginx in production)
+    #def gridfs
+
 
 
 import SimpleSeer
