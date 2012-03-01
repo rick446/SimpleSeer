@@ -101,6 +101,13 @@ class SimpleEmbeddedDoc(mongoengine.EmbeddedDocument):
 class BSONObjectIDHandler(jsonpickle.handlers.BaseHandler):
     def flatten(self, obj, data):
         return str(obj)
+    
+class MongoEngineFileFieldHandler(jsonpickle.handlers.BaseHandler):
+    def flatten(self, obj, data):
+        if not obj.grid_id:
+            return None
+        
+        return "/gridfs/" + str(obj.grid_id)
         
 class MongoEngineBaseListHandler(jsonpickle.handlers.BaseHandler):
     def flatten(self, obj, data):
@@ -122,6 +129,8 @@ class MongoEngineBaseDictHandler(jsonpickle.handlers.BaseHandler):
 jsonpickle.handlers.Registry().register(bson.objectid.ObjectId, BSONObjectIDHandler)   
 jsonpickle.handlers.Registry().register(mongoengine.base.BaseList, MongoEngineBaseListHandler)
 jsonpickle.handlers.Registry().register(mongoengine.base.BaseDict, MongoEngineBaseDictHandler)
+jsonpickle.handlers.Registry().register(mongoengine.fields.GridFSProxy, MongoEngineFileFieldHandler)
+
 
 
 class SimpleLog(object):
