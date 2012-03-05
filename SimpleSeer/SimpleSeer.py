@@ -123,10 +123,10 @@ class SimpleSeer(threading.Thread):
         m = list(Measurement.objects)
         Session().redis.set("measurements", m)
         w = list(Watcher.objects)
-        #Session().redis.set("watchers", w) #TODO Fix encoding
+        Session().redis.set("watchers", w) #TODO Fix encoding
         self.inspections = i
         self.measurements = m
-        #self.watchers = w
+        self.watchers = w
         return i
 
     def loadPlugins(self):
@@ -197,7 +197,8 @@ class SimpleSeer(threading.Thread):
     def capture(self):
         count = 0
         currentframes = []
-        
+        self.framecount = self.framecount + 1
+
         for c in self.cameras:
             img = c.getImage()
             if self.config.cameras[0].has_key('crop'):
@@ -214,7 +215,6 @@ class SimpleSeer(threading.Thread):
             while len(self.lastframes) > self.config.max_frames:
                 self.lastframes.pop(0)
                             
-            self.framecount = self.framecount + 1
             Session().redis.set("framecount", self.framecount)
             count = count + 1
             
@@ -260,11 +260,20 @@ class SimpleSeer(threading.Thread):
     def update(self):
         
         count = 0
+        batch = { "histogram": [], "frame": [] }
         for f in self.lastframes[-1]:
-            Session().redis.set("histogram_%d" % count, f.image.histogram(50))
+            hist = f.image.histogram(50)
+            Session().redis.set("histogram_%d" % count, hist)
+            batch["histogram"].append(hist)
             Session().redis.set("currentframedata_%d" % count, f)
-            Session().redis.set("results", self.results) #TODO, PUT A LIMIT (last 50 readings?  time?)
+            batch["frame"].append(f)
             count = count + 1
+
+        Session().redis.set("results", self.results) #TODO, PUT A LIMIT (last 50 readings?  time?)
+        batch["results"] = self.results
+        Session().redis.set("framecount", self.framecount)
+        Session().redis.set("batchframe", batch)
+        #TODO add passes and failures to the batch
     
     def refresh(self):
         self.reloadInspections()
@@ -286,10 +295,10 @@ class SimpleSeer(threading.Thread):
     def run(self):
         while not self.halt:
             timer_start = time.time()
+            self.capture()
             self.inspect()
-            
-            if self.check():
-                self.update(self)
+            self.check()
+            self.update()
             
             #self.display.send(frames)
             
@@ -302,8 +311,9 @@ class SimpleSeer(threading.Thread):
     #TODO, this doesn't work yet
     def stop(self):  #this should be called from an external thread
         self.halt = True
-        cherrypy.engine.stop()
-        self.join()
+        
+    def resume(self):
+        self.halt = False
         
     def passed(self, state = None):
         if state == None:

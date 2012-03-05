@@ -259,6 +259,16 @@ class WebInterface(object):
             cherrypy.response.headers['Content-Type'] = 'image/jpeg'
             return s.getvalue()
             
+    @cherrypy.expose     
+    def start(self):
+        SimpleSeer.SimpleSeer().start()
+        return "OK"
+    
+    @cherrypy.expose    
+    def stop():
+        SimpleSeer.SimpleSeer().stop()
+        return "OK"
+        
     #TODO, make a gridfs controller (replacable by nginx in production)
     #def gridfs
 

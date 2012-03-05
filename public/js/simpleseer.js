@@ -547,7 +547,6 @@ SimpleSeer.Display.renderObjectFocus = function(id) {
 //TODO, resue display objects and change their CSS rather than
 //scrapping them and re-creating them every damn time
 SimpleSeer.Display.addDisplayObject = function(id, x, y, w, h) {
-
     
     $("#" + id).remove(); //delete any existing object with this ID
     
@@ -626,7 +625,7 @@ SimpleSeer.Frame.refresh = function() {
     SS.histgraph.newHistogram();
     $(".object").remove();
     //$(".tooltip").remove();
-    $("#maindisplay").find("img").attr("src", "/GET/frame?" + new Date().getTime().toString());
+    $("#maindisplay").find("img").attr("src", "/frame?" + new Date().getTime().toString());
     SS.p.refresh();
 };
 
@@ -1295,9 +1294,13 @@ SS.p.mouseReleased = function() {
 SS.p.draw = function() {
   SS.setScale();
 
+  if (SS.action.continuous) {
+    SS.continuousUpdate();
+  }
 
   if (!SS.action.task && SS.mouseDown && !SS.mouseWait) {
       if (!SS.wasPressed) {
+        SS.stopContinuous();
         SS.launchRadial();
       } 
   }
@@ -1310,6 +1313,7 @@ SS.p.draw = function() {
       (SS.preview_queue.length && SS.preview_queue.length == 2) ||
       SS.action.focus != SS.lastfocus ||
       SS.forcerender) {
+      SS.stopContinuous();
       
       SS.p.render();
       SS.forcerender = false;
@@ -1335,7 +1339,6 @@ SimpleSeer.featuresets = {};
 
 SimpleSeer.radialAnimating = false;
 
-SS.continuousCapture = false;
 SS.forcerender = false;
 
 SS.wasPressed = false;
@@ -1349,10 +1352,74 @@ SimpleSeer.waitForClick = function() {
 }
 
 SimpleSeer.resetAction = function() {
-    SS.action = { startpx: [0,0], task: "", focus: "", focuslock: false, update: "", highlight: "" };
+    SS.action = { startpx: [0,0], task: "", focus: "", focuslock: false, update: "", highlight: "", continuous: false };
     SS.p.refresh();
 
 }
+
+SimpleSeer.startContinuous = function() {
+    $.post("/start", {}, function() {
+        SS.action.continuous = true;
+    });
+};
+
+SimpleSeer.stopContinuous = function() {
+    if (!SS.action.continuous) {
+        return;
+    }
+    $.post("/stop", {}, function() {
+        SS.action.continuous = false;
+    });
+};
+
+SimpleSeer.continuousUpdate = function() {
+    if (!SS.action.continuous) {
+        return;    
+    }
+    
+    $.ajax({ url: "/GET/framecount.txt", 
+        dataType: 'json',
+        complete: function(data){
+            if (SS.framecount != data.responseText) {
+                SS.framecount = data.responseText
+                SS.continuousRefresh();
+            }
+        }});
+    
+};
+
+SimpleSeer.continuousRefresh = function() {
+
+    $.ajax( {url: "/GET/batchframe.txt",
+        dataType: 'json',
+        complete: function(data) {
+            batch = $.parseJSON(data.responseText);
+            
+            console.log(batch);
+            return;
+            SS.histogram = batch.histogram[0];
+            SS.framedata = batch.framedata[0];
+            SS.results = batch.results;
+            
+            SS.Feature.refresh();
+            SS.DashObject.refresh();
+            SS.Watchlist.refresh();
+            SS.histgraph.newHistogram();  //TODO, skip if we're in focus
+            $(".object").remove();
+            //$(".tooltip").remove();
+            SS.p.refresh();
+            $("#maindisplay").find("img").attr("src", "/frame?" + new Date().getTime().toString());
+
+            //some stuff should be focus sensitive
+            
+            //TODO add passes failures
+            //TODO break warning handling out into a function
+        }
+    });
+    
+};
+
+
 
 SimpleSeer.loadPlugins = function() {
     $.getScript("/plugin_js");

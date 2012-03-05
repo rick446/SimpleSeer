@@ -21,7 +21,7 @@ SimpleSeer.inspectionhandlers.region = {
         
         feat = SS.featuresets[id].inspection;
 
-        if ($("#inspection_" + id).length){
+        if (SS.action.continuous || $("#inspection_" + id).length){
             return;
         }
         

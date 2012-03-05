@@ -182,7 +182,7 @@ SimpleSeer.inspectionhandlers.blob = {
                 }
                 div_id = "inspection_" + inspection.id + "_feature_"+i.toString();
                 
-                if ($("#"+div_id).length) {
+                if (SS.action.continuous || $("#"+div_id).length) {
                     continue;
                 }
                 
