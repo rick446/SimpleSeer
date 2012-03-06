@@ -261,11 +261,14 @@ class WebInterface(object):
             
     @cherrypy.expose     
     def start(self):
-        SimpleSeer.SimpleSeer().start()
+        try:
+            SimpleSeer.SimpleSeer().start()
+        except:
+            SimpleSeer.SimpleSeer().resume()
         return "OK"
     
     @cherrypy.expose    
-    def stop():
+    def stop(self):
         SimpleSeer.SimpleSeer().stop()
         return "OK"
         

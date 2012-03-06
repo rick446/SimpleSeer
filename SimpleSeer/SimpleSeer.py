@@ -293,20 +293,22 @@ class SimpleSeer(threading.Thread):
         return ret
     
     def run(self):
-        while not self.halt:
-            timer_start = time.time()
-            self.capture()
-            self.inspect()
-            self.check()
-            self.update()
-            
-            #self.display.send(frames)
-            
-            timeleft = Session().poll_interval - (time.time() - timer_start)
-            if timeleft > 0:
-                time.sleep(timeleft)
-            else:
-                time.sleep(0)
+        while True:
+            time.sleep(0)
+            while not self.halt:
+                timer_start = time.time()
+                self.capture()
+                self.inspect()
+                self.check()
+                self.update()
+                
+                #self.display.send(frames)
+                
+                timeleft = Session().poll_interval - (time.time() - timer_start)
+                if timeleft > 0:
+                    time.sleep(timeleft)
+                else:
+                    time.sleep(0)
     
     #TODO, this doesn't work yet
     def stop(self):  #this should be called from an external thread

@@ -185,8 +185,9 @@ SimpleSeer.inspectionhandlers.blob = {
                 if (SS.action.continuous || $("#"+div_id).length) {
                     continue;
                 }
+                points = f.featuredata.boundingBox;
                 
-                SS.Display.addDisplayObject(div_id, f.points[0][0], f.points[0][1], f.width, f.height);
+                SS.Display.addDisplayObject(div_id, points[0][0], points[0][1], f.width, f.height);
                 SS.DisplayObject.addNavZoom(div_id);
                 SS.DisplayObject.addNavInfo(div_id, "Object " + i.toString() + " Properties", inspection, i);
                 SS.DisplayObject.addNavItem(div_id, "gear", "Edit this Inspection", function (e) {

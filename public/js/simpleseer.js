@@ -368,7 +368,6 @@ SimpleSeer.Watchlist.renderWatchedItems = function() {
         } else {
             label = insp.name + " - " + m.label
         }  //TODO move this to where the measurement name is generated
-        console.log(m);
 
         content.append(
             $("<tr/>",  { class: "measurement", id: "measurement_" + m.id }).append(
@@ -1300,7 +1299,7 @@ SS.p.draw = function() {
 
   if (!SS.action.task && SS.mouseDown && !SS.mouseWait) {
       if (!SS.wasPressed) {
-        SS.stopContinuous();
+        //SS.stopContinuous();
         SS.launchRadial();
       } 
   }
@@ -1313,7 +1312,7 @@ SS.p.draw = function() {
       (SS.preview_queue.length && SS.preview_queue.length == 2) ||
       SS.action.focus != SS.lastfocus ||
       SS.forcerender) {
-      SS.stopContinuous();
+      //SS.stopContinuous();
       
       SS.p.render();
       SS.forcerender = false;
@@ -1360,6 +1359,7 @@ SimpleSeer.resetAction = function() {
 SimpleSeer.startContinuous = function() {
     $.post("/start", {}, function() {
         SS.action.continuous = true;
+        $(".object").remove(); //TODO, reflect focus
     });
 };
 
@@ -1369,6 +1369,7 @@ SimpleSeer.stopContinuous = function() {
     }
     $.post("/stop", {}, function() {
         SS.action.continuous = false;
+        SS.Frame.refresh();
     });
 };
 
@@ -1394,17 +1395,15 @@ SimpleSeer.continuousRefresh = function() {
         dataType: 'json',
         complete: function(data) {
             batch = $.parseJSON(data.responseText);
-            
             console.log(batch);
-            return;
             SS.histogram = batch.histogram[0];
-            SS.framedata = batch.framedata[0];
+            SS.framedata = batch.frame[0];
             SS.results = batch.results;
             
             SS.Feature.refresh();
-            SS.DashObject.refresh();
+            //SS.DashObject.refresh();
             SS.Watchlist.refresh();
-            SS.histgraph.newHistogram();  //TODO, skip if we're in focus
+            //SS.histgraph.newHistogram();  //TODO, skip if we're in focus
             $(".object").remove();
             //$(".tooltip").remove();
             SS.p.refresh();
