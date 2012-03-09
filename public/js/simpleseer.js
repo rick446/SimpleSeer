@@ -1299,7 +1299,7 @@ SS.p.draw = function() {
 
   if (!SS.action.task && SS.mouseDown && !SS.mouseWait) {
       if (!SS.wasPressed) {
-        //SS.stopContinuous();
+        SS.stopContinuous();
         SS.launchRadial();
       } 
   }
@@ -1357,6 +1357,7 @@ SimpleSeer.resetAction = function() {
 }
 
 SimpleSeer.startContinuous = function() {
+    $(".ico.reload").toggleClass("reloading").toggleClass("reload");
     $.post("/start", {}, function() {
         SS.action.continuous = true;
         $(".object").remove(); //TODO, reflect focus
@@ -1364,6 +1365,8 @@ SimpleSeer.startContinuous = function() {
 };
 
 SimpleSeer.stopContinuous = function() {
+    $(".ico.reloading").toggleClass("reloading").toggleClass("reload");
+
     if (!SS.action.continuous) {
         return;
     }
@@ -1378,15 +1381,19 @@ SimpleSeer.continuousUpdate = function() {
         return;    
     }
     
-    $.ajax({ url: "/GET/framecount.txt", 
-        dataType: 'json',
-        complete: function(data){
-            if (SS.framecount != data.responseText) {
-                SS.framecount = data.responseText
-                SS.continuousRefresh();
-            }
-        }});
+    now = new Date().getTime();
     
+    if (!SS.lastframecheck || now - SS.lastframecheck > 500) {
+        SS.lastframecheck = now;
+        $.ajax({ url: "/GET/framecount.txt", 
+            dataType: 'json',
+            complete: function(data){
+                if (SS.framecount != data.responseText) {
+                    SS.framecount = data.responseText
+                    SS.continuousRefresh();
+                }
+            }});
+    }
 };
 
 SimpleSeer.continuousRefresh = function() {
@@ -1521,6 +1528,13 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
         effect: "fade"}
     ).dynamic({right: { direction: "left" }})
    $(".ico.play").click( SS.Frame.capture );
+   $(".ico.reload").click( function() {
+        if ($(this).hasClass("reload")) {
+            SS.startContinuous();
+        } else {
+            SS.stopContinuous();
+        }
+   });
    $("#watchlist_control").click(function() {
         if ($(this).hasClass("watch")) {
             SS.Watchlist.showWatchedItems(); 

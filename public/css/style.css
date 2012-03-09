@@ -1056,6 +1056,9 @@ h1 input:hover {
     .ico.info {background: url("../img/42-info.png") no-repeat 50% 50%;}
     .ico.code {background: url("../img/code.png") no-repeat 50% 50%;}
     .ico.play {background: url("../img/30-circle-play.png") no-repeat 50% 50%;}
+    .ico.reload {background: url("../img/02-redo.png") no-repeat 50% 50%;}
+    .ico.reloading {background: url("../img/02-redo-b.png") no-repeat 50% 50%;}
+
     .ico.watch {background: url("../img/13-eye.png") no-repeat 50% 50%;}
     .ico.watched {background: url("../img/13-eye-b.png") no-repeat 50% 50%;}
     .ico.lock {background: url("../img/lock.png") no-repeat 50% 50%;}
