@@ -12,11 +12,11 @@
   margin-bottom: 0; // For input.btn
   font-size: @baseFontSize;
   line-height: @baseLineHeight;
-  color: @white;
+  color: @gray;
   text-align: center;
-  text-shadow: 0 -1px 1px rgba(0,0,0,.75);
+  text-shadow: 0 1px 1px rgba(255,255,255,.75);
   vertical-align: middle;
-  .buttonBackground(@grayDark, darken(@grayDarker, 7%));
+  #gradient > .vertical(@white, darken(@grayLight, 10%));
   .border-radius(3px);
   @shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.2), -1px -1px 0 rgba(0,0,0,.2), 1px 1px 0 rgba(0,0,0,.2);
   .box-shadow(@shadow);
@@ -132,26 +132,29 @@
 // Set the backgrounds
 // -------------------------
 .btn-primary {
-  .buttonBackground(@primaryButtonBackground, darken(@primaryButtonBackground, 15%));
+  .buttonBackground(@blue, darken(@blue, 10%));
 }
 // Warning appears are orange
 .btn-warning {
-  .buttonBackground(lighten(@orange, 15%), @orange);
+  .buttonBackground(@orange, darken(@orange, 10%));
 }
 // Danger and error appear as red
 .btn-danger {
-  .buttonBackground(#ee5f5b, #bd362f);
+  .buttonBackground(@red, darken(@red, 10%));
 }
 // Success appears as green
-
+.btn-success {
+  .buttonBackground(@green, darken(@green, 10%));
+}
 // Info appears as a neutral blue
 .btn-info {
-  .buttonBackground(#5bc0de, #2f96b4);
+  .buttonBackground(@blueLight, darken(@blueLight, 10%));
 }
 // Inverse appears as dark gray
 .btn-inverse {
-  .buttonBackground(#454545, #262626);
+  .buttonBackground(@grayDark, darken(@grayDarker, 7%));
 }
+
 
 
 // Cross-browser Jank

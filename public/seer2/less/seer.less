@@ -44,8 +44,7 @@ footer {
  .box-shadow(@shadow);
  transform: translate3d(0,0,0);
  -webkit-transform: translate3d(0,0,0);
- overflow: scroll;
- -webkit-overflow-scrolling:touch;
+
 }
 .sidebar.on {
 left: -20px;
@@ -101,6 +100,17 @@ transform: translate3d(0,288,0);
 .actions li {
   display: inline-block;
   list-style: none;
+}
+.actions .dropdown-menu li {
+  display: block;
+  list-style: none;
+  color: @grayDark;
+}
+.actions .dropdown-menu li a {
+  color: @grayDark;
+}
+.actions .dropdown-menu li a:hover {
+  color: @white;
 }
 
 .navbar .btn-toolbar {
