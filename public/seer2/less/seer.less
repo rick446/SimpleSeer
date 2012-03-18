@@ -1,0 +1,139 @@
+body, html {
+  height: 100%;
+}
+body#dash, footer, .navbar-inner {
+  #gradient > .vertical(@grayDark, darken(@grayDarker, 6%));
+}
+body {
+  padding: 64px 0 0;
+}
+body#dash {
+  padding: 54px 0 0;
+}
+.navbar-inner {
+  height: 54px;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  display: block;
+  @shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.2), -1px -1px 0 rgba(0,0,0,.2), 1px 1px 0 rgba(0,0,0,.2);
+  .box-shadow(@shadow);
+}
+footer {
+  height: 54px;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  display: block;
+  @shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.2), -1px -1px 0 rgba(0,0,0,.2), 1px 1px 0 rgba(0,0,0,.2);
+  .box-shadow(@shadow);
+}
+.sidebar {
+ position: fixed;
+ left: -25px;
+/* left: -288px; */
+ width: 288px;
+ top: 54px;
+ display: block;
+ padding: 16px;
+ height: 90%;
+ background: url(/img/black_linen_v2.png);
+ @shadow: inset -1px 0 4px rgba(0,0,0,.5), -1px -1px 0 rgba(0,0,0,.2), 1px 1px 0 rgba(0,0,0,.2);
+ .box-shadow(@shadow);
+ transform: translate3d(0,0,0);
+ -webkit-transform: translate3d(0,0,0);
+ overflow: scroll;
+ -webkit-overflow-scrolling:touch;
+}
+.sidebar.on {
+left: -20px;
+-webkit-transition: left .15s ease-in; 
+transform: translate3d(0,288,0);
+-webkit-transform: translate3d(0,288,0)
+}
+
+.btn-toolbar.pull-left {
+  position: absolute;
+  top: 0px;
+  left: 16px;
+}
+.btn-toolbar.pull-right {
+  position: absolute;
+  top: 0px;
+  right: 16px;
+}
+
+.panel {
+  display: block;
+  padding: 8px;
+  margin-bottom: 16px;
+  font-size: @baseFontSize;
+  line-height: @baseLineHeight;
+  color: @white;
+  .buttonBackground(@grayDark, darken(@grayDarker, 7%));
+  .border-radius(3px);
+  @shadow: inset 0 1px 0 rgba(255,255,255,.2), 0 1px 2px rgba(0,0,0,.2), -1px -1px 0 rgba(0,0,0,.2), 1px 1px 0 rgba(0,0,0,.2), 0 1px 4px rgba(0,0,0,.5);
+  .box-shadow(@shadow);
+  cursor: pointer;
+  position: relative;
+}
+.panel h4 {
+  color: #fff;
+}
+
+.actions {
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  top: 4px;
+  right: 4px;
+}
+.actions a {
+  color: #aaa;
+}
+.actions a:hover {
+  color: #fff;
+  text-decoration: none;
+}
+
+.actions li {
+  display: inline-block;
+  list-style: none;
+}
+
+.navbar .btn-toolbar {
+  top: -6px;
+}
+
+/* styleguide */
+
+/* Space out the show-grid examples */
+.show-grid [class*="span"] {
+  margin-bottom: 5px;
+}
+
+/* Special grid styles
+-------------------------------------------------- */
+.show-grid {
+  margin-top: 10px;
+  margin-bottom: 20px;
+}
+.show-grid [class*="span"] {
+  background-color: #eee;
+  text-align: center;
+  .border-radius(3px);
+  min-height: 30px;
+  line-height: 30px;
+}
+.show-grid:hover [class*="span"] {
+  background: #ddd;
+}
+.show-grid .show-grid {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+.show-grid .show-grid [class*="span"] {
+  background-color: #ccc;
+}
