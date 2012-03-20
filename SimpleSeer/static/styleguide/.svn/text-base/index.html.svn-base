@@ -1,0 +1,203 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+    <title>Theme - Weboptimo</title>
+    <meta name="description" content="">
+    <meta name="keywords" content="">
+    <script src="../js/modernizr2.js"></script>
+    <link href='http://fonts.googleapis.com/css?family=Arimo:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="../css/style.css">
+</head>
+<body>
+    <header>
+        <hgroup class="clearfix">
+            <h1 class="hidden"><a href="index.html">Weboptimo</a></h1>
+        </hgroup>
+        <nav>
+            <ul>
+                <li><a href="../index.html" title="index" class="logo">Web<b>o</b>ptimo</a></li>
+                <li class="active"><a href="index.html">Theme</a></li>
+                <li><a href="layout.html">Layout</a></li>
+                <li><a href="forms.html">Forms</a></li>
+                <li><a href="tables.html">Tables</a></li>
+                <li><a href="elements.html">Elements</a></li>
+            </ul>
+            <ul class="btngrp">
+                <li><a href="account.html" class="btn">Account</a></li>
+                <li><a href="support.html" class="btn">Support</a></li>
+                <li><a href="index.html" class="btn">Log Out</a></li>
+            </ul>
+        </nav>
+        <h2>Styleguide (Page Header)</h2>
+    </header>
+    <section class="c3 clearfix">
+        <h1>Theme</h1> 
+        <article>
+            <header>
+              <h2>Typography</h2>
+            </header>
+            <p>Font-family: Arimo
+             <br><a href="http://www.google.com/webfonts/specimen/Arimo">Google Open Source Font</a> 
+            </p>
+            <h1 class="title">h1 page</h1>
+            <h1>h1 section</h1>
+            <h2>h2 article/subsection</h2>
+            <h3>h3 aside</h3>
+            <p> 
+                The <a href="#" class="link">a element (#07c)</a> example<br> 
+                The <a href="#" class="hover">hovered a element (#05c)</a> example<br> 
+                The <a href="#" class="hover">visited a element (#05c)</a> example<br> 
+                The <abbr title="Title text">abbr element</abbr> example<br> 
+                The <b>b element</b> example<br> 
+                The <cite>cite element</cite> example<br> 
+                The <code>code element</code> example<br> 
+                The <del>del element</del> example<br> 
+                The <dfn>dfn element</dfn> example<br> 
+                The <em>em element</em> example<br> 
+                The <i>i element</i> example<br> 
+                The img element <img src="http://placekitten.com/16/16" alt=""> example<br> 
+                The <ins>ins element</ins> example<br> 
+                The <kbd>kbd element</kbd> example<br> 
+                The <mark>mark element</mark> example<br> 
+                The <q>q element <q>inside</q> a q element</q> example<br> 
+                The <s>s element</s> example<br> 
+                The <samp>samp element</samp> example<br> 
+                The <small>small element</small> example<br> 
+                The <span>span element</span> example<br> 
+                The <strong>strong element</strong> example<br> 
+                The <sub>sub element</sub> example<br> 
+                The <sup>sup element</sup> example<br> 
+                The <var>var element</var> example<br> 
+                The <u>u element</u> example
+            </p>
+            <ol> 
+                <li>Ordered list</li> 
+                <li>Here's a nested unordered list
+                    <ul> 
+                        <li>Nested Unordered list</li> 
+                        <li>Nested ordered list
+                            <ol> 
+                                <li>The first</li> 
+                                <li>And the second</li> 
+                            </ol> 
+                        </li> 
+                    </ul> 
+                </li> 
+                <li>Ordered List item</li> 
+                <li>Nested Ordered list
+                    <ol> 
+                        <li>Some point</li> 
+                        <li>Nested Unordered list
+                            <ul> 
+                                <li>The first</li> 
+                                <li>And the second</li> 
+                            </ul> 
+                        </li> 
+                    </ol> 
+                </li> 
+            </ol>
+            <dl>
+                <dt>definition list dt</dt> 
+                <dd>definition list dd</dd> 
+                <dt>definition list dt</dt> 
+                <dd>definition list dd</dd> 
+                <dt>definition list dt - Lorem ipsum dolor sit amet, consectetur adipisicing elit adipisicing elit adipisicing elit</dt> 
+                <dd>definition list dd - Lorem ipsum dolor sit amet, consectetur adipisicing elit adipisicing elit adipisicing elit</dd> 
+            </dl> 
+        </article>
+        <article>
+            <header>
+              <h2>Color Scheme</h2>
+            </header>
+              <div style="background: #eee; color: #444; padding: 5px; margin-top: 20px;">
+                  #eeeeee
+              </div>
+              <div style="background: #ccc; color: #444; padding: 10px 5px; font-weight: 700;">
+                  #cccccc
+              </div>
+              <div style="background: #aaa; color: #fff; padding: 5px;">
+                  #aaaaaa
+              </div>
+              <div style="background: #555; color: #fff; padding: 5px; margin-top: 20px;">
+              #555555
+              </div>
+              <div style="background: #444; color: #fff; padding: 10px 5px; font-weight: 700;">
+              #444444
+              </div>                  
+                <div style="background: #222; color: #fff; padding: 5px;">
+                #222222
+                </div>
+            <div style="background: #E2F658; color: #3B4418; padding: 5px; margin-top: 20px;">
+                #E2F658
+              </div>
+              <div style="background: #B6D230; color: #3B4418; padding: 10px 5px; font-weight: 700;">
+                  #B6D230
+              </div>    
+              <div style="background: #3B4418; color: #E2F658; padding: 5px; margin-bottom: 20px;">
+                  #3B4418
+              </div>
+          <h3>Gradients</h3>
+          <p style=" color: #fff; background: #aaa;
+          background-image: -moz-linear-gradient(top, #aaa, #444);
+          background-image: -webkit-linear-gradient(top, #aaa, #444);
+          background-image: linear-gradient(top, #aaa, #444); padding: 5px;">
+            top: #aaa<br>btm: #444<br>txt: #fff
+          </p>
+          <p style=" color: #fff; background: #222;
+          background-image: -moz-linear-gradient(top, #444, #222);
+          background-image: -webkit-linear-gradient(top, #444, #222);
+          background-image: linear-gradient(top, #444, #222); padding: 5px;">
+            top: #444<br>btm: #222<br>txt: #fff
+          </p>
+          <p style=" color: #3B4418; background: #E2F658;
+          background-image: -moz-linear-gradient(top, #E2F658, #B6D230);
+          background-image: -webkit-linear-gradient(top, #E2F658, #B6D230);
+          background-image: linear-gradient(top, #E2F658, #B6D230); padding: 5px;">
+            top: #E2F658<br>btm: #B6D230<br>txt: #3B4418
+          </p>                          
+        </article>          
+        <article>
+          <header>
+              <h2>Gradients, Bevels & Skins</h2>
+          </header>
+          <header class="clearfix">
+              <hgroup class="clearfix">
+                  <h1 class="hidden"><a href="index.html">Weboptimo</a></h1>
+                  <nav>
+                      <ul>
+                          <li style="padding-left: 20px">Nav skin</li>
+                      </ul>
+                      <ul class="btngrp">
+                          <li><a href="account.html" class="btn">Action</a></li>
+                      </ul>
+                  </nav>
+              </hgroup>        
+          </header>
+          <br><br>
+                 <h1 class="title">h1 page</h1>
+                 <h1>h1 section</h1>
+            <div class="bg">
+                <div class="skin"></div>
+                <h4>Background</h4>
+            </div>
+            <br>
+            <div class="emboss">
+                Articles and modals 
+            </div>
+            <br>
+        </article>
+    </section>     
+    <footer>          
+        <span class="follow">
+            Join us on <a href=""><img src="../img/rss_16.png" alt="RSS icon"></a> 
+            <a href=""><img src="../img/twitter_16.png" alt="Twitter icon"></a> 
+            <a href=""><img src="../img/facebook_16.png" alt="Facebook icon"></a>
+        </span>     
+        <a href="">About Weboptimo</a> <a href="">Terms of Use</a> &copy; Weboptimo, All rights reserved. 
+    </footer>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+    <script src="../js/global.js"></script>
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+		<title>Styleguide</title>
+		<link type="text/css" href="../css/style.css" rel="stylesheet">
+		<link type="text/css" href="../css/ui-darkness/jquery-ui-1.8.17.custom.css" rel="stylesheet">			
+	    <script src="../js/modernizr2.js"></script>
+	    <script src="../js/jquery.min.js"></script>
+	    <script src="../js/jQuery.radmenu.min.js"></script> 
+	    <script src="../js/global.js"></script>
+	    <script src="../js/modal.js"></script>
+	    <script src="../js/info.js"></script>
+	    <script src="../js/dialog.js"></script>
+	    <script src="../js/dash.js"></script>
+	    <script src="../js/progress.js"></script>    
+	    <script src="../js/processing.min.js"></script>
+	    <script src="../js/jquery.hoverIntent.minified.js"></script>		
+		<script src="../js/jquery-ui-1.8.17.custom.min.js"></script>
+		<script>
+			$(function(){						
+				// Slider
+				$('#slider').slider({
+					range: true,
+					values: [17, 67]
+				});
+				
+			});
+		</script>
+	</head>
+	<body>
+		<section>
+			<br>
+			<h1>Styleguide</h1>
+			<br>
+			<h2>Buttons</h2>
+			<p class="clearfix">
+				<a href="" class="btn">A href element</a>
+				<a href="" class="btn primary">Primary button</a>
+				<button>button element</button>
+				<input type="submit">
+				<input type="reset">
+				<a href="" class="btn"><b class="ico gear"></b></a>
+				<a href="" class="btn primary"><b class="ico gear"></b></a>
+			</p>
+			<br>
+			<h2>Icons</h2>
+			<div class="c3 clearfix">
+			<p class="col">
+				<b class="ico contrast"></b> Contrast<br>
+				<b class="ico bright"></b> Brightness<br>
+				<b class="ico sliders"></b> Sliders<br>
+				<b class="ico chat"></b> Chat<br>
+				<b class="ico crop"></b> Crop<br>
+			</p>
+			<p class="col">	
+				<b class="ico gear"></b> Gear<br>
+				<b class="ico zoom-in"></b> Zoom-in<br>
+				<b class="ico zoom-out"></b> Zoom-out<br>
+				<b class="ico close"></b> Close<br>
+				<b class="ico info"></b> Info<br>
+				<b class="ico code"></b> Code<br>
+			</p>
+			<p class="col">			
+				<b class="ico lock"></b> Lock<br>
+				<b class="ico unlock"></b> Unlock<br>				
+				<b class="ico play"></b> Play<br>
+				<b class="ico watch"></b> Watch<br>
+				<b class="ico watched"></b> Watched<br>
+			</p>
+			</div>
+			<br>
+			<h2>Messaging</h2>
+			  <div class="error message">
+			    This is an error
+			    <a href="" class="close">x</a>			    
+			  </div>
+			  <div class="warn message">
+			    This is an warning
+			    <a href="" class="close">x</a>
+			  </div>
+			  <div class="good message">
+			    This is an success
+			    <a href="" class="close">x</a>
+			  </div>
+			<br>
+			<h2>Form Elements</h2>
+			<form>
+				<label>Text Input:</label>
+				<input type="text" placeholder="This is a text input">
+				<label><input type="checkbox"> A checkbox element</label>
+				<label><input type="radio"> A radio element</label>
+				<label>A Slider</label>
+				<div id="slider"></div>
+				<br><br>
+				<!-- Forms -->
+                <input type="password" class="input-small" placeholder="Password">
+                <button type="submit" class="btn">Go</button>
+
+
+                    <label class="control-label" for="input01">Text input</label>
+                      <input type="text" class="input-xlarge" id="input01">
+
+                    <label class="control-label" for="select01">Select list</label>
+                      <select id="select01">
+                        <option>something</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                      </select>
+
+                    <label class="control-label" for="multiSelect">Multicon-select</label>
+                      <select multiple="multiple" id="multiSelect">
+                        <option>1</option>
+                        <option>2</option>
+                        <option>3</option>
+                        <option>4</option>
+                        <option>5</option>
+                      </select>
+
+                    <label class="control-label" for="fileInput">File input</label>
+                    <input class="input-file" id="fileInput" type="file">
+
+                    <label class="control-label" for="textarea">Textarea</label>
+                    <textarea class="input-xlarge" id="textarea" rows="3"></textarea><br>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                    <button type="reset" class="btn">Cancel</button>
+                </fieldset>
+
+
+                <fieldset>
+                  <legend>Extending form controls</legend>
+                  <label class="control-label" for="inlineCheckboxes">Inline checkboxes</label>
+                    <label class="checkbox inline">
+                      <input type="checkbox" id="inlineCheckbox1" value="option1"> 1
+                    </label>
+                    <label class="checkbox inline">
+                      <input type="checkbox" id="inlineCheckbox2" value="option2"> 2
+                    </label>
+                    <label class="checkbox inline">
+                      <input type="checkbox" id="inlineCheckbox3" value="option3"> 3
+                    </label>
+
+                    <label class="control-label">Radio buttons</label>
+                      <label class="radio">
+                        <input type="radio" name="optionsRadios" id="optionsRadios1" value="option1" checked>
+                        Option one is this and that&mdash;be sure to include why it's great
+                      </label>
+                      <label class="radio">
+                        <input type="radio" name="optionsRadios" id="optionsRadios2" value="option2">
+                        Option two can is something else and selecting it will deselect option one
+                      </label>
+                </fieldset>
+
+				<a href="" class="btn primary">Submit</a>
+				<a href="" class="btn">Cancel</a>
+			</form>
+			<br>
+			<br>
+			<h2>More elements</h2>
+			<p>
+				<a href="../modal.html" class="btn trig" title="A Modal">A modal</a>
+			</p>
+			<br>
+		</section>
+		<section>
+		</section>
+	</body>
+</html>
+
+
