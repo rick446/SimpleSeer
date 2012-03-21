@@ -65,6 +65,13 @@ class WebInterface2(object):
 						f.image.getPIL().save(s, "jpeg", quality = 80)
 						return s.getvalue()
 
+		@app.route('/frame_capture')
+		def frame_capture():
+				Frame.capture()
+				Inspection.inspect()
+				SimpleSeer.SimpleSeer().update()
+				return dict( capture = "ok" )
+
 
 import SimpleSeer
 from Inspection import Inspection

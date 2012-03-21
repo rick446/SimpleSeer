@@ -12,7 +12,7 @@ from StringIO import StringIO
 import types
 import atexit
 
-import cherrypy
+#~ import cherrypy
 import urllib
 try:
   import Image as pil
