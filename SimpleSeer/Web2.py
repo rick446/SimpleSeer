@@ -7,10 +7,7 @@ app = Flask(__name__)
 #~ app.debug = True
 DEBUG = True
 
-def jsonify(fn):
-    def new(*args, **kwargs):
-        return jsonencode(fn(*args, **kwargs))
-    return new
+
 
 class Web2():
 		"""
@@ -38,6 +35,12 @@ class WebInterface2(object):
 		This is where all the event call backs and data handling happen for the
 		internal webserver for Seer
 		"""
+
+		#~ def jsonify(fn):
+			#~ def new(*args, **kwargs):
+					#~ return jsonencode(fn(*args, **kwargs))
+			#~ return new
+    
 		@app.route('/')
 		def index():
 				return render_template('index.html')
@@ -48,9 +51,9 @@ class WebInterface2(object):
 
 		@app.route('/test.json')
 		@app.route('/_test')
-		@jsonify
+		#~ @jsonify
 		def test_json():
-				return 'This is a test of the emergency broadcast system'
+			return jsonencode('This is a test of the emergency broadcast system')
         
 
 		@app.route('/frame')
@@ -72,30 +75,29 @@ class WebInterface2(object):
 					return s.getvalue()
 
 		@app.route('/frame_capture')
-		@jsonify
+		#~ @jsonify
 		def frame_capture():
 				Frame.capture()
 				Inspection.inspect()
 				SimpleSeer.SimpleSeer().update()
-				return dict( capture = "ok" )
+				return jsonencode(dict( capture = "ok" ))
 
 		@app.route('/frame_inspect')
-		@jsonify
+		#~ @jsonify
 		def frame_inspect():
 			try:
 				params = dict(request.args)
 				Inspection.inspect()
 				SimpleSeer.SimpleSeer().update()
-				inspect = "ok"
+				return jsonencode(dict( inspect = "ok"))
 
 			except:
-				inspect = "fail"
+				return jsonencode(dict( inspect = "fail"))
+
 				
-			finally:
-				return dict( inspect )
 				
 		@app.route('/histogram')
-		@jsonify
+		#~ @jsonify
 		def histogram():
 			params = dict(bins = 50, channel = '', focus = "", camera = 0, index = -1, frameid = '')
 			params.update(request.args)			
@@ -110,11 +112,11 @@ class WebInterface2(object):
 				img = frame.image
 
 			bins = params['bins']
-			return img.histogram(bins)
-
+			return jsonencode(img.histogram(bins))
+		
 
 		@app.route('/inspection_add')
-		@jsonify
+		#~ @jsonify
 		def inspection_add():
 			params = dict(request.args)
 
@@ -127,166 +129,183 @@ class WebInterface2(object):
 				SimpleSeer.SimpleSeer().reloadInspections()
 				Inspection.inspect()
 				SimpleSeer.SimpleSeer().update()
-				return SimpleSeer.SimpleSeer().inspections
-				
+				return jsonencode(SimpleSeer.SimpleSeer().inspections)
 			except:
-				return dict()
-			
+				return jsonencode(dict(status = "fail"))
+	
 			
 				
-#~ 
-		#~ @app.route('/inspection_preview')
-		#~ @jsonify
-		#~ def inspection_preview():
-			#~ params = dict(request.args)
-			#~ insp = Inspection(
-				#~ name = params["name"],
-				#~ camera = params["camera"],
-				#~ method = params["method"],
-				#~ parameters = json.loads(params["parameters"]))
-				#~ #TODO fix for different cameras
-				#~ #TODO catch malformed data
-			#~ 
-			#~ features = insp.execute(SimpleSeer.SimpleSeer().lastframes[-1][0].image)
-			#~ 
-			#~ return { "inspection": insp, "features": features }
-#~ 
-		#~ @app.route('/inspection_remove')
-		#~ @jsonify
-		#~ def inspection_remove():
-			#~ params = dict(request.args)
-			#~ Inspection.objects(id = bson.ObjectId(params["id"])).delete()
-			#~ #for m in Measurement.objects(inspection = bson.ObjectId(params["id"])):
-			#~ Watcher.objects.delete() #todo narrow by measurement
-#~ 
-			#~ Measurement.objects(inspection = bson.ObjectId(params["id"])).delete()
-			#~ Result.objects(inspection = bson.ObjectId(params["id"])).delete()
-			#~ SimpleSeer.SimpleSeer().reloadInspections()
-			#~ Inspection.inspect()
-			#~ SimpleSeer.SimpleSeer().update()
-			#~ 
-			#~ 
-			#~ return SimpleSeer.SimpleSeer().inspections
-#~ 
-		#~ @app.route('/inspection_update')
-		#~ @jsonify
-		#~ def inspection_update():
-			#~ params = dict(request.args)
-			#~ results = Inspection.objects(id = bson.ObjectId(params["id"]))
-			#~ if not len(results):
-				#~ return { "error": "no inspection id"}
-			#~ 
-			#~ insp = results[0]
-			#~ 
-			#~ if params.has_key("name"):
-				#~ insp.name = params["name"]
-				#~ 
-			#~ if params.has_key("parameters"):
-				#~ insp.parameters = json.loads(params["parameters"])
-				#~ 
-			#~ #TODO, add sorts, filters etc
-			#~ insp.save()
-			#~ return SimpleSeer.SimpleSeer().inspections
-#~ 
-		#~ @app.route('/measurement_add')
-		#~ @jsonify
-		#~ def measurement_add():
-			#~ params = dict(request.args)
-			#~ if not params.has_key('units'):
-				#~ params['units'] = 'px';
-			#~ 
-			#~ m = Measurement(name = params["name"],
-				#~ label = params['label'],
-				#~ method = params['method'],
-				#~ featurecriteria = json.loads(params["featurecriteria"]),
-				#~ parameters = json.loads(params["parameters"]),
-				#~ units = params['units'],
-				#~ inspection = bson.ObjectId(params['inspection']))
-			#~ m.save()
-			#~ 
-			#~ #backfill?
-			#~ 
-			#~ SimpleSeer.SimpleSeer().reloadInspections()
-			#~ Inspection.inspect()
-			#~ SimpleSeer.SimpleSeer().update()
-			#~ 
-			#~ return jsonencode(m)
-#~ 
-		#~ @app.route('/measurement_remove')
-		#~ @jsonify
-		#~ def measurement_remove():
-			#~ params = dict(request.args)
-			#~ Measurement.objects(id = bson.ObjectId(params["id"])).delete()
-			#~ Result.objects(measurement = bson.ObjectId(params["id"])).delete()
-			#~ Watcher.objects.delete() #todo narrow by measurement
-			#~ 
-			#~ SimpleSeer.SimpleSeer().reloadInspections()
-			#~ SimpleSeer.SimpleSeer().update()
-#~ 
-			#~ return dict( remove = "ok")
-#~ 
-		#~ @app.route('/measurement_results')
-		#~ @jsonify
-		#~ def measurement_results(self, **params):
-			#~ params = dict(request.args)
-			#~ return list(Result.objects(measurement = bson.ObjectId(params["id"])).order_by("-capturetime"))
-#~ 
-		#~ @app.route('/ping')
-		#~ @jsonify
-		#~ def ping():
-			#~ text = "pong"
-			#~ return {"text": text }
-#~ 
-#~ 
-		#~ @app.route('/plugin_js')
-		#~ def plugin_js():
-			#~ params = dict(request.args)
-			#~ 
-			#~ js = ''
-			#~ for plugin in SimpleSeer.SimpleSeer().plugins.keys():
-				#~ path = SimpleSeer.SimpleSeer().pluginpath + "/" + plugin
-				#~ js += "//SimpleSeer plugin " + plugin + "\n\n"
-				#~ for f in [file for file in os.listdir(path) if re.search("js$", file)]:
-					#~ js += open(path + "/" + f).read()
-			#~ js += "\n\n\n";
-			#~ return js
-#~ 
-		#~ @app.route('/start')
-		#~ def start():
-			#~ try:
-				#~ SimpleSeer.SimpleSeer().start()
-			#~ except:
-				#~ SimpleSeer.SimpleSeer().resume()
-			#~ return "OK"
-#~ 
-		#~ @app.route('/stop')
-		#~ def stop():
-			#~ SimpleSeer.SimpleSeer().stop()
-			#~ return "OK"
-#~ 
-		#~ @app.route('/watcher_add')
-		#~ @jsonify   
-		#~ def watcher_add():
-			#~ params = dict(request.args)
-			#~ Watcher(**params).save()
-			#~ 
-			#~ SimpleSeer.SimpleSeer().reloadInspections()
-			#~ return SimpleSeer.SimpleSeer().watchers
-#~ 
-		#~ @app.route('/watcher_list_handlers')
-		#~ @jsonify
-		#~ def watcher_list_handlers():
-			#~ return [s for s in dir(Watcher) if re.match("handler_", s)]
 
-		#~ @app.route('/watch_remove')
+		@app.route('/inspection_preview')
+		#~ @jsonify
+		def inspection_preview():
+			params = dict(request.args)
+
+			try:
+				insp = Inspection(
+					name = params.get("name"),
+					camera = params.get("camera"),
+					method = params.get("method"),
+					parameters = json.loads(params.get("parameters")))
+					#TODO fix for different cameras
+					#TODO catch malformed data
+				features = insp.execute(SimpleSeer.SimpleSeer().lastframes[-1][0].image)
+				return jsonencode({ "inspection": insp, "features": features })
+			except:
+				return jsonencode(dict(status = "fail"))
+			
+			
+
+		@app.route('/inspection_remove')
+		#~ @jsonify
+		def inspection_remove():
+			try:
+				params = dict(request.args)
+				Inspection.objects(id = bson.ObjectId(params["id"])).delete()
+				#for m in Measurement.objects(inspection = bson.ObjectId(params["id"])):
+				Watcher.objects.delete() #todo narrow by measurement
+
+				Measurement.objects(inspection = bson.ObjectId(params["id"])).delete()
+				Result.objects(inspection = bson.ObjectId(params["id"])).delete()
+				SimpleSeer.SimpleSeer().reloadInspections()
+				Inspection.inspect()
+				SimpleSeer.SimpleSeer().update()
+				
+				
+				return jsonencode(SimpleSeer.SimpleSeer().inspections)
+			except:
+				return jsonencode(dict(status = "fail"))
+
+		@app.route('/inspection_update')
+		#~ @jsonify
+		def inspection_update():
+			try:
+				params = dict(request.args)
+				results = Inspection.objects(id = bson.ObjectId(params["id"]))
+				if not len(results):
+					return jsonencode({ "error": "no inspection id"})
+				
+				insp = results[0]
+				
+				if params.has_key("name"):
+					insp.name = params["name"]
+					
+				if params.has_key("parameters"):
+					insp.parameters = json.loads(params["parameters"])
+					
+				#TODO, add sorts, filters etc
+				insp.save()
+				return jsonencode(SimpleSeer.SimpleSeer().inspections)
+			except:
+				return jsonencode(dict(status = "fail"))
+
+		@app.route('/measurement_add')
+		def measurement_add():
+			try:
+				params = dict(request.args)
+				if not params.has_key('units'):
+					params['units'] = 'px';
+				
+				m = Measurement(name = params["name"],
+					label = params['label'],
+					method = params['method'],
+					featurecriteria = json.loads(params["featurecriteria"]),
+					parameters = json.loads(params["parameters"]),
+					units = params['units'],
+					inspection = bson.ObjectId(params['inspection']))
+				m.save()
+				
+				#backfill?
+				
+				SimpleSeer.SimpleSeer().reloadInspections()
+				Inspection.inspect()
+				SimpleSeer.SimpleSeer().update()
+				
+				return jsonencode(m)
+			except:
+				return jsonencode(dict(status = "fail"))
+
+		@app.route('/measurement_remove')
+		#~ @jsonify
+		def measurement_remove():
+			try:
+				params = dict(request.args)
+				Measurement.objects(id = bson.ObjectId(params["id"])).delete()
+				Result.objects(measurement = bson.ObjectId(params["id"])).delete()
+				Watcher.objects.delete() #todo narrow by measurement
+				
+				SimpleSeer.SimpleSeer().reloadInspections()
+				SimpleSeer.SimpleSeer().update()
+
+				return jsonencode(dict( remove = "ok"))
+			except:
+				return jsonencode(dict(status = "fail"))
+
+		@app.route('/measurement_results')
+		#~ @jsonify
+		def measurement_results(self, **params):
+			try:
+				params = dict(request.args)
+				return jsonencode(list(Result.objects(measurement = bson.ObjectId(params["id"])).order_by("-capturetime")))
+			except:
+				return jsonencode(dict(status = "fail"))
+				
+		@app.route('/ping')
+		#~ @jsonify
+		def ping():
+			text = "pong"
+			return jsonencode({"text": text })
+
+
+		@app.route('/plugin_js')
+		def plugin_js():
+			params = dict(request.args)
+			
+			js = ''
+			for plugin in SimpleSeer.SimpleSeer().plugins.keys():
+				path = SimpleSeer.SimpleSeer().pluginpath + "/" + plugin
+				js += "//SimpleSeer plugin " + plugin + "\n\n"
+				for f in [file for file in os.listdir(path) if re.search("js$", file)]:
+					js += open(path + "/" + f).read()
+			js += "\n\n\n";
+			return js
+
+		@app.route('/start')
+		def start():
+			try:
+				SimpleSeer.SimpleSeer().start()
+			except:
+				SimpleSeer.SimpleSeer().resume()
+			return "OK"
+
+		@app.route('/stop')
+		def stop():
+			SimpleSeer.SimpleSeer().stop()
+			return "OK"
+
+		@app.route('/watcher_add')
+		#~ @jsonify   
+		def watcher_add():
+			params = dict(request.args)
+			Watcher(**params).save()
+			
+			SimpleSeer.SimpleSeer().reloadInspections()
+			return jsonencode(SimpleSeer.SimpleSeer().watchers)
+
+		@app.route('/watcher_list_handlers')
+		#~ @jsonify
+		def watcher_list_handlers():
+			return jsonencode([s for s in dir(Watcher) if re.match("handler_", s)])
+
+		@app.route('/watch_remove')
 		#~ @jsonify    
-		#~ def watcher_remove():
-			#~ params = dict(request.args)
-			#~ Watcher.objects(id = bson.ObjectId(params["id"])).delete()
-			#~ 
-			#~ SimpleSeer.SimpleSeer().reloadInspections()
-			#~ return SimpleSeer.SimpleSeer().watchers
-        #~ 
+		def watcher_remove():
+			params = dict(request.args)
+			Watcher.objects(id = bson.ObjectId(params["id"])).delete()
+			
+			SimpleSeer.SimpleSeer().reloadInspections()
+			return jsonencode(SimpleSeer.SimpleSeer().watchers)
+        
 import SimpleSeer
 from Inspection import Inspection
 from Measurement import Measurement
