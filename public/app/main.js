@@ -13,30 +13,37 @@ function(namespace, $, Backbone, SimpleSeer) {
   // Defining the application router, you can attach sub routers here.
   var Router = Backbone.Router.extend({
     routes: {
+      "continuous": "continuous",
+      "nextframe": "nextframe",
       "": "index",
+      "watchlist": "watchlist",
+      "hidewatchlist": "hidewatchlist",
       ":hash": "index"
+    },
+    
+    nextframe: function() {
+      Backbone.history.navigate("", false);
+      SimpleSeer.Frame.capture();  
     },
 
     index: function(hash) {
       var route = this;
-      /*var tutorial = new Example.Views.Tutorial();
 
-      // Attach the tutorial to the DOM
-      tutorial.render(function(el) {
-        $("#main").html(el);
-
-        // Fix for hashes in pushState and hash fragment
-        if (hash && !route._alreadyTriggered) {
-          // Reset to home, pushState support automatically converts hashes
-          Backbone.history.navigate("", false);
-
-          // Trigger the default browser behavior
-          location.hash = hash;
-
-          // Set an internal flag to stop recursive looping
-          route._alreadyTriggered = true;
-        }
-      }); */
+      SimpleSeer.stopContinuous();
+    },
+    
+    watchlist: function() {
+        $("#watchlist_control").attr("href", "#hidewatchlist").toggleClass("watch").toggleClass("watched");
+        SS.Watchlist.showWatchedItems();
+    },
+    
+    hidewatchlist: function() {
+        $("#watchlist_control").attr("href", "#watchlist").toggleClass("watch").toggleClass("watched");
+        SS.Watchlist.hideWatchedItems();
+    },
+    
+    continuous: function() {
+        SimpleSeer.startContinuous();
     }
   });
 

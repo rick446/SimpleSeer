@@ -1352,7 +1352,8 @@ SimpleSeer.resetAction = function() {
 }
 
 SimpleSeer.startContinuous = function() {
-    $(".ico.reload").toggleClass("reloading").toggleClass("reload");
+    
+    $(".ico.reload").attr("href", "#").toggleClass("reloading").toggleClass("reload");
     $.post("/start", {}, function() {
         SS.action.continuous = true;
         $(".object").remove(); //TODO, reflect focus
@@ -1360,11 +1361,13 @@ SimpleSeer.startContinuous = function() {
 };
 
 SimpleSeer.stopContinuous = function() {
-    $(".ico.reloading").toggleClass("reloading").toggleClass("reload");
-
+    
     if (!SS.action.continuous) {
         return;
     }
+    $(".ico.reloading").attr("href", "#continuous").toggleClass("reloading").toggleClass("reload");
+
+    
     $.post("/stop", {}, function() {
         SS.action.continuous = false;
         SS.Frame.refresh();
@@ -1522,23 +1525,7 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
         predelay: 200,
         effect: "fade"}
     ).dynamic({right: { direction: "left" }})
-   $(".ico.play").click( SS.Frame.capture );
-   $(".ico.reload").click( function() {
-        if ($(this).hasClass("reload")) {
-            SS.startContinuous();
-        } else {
-            SS.stopContinuous();
-        }
-   });
-   $("#watchlist_control").click(function() {
-        if ($(this).hasClass("watch")) {
-            SS.Watchlist.showWatchedItems(); 
-        } else {
-            SS.Watchlist.hideWatchedItems(); 
-        }
-        $(this).toggleClass("watch");
-        $(this).toggleClass("watched");
-   });
+   
 
    SimpleSeer.Frame.refresh();
    SS.p.render();
