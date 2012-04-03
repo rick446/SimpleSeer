@@ -309,6 +309,7 @@ class SimpleSeer(threading.Thread):
                     time.sleep(timeleft)
                 else:
                     time.sleep(0)
+            time.sleep(0.1)
     
     #TODO, this doesn't work yet
     def stop(self):  #this should be called from an external thread
