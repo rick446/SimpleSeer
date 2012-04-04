@@ -1,7 +1,6 @@
 mongoengine
-cherrypy
+flask
 jsonpickle
 ujson
 supervisor
 redis
-

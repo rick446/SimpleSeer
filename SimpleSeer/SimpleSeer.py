@@ -2,8 +2,7 @@ from base import *
 from Session import Session
 from Inspection import Inspection
 from Watcher import Watcher
-#~ from Web import *
-from Web2 import *
+from Web import *
 
 
 
@@ -79,7 +78,7 @@ class SimpleSeer(threading.Thread):
         Frame.capture()
         #~ Inspection.inspect()
         self.update()
-        self.web_interface = Web2()
+        self.web_interface = Web()
 
 
     #i don't really like this too much -- it should really update on
