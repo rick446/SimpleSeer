@@ -5,8 +5,6 @@ from flask import Flask, render_template, request, make_response, Blueprint
 from flask_rest import RESTResource
 from werkzeug import SharedDataMiddleware
 
-print os.path.join(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0] , 'public')
-
 app = Flask(__name__)
 #~ app.debug = True
 DEBUG = True
@@ -77,7 +75,7 @@ class Web():
 			if app.config['DEBUG'] or DEBUG:
 					from werkzeug import SharedDataMiddleware
 					app.wsgi_app = SharedDataMiddleware(app.wsgi_app, {
-						'/': os.path.join(os.path.dirname(__file__)[:-1], 'public')
+						'/': os.path.join(os.path.dirname(__file__), 'static')
 					})
 			self.web_interface = WebInterface()
 			app.run(port=self.port)

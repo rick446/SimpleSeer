@@ -12,6 +12,8 @@ function($, _, Backbone) {
   // Put application wide code here     // This is useful when developing if you don't want to use a
     // build process every time you change a template.
     //
+    
+    return {
     // Delete if you are using a different template loading method.
     fetchTemplate: function(path, done) {
       var JST = window.JST = window.JST || {};
