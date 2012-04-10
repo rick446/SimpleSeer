@@ -11,23 +11,12 @@
     <link href='css/orbitron.css' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="css/style.css">
     <link rel="stylesheet" href="css/jquery.ui.ppmenu.css">
-
     <link rel="stylesheet" href="css/ui-darkness/jquery-ui-1.8.17.custom.css">
     <script src="js/modernizr2.js"></script>
-    <script src="js/jquery.min.js"></script>
-    <script src="js/jquery-ui.min.js"></script>
-    <script src="js/jquery.ui.prettypiemenu.js"></script>
-    <script src="js/jquery.tools.min.js"></script>
-    <script src="js/global.js"></script>
-    <script src="js/dialog.js"></script>
-    <script src="js/progress.js"></script>    
-    <script src="js/processing.min.js"></script>
-    <script src="js/jquery.sparkline.js"></script>
-    <script src="js/underscore-min.js"></script>
-
-    <script src="js/jquery.hoverIntent.minified.js"></script>
-    
+    <script data-main="app/config" src="/assets/js/libs/require.js"></script>
 </head>
+
+
 <body id="index">
 <div class="tour" id="message">
     <section><h2>This is a message</h2><a href="" class="btn tour">Next Step</a></section>
@@ -59,9 +48,9 @@
                   <a href="" title="Histogram" class="info btn"><span><canvas id="histogram"></canvas></span
 ></a>
                 </li>
-                <li><a href="#" title="Open Dashboard" id="watchlist_control" class="ico watched"></a></li>
-                <li><a href="#" title="See Next Image" class="ico play"></a></li>
-                <li><a href="#" title="Continuous Reload" class="ico reload"></a></li>
+                <li><a href="#hidewatchlist" title="Open Dashboard" id="watchlist_control" class="ico watched"></a></li>
+                <li><a href="#nextframe" title="See Next Image" class="ico play"></a></li>
+                <li><a href="#continuous" title="Continuously Reload" class="ico reload"></a></li>
                 <li><a href="#" title="Controls" class="ico gear"></a></li>
                 <li>
                   <a href="" title="Write Code" class="ico code"></a>
@@ -83,12 +72,9 @@
     <footer>
     </footer> 
 </body>
-
-<script src="js/simpleseer.js"></script>   
-    <script src="js/zoom.js"></script>  
  
 <script type="text/javascript">
-  $(".tour").hide();
-  $(document).ready( SimpleSeer.setup );
+  //$(".tour").hide();
+  //$(document).ready( SimpleSeer.setup );
 </script>
 </html>

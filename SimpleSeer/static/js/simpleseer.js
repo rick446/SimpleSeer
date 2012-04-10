@@ -4,13 +4,6 @@
 
 
 
-isEmpty = function(obj) {
-    for (var prop in obj) {
-        if (obj.hasOwnProperty(prop)) return false;
-    }
-    return true;
-};
-
 //http://stackoverflow.com/questions/1026069/capitalize-the-first-letter-of-string-in-javascript
 capitalize = function(word){
    return word.replace( /(^|\s)([a-z])/g , function(m,p1,p2){ return p1+p2.toUpperCase(); } );
@@ -53,7 +46,9 @@ SimpleSeer.getJSON = function(key) {
 
 //TODO make the dashboard flexible so it can be moved
 //from top or side, depending on display mode (portrait or landscape)
-SimpleSeer.DashObject = {};
+SimpleSeer.DashObject = {}
+
+//console.log(jQuery);
 
 $("#statebar").hoverIntent({
     over: function() {},
@@ -710,7 +705,7 @@ SimpleSeer.Inspection.add = function(method, parameters) {
     camera = SS.framedata[0]['camera'];
     //TODO actually look up which display we're on
     
-    $.post("/inspection_add", { name: name, camera: camera, method: method, parameters: JSON.stringify(parameters)}, 
+    $.post("/inspection_add", { name: name, camera: camera, method: method, focus: SS.action.focus, parameters: JSON.stringify(parameters)}, 
         function(data) { 
             SS.inspections = data; 
             SS.Frame.refresh();
@@ -742,7 +737,7 @@ SimpleSeer.Inspection.preview = function (method, parameters) {
     
     SS.preview_queue = [];
     SS.preview_running = true;
-    $.post("/inspection_preview", { name: "preview", camera: SS.framedata[0].camera, method: method, parameters: JSON.stringify(parameters)},
+    $.post("/inspection_preview", { name: "preview", camera: SS.framedata[0].camera, focus: SS.action.focus,  method: method, parameters: JSON.stringify(parameters)},
         function(data) {   
             if ("halt" in SS.preview_data) {
                 SS.preview_data = {};
@@ -772,7 +767,7 @@ SimpleSeer.Inspection.render = function() {
     }
     
     //render any active previews
-    if (!isEmpty(SS.preview_data)) {
+    if (!_.isEmpty(SS.preview_data)) {
         pv = SS.preview_data;
         render_features = SS.Inspection.fetchHandler(pv.inspection, "render_features");
         render_features(pv.features, pv.inspection);
@@ -1357,7 +1352,8 @@ SimpleSeer.resetAction = function() {
 }
 
 SimpleSeer.startContinuous = function() {
-    $(".ico.reload").toggleClass("reloading").toggleClass("reload");
+    
+    $(".ico.reload").attr("href", "#").toggleClass("reloading").toggleClass("reload");
     $.post("/start", {}, function() {
         SS.action.continuous = true;
         $(".object").remove(); //TODO, reflect focus
@@ -1365,11 +1361,13 @@ SimpleSeer.startContinuous = function() {
 };
 
 SimpleSeer.stopContinuous = function() {
-    $(".ico.reloading").toggleClass("reloading").toggleClass("reload");
-
+    
     if (!SS.action.continuous) {
         return;
     }
+    $(".ico.reloading").attr("href", "#continuous").toggleClass("reloading").toggleClass("reload");
+
+    
     $.post("/stop", {}, function() {
         SS.action.continuous = false;
         SS.Frame.refresh();
@@ -1527,23 +1525,7 @@ SimpleSeer.setup = function() { $.getScript("/plugin_js", function(){
         predelay: 200,
         effect: "fade"}
     ).dynamic({right: { direction: "left" }})
-   $(".ico.play").click( SS.Frame.capture );
-   $(".ico.reload").click( function() {
-        if ($(this).hasClass("reload")) {
-            SS.startContinuous();
-        } else {
-            SS.stopContinuous();
-        }
-   });
-   $("#watchlist_control").click(function() {
-        if ($(this).hasClass("watch")) {
-            SS.Watchlist.showWatchedItems(); 
-        } else {
-            SS.Watchlist.hideWatchedItems(); 
-        }
-        $(this).toggleClass("watch");
-        $(this).toggleClass("watched");
-   });
+   
 
    SimpleSeer.Frame.refresh();
    SS.p.render();

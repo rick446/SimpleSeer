@@ -1,15 +1,56 @@
 from base import *
 from Session import *
 from functools import wraps
-from flask import Flask, render_template, request, make_response
+from flask import Flask, render_template, request, make_response, Blueprint
+from flask_rest import RESTResource
 from werkzeug import SharedDataMiddleware
+
+print os.path.join(os.path.split(os.path.split(os.path.abspath(__file__))[0])[0] , 'public')
 
 app = Flask(__name__)
 #~ app.debug = True
 DEBUG = True
 
+restapi = Blueprint("restapi", __name__, url_prefix="")
+from flask import Blueprint
+
+class InspectionHandler(object):
+    def add(self):
+        print "Inspection Add " + str(request.values)
+        return 201, "hi"
+    
+    def update(self, inspection_id):
+        print "Inspection update " + str(request.values)
+        return 200, "hi"
+    
+    def delete(self, inspection_id):
+        print "Inspection delete " + str(request.values)
+        return 200, "hi"
+    
+    def get(self, inspection_id):
+        print "Inspection get " + str(request.values)
+        return 200, "hi"
+      
+    def list(self):
+        print "Inspection get list " + str(request.values)
+        return 200, "hi"
+
+
+inspection_api = RESTResource(
+    name="inspection", # name of the var to inject to the methods
+    route="/inspection",  # will be availble at /api/projects/*
+    app=restapi, # the app which should handle this
+    actions=["list", "add", "update", "delete", "get"], #authorised actions
+    handler=InspectionHandler()) # the handler of the request
+
+
+app.register_blueprint(restapi)
 
 def jsonify(f):
+    """
+    We're going to use our own jsonify decorator, which uses our jsonencode function
+    which routes thru json-pickle
+    """
     @wraps(f)
     def decorated_function(*args, **kwargs):
         obj = f(*args, **kwargs)
@@ -36,14 +77,14 @@ class Web():
 			if app.config['DEBUG'] or DEBUG:
 					from werkzeug import SharedDataMiddleware
 					app.wsgi_app = SharedDataMiddleware(app.wsgi_app, {
-						'/': os.path.join(os.path.dirname(__file__), 'static')
+						'/': os.path.join(os.path.dirname(__file__)[:-1], 'public')
 					})
-			self.web_interface = WebInterface2()
+			self.web_interface = WebInterface()
 			app.run(port=self.port)
 			
 		
 
-class WebInterface2(object):
+class WebInterface(object):
     """
     This is where all the event call backs and data handling happen for the
     internal webserver for Seer
@@ -59,7 +100,7 @@ class WebInterface2(object):
     
     @app.route('/test.json', methods=['GET', 'POST'])
     @app.route('/_test', methods=['GET', 'POST'])
-    @jsonify
+
     def test_json():
       return 'This is a test of the emergency broadcast system'
         
@@ -321,7 +362,8 @@ class WebInterface2(object):
       SimpleSeer.SimpleSeer().reloadInspections()
       return SimpleSeer.SimpleSeer().watchers
 
-        
+
+
 import SimpleSeer
 from Inspection import Inspection
 from Measurement import Measurement
