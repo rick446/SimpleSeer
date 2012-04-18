@@ -13,15 +13,25 @@ require([
 
 function(namespace, $, Backbone, SimpleSeer) {
 
+  Inspection = require("modules/inspection");
+  
+  
   // Defining the application router, you can attach sub routers here.
   var Router = Backbone.Router.extend({
+    
+    initialize: function() {
+      this.inspection = new Inspection.Router();
+    },
+    
+    //Global routes
     routes: {
       "continuous": "continuous",
       "nextframe": "nextframe",
       "": "index",
       "watchlist": "watchlist",
       "hidewatchlist": "hidewatchlist",
-      ":hash": "index"      
+      "zoomout": "zoomout"
+      //":hash": "index"      
     },
     
     nextframe: function() {
@@ -47,6 +57,12 @@ function(namespace, $, Backbone, SimpleSeer) {
     
     continuous: function() {
         SimpleSeer.startContinuous();
+    },
+    
+    zoomout: function() {
+        //TODO, reset the href to inspection/zoomin/:id
+        $(".zoom-out").toggleClass("zoom-in").toggleClass("zoom-out");
+        SimpleSeer.zoomer.out();
     }
   });
 
@@ -65,6 +81,8 @@ function(namespace, $, Backbone, SimpleSeer) {
     // Define your master router on the application namespace and trigger all
     // navigation from this instance.
     app.router = new Router();
+    
+
 
     // Trigger the initial route and enable HTML5 History API support
     Backbone.history.start({ pushState: true });
