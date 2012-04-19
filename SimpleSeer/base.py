@@ -144,5 +144,5 @@ log = SimpleLog()
 
 import SimpleCV
 #from SimpleCV.Shell import *
-from SimpleCV import Image, JpegStreamer, Camera, Color, cv, VirtualCamera
+from SimpleCV import Image, JpegStreamer, Camera, Color, cv, VirtualCamera, Kinect
 #from SimpleCV.Display import Display

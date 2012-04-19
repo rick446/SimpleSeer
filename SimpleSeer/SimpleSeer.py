@@ -42,15 +42,22 @@ class SimpleSeer(threading.Thread):
         
         for camera in self.config.cameras:
             camerainfo = camera.copy()
+
             if camerainfo.has_key('virtual'):
                 self.cameras.append(VirtualCamera(camerainfo['source'], camerainfo['virtual']))
+            elif camerainfo.has_key('kinect'):
+                k = Kinect()
+                if camerainfo["kinect"] == "depth":
+                    k._usedepth = 1
+                else:
+                    k._usedepth = 0
+
+                self.cameras.append(k)
             else:
                 id = camerainfo['id']
                 del camerainfo['id']
                 if camerainfo.has_key('crop'):
                     del camerainfo['crop']
-                if camerainfo.has_key('resize'):
-                    del camerainfo['resize']
                 self.cameras.append(Camera(id, camerainfo))
         #log initialized camera X
         self.init_logging()
@@ -78,7 +85,7 @@ class SimpleSeer(threading.Thread):
             self.shell_thread.start()
 
         Frame.capture()
-        Inspection.inspect()
+        #~ Inspection.inspect()
         self.update()
         self.web_interface = Web()
 
@@ -202,14 +209,13 @@ class SimpleSeer(threading.Thread):
         self.framecount = self.framecount + 1
 
         for c in self.cameras:
-            img = c.getImage()
-            
-            if self.config.cameras[0].has_key('resize'):
-              img = img.resize(*self.config.cameras[0]['resize'])
-
+            img = ""
+            if c.__class__.__name__ == "Kinect" and c._usedepth == 1: 
+              img = c.getDepth() 
+            else:
+              img = c.getImage()
             if self.config.cameras[0].has_key('crop'):
                 img = img.crop(*self.config.cameras[0]['crop'])
-
             frame = Frame(capturetime = datetime.now(), 
                 camera= self.config.cameras[count]['name'])
             frame.image = img
@@ -301,7 +307,7 @@ class SimpleSeer(threading.Thread):
     
     def run(self):
         while True:
-            time.sleep(0.01)
+            time.sleep(0)
             while not self.halt:
                 timer_start = time.time()
                 self.capture()
@@ -316,7 +322,7 @@ class SimpleSeer(threading.Thread):
                     time.sleep(timeleft)
                 else:
                     time.sleep(0)
-            time.sleep(0.01)
+            time.sleep(0.1)
     
     #TODO, this doesn't work yet
     def stop(self):  #this should be called from an external thread
