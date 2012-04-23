@@ -71,7 +71,11 @@ class SimpleDoc(mongoengine.Document):
     
     def __getstate__(self):  
         ret = {}
-        ret["id"] = self._data[None]
+        if self._data.has_key(None):
+            ret["id"] = self._data[None]
+        else:
+            ret["id"] = None
+
         for k in self._data.keys():
             if not k:
                 continue
