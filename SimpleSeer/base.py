@@ -25,7 +25,7 @@ try:
     import pyfirmata
 except:
     print "Warning: Pyfirmata is not installed on this system, it is not required but recommended"
-import redis
+#import redis
 import mongoengine
 import bson
 import jsonpickle

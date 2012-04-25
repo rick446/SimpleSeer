@@ -23,18 +23,18 @@ def _decode_dict(dct):
             v = _decode_list(v)
         newdict[k] = v
     return newdict   
-
-class SmartJSONRedis(redis.Redis):
-    """
-    This is a corny wrapper for Redis() that just auto-JSON ifys our seer data
-    """
-    
-    def set(self, key, val):
-        return super(SmartJSONRedis, self).set(key,jsonencode(val))
-        
-    def setraw(self, key, val):
-        return super(SmartJSONRedis, self).set(key,val)
-            
+#
+#class SmartJSONRedis(redis.Redis):
+#    """
+#    This is a corny wrapper for Redis() that just auto-JSON ifys our seer data
+#    """
+#    
+#    def set(self, key, val):
+#        return super(SmartJSONRedis, self).set(key,jsonencode(val))
+#        
+#    def setraw(self, key, val):
+#        return super(SmartJSONRedis, self).set(key,val)
+#            
 
 class Session():
     """
