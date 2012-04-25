@@ -7,3 +7,7 @@ module.exports = class Router extends Backbone.Router
 
   home: ->
     $('#main').html application.homeView.render().el
+    $('#frame-container').html application.frameView.render().el
+
+    $('#chart-container').append application.chartView.render().el
+    $('#chart-container').append application.chartView.render().el

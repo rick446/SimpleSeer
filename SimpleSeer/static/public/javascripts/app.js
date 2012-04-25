@@ -85,10 +85,14 @@
 
   Application = {
     initialize: function() {
-      var HomeView, Router;
+      var ChartView, FrameView, HomeView, Router;
       HomeView = require('views/home_view');
+      FrameView = require('views/frame');
+      ChartView = require('views/chart');
       Router = require('lib/router');
       this.homeView = new HomeView();
+      this.frameView = new FrameView();
+      this.chartView = new ChartView();
       this.router = new Router();
       return typeof Object.freeze === "function" ? Object.freeze(this) : void 0;
     }
@@ -138,7 +142,10 @@
     };
 
     Router.prototype.home = function() {
-      return $('#main').html(application.homeView.render().el);
+      $('#main').html(application.homeView.render().el);
+      $('#frame-container').html(application.frameView.render().el);
+      $('#chart-container').append(application.chartView.render().el);
+      return $('#chart-container').append(application.chartView.render().el);
     };
 
     return Router;
@@ -208,27 +215,27 @@
 (this.require.define({
   "views/chart": function(exports, require, module) {
     (function() {
-  var HomeView, View, template,
+  var ChartView, View, template,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   View = require('./view');
 
-  template = require('./templates/home');
+  template = require('./templates/chart');
 
-  module.exports = HomeView = (function(_super) {
+  module.exports = ChartView = (function(_super) {
 
-    __extends(HomeView, _super);
+    __extends(ChartView, _super);
 
-    function HomeView() {
-      HomeView.__super__.constructor.apply(this, arguments);
+    function ChartView() {
+      ChartView.__super__.constructor.apply(this, arguments);
     }
 
-    HomeView.prototype.id = 'home-view';
+    ChartView.prototype.id = 'chart-view';
 
-    HomeView.prototype.template = template;
+    ChartView.prototype.template = template;
 
-    return HomeView;
+    return ChartView;
 
   })(View);
 
@@ -239,27 +246,27 @@
 (this.require.define({
   "views/frame": function(exports, require, module) {
     (function() {
-  var HomeView, View, template,
+  var FrameView, View, template,
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   View = require('./view');
 
-  template = require('./templates/home');
+  template = require('./templates/frame');
 
-  module.exports = HomeView = (function(_super) {
+  module.exports = FrameView = (function(_super) {
 
-    __extends(HomeView, _super);
+    __extends(FrameView, _super);
 
-    function HomeView() {
-      HomeView.__super__.constructor.apply(this, arguments);
+    function FrameView() {
+      FrameView.__super__.constructor.apply(this, arguments);
     }
 
-    HomeView.prototype.id = 'home-view';
+    FrameView.prototype.id = 'frame-view';
 
-    HomeView.prototype.template = template;
+    FrameView.prototype.template = template;
 
-    return HomeView;
+    return FrameView;
 
   })(View);
 
@@ -296,6 +303,36 @@
 
 }).call(this);
 
+  }
+}));
+(this.require.define({
+  "views/templates/chart": function(exports, require, module) {
+    module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  helpers = helpers || Handlebars.helpers;
+  var foundHelper, self=this;
+
+
+  return "<h2>Motion</h2>\n<div id=\"graph_motion\" class=\"graph\"></div>";});
+  }
+}));
+(this.require.define({
+  "views/templates/frame": function(exports, require, module) {
+    module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  helpers = helpers || Handlebars.helpers;
+  var foundHelper, self=this;
+
+
+  return "<h2>Live Feed</h2> \n<div id=\"frame\"> \n  <img src=\"/frame\"/> \n</div>";});
+  }
+}));
+(this.require.define({
+  "views/templates/home": function(exports, require, module) {
+    module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
+  helpers = helpers || Handlebars.helpers;
+  var foundHelper, self=this;
+
+
+  return "		<div id=\"content\" class=\"row\">\n		  <div id=\"frame-container\" class=\"span5\">\n\n		  </div>\n		  <div id=\"chart-container\" class=\"span7\">\n\n		  </div>\n		</div>  \n";});
   }
 }));
 (this.require.define({
