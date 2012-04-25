@@ -258,7 +258,13 @@ class WebInterface(object):
             f.image.getPIL().save(s, "jpeg", quality = 80)
             cherrypy.response.headers['Content-Type'] = 'image/jpeg'
             return s.getvalue()
-            
+        
+    @cherrypy.expose
+    @jsonify
+    def olap(self, **params):
+		data = Query().execute(queryString = 'random')
+		return Chart().createChart(slice = data)
+		    
     @cherrypy.expose     
     def start(self):
         try:
@@ -272,6 +278,8 @@ class WebInterface(object):
         SimpleSeer.SimpleSeer().stop()
         return "OK"
         
+        
+        
     #TODO, make a gridfs controller (replacable by nginx in production)
     #def gridfs
 
@@ -283,3 +291,4 @@ from Measurement import Measurement
 from Result import Result
 from Frame import Frame
 from Watcher import Watcher
+from OLAP import Query, Chart
