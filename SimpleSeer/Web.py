@@ -75,7 +75,7 @@ class Web():
 			if app.config['DEBUG'] or DEBUG:
 					from werkzeug import SharedDataMiddleware
 					app.wsgi_app = SharedDataMiddleware(app.wsgi_app, {
-						'/': os.path.join(os.path.dirname(__file__), 'static')
+						'/': os.path.join(os.path.dirname(__file__), 'static/public')
 					})
 			self.web_interface = WebInterface()
 			app.run(port=self.port)
@@ -90,7 +90,7 @@ class WebInterface(object):
     
     @app.route('/')
     def index():
-        return render_template('index.html')
+        return open(os.path.join(os.path.dirname(__file__), 'static/public/index.html')).read()
     
     @app.route('/test', methods=['GET', 'POST'])
     def test():
@@ -179,7 +179,7 @@ class WebInterface(object):
           parameters = json.loads(params.get("parameters"))).save()
         SimpleSeer.SimpleSeer().reloadInspections()
         Inspection.inspect()
-        SimpleSeer.SimpleSeer().update()
+        #SimpleSeer.SimpleSeer().update()
         return SimpleSeer.SimpleSeer().inspections
       except:
         return dict(status = "fail")
@@ -219,7 +219,7 @@ class WebInterface(object):
         Result.objects(inspection = bson.ObjectId(params["id"])).delete()
         SimpleSeer.SimpleSeer().reloadInspections()
         Inspection.inspect()
-        SimpleSeer.SimpleSeer().update()
+        #SimpleSeer.SimpleSeer().update()
         
         
         return SimpleSeer.SimpleSeer().inspections
@@ -270,7 +270,7 @@ class WebInterface(object):
         
         SimpleSeer.SimpleSeer().reloadInspections()
         Inspection.inspect()
-        SimpleSeer.SimpleSeer().update()
+        #SimpleSeer.SimpleSeer().update()
         
         return m
       except:
@@ -286,7 +286,7 @@ class WebInterface(object):
         Watcher.objects.delete() #todo narrow by measurement
         
         SimpleSeer.SimpleSeer().reloadInspections()
-        SimpleSeer.SimpleSeer().update()
+        #SimpleSeer.SimpleSeer().update()
     
         return dict( remove = "ok")
       except:
