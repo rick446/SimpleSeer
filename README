@@ -4,7 +4,7 @@ it uses the SimpleCV framework and MongoDB to turn any PC into a vision applianc
 Examples of usage:
 ==========================
 
-To start SimpleSeer:
+To start SimpleSeer in continuous mode:
 
     $ cd SimpleSeer
     $ python __init__.py
@@ -35,59 +35,20 @@ Note: You can optionally install pyfirmata to interface with an arduino
 Mac OS X (Using homebrew)
 ========
 
-> brew install nginx  #nginx conf is slightly different, so you have to set up manually
 > brew install mongodb
-> brew install redis (and follow directions to install redis as service)
-> brew install libevent
 > sudo easy_install pip
 > sudo pip install -r pip.requirements 
 > hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.py install
-> git clone git://github.com/nicolasff/webdis.git && cd webdis && make && sudo make install
+> curl http://npmjs.org/install.sh | sh
+> npm install -g brunch
+> npm install -g brunch-less
 
-Linux (Using apt-get)
+
+
+Ubuntu Linux 12.04 (Using apt-get)
 =======
-> apt-get install mongodb-server nginx libevent-dev
-> cp etc/nginx/sites-enabled/default /etc/nginx/sites-enabled
-> /etc/init.d/nginx restart
+> apt-get install mongodb-server python-dev
 > pip install -r pip.requirements
-> wget -O redis.tar.gz "http://redis.googlecode.com/files/redis-2.4.7.tar.gz" && tar zxvf redis.tar.gz && cd redis-2.4.7 && make && sudo make install
-> git clone git://github.com/nicolasff/webdis.git && cd webdis && make && sudo make install
-
-
-[Post Installation]
-
-SuperVisor
-============
-This is used to start, stop, and autostart processes used for Seer. It should
-have been installed as part of the pip requirements but if for some reason
-it did not you can run
-
-> sudo pip install supervisor
-
-
-Then you need to copy the config file:
-
-> cp etc/supervisord.conf /etc/
-
-
-Now you should be able to run:
-
-> sudo supervisord
-
-and it should start redis, webdis, and any other external processes SimpleSeer
-may require.  To make sure they are running type:
-
-> pgrep redis
-
-If it is running you should get a process number in return.
-
-To have supervisor automatically start (so it starts all your processes)
-do the following:
-
-> sudo cp etc/supervisord /etc/init.d/
-> sudo chmod +x /etc/init.d/supervisord
-> sudo update-rc.d supervisord defaults
-
 
 *NOTE: Don't install python-pymongo from the repos as it is much too far out of date and requires 2+
 =======

@@ -62,26 +62,30 @@ def jsonify(f):
 
 
 class Web():
-		"""
-		This is the abstract web interface to handle event callbacks for Seer
-		all it does is basically fire up a webserver on port 53317 to allow you
-		to start interacting with Seer via a web interface
-		"""
+    """
+    This is the abstract web interface to handle event callbacks for Seer
+    all it does is basically fire up a webserver on port 53317 to allow you
+    to start interacting with Seer via a web interface
+    """
+    
+    web_interface = None
+    port = 8000 
+    
+    def __init__(self):
+        if app.config['DEBUG'] or DEBUG:
+            from werkzeug import SharedDataMiddleware
+            app.wsgi_app = SharedDataMiddleware(app.wsgi_app, {
+              '/': os.path.join(os.path.dirname(__file__), 'static/public')
+            })
+        self.web_interface = WebInterface()
+        
+        port = 80
+        hostport = Session().web["address"].split(":")
+        if len(hostport) == 2:
+            port = int(hostport[1])
+        app.run(port=port)
 
-		web_interface = None
-		port = 53317
-
-		def __init__(self):
-			if app.config['DEBUG'] or DEBUG:
-					from werkzeug import SharedDataMiddleware
-					app.wsgi_app = SharedDataMiddleware(app.wsgi_app, {
-						'/': os.path.join(os.path.dirname(__file__), 'static/public')
-					})
-			self.web_interface = WebInterface()
-			app.run(port=self.port)
-			
-		
-
+        
 class WebInterface(object):
     """
     This is where all the event call backs and data handling happen for the
