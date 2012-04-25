@@ -88,6 +88,7 @@
       var HomeView, Router;
       HomeView = require('views/home_view');
       Router = require('lib/router');
+      this.homeView = new HomeView();
       this.router = new Router();
       return typeof Object.freeze === "function" ? Object.freeze(this) : void 0;
     }
@@ -137,7 +138,7 @@
     };
 
     Router.prototype.home = function() {
-      return $('body').html(application.homeView.render().el);
+      return $('#main').html(application.homeView.render().el);
     };
 
     return Router;
@@ -205,7 +206,7 @@
   }
 }));
 (this.require.define({
-  "views/home_view": function(exports, require, module) {
+  "views/chart": function(exports, require, module) {
     (function() {
   var HomeView, View, template,
     __hasProp = Object.prototype.hasOwnProperty,
@@ -236,13 +237,65 @@
   }
 }));
 (this.require.define({
-  "views/templates/home": function(exports, require, module) {
-    module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
-  helpers = helpers || Handlebars.helpers;
-  var foundHelper, self=this;
+  "views/frame": function(exports, require, module) {
+    (function() {
+  var HomeView, View, template,
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
+  View = require('./view');
 
-  return "<div id=\"content\">\n  <h1>brunch</h1>\n  <h2>Welcome!</h2>\n  <ul>\n    <li><a href=\"http://brunch.readthedocs.org/\">Documentation</a></li>\n    <li><a href=\"https://github.com/brunch/brunch/issues\">Github Issues</a></li>\n    <li><a href=\"https://github.com/brunch/twitter\">Twitter Example App</a></li>\n    <li><a href=\"https://github.com/brunch/todos\">Todos Example App</a></li>\n  </ul>\n</div>\n";});
+  template = require('./templates/home');
+
+  module.exports = HomeView = (function(_super) {
+
+    __extends(HomeView, _super);
+
+    function HomeView() {
+      HomeView.__super__.constructor.apply(this, arguments);
+    }
+
+    HomeView.prototype.id = 'home-view';
+
+    HomeView.prototype.template = template;
+
+    return HomeView;
+
+  })(View);
+
+}).call(this);
+
+  }
+}));
+(this.require.define({
+  "views/home_view": function(exports, require, module) {
+    (function() {
+  var HomeView, View, template,
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  View = require('./view');
+
+  template = require('./templates/home');
+
+  module.exports = HomeView = (function(_super) {
+
+    __extends(HomeView, _super);
+
+    function HomeView() {
+      HomeView.__super__.constructor.apply(this, arguments);
+    }
+
+    HomeView.prototype.id = 'home-view';
+
+    HomeView.prototype.template = template;
+
+    return HomeView;
+
+  })(View);
+
+}).call(this);
+
   }
 }));
 (this.require.define({

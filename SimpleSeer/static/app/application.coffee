@@ -7,7 +7,7 @@ Application =
     # Ideally, initialized classes should be kept in controllers & mediator.
     # If you're making big webapp, here's more sophisticated skeleton
     # https://github.com/paulmillr/brunch-with-chaplin
-    #@homeView = new HomeView()
+    @homeView = new HomeView()
 
     # Instantiate the router
     @router = new Router()

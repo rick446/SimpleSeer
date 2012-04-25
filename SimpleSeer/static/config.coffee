@@ -30,7 +30,7 @@ exports.config =
         ]
 
     stylesheets:
-      defaultExtension: 'styl'
+      defaultExtension: 'less'
       joinTo: 'stylesheets/app.css'
       order:
         before: ['vendor/styles/bootstrap.css']

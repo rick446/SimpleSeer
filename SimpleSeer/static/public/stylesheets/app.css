@@ -4958,27 +4958,36 @@ a.badge:hover {
 .invisible {
   visibility: hidden;
 }
-* {
-  -webkit-box-sizing: border-box;
-  -moz-box-sizing: border-box;
-  box-sizing: border-box;
+body {
+  padding-top: 60px;
+  /* 60px to make the container go all the way to the bottom of the topbar */
+
 }
-#home-view {
-  width: 480px;
-  margin: 0 auto;
+.navbar-inner {
+  padding-top: 2px;
+  height: 46px;
 }
-h1 {
-  padding-left: 138px;
-  margin-bottom: 0.5em;
-  font-size: 5em;
-  color: #fff;
-  -webkit-border-radius: 5px;
-  -moz-border-radius: 5px;
-  border-radius: 5px;
-  background-color: #91a2c0;
-  background-image: url("http://brunch.io/images/brunch.png");
-  background-repeat: no-repeat;
-  background-position: 2px;
+.navbar .nav > li > a {
+  padding: 12px 12px 14px;
+}
+.brand {
+  margin-top: 2px;
+}
+#content {
+  margin-top: 40px;
+}
+#fishBowl {
+  padding: 20px;
+  background: #eee;
+  border-radius: 8px;
+}
+.graph {
+  height: 150px;
+  background: #eee;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  border: 20px solid #eee;
+  background: #333;
 }
 /*!
  * Bootstrap Responsive v2.0.3
