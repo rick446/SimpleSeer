@@ -311,6 +311,12 @@ class WebInterface(object):
       text = "pong"
       return {"text": text }
     
+    @app.route('/olap', methods=['GET', 'POST'])
+    @jsonify
+    def olap():
+	  data = Query().execute(queryString = 'random')
+	  return Chart().createChart(slice = data)
+
     
     @app.route('/plugin_js', methods=['GET', 'POST'])
     def plugin_js():
@@ -372,3 +378,4 @@ from Measurement import Measurement
 from Result import Result
 from Frame import Frame
 from Watcher import Watcher
+from OLAP import Query, Chart
