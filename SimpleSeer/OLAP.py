@@ -1,9 +1,24 @@
 from base import *
+from Session import Session
 from time import gmtime
+import random
 import numpy as np
 
 
-class OLAP:
+class RandomNums(SimpleDoc):
+	# Not sure if we'll keep this, but gives us a bunch of random 
+	# numbers stored in mongo
+	
+	_randNums = mongoengine.ListField()
+	
+
+	def save(self):
+		self._randNums.append(self._randNums[-1] + (random.random() - .5))
+		self._randNums.pop(0)
+		super(RandomNums, self).save()
+		
+
+class OLAP(SimpleDoc):
 	# General flow designed for:
 	# - One or more Queries to retrieve data from database
 	# - Zero or more DescriptiveStatistics, computed from Queries
@@ -16,27 +31,47 @@ class OLAP:
 	# end and the configuration and data for a chart will pop out 
 	# the other end.
 
-	# Chart Options
-	_chartType = 'line'
-	_chartColor = 'blue'
-
-	#def __init__(self):
-		# Still need to what is passed to this constructor
+	_name = mongoengine.StringField()
+	_queryString = mongoengine.StringField()
+	_queryTimeStamp = mongoengine.DateTimeField()
+	_queryStartTime = mongoengine.DateTimeField()
+	_queryEndTime = mongoengine.DateTimeField()
+	_chartType = mongoengine.StringField()
+	_chartColor = mongoengine.StringField()
+	
 		
+	def createAll(self):
+		# Get the resultset
+		# Currently assume only one query (which will give random data)
+		resultSet = self.createQuery()
 		
-	def createChart(self):
-		# Currently assume just one query, just create default query string
-		q = Query()
-		queryString = q.createQuery('', '', '', gmtime(), gmtime())
-		resultSet = q.execute(queryString)
-		
-		# No cube yet
+		# No descriptives, cube, inferrential yet
 		cubeSlice = resultSet
 		
 		# Create and return the chart
-		c = Chart()
-		return c.createChart(cubeSlice, self._chartType, self._chartColor)
+		# Right now, just set some default values
+		_chartType = 'line'
+		_chartColor = 'blue'
+		return self.createChart(cubeSlice)
 
+
+	def createQuery(self):
+		# Currently assume just one query, just create default query string
+		q = Query()
+		self._queryString = q.createQuery('', '', '', self._queryStartTime, self._queryEndTime)
+		resultSet = q.execute(self._queryString)		
+		return resultSet
+		
+		
+	def createChart(self, slice, chartType = '', chartColor = ''):
+		# Check if need to update the chart spec
+		if chartType: self._chartType = chartType
+		if chartColor: self._chartColor = chartColor
+		
+		# Generate and return the chart
+		c = Chart()
+		chartSpec = c.createChart(slice, self._chartType, self._chartColor)
+		return chartSpec
 
 class Chart:
 	# Takes the data and puts it in a format for charting
@@ -94,11 +129,16 @@ class Query:
 		# VQL.  
 		
 		if (queryString == 'random'):
-			arrSize = 20
-			# Column vector of sequence from 0 to arrSize
-			xvals = np.array(range(arrSize)).reshape(arrSize,1)
-			# Column vector of random numbers
-		 	yvals = np.random.rand(1, arrSize)[0].reshape(arrSize,1)
+			# Get our list of random numbers
+			r = RandomNums.objects.first()
+			r.save()
+			
+			# Column vector of sequence from 0 to the number of random elements
+			xvals = np.array(range(len(r._randNums))).reshape(len(r._randNums),1)
+			
+			# Column vector from the random numbers
+		 	yvals = np.array(r._randNums).reshape(len(r._randNums),1)
+		 	
 			randomValues = np.hstack((xvals, yvals))
 			
 			dataset = { 'startTime': gmtime(),

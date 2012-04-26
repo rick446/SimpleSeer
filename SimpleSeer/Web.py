@@ -311,11 +311,12 @@ class WebInterface(object):
       text = "pong"
       return {"text": text }
     
-    @app.route('/olap', methods=['GET', 'POST'])
+    @app.route('/olap/<olap_name>', methods=['GET', 'POST'])
     @jsonify
-    def olap():
-	  o = OLAP()
-	  return o.createChart()
+    def olap(olap_name):
+	  
+	  o = OLAP.objects.get(_name = olap_name)
+	  return o.createAll()
 	  
     @app.route('/plugin_js', methods=['GET', 'POST'])
     def plugin_js():
