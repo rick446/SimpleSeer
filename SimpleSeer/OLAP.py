@@ -11,6 +11,13 @@ class RandomNums(SimpleDoc):
 	
 	_randNums = mongoengine.ListField()
 	
+	def rerand(self, numRand):
+		# This is to construct a bunch of random numbers if they
+		# aren't already in the DB
+		
+		self._randNums.append(random.random())
+		for i in range(numRand - 1):
+			self._randNums.append(self._randNums[-1] + (random.random() - .5))
 
 	def save(self):
 		self._randNums.append(self._randNums[-1] + (random.random() - .5))
@@ -131,6 +138,12 @@ class Query:
 		if (queryString == 'random'):
 			# Get our list of random numbers
 			r = RandomNums.objects.first()
+			
+			# Check to make sure there are random numbers in the DB
+			if not r:
+				r = RandomNums()
+				r.rerand(20)
+				
 			r.save()
 			
 			# Column vector of sequence from 0 to the number of random elements
