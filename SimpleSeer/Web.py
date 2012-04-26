@@ -314,10 +314,9 @@ class WebInterface(object):
     @app.route('/olap', methods=['GET', 'POST'])
     @jsonify
     def olap():
-	  data = Query().execute(queryString = 'random')
-	  return Chart().createChart(slice = data)
-
-    
+	  o = OLAP()
+	  return o.createChart()
+	  
     @app.route('/plugin_js', methods=['GET', 'POST'])
     def plugin_js():
       params = request.values.to_dict()
@@ -372,10 +371,11 @@ class WebInterface(object):
 
 
 
+
 import SimpleSeer
 from Inspection import Inspection
 from Measurement import Measurement
 from Result import Result
 from Frame import Frame
 from Watcher import Watcher
-from OLAP import Query, Chart
+from OLAP import OLAP, Query, Chart
