@@ -1,4 +1,6 @@
 mongoengine
-flask
+Flask
+Flask-REST
 jsonpickle
 ujson
+FormEncode
