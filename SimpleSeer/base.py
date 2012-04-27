@@ -15,9 +15,9 @@ import atexit
 #~ import cherrypy
 import urllib
 try:
-  import Image as pil
+    import Image as pil
 except(ImportError):
-  import PIL.Image as pil
+    import PIL.Image as pil
 
 import cv
 
@@ -71,12 +71,10 @@ class SimpleDoc(mongoengine.Document):
     
     def __getstate__(self):  
         ret = {}
-        if self._data.has_key(None):
-            ret["id"] = self._data[None]
-        else:
-            ret["id"] = None
+        ret['id'] = self.id
 
         for k in self._data.keys():
+            if k == 'id': continue
             if not k:
                 continue
               
@@ -92,7 +90,11 @@ class SimpleDoc(mongoengine.Document):
             else:
                 ret[k] = v
             
-        return ret 
+        return ret
+
+    def update_from_json(self, d):
+        for k,v in d.items():
+            setattr(self, k, v)
         
 class SimpleEmbeddedDoc(mongoengine.EmbeddedDocument):
     """
