@@ -306,6 +306,45 @@
   }
 }));
 (this.require.define({
+  "views/subview": function(exports, require, module) {
+    (function() {
+  var SubView,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+    __hasProp = Object.prototype.hasOwnProperty,
+    __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
+
+  require('lib/view_helper');
+
+  require('views/view');
+
+  module.exports = SubView = (function(_super) {
+
+    __extends(SubView, _super);
+
+    function SubView() {
+      this.render = __bind(this.render, this);
+      SubView.__super__.constructor.apply(this, arguments);
+    }
+
+    SubView.prototype.options = {
+      parent: null,
+      selector: null
+    };
+
+    SubView.prototype.render = function() {
+      this.setElement(this.options.parent.$(this.options.selector));
+      return this;
+    };
+
+    return SubView;
+
+  })(View);
+
+}).call(this);
+
+  }
+}));
+(this.require.define({
   "views/templates/chart": function(exports, require, module) {
     module.exports = Handlebars.template(function (Handlebars,depth0,helpers,partials,data) {
   helpers = helpers || Handlebars.helpers;
@@ -350,9 +389,21 @@
     __extends(View, _super);
 
     function View() {
+      this.addSubview = __bind(this.addSubview, this);
+      this.renderSubviews = __bind(this.renderSubviews, this);
+      this.afterRender = __bind(this.afterRender, this);
       this.render = __bind(this.render, this);
+      this.getRenderData = __bind(this.getRenderData, this);
+      this.template = __bind(this.template, this);
+      this.initialize = __bind(this.initialize, this);
       View.__super__.constructor.apply(this, arguments);
     }
+
+    View.prototype.subviews = null;
+
+    View.prototype.initialize = function() {
+      return this.subviews = {};
+    };
 
     View.prototype.template = function() {};
 
@@ -360,11 +411,32 @@
 
     View.prototype.render = function() {
       this.$el.html(this.template(this.getRenderData()));
+      this.renderSubviews();
       this.afterRender();
       return this;
     };
 
     View.prototype.afterRender = function() {};
+
+    View.prototype.renderSubviews = function() {
+      var name, subview, _ref, _results;
+      _ref = this.subviews;
+      _results = [];
+      for (name in _ref) {
+        subview = _ref[name];
+        _results.push(subview.render());
+      }
+      return _results;
+    };
+
+    View.prototype.addSubview = function(name, viewClass, selector, options) {
+      options = options || {};
+      _.extend(options, {
+        parent: this,
+        selector: selector
+      });
+      return this.subviews[name] = new viewClass(options);
+    };
 
     return View;
 
