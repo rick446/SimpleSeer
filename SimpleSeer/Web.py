@@ -1,48 +1,16 @@
 from base import *
 from Session import *
 from functools import wraps
-from flask import Flask, render_template, request, make_response, Blueprint
+from flask import Flask, request, make_response
 from flask_rest import RESTResource
-from werkzeug import SharedDataMiddleware
+
+from .api import register
 
 app = Flask(__name__)
-#~ app.debug = True
+# app.debug = True # does not play well with other threads in the server process
 DEBUG = True
 
-restapi = Blueprint("restapi", __name__, url_prefix="")
-from flask import Blueprint
-
-class InspectionHandler(object):
-    def add(self):
-        print "Inspection Add " + str(request.values)
-        return 201, "hi"
-    
-    def update(self, inspection_id):
-        print "Inspection update " + str(request.values)
-        return 200, "hi"
-    
-    def delete(self, inspection_id):
-        print "Inspection delete " + str(request.values)
-        return 200, "hi"
-    
-    def get(self, inspection_id):
-        print "Inspection get " + str(request.values)
-        return 200, "hi"
-      
-    def list(self):
-        print "Inspection get list " + str(request.values)
-        return 200, "hi"
-
-
-inspection_api = RESTResource(
-    name="inspection", # name of the var to inject to the methods
-    route="/inspection",  # will be availble at /api/projects/*
-    app=restapi, # the app which should handle this
-    actions=["list", "add", "update", "delete", "get"], #authorised actions
-    handler=InspectionHandler()) # the handler of the request
-
-
-app.register_blueprint(restapi)
+register(app)
 
 def jsonify(f):
     """
@@ -82,8 +50,9 @@ class Web():
         port = 80
         hostport = Session().web["address"].split(":")
         if len(hostport) == 2:
-            port = int(hostport[1])
-        app.run(port=port)
+            host, port = hostport
+            port = int(port)
+        app.run(host=host, port=port)
 
         
 class WebInterface(object):
@@ -314,7 +283,15 @@ class WebInterface(object):
     @app.route('/olap/<olap_name>', methods=['GET', 'POST'])
     @jsonify
     def olap(olap_name):
-	  o = OLAP.objects.get(name = olap_name)
+	  if (olap_name == 'Random'):
+	    o = OLAP()
+	    o.setupRandomChart()
+	  elif (olap_name == 'RandomMoving'):
+	    o = OLAP()
+	    o.setupRandomMovingChart()
+	  else:
+	    o = OLAP.objects.get(name = olap_name)
+	  
 	  return o.execute()
 	  
     @app.route('/plugin_js', methods=['GET', 'POST'])

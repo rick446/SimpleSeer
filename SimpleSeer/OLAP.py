@@ -1,3 +1,4 @@
+import base
 from base import *
 from Session import Session
 from Inspection import Inspection
@@ -8,7 +9,7 @@ import calendar
 import numpy as np
 
 
-class RandomNums(SimpleDoc):
+class RandomNums(mongoengine.Document, base.SimpleDoc):
 	# Not sure if we'll keep this, but gives us a bunch of random 
 	# numbers stored in mongo
 	
@@ -28,7 +29,7 @@ class RandomNums(SimpleDoc):
 		super(RandomNums, self).save()
 		
 
-class OLAP(SimpleDoc):
+class OLAP(mongoengine.Document, base.SimpleDoc):
 	# General flow designed for:
 	# - One or more Queries to retrieve data from database
 	# - Zero or more DescriptiveStatistics, computed from Queries
@@ -65,20 +66,18 @@ class OLAP(SimpleDoc):
 		return chartSpec
 	
 	def setupRandomChart(self):
-		newRand.olapName = 'Random'
-		newRand._queryInfo = {'object': 'random'}
-		newRand._chartType = 'line'
-		newRand._chartColor = 'green'
-		newRand.save()
+		self.name = 'Random'
+		self.queryInfo = dict( name = 'Random' )
+		self.descInfo = None
+		self.chartInfo = dict ( name='Line', color = 'blue')
 		
-	def installRandomMovingChart(self):
-		newMove = OLAP()
-		newMove.olapName = 'RandomMoving'
-		newMove._queryString = {'object': 'random'}
-		newMove._descriptive = 'moving'
-		newMove._chartType = 'line'
-		newMove._chartColor = 'green'
-		newMove.save()
+		
+	def setupRandomMovingChart(self):
+		self.name = 'RandomMoving'
+		self.queryInfo = dict( name = 'Random' )
+		self.descInfo = dict( formula = 'moving', window = 3)
+		self.chartInfo = dict ( name='Line', color = 'blue')
+		
 		
 
 class Chart:
@@ -138,7 +137,7 @@ class ResultSet:
 		#
 		# Other query handling deferred for another day.
 		
-		if (queryInfo['name'] == 'random'):
+		if (queryInfo['name'] == 'Random'):
 			# Get our list of random numbers
 			r = RandomNums.objects.first()
 			

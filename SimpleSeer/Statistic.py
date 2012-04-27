@@ -2,7 +2,7 @@ from base import *
 from Session import Session
 
 
-class Statistic(SimpleDoc):
+class Statistic(mongoengine.Document, base.SimpleDoc):
     """
     NOTE: this class is not tested code
     s = Statistic( {

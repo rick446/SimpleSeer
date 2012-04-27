@@ -1,4 +1,4 @@
-
+import base
 from base import *
 from Session import Session
 from Measurement import Measurement
@@ -6,7 +6,7 @@ from Inspection import Inspection
 from Frame import Frame
 
 
-class Result(SimpleDoc):
+class Result(mongoengine.Document, base.SimpleDoc):
     """
     """
     #this needs some work yet, should be much simpler

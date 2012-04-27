@@ -1,7 +1,8 @@
+import base
 from base import *
 from Session import Session
 
-class Watcher(SimpleDoc):
+class Watcher(mongoengine.Document, base.SimpleDoc):
     """
     The Watcher reviews results in SimpleSeer, and has two handler patterns:
       - self.conditions holds a list of conditions and parameters and returns a message pass or fail.
