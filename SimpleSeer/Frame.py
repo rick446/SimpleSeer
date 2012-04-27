@@ -83,7 +83,7 @@ class Frame(SimpleDoc):
         for r in results:
             if not r.frame:  
                 r.frame = self.id
-                r.save()  #TODO, check to make sure measurement/inspection are saved
+            r.save()  #TODO, check to make sure measurement/inspection are saved
         
     @classmethod
     def capture(cls):

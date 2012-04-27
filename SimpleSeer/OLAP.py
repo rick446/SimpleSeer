@@ -4,6 +4,7 @@ from Inspection import Inspection
 from Result import Result
 from time import gmtime
 import random
+import calendar
 import numpy as np
 
 
@@ -167,7 +168,7 @@ class ResultSet:
 		if (queryInfo['name'] == 'Motion'):
 			insp = Inspection.objects.get(name='Motion')
 
-			outputVals = [[int(r.capturetime.now().strftime("%s")), r.numeric] for r in Result.objects(inspection = insp.id)]
+			outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric] for r in Result.objects(inspection = insp.id).order_by('capturetime')]
 			
 			dataset = { 'startTime': 'all',
 					    'endTime': 'all',

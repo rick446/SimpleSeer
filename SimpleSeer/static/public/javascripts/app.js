@@ -91,7 +91,6 @@
       ChartView = require('views/chart');
       Router = require('lib/router');
       this.homeView = new HomeView();
-      this.frameView = new FrameView();
       this.chartView = new ChartView();
       this.router = new Router();
       return typeof Object.freeze === "function" ? Object.freeze(this) : void 0;
@@ -142,10 +141,7 @@
     };
 
     Router.prototype.home = function() {
-      $('#main').html(application.homeView.render().el);
-      $('#frame-container').html(application.frameView.render().el);
-      $('#chart-container').append(application.chartView.render().el);
-      return $('#chart-container').append(application.chartView.render().el);
+      return $('#main').html(application.homeView.render().el);
     };
 
     return Router;
@@ -215,11 +211,12 @@
 (this.require.define({
   "views/chart": function(exports, require, module) {
     (function() {
-  var ChartView, View, template,
+  var ChartView, SubView, template,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-  View = require('./view');
+  SubView = require('./subview');
 
   template = require('./templates/chart');
 
@@ -228,6 +225,8 @@
     __extends(ChartView, _super);
 
     function ChartView() {
+      this.render = __bind(this.render, this);
+      this.update = __bind(this.update, this);
       ChartView.__super__.constructor.apply(this, arguments);
     }
 
@@ -235,9 +234,42 @@
 
     ChartView.prototype.template = template;
 
+    ChartView.prototype.update = function() {
+      var _this = this;
+      return $.getJSON("/olap/Motion", function(data) {
+        var d, tz;
+        setTimeout(_this.update, 1000);
+        d = data.data[data.data.length - 1];
+        tz = new Date().getTimezoneOffset() * 60 * 1000;
+        _this.ts.append(d[0] * 1000 + tz, d[1]);
+        console.log(d[0] * 1000 + tz, d[1], new Date().getTime());
+      });
+    };
+
+    ChartView.prototype.render = function() {
+      var smoothie;
+      ChartView.__super__.render.call(this);
+      setTimeout(this.update, 1000);
+      smoothie = new SmoothieChart({
+        grid: {
+          strokeStyle: 'rgb(0, 144, 214)',
+          fillStyle: 'rgb(0, 0, 40)',
+          lineWidth: 1
+        },
+        millisPerPixel: 100,
+        maxValue: 100,
+        minValue: 0
+      });
+      this.ts = new TimeSeries;
+      smoothie.streamTo(this.$("#motion_canvas")[0]);
+      return smoothie.addTimeSeries(this.ts, {
+        strokeStyle: 'rgb(0, 255, 0)'
+      });
+    };
+
     return ChartView;
 
-  })(View);
+  })(SubView);
 
 }).call(this);
 
@@ -246,11 +278,12 @@
 (this.require.define({
   "views/frame": function(exports, require, module) {
     (function() {
-  var FrameView, View, template,
+  var FrameView, SubView, template,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
-  View = require('./view');
+  SubView = require('./subview');
 
   template = require('./templates/frame');
 
@@ -259,6 +292,8 @@
     __extends(FrameView, _super);
 
     function FrameView() {
+      this.render = __bind(this.render, this);
+      this.update = __bind(this.update, this);
       FrameView.__super__.constructor.apply(this, arguments);
     }
 
@@ -266,9 +301,21 @@
 
     FrameView.prototype.template = template;
 
+    FrameView.prototype.update = function() {
+      var time;
+      time = new Date().getTime().toString();
+      setTimeout(this.update, 1000);
+      return this.$el.find("img").attr("src", "/frame?" + time);
+    };
+
+    FrameView.prototype.render = function() {
+      setTimeout(this.update, 1000);
+      return FrameView.__super__.render.call(this);
+    };
+
     return FrameView;
 
-  })(View);
+  })(SubView);
 
 }).call(this);
 
@@ -277,11 +324,16 @@
 (this.require.define({
   "views/home_view": function(exports, require, module) {
     (function() {
-  var HomeView, View, template,
+  var ChartView, FrameView, HomeView, View, template,
+    __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   View = require('./view');
+
+  FrameView = require('./frame');
+
+  ChartView = require('./chart');
 
   template = require('./templates/home');
 
@@ -290,8 +342,15 @@
     __extends(HomeView, _super);
 
     function HomeView() {
+      this.initialize = __bind(this.initialize, this);
       HomeView.__super__.constructor.apply(this, arguments);
     }
+
+    HomeView.prototype.initialize = function() {
+      HomeView.__super__.initialize.call(this);
+      this.addSubview("frame-view", FrameView, '#frame-container');
+      return this.addSubview("chart-view", ChartView, '#chart-container');
+    };
 
     HomeView.prototype.id = 'home-view';
 
@@ -308,14 +367,14 @@
 (this.require.define({
   "views/subview": function(exports, require, module) {
     (function() {
-  var SubView,
+  var SubView, View,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
 
   require('lib/view_helper');
 
-  require('views/view');
+  View = require('./view');
 
   module.exports = SubView = (function(_super) {
 
@@ -333,6 +392,7 @@
 
     SubView.prototype.render = function() {
       this.setElement(this.options.parent.$(this.options.selector));
+      SubView.__super__.render.apply(this, arguments);
       return this;
     };
 
@@ -351,7 +411,7 @@
   var foundHelper, self=this;
 
 
-  return "<h2>Motion</h2>\n<div id=\"graph_motion\" class=\"graph\"></div>";});
+  return "<h2>Motion</h2>\n<div id=\"graph_motion\" class=\"graph\">\n  <canvas id=\"motion_canvas\"></canvas>\n</div>\n";});
   }
 }));
 (this.require.define({
@@ -402,6 +462,7 @@
     View.prototype.subviews = null;
 
     View.prototype.initialize = function() {
+      View.__super__.initialize.call(this);
       return this.subviews = {};
     };
 

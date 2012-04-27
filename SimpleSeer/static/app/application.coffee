@@ -10,7 +10,6 @@ Application =
     # If you're making big webapp, here's more sophisticated skeleton
     # https://github.com/paulmillr/brunch-with-chaplin
     @homeView = new HomeView()
-    @frameView = new FrameView()
     @chartView = new ChartView()
 
     # Instantiate the router

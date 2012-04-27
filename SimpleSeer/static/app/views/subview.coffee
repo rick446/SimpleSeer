@@ -1,5 +1,5 @@
 require 'lib/view_helper'
-require 'views/view'
+View = require './view'
 
 module.exports = class SubView extends View
   options:
@@ -8,5 +8,5 @@ module.exports = class SubView extends View
 
   render: () =>
     @setElement @options.parent.$ @options.selector
-    # Do other render-fu
+    super
     @

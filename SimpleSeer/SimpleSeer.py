@@ -78,7 +78,11 @@ class SimpleSeer(threading.Thread):
         Frame.capture()
         #~ Inspection.inspect()
         #self.update()
+        if self.config.auto_start:
+            self.start()
         self.web_interface = Web()
+
+
 
 
     #i don't really like this too much -- it should really update on
@@ -164,11 +168,7 @@ class SimpleSeer(threading.Thread):
             img = i
             frame = Frame(capturetime = datetime.now(), 
                 camera = self.cameras[-1])
-            frame.image = img
-            
-            if self.config.record_all:
-                frame.save()
-            
+            frame.image = img            
              
             while len(self.lastframes) > self.config.max_frames:
                 self.lastframes.pop(0)
@@ -206,10 +206,6 @@ class SimpleSeer(threading.Thread):
             frame = Frame(capturetime = datetime.now(), 
                 camera= self.config.cameras[count]['name'])
             frame.image = img
-            
-            if self.config.record_all:
-                frame.save()
-            
             currentframes.append(frame)
             
             while len(self.lastframes) > self.config.max_frames:
@@ -244,7 +240,7 @@ class SimpleSeer(threading.Thread):
                 for m in inspection.measurements:
                     frame.results += m.execute(frame, results)
                     
-            for watcher in list(Watcher.objects):
+            for watcher in self.watchers:
                 watcher.check(frame.results)
                     
         return 
@@ -300,11 +296,13 @@ class SimpleSeer(threading.Thread):
                 self.capture()
                 self.inspect()
                 self.check()
-#                self.update()
-                
-                #self.display.send(frames)
+                if self.config.record_all:
+                    for frame in self.lastframes[-1]:
+                        frame.save()
+
                 
                 timeleft = Session().poll_interval - (time.time() - timer_start)
+
                 if timeleft > 0:
                     time.sleep(timeleft)
                 else:

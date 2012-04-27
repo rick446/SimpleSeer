@@ -5,6 +5,7 @@ module.exports = class View extends Backbone.View
   subviews: null
 
   initialize: =>
+    super()
     @subviews = {}
 
   template: =>

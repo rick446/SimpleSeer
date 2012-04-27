@@ -16,6 +16,7 @@ from Result import Result
 from Frame import Frame
 
 if __name__ == '__main__':
-    SimpleSeer()
+    SS = SimpleSeer()
+
     
 
