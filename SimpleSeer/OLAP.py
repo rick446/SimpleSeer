@@ -39,7 +39,7 @@ class OLAP(SimpleDoc):
 	# the other end.
 
 	olapName = mongoengine.StringField()
-	_queryString = mongoengine.StringField()
+	_queryInfo = mongoengine.DictField()
 	_descriptive = mongoengine.StringField()
 	_queryTimeStamp = mongoengine.DateTimeField()
 	_queryStartTime = mongoengine.DateTimeField()
@@ -57,20 +57,15 @@ class OLAP(SimpleDoc):
 			d = DescriptiveStatistic()
 			resultSet = d.execute(resultSet)
 		
-		# No cube, inferrential yet
-		cubeSlice = resultSet
-		
 		# Create and return the chart
-		# Right now, just set some default values
 		_chartType = 'line'
 		_chartColor = 'blue'
-		return self.createChart(cubeSlice)
+		return self.createChart(resultSet)
 
 
 	def createQuery(self):
-		# Currently assume just one query, just create default query string
+		# Currently only two queries, so they are hard coded.  Later this will do general query handling
 		q = Query()
-		self._queryString = q.createQuery('', '', '', self._queryStartTime, self._queryEndTime)
 		resultSet = q.execute(self._queryString)		
 		return resultSet
 		
@@ -85,10 +80,9 @@ class OLAP(SimpleDoc):
 		chartSpec = c.createChart(slice, self._chartType, self._chartColor)
 		return chartSpec
 		
-	def installRandomOLAP(self):
-		newRand = OLAP()
+	def setupRandomOLAP(self):
 		newRand.olapName = 'Random'
-		newRand._queryString = 'random'
+		newRand._queryInfo = {'object': 'random'}
 		newRand._chartType = 'line'
 		newRand._chartColor = 'green'
 		newRand.save()
@@ -96,7 +90,7 @@ class OLAP(SimpleDoc):
 	def installRandomMovingOLAP(self):
 		newMove = OLAP()
 		newMove.olapName = 'RandomMoving'
-		newMove._queryString = 'random'
+		newMove._queryString = {'object': 'random'
 		newMove._descriptive = 'moving'
 		newMove._chartType = 'line'
 		newMove._chartColor = 'green'
@@ -118,11 +112,6 @@ class Chart:
 		
 		return chartData
 					  
-#class Cube:
-	# Will eventually be used to hold the data from various queries,
-	# merging them together, in preparation for eventual slicing and
-	# dicing, data anlysis, and other charting
-
 	
 class DescriptiveStatistic:
 	# Will be used for computing basic descriptives on query results
@@ -145,36 +134,24 @@ class DescriptiveStatistic:
 			resultSet['data'] = np.hstack((xvals, yvals.reshape(len(xvals),1)))
 			return resultSet
 
-#class InferentialStatistic:
-	# Will do post- processing of the data, to examine how one variable 
-	# is related to another	
-
 class Query:	
 	# Class to retrieve data from the database and return as
 	# Numpy matrix
 	
 	
-	def createQuery(self, objects, filters, groupBy, startTime, endTime):
-		# Take user input from web forms and convert into query
-		# for MongoDB
-		#
-		# TODO: Still to be implemented, pending development of VQL
-		# For now, just return random for a random query string
-		
-		return 'random'
-	
-	
-	def execute(self, queryString):
+	def execute(self, queryInfo):
 		# Execute the querystring, returning the results of the
 		# query as a numpy vector
 		#
 		# Entering a 'random' querystring will return a matrix with
 		# sequential x values and random y values between 0 and 1
 		#
-		# TODO: Still to be fully implemented, pending development of
-		# VQL.  
+		# Entering 'inspection' will do a predefined query to return
+		# inspection objects
+		#
+		# Other query handling deferred for another day.
 		
-		if (queryString == 'random'):
+		if (queryInfo['object'] == 'random'):
 			# Get our list of random numbers
 			r = RandomNums.objects.first()
 			
@@ -201,5 +178,20 @@ class Query:
 					   
 			return dataset
 
-	
-	
+		if (queryInfo['object'] == 'inspection'):
+			# y values will come from query
+			yvals = [r.numeric for r in Result.objects(inspection = queryInfo['id'],
+													   capturetime > queryInfo['startTime'],
+													   capturetime < queryInfo['endTime']) ]
+			yvals = np.array(yvals).reshape(len(yvals),1)
+											   
+			xvals = np.array(range(len(yvals))).reshape(len(yvals))
+			outputVals = np.hstack((xvals, yvals))
+			
+			dataset = { 'startTime': queryInfo['startTime'],
+					    'endTime': queryInfo['endTime'],
+					    'timestamp': gmtime(),
+					    'labels': {'dim1': 'X-axis', 'dim2': 'Y-axis'},
+					    'data': outputValues}
+					   
+			return dataset
