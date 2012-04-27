@@ -56,7 +56,7 @@ class SimpleSeer(threading.Thread):
         #Session().redis.set("cameras", self.config.cameras)
         #tell redis what cameras we have
         
-        #self.reloadInspections() #initialize inspections so they get saved to redis
+        self.reloadInspections() #initialize inspections so they get saved to redis
          
         self.loadPlugins()
         self.lastframes = []
