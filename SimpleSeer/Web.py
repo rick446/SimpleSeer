@@ -314,20 +314,8 @@ class WebInterface(object):
     @app.route('/olap/<olap_name>', methods=['GET', 'POST'])
     @jsonify
     def olap(olap_name):
-	  ################
-	  # This is an ugly hack to install the default queries.  Talk to Nate about how to handle
-	  ################
-	  if not OLAP.objects.first():
-		o = OLAP()
-		o.installRandomOLAP()
-		o.installRandomMovingOLAP()
-		o.save()
-	  ################
-	  # End ugly hack
-	  ################
-	  
-	  o = OLAP.objects.get(olapName = olap_name)
-	  return o.createAll()
+	  o = OLAP.objects.get(name = olap_name)
+	  return o.execute()
 	  
     @app.route('/plugin_js', methods=['GET', 'POST'])
     def plugin_js():
@@ -390,4 +378,4 @@ from Measurement import Measurement
 from Result import Result
 from Frame import Frame
 from Watcher import Watcher
-from OLAP import OLAP, Query, Chart
+from OLAP import OLAP
