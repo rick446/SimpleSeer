@@ -1,24 +1,19 @@
-<h2>Motion Test With Random Update</h2>
+<h2>Motion</h2>
 <div id="graph_motion" class="graph"></div>
+<iframe src="/olap/Random" width="530" height="80"></iframe>
 <script type="text/javascript">
 var data = [];
-var arrayMax = 40;
-var limit = arrayMax + 1;
-for (var i = 0; i < arrayMax; i++) {
-  data.push(Math.floor(Math.random()*limit));
-}
-
 
 function rotatedata() {
-	var el = data.shift();
-	data.push(el);
-	var plot2 = $.jqplot ('graph_motion', [data]);
+$.getJSON('/olap/Random', function(data) {
+	var plot1 = $.jqplot ('graph_motion', [data.data]);
+        plot1.replot();
+});
 	setTimeout("rotatedata()",1000);
 }
 
 $(document).ready(function() {
-	var plot1 = $.jqplot ('graph_motion', [data]);
-	setTimeout("rotatedata()",1000);
+	rotatedata(); 
 
 });
 </script>
