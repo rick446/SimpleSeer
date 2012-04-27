@@ -167,7 +167,7 @@ class ResultSet:
 		if (queryInfo['name'] == 'Motion'):
 			insp = Inspection.objects.get(name='Motion')
 
-			outputVals = [[r.capturetime, r.numeric] for r in Result.objects(inspection = insp.id)]
+			outputVals = [[int(r.capturetime.now().strftime("%s")), r.numeric] for r in Result.objects(inspection = insp.id)]
 			
 			dataset = { 'startTime': 'all',
 					    'endTime': 'all',
