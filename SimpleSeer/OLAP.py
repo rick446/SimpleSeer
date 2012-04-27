@@ -38,8 +38,9 @@ class OLAP(SimpleDoc):
 	# end and the configuration and data for a chart will pop out 
 	# the other end.
 
-	_name = mongoengine.StringField()
+	olapName = mongoengine.StringField()
 	_queryString = mongoengine.StringField()
+	_descriptive = mongoengine.StringField()
 	_queryTimeStamp = mongoengine.DateTimeField()
 	_queryStartTime = mongoengine.DateTimeField()
 	_queryEndTime = mongoengine.DateTimeField()
@@ -52,7 +53,11 @@ class OLAP(SimpleDoc):
 		# Currently assume only one query (which will give random data)
 		resultSet = self.createQuery()
 		
-		# No descriptives, cube, inferrential yet
+		if (self._descriptive):
+			d = DescriptiveStatistic()
+			resultSet = d.execute(resultSet)
+		
+		# No cube, inferrential yet
 		cubeSlice = resultSet
 		
 		# Create and return the chart
@@ -79,6 +84,24 @@ class OLAP(SimpleDoc):
 		c = Chart()
 		chartSpec = c.createChart(slice, self._chartType, self._chartColor)
 		return chartSpec
+		
+	def installRandomOLAP(self):
+		newRand = OLAP()
+		newRand.olapName = 'Random'
+		newRand._queryString = 'random'
+		newRand._chartType = 'line'
+		newRand._chartColor = 'green'
+		newRand.save()
+		
+	def installRandomMovingOLAP(self):
+		newMove = OLAP()
+		newMove.olapName = 'RandomMoving'
+		newMove._queryString = 'random'
+		newMove._descriptive = 'moving'
+		newMove._chartType = 'line'
+		newMove._chartColor = 'green'
+		newMove.save()
+		
 
 class Chart:
 	# Takes the data and puts it in a format for charting
@@ -101,10 +124,26 @@ class Chart:
 	# dicing, data anlysis, and other charting
 
 	
-#class DescriptiveStatistic:
+class DescriptiveStatistic:
 	# Will be used for computing basic descriptives on query results
 	# (e.g., sums, counts, means, moving averages)
+
+	# TODO: This is just a quick hack to make it work.  Future: make
+	# more plugin-able and configurable
 	
+	def execute(self, resultSet, statisticName = 'moving'):
+		if statisticName == 'moving':
+			window = 5 # moving average over last 5 entries
+			
+			# assume I want to do the averge on the second dimension
+			xvals, yvals = np.hsplit(resultSet['data'], 2)
+			weights = np.repeat(1.0, window) / window
+			yvals = np.convolve(yvals.flatten(), weights)[window-1:-(window-1)]
+			print yvals
+			xvals = xvals[window-1:]
+			
+			resultSet['data'] = np.hstack((xvals, yvals.reshape(len(xvals),1)))
+			return resultSet
 
 #class InferentialStatistic:
 	# Will do post- processing of the data, to examine how one variable 
@@ -139,7 +178,7 @@ class Query:
 			# Get our list of random numbers
 			r = RandomNums.objects.first()
 			
-			# Check to make sure there are random numbers in the DB
+			# Hack to make sure there are random numbers in the DB
 			if not r:
 				r = RandomNums()
 				r.rerand(20)
