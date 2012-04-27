@@ -314,7 +314,15 @@ class WebInterface(object):
     @app.route('/olap/<olap_name>', methods=['GET', 'POST'])
     @jsonify
     def olap(olap_name):
-	  o = OLAP.objects.get(name = olap_name)
+	  if (olap_name == 'Random'):
+	    o = OLAP()
+	    o.setupRandomChart()
+	  elif (olap_name == 'RandomMoving'):
+	    o = OLAP()
+	    o.setupRandomMovingChart()
+	  else:
+	    o = OLAP.objects.get(name = olap_name)
+	  
 	  return o.execute()
 	  
     @app.route('/plugin_js', methods=['GET', 'POST'])
