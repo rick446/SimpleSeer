@@ -1,41 +1,48 @@
-from pprint import pprint
 import bson
 import formencode as fe
-from flask import request
-from flask import Blueprint
-from flask_rest import RESTResource, SERIALIZERS
+import flask
+import flask_rest
 from formencode import validators as fev
 from formencode import schema as fes
+from werkzeug import exceptions
 
 from .base import jsonencode
 from . import validators as V
 
 # SERIALIZERS expects and 'encode' property in its encoders
 jsonencode.encode = jsonencode
-SERIALIZERS['application/json'] = jsonencode
+flask_rest.SERIALIZERS['application/json'] = jsonencode
 
 def register(app):
     import Inspection
 
-    bp = Blueprint("api", __name__, url_prefix="/api")
+    bp = flask.Blueprint("api", __name__, url_prefix="/api")
+
+    @bp.errorhandler(400)
+    @bp.errorhandler(404)
+    def errorhandler(error):
+        result = getattr(error, 'description', {})
+        if not isinstance(result, dict):
+            result = dict(__error__=result)
+        return flask.Response(
+            jsonencode(result),
+            status=error.code,
+            mimetype='application/json')
+            
+        return error.description, error.code
 
     handlers = [
         ModelHandler(Inspection.Inspection, InspectionSchema,
                      'inspection', '/inspections') ]
 
     for h in handlers:
-        RESTResource(app=bp, name=h.name, route=h.route,
-                     actions=["list", "add", "update", "delete", "get"],
-                     handler=h)
-
-    # RESTResource(
-    #     app=bp, # the app which should handle this
-    #     name="inspection", # name of the var to inject to the methods
-    #     route="/inspections",  # will be availble at /api/inspections/*
-    #     actions=["list", "add", "update", "delete", "get"], #authorised actions
-    #     handler=ModelHandler(Inspection)) # the handler of the request
+        flask_rest.RESTResource(
+            app=bp, name=h.name, route=h.route,
+            actions=["list", "add", "update", "delete", "get"],
+            handler=h)
 
     app.register_blueprint(bp)
+
 
 class InspectionSchema(fes.Schema):
     _id = V.ObjectId(if_empty=bson.ObjectId, if_missing=None)
@@ -56,52 +63,44 @@ class ModelHandler(object):
         self.name = name
         self.route = route
 
-    def add(self):
+    def _get_object(self, id):
         try:
-            values = self.schema.to_python(request.json, None)
+            id = bson.ObjectId(id)
+        except bson.errors.InvalidId:
+            raise exceptions.NotFound('Invalid ObjectId')
+        objs = self._cls.objects(id=id)
+        if not objs:
+            raise exceptions.NotFound('Object not found')
+        return objs[0]
+
+    def _get_body(self, body):
+        try:
+            values = self.schema.to_python(body, None)
         except fe.Invalid, inv:
-            return 400, inv.unpack_errors()
-        pprint(values)
+            raise exceptions.BadRequest(inv.unpack_errors())
+        return values
+
+    def add(self):
+        values = self._get_body(flask.request.json)
         obj = self._cls(**values)
         obj.save()
         return 201, obj
 
     def update(self, inspection_id):
-        try:
-            id = bson.ObjectId(inspection_id)
-            values = self.schema.to_python(request.json, None)
-        except fe.Invalid, inv:
-            return 400, inv.unpack_errors()
-        objs = self._cls.objects(id=id)
-        if not objs:
-            return 404, {'error': 'Object not found'}
-        obj = objs[0]
+        obj = self._get_object(inspection_id)
+        values = self._get_body(flask.request.json)
         obj.update_from_json(values)
         obj.save()
         return 200, obj
 
     def delete(self, inspection_id):
-        try:
-            id = bson.ObjectId(inspection_id)
-        except fe.Invalid, inv:
-            return 400, inv.unpack_errors()
-        objs = self._cls.objects(id=id)
-        if not objs:
-            return 404, {'error': 'Object not found'}
-        obj = objs[0]
+        obj = self._get_object(inspection_id)
         d = obj.__getstate__()
         obj.delete()
         return 200, d
 
     def get(self, inspection_id):
-        try:
-            id = bson.ObjectId(inspection_id)
-        except fe.Invalid, inv:
-            return 400, inv.unpack_errors()
-        objs = self._cls.objects(id=id)
-        if not objs:
-            return 404, {'error': 'Object not found'}
-        obj = objs[0]
+        obj = self._get_object(inspection_id)
         return 200, obj
 
     def list(self):
