@@ -26,7 +26,8 @@ exports.config =
           'vendor/scripts/jquery-1.7.2.js',
           'vendor/scripts/underscore-1.3.1.js',
           'vendor/scripts/backbone-0.9.2.js',
-          'vendor/scripts/bootstrap.js'
+          'vendor/scripts/bootstrap.js',
+          'vendor/scripts/jquery.jqplot.min.js'
         ]
 
     stylesheets:
@@ -34,7 +35,7 @@ exports.config =
       joinTo: 'stylesheets/app.css'
       order:
         before: ['vendor/styles/bootstrap.css']
-        after: ['vendor/styles/bootstrap-responsive.css']
+        after: [ 'vendor/styles/bootstrap-responsive.css', 'vendor/styles/jquery.jqplot.min.css' ]
 
     templates:
       defaultExtension: 'hbs'
