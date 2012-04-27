@@ -1,3 +1,4 @@
+import base
 from base import *
 from Session import Session
 from FrameFeature import FrameFeature
@@ -13,7 +14,7 @@ from FrameFeature import FrameFeature
     >>> f.save()
     >>> 
 """
-class Frame(SimpleDoc):
+class Frame(mongoengine.Document, base.SimpleDoc):
     capturetime = mongoengine.DateTimeField()
     camera = mongoengine.StringField()
     features = mongoengine.ListField(mongoengine.EmbeddedDocumentField(FrameFeature))

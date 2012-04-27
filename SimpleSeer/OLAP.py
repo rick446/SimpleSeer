@@ -1,3 +1,4 @@
+import base
 from base import *
 from Session import Session
 from Inspection import Inspection
@@ -7,7 +8,7 @@ import random
 import numpy as np
 
 
-class RandomNums(SimpleDoc):
+class RandomNums(mongoengine.Document, base.SimpleDoc):
 	# Not sure if we'll keep this, but gives us a bunch of random 
 	# numbers stored in mongo
 	
@@ -27,7 +28,7 @@ class RandomNums(SimpleDoc):
 		super(RandomNums, self).save()
 		
 
-class OLAP(SimpleDoc):
+class OLAP(mongoengine.Document, base.SimpleDoc):
 	# General flow designed for:
 	# - One or more Queries to retrieve data from database
 	# - Zero or more DescriptiveStatistics, computed from Queries

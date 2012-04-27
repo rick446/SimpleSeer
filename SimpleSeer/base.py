@@ -24,7 +24,10 @@ import cv
 try:
     import pyfirmata
 except:
-    print "Warning: Pyfirmata is not installed on this system, it is not required but recommended"
+    warnings.warn(
+        'Pyfirmata is not installed on this system. '
+        'It is not required but recommended', Warning)
+
 #import redis
 import mongoengine
 import bson
@@ -62,10 +65,7 @@ def jsonencode(obj):
 def jsondecode(data):
     return json.loads(data)
         
-class SimpleDoc(mongoengine.Document):
-    """
-    All Seer objects should extend SimpleDoc, which wraps mongoengine.Document
-    """
+class SimpleDoc(object):
     _jsonignore = [None]
     
     
@@ -96,7 +96,7 @@ class SimpleDoc(mongoengine.Document):
         for k,v in d.items():
             setattr(self, k, v)
         
-class SimpleEmbeddedDoc(mongoengine.EmbeddedDocument):
+class SimpleEmbeddedDoc(object):
     """
     Any embedded docs (for object trees) should extend SimpleEmbeddedDoc
     """

@@ -1,3 +1,4 @@
+import base
 from base import *
 from Session import Session
 from Inspection import Inspection
@@ -20,7 +21,7 @@ from Inspection import Inspection
 
 
 """
-class Measurement(SimpleDoc): 
+class Measurement(mongoengine.Document, base.SimpleDoc):
     name = mongoengine.StringField()
     #VALIDATION NEEDED: this should be a unique name
     label = mongoengine.StringField()

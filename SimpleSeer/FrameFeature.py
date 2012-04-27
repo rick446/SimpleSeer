@@ -1,8 +1,9 @@
+import base
 from base import *
 from Session import *
 
 
-class FrameFeature(SimpleEmbeddedDoc):
+class FrameFeature(mongoengine.EmbeddedDocument, base.SimpleEmbeddedDoc):
    
     featuretype = mongoengine.StringField()
     featuredata = mongoengine.DictField()  #this holds any type-specific feature data

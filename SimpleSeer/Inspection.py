@@ -1,8 +1,9 @@
+import base
 from base import *
 from Session import *
 from FrameFeature import FrameFeature
 
-class Inspection(SimpleDoc):
+class Inspection(mongoengine.Document, base.SimpleDoc):
     """
     
     An Inspection determines what part of an image to look at from a given camera
