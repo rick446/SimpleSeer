@@ -211,7 +211,7 @@
 (this.require.define({
   "views/chart": function(exports, require, module) {
     (function() {
-  var ChartView, SubView, template,
+  var ChartView, SubView, template, view_helper,
     __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
     __hasProp = Object.prototype.hasOwnProperty,
     __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor; child.__super__ = parent.prototype; return child; };
@@ -219,6 +219,8 @@
   SubView = require('./subview');
 
   template = require('./templates/chart');
+
+  view_helper = require('lib/view_helper');
 
   module.exports = ChartView = (function(_super) {
 
@@ -234,14 +236,21 @@
 
     ChartView.prototype.template = template;
 
+    ChartView.prototype.lastupdate = 0;
+
     ChartView.prototype.update = function() {
-      var _this = this;
-      return $.getJSON("/olap/Motion", function(data) {
-        var d, tz;
+      var url,
+        _this = this;
+      url = "/olap/Motion";
+      if (this.lastupdate) url = url + "/since/" + this.lastupdate.toString();
+      return $.getJSON(url, function(data) {
+        var d, _i, _len;
         setTimeout(_this.update, 1000);
-        d = data.data[data.data.length - 1];
-        tz = new Date().getTimezoneOffset() * 60 * 1000;
-        _this.ts.append(d[0] * 1000 + tz, d[1]);
+        _this.lastupdate = data.data[data.data.length - 1][0];
+        for (_i = 0, _len = data.length; _i < _len; _i++) {
+          d = data[_i];
+          _this.ts.append(d[0] * 1000 + tz, d[1]);
+        }
       });
     };
 

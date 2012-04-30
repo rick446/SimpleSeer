@@ -280,20 +280,21 @@ class WebInterface(object):
       text = "pong"
       return {"text": text }
     
-    @app.route('/olap/<olap_name>', methods=['GET', 'POST'])
+    @app.route('/olap/<olap_name>', methods=['GET'])
     @jsonify
     def olap(olap_name):
-	  if (olap_name == 'Random'):
-	    o = OLAP()
-	    o.setupRandomChart()
-	  elif (olap_name == 'RandomMoving'):
-	    o = OLAP()
-	    o.setupRandomMovingChart()
-	  else:
-	    o = OLAP.objects.get(name = olap_name)
-	  
-	  return o.execute()
-	  
+        o = OLAP.objects.get(name = olap_name)
+        
+        return o.execute()
+    
+    @app.route('/olap/<olap_name>/since/<timestamp>', methods=['GET'])
+    @jsonify
+    def olap_since(olap_name, timestamp):
+        o = OLAP.objects.get(name = olap_name)
+        
+        return o.execute(sincetime = int(timestamp))
+    
+    
     @app.route('/plugin_js', methods=['GET', 'POST'])
     def plugin_js():
       params = request.values.to_dict()

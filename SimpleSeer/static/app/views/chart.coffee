@@ -1,17 +1,26 @@
 SubView = require './subview'
 template = require './templates/chart'
+view_helper = require 'lib/view_helper'
 
 module.exports = class ChartView extends SubView
   id: 'chart-view'
   template: template
-  
+  lastupdate: 0
 
   update: =>
-    $.getJSON "/olap/Motion", (data) =>
+  
+    url = "/olap/Motion"
+    
+    if @lastupdate
+      url = url + "/since/" + @lastupdate.toString()
+      
+    
+    $.getJSON url, (data) =>
       setTimeout @update, 1000
-      d = data.data[data.data.length-1]
-      tz = new Date().getTimezoneOffset() * 60 * 1000
-      @ts.append d[0] * 1000 + tz, d[1]
+      @lastupdate = data.data[data.data.length-1][0]
+      
+      for d in data
+        @ts.append d[0] * 1000 + tz, d[1]
       return
 
   render: =>

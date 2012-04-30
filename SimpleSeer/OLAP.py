@@ -6,28 +6,8 @@ from Result import Result
 from time import gmtime
 import random
 import calendar
+from datetime import datetime as dt
 import numpy as np
-
-
-class RandomNums(mongoengine.Document, base.SimpleDoc):
-	# Not sure if we'll keep this, but gives us a bunch of random 
-	# numbers stored in mongo
-	
-	_randNums = mongoengine.ListField()
-	
-	def rerand(self, numRand):
-		# This is to construct a bunch of random numbers if they
-		# aren't already in the DB
-		
-		self._randNums.append(random.random())
-		for i in range(numRand - 1):
-			self._randNums.append(self._randNums[-1] + (random.random() - .5))
-
-	def save(self):
-		self._randNums.append(self._randNums[-1] + (random.random() - .5))
-		self._randNums.pop(0)
-		super(RandomNums, self).save()
-		
 
 class OLAP(mongoengine.Document, base.SimpleDoc):
 	# General flow designed for:
@@ -51,11 +31,16 @@ class OLAP(mongoengine.Document, base.SimpleDoc):
 	def __repr__(self):
 		return "<OLAP %s>" % self.name
 		
-	def execute(self):
+	def execute(self, sincetime = 0):
 		# Get the resultset
 		# Currently assume only one query (which will give random data)
 		r = ResultSet()
-		resultSet = r.execute(self.queryInfo)
+		
+		queryinfo = self.queryInfo.copy()
+		if sincetime > 0:
+			queryinfo['since'] = sincetime
+		
+		resultSet = r.execute(queryinfo)
 		
 		# Check if any descriptive processing
 		if (self.descInfo):
@@ -66,22 +51,8 @@ class OLAP(mongoengine.Document, base.SimpleDoc):
 		c = Chart()
 		chartSpec = c.createChart(resultSet, self.chartInfo)
 		return chartSpec
-	
-	def setupRandomChart(self):
-		self.name = 'Random'
-		self.queryInfo = dict( name = 'Random' )
-		self.descInfo = None
-		self.chartInfo = dict ( name='Line', color = 'blue')
-		
-		
-	def setupRandomMovingChart(self):
-		self.name = 'RandomMoving'
-		self.queryInfo = dict( name = 'Random' )
-		self.descInfo = dict( formula = 'moving', window = 3)
-		self.chartInfo = dict ( name='Line', color = 'blue')
-		
-		
 
+		
 class Chart:
 	# Takes the data and puts it in a format for charting
 	
@@ -138,43 +109,24 @@ class ResultSet:
 		# inspection objects
 		#
 		# Other query handling deferred for another day.
+
+
+		insp = Inspection.objects.get(name=queryInfo['name'])
+
+		query = dict(inspection = insp.id)
+
+		if queryInfo.has_key('since'):
+			query['capturetime__gt']= dt.utcfromtimestamp(queryInfo['since'])
+
+		rs = Result.objects(**query).order_by('capturetime')
+
+		outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric] for r in rs]
+		#our timestamps are already in UTC, so we need to use a localtime conversion
 		
-		if (queryInfo['name'] == 'Random'):
-			# Get our list of random numbers
-			r = RandomNums.objects.first()
-			
-			# Hack to make sure there are random numbers in the DB
-			if not r:
-				r = RandomNums()
-				r.rerand(20)
-				
-			r.save()
-			
-			# Column vector of sequence from 0 to the number of random elements
-			xvals = np.array(range(len(r._randNums))).reshape(len(r._randNums),1)
-			
-			# Column vector from the random numbers
-		 	yvals = np.array(r._randNums).reshape(len(r._randNums),1)
-		 	
-			randomValues = np.hstack((xvals, yvals)).tolist()
-			
-			dataset = { 'startTime': gmtime(),
-					    'endTime': gmtime(),
-					    'timestamp': gmtime(),
-					    'labels': {'dim1': 'X-axis', 'dim2': 'Y-axis'},
-					    'data': randomValues}
-					   
-			return dataset
-
-		if (queryInfo['name'] == 'Motion'):
-			insp = Inspection.objects.get(name='Motion')
-
-			outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric] for r in Result.objects(inspection = insp.id).order_by('capturetime')]
-			
-			dataset = { 'startTime': 'all',
-					    'endTime': 'all',
-					    'timestamp': gmtime(),
-					    'labels': {'dim1': 'Time', 'dim2': 'Motion'},
-					    'data': outputVals}
-					   
-			return dataset
+		dataset = { 'startTime': 'all',
+						'endTime': 'all',
+						'timestamp': gmtime(),
+						'labels': {'dim1': 'Time', 'dim2': 'Motion'},
+						'data': outputVals}
+		
+		return dataset

@@ -203,7 +203,7 @@ class SimpleSeer(threading.Thread):
             img = c.getImage()
             if self.config.cameras[0].has_key('crop'):
                 img = img.crop(*self.config.cameras[0]['crop'])
-            frame = Frame(capturetime = datetime.now(), 
+            frame = Frame(capturetime = datetime.utcnow(), 
                 camera= self.config.cameras[count]['name'])
             frame.image = img
             currentframes.append(frame)
