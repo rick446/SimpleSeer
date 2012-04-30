@@ -33,6 +33,7 @@ from Inspection import Inspection
 from Measurement import Measurement
 from Watcher import Watcher
 from Result import Result
+from OLAP import OLAP
 #~ from Web import Web
 #from Web2 import Web2
 from Frame import Frame

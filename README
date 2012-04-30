@@ -32,6 +32,8 @@ that reflect your Camera, database, and etc.
 
 Note: You can optionally install pyfirmata to interface with an arduino
 
+TODO: update these to include a virtualenv
+
 Mac OS X (Using homebrew)
 ========
 
@@ -42,13 +44,15 @@ Mac OS X (Using homebrew)
 > curl http://npmjs.org/install.sh | sh
 > npm install -g brunch
 > npm install -g brunch-less
-
+> python setup.py develop
 
 
 Ubuntu Linux 12.04 (Using apt-get)
 =======
 > apt-get install mongodb-server python-dev
 > pip install -r pip.requirements
+> python setup.py develop
+
 
 *NOTE: Don't install python-pymongo from the repos as it is much too far out of date and requires 2+
 =======

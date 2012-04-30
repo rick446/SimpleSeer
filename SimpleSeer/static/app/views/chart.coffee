@@ -12,7 +12,6 @@ module.exports = class ChartView extends SubView
       d = data.data[data.data.length-1]
       tz = new Date().getTimezoneOffset() * 60 * 1000
       @ts.append d[0] * 1000 + tz, d[1]
-      console.log d[0] * 1000 + tz, d[1], new Date().getTime()
       return
 
   render: =>

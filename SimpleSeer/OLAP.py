@@ -48,6 +48,8 @@ class OLAP(mongoengine.Document, base.SimpleDoc):
 	chartInfo = mongoengine.DictField()
 	timeStamp = mongoengine.DateTimeField()
 	
+	def __repr__(self):
+		return "<OLAP %s>" % self.name
 		
 	def execute(self):
 		# Get the resultset
