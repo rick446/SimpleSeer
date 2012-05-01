@@ -244,34 +244,42 @@
       url = "/olap/Motion";
       if (this.lastupdate) url = url + "/since/" + this.lastupdate.toString();
       return $.getJSON(url, function(data) {
-        var d, _i, _len;
+        var d, delay, tz, _i, _len, _ref;
+        _this.lastupdate = data.data[data.data.length - 1][0];
+        if (!_this.smoothie.seriesSet.length) {
+          _this.ts = new TimeSeries;
+          delay = new Date().getTime() - _this.lastupdate * 1000;
+          delay = delay * 1.1;
+          _this.smoothie.streamTo(_this.$("#motion_canvas")[0], delay);
+          _this.smoothie.addTimeSeries(_this.ts, {
+            strokeStyle: 'rgb(0, 255, 0)'
+          });
+        }
         setTimeout(_this.update, 1000);
         _this.lastupdate = data.data[data.data.length - 1][0];
-        for (_i = 0, _len = data.length; _i < _len; _i++) {
-          d = data[_i];
-          _this.ts.append(d[0] * 1000 + tz, d[1]);
+        tz = new Date().getTimezoneOffset() * 60 * 1000;
+        _ref = data.data;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          d = _ref[_i];
+          _this.ts.append(d[0] * 1000, d[1]);
         }
       });
     };
 
     ChartView.prototype.render = function() {
-      var smoothie;
       ChartView.__super__.render.call(this);
-      setTimeout(this.update, 1000);
-      smoothie = new SmoothieChart({
+      setTimeout(this.update, 10);
+      this.$("#motion_canvas")[0].width = 630;
+      return this.smoothie = new SmoothieChart({
         grid: {
           strokeStyle: 'rgb(0, 144, 214)',
           fillStyle: 'rgb(0, 0, 40)',
-          lineWidth: 1
+          lineWidth: 1,
+          millisPerLine: 10000
         },
-        millisPerPixel: 100,
+        millisPerPixel: 200,
         maxValue: 100,
         minValue: 0
-      });
-      this.ts = new TimeSeries;
-      smoothie.streamTo(this.$("#motion_canvas")[0]);
-      return smoothie.addTimeSeries(this.ts, {
-        strokeStyle: 'rgb(0, 255, 0)'
       });
     };
 
