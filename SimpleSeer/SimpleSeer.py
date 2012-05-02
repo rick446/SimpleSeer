@@ -2,9 +2,7 @@ from base import *
 from Session import Session
 from Inspection import Inspection
 from Watcher import Watcher
-from Web import *
-
-
+from Web import WebServer, make_app
 
 class SimpleSeer(threading.Thread):
     """
@@ -80,8 +78,8 @@ class SimpleSeer(threading.Thread):
         #self.update()
         if self.config.auto_start:
             self.start()
-        self.web_interface = Web()
-
+        self.web = WebServer(make_app())
+        self.web.start_gevent_server()
 
 
 
