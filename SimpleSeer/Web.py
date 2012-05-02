@@ -2,9 +2,7 @@ import os
 import json
 
 from flask import Flask, request
-from socketio import socketio_manage
 from socketio.server import SocketIOServer
-from socketio.namespace import BaseNamespace
 
 from . import crud
 from . import models as M
@@ -48,7 +46,9 @@ class WebServer(object):
         if environ['PATH_INFO'].startswith('/socket.io'):
             socketio_manage(
                 environ,
-                {'/chat': ChatNamespace })
+                {'/chat': ChatNamespace,
+                 '/rt': RealtimeNamespace },
+                )
             return 'out'
         return self.app(environ, start_response)
         
@@ -58,13 +58,7 @@ class WebServer(object):
     def run_gevent_server(self):
         server = SocketIOServer(
             (self.host, self.port),
-            self, namespace='socket.io',
+            self.app, namespace='socket.io',
             policy_server=False)
         server.serve_forever()
         
-class ChatNamespace(BaseNamespace):
-
-    def on_chat(self, msg):
-        self.emit('chat', json.dumps(dict(
-                    u='user',
-                    m='got your message %s'% msg)))

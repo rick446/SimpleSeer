@@ -4,6 +4,8 @@ import json
 from cStringIO import StringIO
 
 import bson
+from socketio import socketio_manage
+from socketio.namespace import BaseNamespace
 from flask import request, make_response
 
 from . import models as M
@@ -24,6 +26,18 @@ class route(object):
     def register_routes(cls, app):
         for func, path, kwargs in cls.routes:
             app.route(path, **kwargs)(func)
+
+class RealtimeNamespace(BaseNamespace):
+
+    def on_rconnect(self, name):
+        print 'got rconnect', name
+        
+@route('/socket.io/<path:path>')
+def sio(path):
+    socketio_manage(
+        request.environ,
+        {'/rt': RealtimeNamespace },
+        request._get_current_object())
 
 @route('/')
 def index():
