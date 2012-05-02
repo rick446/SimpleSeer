@@ -15,6 +15,7 @@ flask_rest.SERIALIZERS['application/json'] = jsonencode
 
 def register(app):
     import Inspection
+    import Frame
 
     bp = flask.Blueprint("api", __name__, url_prefix="/api")
 
@@ -33,7 +34,8 @@ def register(app):
 
     handlers = [
         ModelHandler(Inspection.Inspection, InspectionSchema,
-                     'inspection', '/inspections') ]
+                     'inspection', '/inspections'),
+       ]
 
     for h in handlers:
         flask_rest.RESTResource(
@@ -45,7 +47,6 @@ def register(app):
 
 
 class InspectionSchema(fes.Schema):
-    _id = V.ObjectId(if_empty=bson.ObjectId, if_missing=None)
     parent = V.ObjectId(if_empty=None, if_missing=None)
     name = fev.UnicodeString(not_empty=True)
     method = fev.UnicodeString(not_empty=True)
