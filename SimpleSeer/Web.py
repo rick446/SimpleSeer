@@ -1,7 +1,10 @@
 import os
+import json
 
-from flask import Flask
+from flask import Flask, request
+from socketio import socketio_manage
 from socketio.server import SocketIOServer
+from socketio.namespace import BaseNamespace
 
 from . import crud
 from . import models as M
@@ -43,12 +46,11 @@ class WebServer(object):
 
     def __call__(self, environ, start_response):
         if environ['PATH_INFO'].startswith('/socket.io'):
-            socket = environ['socketio']
-            return self.handle_socket_io(socket)
+            socketio_manage(
+                environ,
+                {'/chat': ChatNamespace })
+            return 'out'
         return self.app(environ, start_response)
-
-    def handle_socket_io(self, socket):
-        pass
         
     def run_flask_server(self):
         self.app.run(host=self.host, port=self.port)
@@ -56,6 +58,13 @@ class WebServer(object):
     def run_gevent_server(self):
         server = SocketIOServer(
             (self.host, self.port),
-            self, resource='socket.io')
+            self, namespace='socket.io',
+            policy_server=False)
         server.serve_forever()
         
+class ChatNamespace(BaseNamespace):
+
+    def on_chat(self, msg):
+        self.emit('chat', json.dumps(dict(
+                    u='user',
+                    m='got your message %s'% msg)))

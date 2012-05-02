@@ -143,11 +143,14 @@ class SimpleSeer(object):
         self.plugins = {}
         plugins = self.plugins
 
-        
-        for plugin in [ name for name in os.listdir(self.pluginpath) if os.path.isdir(os.path.join(self.pluginpath, name)) ]:
+        plugin_dirs = [
+            name for name in os.listdir(self.pluginpath)
+            if os.path.isdir(os.path.join(self.pluginpath, name)) ]
+        for plugin in plugin_dirs:
             try:
                 plugins[plugin] = __import__("SimpleSeer.plugins."+plugin)
             except ImportError as e:
+                import pdb; pdb.set_trace()
                 warnings.warn("Plugin " + plugin + " failed " + str(e))
                 
         return self.plugins

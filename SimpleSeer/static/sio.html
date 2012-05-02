@@ -1,0 +1,49 @@
+<h1>Socket.io Chatterbox</h1>
+<div id="status" style="border:1px solid black;">Disconnected</div>
+<form>
+  <input id="input" style="width: 35em;">
+</form>
+<div id="data" style="border:1px solid black;"></div>
+<script type="text/javascript" 
+        src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="./socket.io.js"></script>
+<script type="text/javascript" 
+        src="http://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.1.2/coffee-script.min.js"></script>
+
+<script type="text/coffeescript">
+#<![CDATA[
+$ ->
+  main_socket = io.connect()
+
+  socket = io.connect '/chat'
+
+  $status = $ '#status'
+  $form = $ 'form'
+  $input = $ '#input'
+  $data = $ '#data'
+
+  # Info messages
+  main_socket.on 'connect', ->
+    console.log 'connect'
+    $status.html "<b>Connected: #{socket.socket.transport.name}</b>"
+  main_socket.on 'error', ->
+    console.log 'connect'
+    $status.html "<b>Error</b>"
+  main_socket.on 'disconnect', ->
+    console.log 'connect'
+    $status.html "<b>Closed</b>"
+  socket.on 'chat', (msg) ->
+    msg = $.parseJSON msg
+    u = msg.u or 'SYSTEM'
+    $data.prepend $("<em>#{u}</em>: #{msg.m}<br/>")
+
+  $form.bind 'submit', (ev) ->
+    ev.preventDefault()
+    ev.stopPropagation()
+    socket.emit 'chat', $input.val()
+    $input.val ''
+
+  console.log 'All is ready'
+#]]>
+</script>
+  

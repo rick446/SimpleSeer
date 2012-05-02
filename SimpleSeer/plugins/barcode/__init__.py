@@ -32,4 +32,4 @@ def barcode(self, image):
   return feats
 
     
-Inspection.barcode = barcode
+M.Inspection.barcode = barcode
