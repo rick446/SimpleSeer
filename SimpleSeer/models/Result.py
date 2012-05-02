@@ -1,12 +1,8 @@
-import base
-from base import *
-from Session import Session
-from Measurement import Measurement
-from Inspection import Inspection
-from Frame import Frame
+import mongoengine
 
+from .base import SimpleDoc
 
-class Result(mongoengine.Document, base.SimpleDoc):
+class Result(mongoengine.Document, SimpleDoc):
     """
     """
     #this needs some work yet, should be much simpler

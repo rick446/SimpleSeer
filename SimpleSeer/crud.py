@@ -7,6 +7,7 @@ from formencode import schema as fes
 from werkzeug import exceptions
 
 from .base import jsonencode
+from . import models as M
 from . import validators as V
 
 # SERIALIZERS expects and 'encode' property in its encoders
@@ -14,9 +15,6 @@ jsonencode.encode = jsonencode
 flask_rest.SERIALIZERS['application/json'] = jsonencode
 
 def register(app):
-    import Inspection
-    import Frame
-
     bp = flask.Blueprint("api", __name__, url_prefix="/api")
 
     @bp.errorhandler(400)
@@ -33,7 +31,7 @@ def register(app):
         return error.description, error.code
 
     handlers = [
-        ModelHandler(Inspection.Inspection, InspectionSchema,
+        ModelHandler(M.Inspection, InspectionSchema,
                      'inspection', '/inspections'),
        ]
 

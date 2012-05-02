@@ -1,27 +1,27 @@
-import base
-from base import *
-from Session import Session
-from Inspection import Inspection
+import mongoengine
 
-"""
-    The measurement object takes any regions of interest in an Inspection and
-    returns a Result object with the appropriate measurement.
-    
-    The handler 
-    
-    Note that measurements are each linked to a single Inspection object.
+from .base import SimpleDoc
+from .result import Result
 
-    Measurement(name =  "blob_largest_area",
-        label = "Blob Area",
-        method = "area",
-        parameters = dict(),
-        featurecriteria = dict( index = -1 ),
-        units =  "px",
-        inspection = insp.id)
+class Measurement(mongoengine.Document, SimpleDoc):
+    """
+        The measurement object takes any regions of interest in an Inspection and
+        returns a Result object with the appropriate measurement.
+
+        The handler 
+
+        Note that measurements are each linked to a single Inspection object.
+
+        Measurement(name =  "blob_largest_area",
+            label = "Blob Area",
+            method = "area",
+            parameters = dict(),
+            featurecriteria = dict( index = -1 ),
+            units =  "px",
+            inspection = insp.id)
 
 
-"""
-class Measurement(mongoengine.Document, base.SimpleDoc):
+    """
     name = mongoengine.StringField()
     #VALIDATION NEEDED: this should be a unique name
     label = mongoengine.StringField()
@@ -87,7 +87,7 @@ class Measurement(mongoengine.Document, base.SimpleDoc):
             except TypeError:
                 try:
                     return float(val[0] + val[1] + val[2]) / 3
-                except Error:
+                except:
                     return None
 
         return [ Result(
@@ -102,4 +102,3 @@ class Measurement(mongoengine.Document, base.SimpleDoc):
     def __repr__(self):
         return "<Measurement: " + str(self.inspection) + " " + self.method + " " + str(self.featurecriteria) + ">"
             
-from Result import Result

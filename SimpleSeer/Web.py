@@ -3,17 +3,16 @@ import os
 from flask import Flask
 from socketio.server import SocketIOServer
 
-from . import api
-from .Session import Session
+from . import crud
+from . import models as M
 
 DEBUG = True
 
 def make_app():
     from . import views
     app = Flask(__name__)
-    for func, path, kwargs in views.routes:
-        app.route(path, **kwargs)(func)
-    api.register(app)
+    views.route.register_routes(app)
+    crud.register(app)
     return app
 
 class WebServer(object):
@@ -34,7 +33,7 @@ class WebServer(object):
               '/': os.path.join(os.path.dirname(__file__), 'static/public')
             })
         
-        hostport = Session().web["address"].split(":")
+        hostport = M.Session().web["address"].split(":")
         if len(hostport) == 2:
             host, port = hostport
             port = int(port)
@@ -54,8 +53,9 @@ class WebServer(object):
     def run_flask_server(self):
         self.app.run(host=self.host, port=self.port)
 
-    def start_gevent_server(self):
-        return SocketIOServer(
+    def run_gevent_server(self):
+        server = SocketIOServer(
             (self.host, self.port),
             self, resource='socket.io')
+        server.serve_forever()
         

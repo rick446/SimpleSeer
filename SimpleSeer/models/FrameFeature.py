@@ -1,9 +1,14 @@
-import base
-from base import *
-from Session import *
+import pickle
+from copy import deepcopy
 
+import cv
+import mongoengine
 
-class FrameFeature(mongoengine.EmbeddedDocument, base.SimpleEmbeddedDoc):
+import SimpleCV
+
+from .base import SimpleEmbeddedDoc
+
+class FrameFeature(mongoengine.EmbeddedDocument, SimpleEmbeddedDoc):
    
     featuretype = mongoengine.StringField()
     featuredata = mongoengine.DictField()  #this holds any type-specific feature data
@@ -129,7 +134,3 @@ class FrameFeature(mongoengine.EmbeddedDocument, base.SimpleEmbeddedDoc):
             p1x,p1y = p2x,p2y
 
         return inside  
-        
-#we can't make a recursive object since the class isn't yet declared    
-
-    

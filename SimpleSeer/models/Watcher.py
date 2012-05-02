@@ -1,8 +1,9 @@
-import base
-from base import *
-from Session import Session
+import mongoengine
 
-class Watcher(mongoengine.Document, base.SimpleDoc):
+from .base import SimpleDoc
+from SimpleSeer import util 
+
+class Watcher(mongoengine.Document, SimpleDoc):
     """
     The Watcher reviews results in SimpleSeer, and has two handler patterns:
       - self.conditions holds a list of conditions and parameters and returns a message pass or fail.
@@ -30,8 +31,7 @@ class Watcher(mongoengine.Document, base.SimpleDoc):
     name = mongoengine.StringField()
     conditions = mongoengine.ListField(mongoengine.DictField())
     handlers = mongoengine.ListField(mongoengine.StringField())#this might be a relation 
-    
-    
+
     def __repr__(self):
         return "<Watcher object '%s' conditions: %d, handlers: %s>" % (self.name, len(self.conditions), ", ".join(self.handlers))
     
@@ -45,7 +45,7 @@ class Watcher(mongoengine.Document, base.SimpleDoc):
         outcomes = []
         for condition in self.conditions:
             method_ref = getattr(self, condition["method"])
-            condition = utf8convert(condition)
+            condition = util.utf8convert(condition)
             outcomes.append(method_ref(results, **condition))
                 
         for handler in self.handlers:
@@ -81,24 +81,22 @@ class Watcher(mongoengine.Document, base.SimpleDoc):
     def handler_passed(self, messages):
         for m in messages:
             if m and not m["passed"]:
-                SimpleSeer.SimpleSeer().passed(False)
+                util.get_seer().passed(False)
                 return
             
-        SimpleSeer.SimpleSeer().passed(True)
+        util.get_seer().passed(True)
         #TODO, add a flag to record passes
     
     #warn if any fail
     def handler_warning(self, messages):
         for m in messages:
             if m and not m["passed"]:
-                SimpleSeer.SimpleSeer().addWarning(m)
+                util.get_seer().addWarning(m)
                 #TODO, add a flag to record warnings
     
     #alert if any pass            
     def handler_fail(self, messages):
         for m in messages:
             if m and not m["passed"]:
-                SimpleSeer.SimpleSeer().addFailure(m)
+                util.get_seer().addFailure(m)
                 #TODO, add a flag to record failures
-    
-import SimpleSeer

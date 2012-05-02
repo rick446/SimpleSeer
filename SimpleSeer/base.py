@@ -36,18 +36,6 @@ import logging
 
 
 
-#cribbed from
-#http://stackoverflow.com/questions/1254454/fastest-way-to-convert-a-dicts-keys-values-from-unicode-to-str
-def utf8convert(data):
-    if isinstance(data, unicode):
-        return str(data)
-    elif isinstance(data, collections.Mapping):
-        return dict(map(utf8convert, data.iteritems()))
-    elif isinstance(data, collections.Iterable):
-        return type(data)(map(utf8convert, data))
-    else:
-        return data
-
 
 try:
     import ujson
@@ -65,43 +53,7 @@ def jsonencode(obj):
 def jsondecode(data):
     return json.loads(data)
         
-class SimpleDoc(object):
-    _jsonignore = [None]
-    
-    
-    def __getstate__(self):  
-        ret = {}
-        ret['id'] = self.id
 
-        for k in self._data.keys():
-            if k == 'id': continue
-            if not k:
-                continue
-              
-            v = self._data[k]
-            if k[0] == "_" or k in self._jsonignore:
-                continue
-            if (hasattr(v, "__json__")):
-                ret[k] = v.__json__()
-            elif isinstance(v, SimpleCV.Image):
-                ret[k] = v.applyLayers().getBitmap().tostring().encode("base64")
-            elif isinstance(v, datetime):
-                ret[k] = int(time.mktime(v.timetuple()) + v.microsecond/1e6)
-            else:
-                ret[k] = v
-            
-        return ret
-
-    def update_from_json(self, d):
-        for k,v in d.items():
-            setattr(self, k, v)
-        
-class SimpleEmbeddedDoc(object):
-    """
-    Any embedded docs (for object trees) should extend SimpleEmbeddedDoc
-    """
-    _jsonignore = [None]
-    
     
 #note these handlers are not ok for "picklable" stuff
 class BSONObjectIDHandler(jsonpickle.handlers.BaseHandler):

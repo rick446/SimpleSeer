@@ -1,9 +1,14 @@
-import base
-from base import *
-from Session import *
-from FrameFeature import FrameFeature
+from copy import deepcopy
 
-class Inspection(mongoengine.Document, base.SimpleDoc):
+import mongoengine
+
+from SimpleSeer import util 
+
+from .base import SimpleDoc
+from .Measurement import Measurement
+from .FrameFeature import FrameFeature
+
+class Inspection(mongoengine.Document, SimpleDoc):
     """
     
     An Inspection determines what part of an image to look at from a given camera
@@ -112,17 +117,19 @@ class Inspection(mongoengine.Document, base.SimpleDoc):
         
     @classmethod    
     def inspect(self):
+        import SimpleSeer
         return SimpleSeer.SimpleSeer().inspect()
 
     #overload the save function so that all inspections are reloaded if one is updated
     def save(self):
+        import SimpleSeer
         ret = super(Inspection, self).save()
         SimpleSeer.SimpleSeer().reloadInspections()
         return ret
     
     
     def face(self, image):
-        params = utf8convert(self.parameters)
+        params = util.utf8convert(self.parameters)
         
         faces = image.findHaarFeatures("/usr/local/share/opencv/haarcascades/haarcascade_frontalface_alt.xml")
         
@@ -136,9 +143,3 @@ class Inspection(mongoengine.Document, base.SimpleDoc):
             features.append(ff)
         
         return features
-        
-    
-
-
-from Measurement import Measurement
-import SimpleSeer
