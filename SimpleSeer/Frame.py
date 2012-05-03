@@ -66,9 +66,9 @@ class Frame(mongoengine.Document, base.SimpleDoc):
         if self._imgcache != '':
             s = StringIO()
             img = self._imgcache
-            img.getPIL().save(s, "png", quality = 100)
+            img.getPIL().save(s, "jpeg", quality = 100)
             self.imgfile.delete()
-            self.imgfile.put(s.getvalue(), content_type = "image/png")
+            self.imgfile.put(s.getvalue(), content_type = "image/jpg")
           
             if len(img._mLayers):
                 if len(img._mLayers) > 1:

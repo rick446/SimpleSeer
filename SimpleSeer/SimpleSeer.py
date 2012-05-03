@@ -246,7 +246,14 @@ class SimpleSeer(threading.Thread):
         return 
 
     def frame(self, index = 0):
-        return self.lastframes[-1][index]
+        if len(self.lastframes):    
+            return self.lastframes[-1][index]
+        else:
+            frames = Frame.objects.order_by("-capturetime").skip(index)
+            if len(frames):
+                return frames[0]
+            else:
+                return None
         
     def check(self):
         for watcher in self.watchers:
@@ -298,7 +305,7 @@ class SimpleSeer(threading.Thread):
                 self.check()
                 if self.config.record_all:
                     for frame in self.lastframes[-1]:
-                        frame.save()
+                        frame.save(safe = False)
 
                 
                 timeleft = Session().poll_interval - (time.time() - timer_start)
