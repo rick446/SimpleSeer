@@ -1,40 +1,7 @@
-from base import *
+import json
+import logging
 
-#code to convert unicode to string
-# http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
-def _decode_list(lst):
-    newlist = []
-    for i in lst:
-        if isinstance(i, unicode):
-            i = i.encode('utf-8')
-        elif isinstance(i, list):
-            i = _decode_list(i)
-        newlist.append(i)
-    return newlist
-
-def _decode_dict(dct):
-    newdict = {}
-    for k, v in dct.iteritems():
-        if isinstance(k, unicode):
-            k = k.encode('utf-8')
-        if isinstance(v, unicode):
-             v = v.encode('utf-8')
-        elif isinstance(v, list):
-            v = _decode_list(v)
-        newdict[k] = v
-    return newdict   
-#
-#class SmartJSONRedis(redis.Redis):
-#    """
-#    This is a corny wrapper for Redis() that just auto-JSON ifys our seer data
-#    """
-#    
-#    def set(self, key, val):
-#        return super(SmartJSONRedis, self).set(key,jsonencode(val))
-#        
-#    def setraw(self, key, val):
-#        return super(SmartJSONRedis, self).set(key,val)
-#            
+import mongoengine
 
 class Session():
     """
@@ -81,3 +48,28 @@ class Session():
     
     def __repr__(self):
         return "SimpleSeer Session Object"
+
+#code to convert unicode to string
+# http://stackoverflow.com/questions/956867/how-to-get-string-objects-instead-unicode-ones-from-json-in-python
+def _decode_list(lst):
+    newlist = []
+    for i in lst:
+        if isinstance(i, unicode):
+            i = i.encode('utf-8')
+        elif isinstance(i, list):
+            i = _decode_list(i)
+        newlist.append(i)
+    return newlist
+
+def _decode_dict(dct):
+    newdict = {}
+    for k, v in dct.iteritems():
+        if isinstance(k, unicode):
+            k = k.encode('utf-8')
+        if isinstance(v, unicode):
+             v = v.encode('utf-8')
+        elif isinstance(v, list):
+            v = _decode_list(v)
+        newdict[k] = v
+    return newdict   
+    

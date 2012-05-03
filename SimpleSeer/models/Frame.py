@@ -1,20 +1,25 @@
-import base
-from base import *
-from Session import Session
-from FrameFeature import FrameFeature
+from cStringIO import StringIO
 
-"""
-    Frame Objects are a mongo-friendly wrapper for SimpleCV image objects,
-    containing additional properties for the originating camera and time of capture.
-    
-    Note that Frame.image property must be used as a getter-setter.
+import mongoengine
 
-    >>> f = SimpleSeer.capture()[0]  #get a frame from the SimpleSeer module
-    >>> f.image.dl().line((0,0),(100,100))
-    >>> f.save()
-    >>> 
-"""
-class Frame(mongoengine.Document, base.SimpleDoc):
+from SimpleSeer.base import Image, pil, pygame
+from SimpleSeer import util
+
+from .base import SimpleDoc
+from .FrameFeature import FrameFeature
+
+class Frame(mongoengine.Document, SimpleDoc):
+    """
+        Frame Objects are a mongo-friendly wrapper for SimpleCV image objects,
+        containing additional properties for the originating camera and time of capture.
+
+        Note that Frame.image property must be used as a getter-setter.
+
+        >>> f = SimpleSeer.capture()[0]  #get a frame from the SimpleSeer module
+        >>> f.image.dl().line((0,0),(100,100))
+        >>> f.save()
+        >>> 
+    """
     capturetime = mongoengine.DateTimeField()
     camera = mongoengine.StringField()
     features = mongoengine.ListField(mongoengine.EmbeddedDocumentField(FrameFeature))
@@ -96,7 +101,4 @@ class Frame(mongoengine.Document, base.SimpleDoc):
         
     @classmethod
     def capture(cls):
-        return SimpleSeer.SimpleSeer().capture()
-       
-       
-import SimpleSeer
+        return util.get_seer().capture()

@@ -45,5 +45,5 @@ def motion(self, image):
   ff.setFeature(Motion(image, np.mean(diff.meanColor())))
   return [ff]
 
-Inspection.motion = motion
+M.Inspection.motion = motion
 import SimpleSeer

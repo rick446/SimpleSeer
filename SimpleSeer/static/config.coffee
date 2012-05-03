@@ -28,7 +28,8 @@ exports.config =
           'vendor/scripts/backbone-0.9.2.js',
           'vendor/scripts/bootstrap.js',
           'vendor/scripts/jquery.jqplot.min.js',
-          'vendor/scripts/smoothie.js'
+          'vendor/scripts/smoothie.js',
+          'vendor/scripts/socket.io.js'
         ]
 
     stylesheets:

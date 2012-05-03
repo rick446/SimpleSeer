@@ -1,6 +1,5 @@
 import threading
 from base import *
-from Session import Session
 from SimpleCV import *
 import platform
 
@@ -28,13 +27,5 @@ class ShellThread(threading.Thread):
         scvShell = setup_shell()
         sys.exit(run_shell(self, scvShell))
 
-from SimpleSeer import SimpleSeer
-from Inspection import Inspection
-from Measurement import Measurement
-from Watcher import Watcher
-from Result import Result
-from OLAP import OLAP
-#~ from Web import Web
-#from Web2 import Web2
-from Frame import Frame
-from FrameFeature import FrameFeature
+from .SimpleSeer import SimpleSeer
+from .models import *

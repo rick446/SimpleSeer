@@ -1,8 +1,12 @@
-from base import *
-from Session import Session
+import time
 
+import mongoengine
+import numpy as np
 
-class Statistic(mongoengine.Document, base.SimpleDoc):
+from .base import SimpleDoc
+from .Measurement import Measurement
+
+class Statistic(mongoengine.Document, SimpleDoc):
     """
     NOTE: this class is not tested code
     s = Statistic( {
@@ -51,7 +55,7 @@ class Statistic(mongoengine.Document, base.SimpleDoc):
             
             count = 0
             for label in measurement.result_labels:
-                self.data[m._id][label] = column_function(data_table[:,count])
+                self.data[m_id][label] = column_function(data_table[:,count])
                 count = count + 1
                 
     def save(self):
@@ -62,6 +66,7 @@ class Statistic(mongoengine.Document, base.SimpleDoc):
 
     #originally from the watcher function
     def threshold_greater(self, threshold, measurement_name, label, samples = 1):
+        from SimpleSeer import SimpleSeer
         resultset = SimpleSeer().results[-samples:]
         measurement = Measurement.m.get( name = measurement_name )
         if not measurement:
@@ -73,10 +78,9 @@ class Statistic(mongoengine.Document, base.SimpleDoc):
         
         result_set = [ r for r in list if r.measurement_id == measurement._id ]
         
-        stat = Statistic( {
-            name: "Average of " + measurement_name,
-            capturetime: time.time()
-        })
+        stat = Statistic(dict(
+                name="Average of " + measurement_name,
+                capturetime=time.time()))
         #MOVE THE ABOVE STUFF TO A DECORATOR
         
         stat.calculate(result_set, 'mean', np.mean)

@@ -1,12 +1,19 @@
-from base import *
-from Session import Session
-from Inspection import Inspection
-from Watcher import Watcher
-from Web import *
+import os
+import time
+import logging
+import warnings
+from datetime import datetime
 
+import gevent
 
+from . import models as M
+from .base import SimpleLog, log
 
-class SimpleSeer(threading.Thread):
+from SimpleCV import Camera, VirtualCamera
+from SimpleCV import ImageSet
+from Web import WebServer, make_app
+
+class SimpleSeer(object):
     """
     The SimpleSeer object 
     
@@ -33,7 +40,7 @@ class SimpleSeer(threading.Thread):
             return  #successive calls to SimpleSeer simply return the borg'd object
 
         #read config file
-        self.config = Session()
+        self.config = M.Session()
 
         self.cameras = []
         
@@ -75,14 +82,13 @@ class SimpleSeer(threading.Thread):
             self.shell_thread = Shell.ShellThread()
             self.shell_thread.start()
 
-        Frame.capture()
+        M.Frame.capture()
         #~ Inspection.inspect()
         #self.update()
         if self.config.auto_start:
             self.start()
-        self.web_interface = Web()
-
-
+        self.web = WebServer(make_app())
+        self.web.run_gevent_server()
 
 
     #i don't really like this too much -- it should really update on
@@ -122,11 +128,11 @@ class SimpleSeer(threading.Thread):
         
 
     def reloadInspections(self):
-        i = list(Inspection.objects)
+        i = list(M.Inspection.objects)
 #        Session().redis.set("inspections", i)
-        m = list(Measurement.objects)
+        m = list(M.Measurement.objects)
 #        Session().redis.set("measurements", m)
-        w = list(Watcher.objects)
+        w = list(M.Watcher.objects)
 #        Session().redis.set("watchers", w) #TODO Fix encoding
         self.inspections = i
         self.measurements = m
@@ -137,11 +143,14 @@ class SimpleSeer(threading.Thread):
         self.plugins = {}
         plugins = self.plugins
 
-        
-        for plugin in [ name for name in os.listdir(self.pluginpath) if os.path.isdir(os.path.join(self.pluginpath, name)) ]:
+        plugin_dirs = [
+            name for name in os.listdir(self.pluginpath)
+            if os.path.isdir(os.path.join(self.pluginpath, name)) ]
+        for plugin in plugin_dirs:
             try:
                 plugins[plugin] = __import__("SimpleSeer.plugins."+plugin)
             except ImportError as e:
+                import pdb; pdb.set_trace()
                 warnings.warn("Plugin " + plugin + " failed " + str(e))
                 
         return self.plugins
@@ -159,14 +168,14 @@ class SimpleSeer(threading.Thread):
           log("ImageSet cannot load: empty")
           return
 
-        if not isinstance(imgs, SimpleCV.ImageSet):
+        if not isinstance(imgs, ImageSet):
           log("ImageSet needs SimpleCV imageSet passed")
           return
 
         
         for i in imgs:
             img = i
-            frame = Frame(capturetime = datetime.now(), 
+            frame = M.Frame(capturetime = datetime.now(), 
                 camera = self.cameras[-1])
             frame.image = img            
              
@@ -190,7 +199,7 @@ class SimpleSeer(threading.Thread):
 
       '''
 
-      imgs = SimpleCV.ImageSet(path)
+      imgs = ImageSet(path)
       self.loadImageSet(imgs)
       
         
@@ -203,7 +212,7 @@ class SimpleSeer(threading.Thread):
             img = c.getImage()
             if self.config.cameras[0].has_key('crop'):
                 img = img.crop(*self.config.cameras[0]['crop'])
-            frame = Frame(capturetime = datetime.utcnow(), 
+            frame = M.Frame(capturetime = datetime.utcnow(), 
                 camera= self.config.cameras[count]['name'])
             frame.image = img
             currentframes.append(frame)
@@ -308,13 +317,16 @@ class SimpleSeer(threading.Thread):
                         frame.save(safe = False)
 
                 
-                timeleft = Session().poll_interval - (time.time() - timer_start)
+                timeleft = M.Session().poll_interval - (time.time() - timer_start)
 
                 if timeleft > 0:
                     time.sleep(timeleft)
                 else:
                     time.sleep(0)
             time.sleep(0.1)
+
+    def start(self):
+        self.greenlet = gevent.spawn(self.run)
     
     #TODO, this doesn't work yet
     def stop(self):  #this should be called from an external thread
@@ -328,5 +340,4 @@ def log_wrapper(self, *arg, **kwargs):
 
 
 SimpleLog.__call__ = log_wrapper
-from Frame import Frame
 import Shell
