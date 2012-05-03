@@ -8,10 +8,10 @@ import gevent
 
 from . import models as M
 from .base import SimpleLog, log
+from .service import SeerService
 
 from SimpleCV import Camera, VirtualCamera
 from SimpleCV import ImageSet
-from Web import WebServer, make_app
 
 class SimpleSeer(object):
     """
@@ -87,9 +87,9 @@ class SimpleSeer(object):
         #self.update()
         if self.config.auto_start:
             self.start()
-        self.web = WebServer(make_app())
-        self.web.run_gevent_server()
-
+        self.connection_file = None
+        SeerService(self).start()
+        Shell.kernel(self)
 
     #i don't really like this too much -- it should really update on
     #an Inspection load/save

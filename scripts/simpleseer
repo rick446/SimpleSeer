@@ -1,18 +1,46 @@
 #!/usr/bin/env python
-from gevent import monkey; monkey.patch_all()
-
 import sys
+import logging
 
-from SimpleSeer import models as M
+from multiprocessing import Process
 
-if (len(sys.argv) > 1):
-   config_file = sys.argv[1] 
-else:
-   config_file = "../default.cfg"
+from SimpleSeer import service
 
-M.Session(config_file)
+def main():
+   # Process(target=web_server).start()
 
-from SimpleSeer.SimpleSeer import SimpleSeer 
+   compute_server()
+
+def compute_server():
+   load_config(sys.argv)
+   from SimpleSeer.SimpleSeer import SimpleSeer
+   SimpleSeer()
+
+def web_server():
+   import gevent
+   from gevent import monkey
+
+   monkey.patch_all()
+
+   logging.basicConfig(level=logging.DEBUG)
+
+   # Proxy access to the seer object
+   from SimpleSeer import SimpleSeer
+   SimpleSeer.SimpleSeer = service.SeerClient()
+
+   load_config(sys.argv)
+   from SimpleSeer.Web import WebServer, make_app
+   web = WebServer(make_app())
+   web.run_gevent_server()
+
+def load_config(args):
+   if (len(args) > 1):
+      config_file = args[1]
+   else:
+      config_file = "../default.cfg"
+   from SimpleSeer import models as M
+   M.Session(config_file)
+
 
 def pm(etype, value, tb): # pragma no cover
     import pdb, traceback
@@ -33,9 +61,11 @@ def pm(etype, value, tb): # pragma no cover
         traceback.print_exception(etype, value, tb)
         pdb.post_mortem(tb)
 
+if __name__ == '__main__':
+   main()
+
 #sys.excepthook = pm
 
 # init seer
-SimpleSeer()
     
 

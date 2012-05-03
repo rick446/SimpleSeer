@@ -10,6 +10,7 @@ from flask import request, make_response
 from . import models as M
 from . import util
 from .realtime import RealtimeNamespace
+from .service import SeerClient
 
 class route(object):
     routes = []
@@ -57,19 +58,12 @@ def frame():
         'camera': 0,
         }
     params.update(request.values)
-    s = StringIO()
-    f = util.get_seer().lastframes[params['index']][params['camera']]
-
-    try:
-        f.image.getPIL().save(s, "webp", quality = 80)
-        resp = make_response(s.getvalue(), 200)
-        resp.headers["Content-Type"] = "image/webp" 
-        return resp
-    except:
-        f.image.getPIL().save(s, "jpeg", quality = 80)
-        resp = make_response(s.getvalue(), 200)
-        resp.headers["Content-Type"] = "image/jpeg" 
-        return resp        
+    cli = SeerClient()
+    result = cli.get_image(
+        params['index'], params['camera'])
+    resp = make_response(result['data'], 200)
+    resp.headers['Content-Type'] = result['content_type']
+    return resp
 
 
 @route('/frame_capture', methods=['GET', 'POST'])
