@@ -1,16 +1,18 @@
 import os
-import json
 
-from flask import Flask, request
+import gevent
+from flask import Flask
 from socketio.server import SocketIOServer
+from gevent.backdoor import BackdoorServer
 
+from . import views
+from . import realtime
 from . import crud
 from . import models as M
 
 DEBUG = True
 
 def make_app():
-    from . import views
     app = Flask(__name__)
     views.route.register_routes(app)
     crud.register(app)
@@ -19,7 +21,7 @@ def make_app():
 class WebServer(object):
     """
     This is the abstract web interface to handle event callbacks for Seer
-    all it does is basically fire up a webserver on port 53317 to allow you
+    all it does is basically fire up a webserver to allow you
     to start interacting with Seer via a web interface
     """
     
@@ -42,20 +44,18 @@ class WebServer(object):
             host, port = hostport, 80
         self.host, self.port = host, port
 
-    def __call__(self, environ, start_response):
-        if environ['PATH_INFO'].startswith('/socket.io'):
-            socketio_manage(
-                environ,
-                {'/chat': ChatNamespace,
-                 '/rt': RealtimeNamespace },
-                )
-            return 'out'
-        return self.app(environ, start_response)
-        
-    def run_flask_server(self):
-        self.app.run(host=self.host, port=self.port)
-
     def run_gevent_server(self):
+        BackdoorServer(
+            ('localhost', 8022),
+            locals=dict(
+                cm=realtime.ChannelManager())
+            ).start()
+        def data_gen():
+            cm = realtime.ChannelManager()
+            while True:
+                gevent.sleep(1)
+                cm.publish('foo', dict(u='data', m='tick'))
+        gevent.spawn(data_gen)
         server = SocketIOServer(
             (self.host, self.port),
             self.app, namespace='socket.io',

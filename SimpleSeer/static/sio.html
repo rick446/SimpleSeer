@@ -1,5 +1,9 @@
 <h1>Socket.io Chatterbox</h1>
-<div id="status" style="border:1px solid black;">Disconnected</div>
+<div style="border:1px solid black;">
+  <b id="status">Disconnected</b></div>
+<div style="border:1px solid black;">
+  Channel: <span id="channel">none</span>
+</div>
 <form>
   <input id="input" style="width: 35em;">
 </form>
@@ -21,27 +25,31 @@ $ ->
   $form = $ 'form'
   $input = $ '#input'
   $data = $ '#data'
+  $chan = $ '#channel'
 
   # Info messages
   main_socket.on 'connect', ->
     console.log 'connect'
-    $status.html "<b>Connected: #{socket.socket.transport.name}</b>"
+    $status.html "Connected: #{socket.socket.transport.name}"
   main_socket.on 'error', ->
     console.log 'connect'
-    $status.html "<b>Error</b>"
+    $status.html "Error"
   main_socket.on 'disconnect', ->
     console.log 'connect'
-    $status.html "<b>Closed</b>"
-  socket.on 'chat', (msg) ->
-    msg = $.parseJSON msg
+    $status.html "Closed"
+
+  socket.on 'message', (msg) ->
+    console.log 'Got message', msg
     u = msg.u or 'SYSTEM'
     $data.prepend $("<em>#{u}</em>: #{msg.m}<br/>")
 
   $form.bind 'submit', (ev) ->
     ev.preventDefault()
     ev.stopPropagation()
-    socket.emit 'rconnect', $input.val()
+    val = $input.val()
     $input.val ''
+    socket.emit 'connect', val
+    $chan.html val
 
   console.log 'All is ready'
 #]]>
