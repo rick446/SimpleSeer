@@ -19,3 +19,7 @@ class Result(mongoengine.Document, base.SimpleDoc):
     inspection = mongoengine.ObjectIdField()
     frame = mongoengine.ObjectIdField()
     measurement = mongoengine.ObjectIdField()
+    
+    meta = {
+        'indexes': ["capturetime", ('camera', '-capturetime'), "frame", "inspection", "measurement"]
+    }

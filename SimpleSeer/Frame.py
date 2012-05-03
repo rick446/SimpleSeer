@@ -18,8 +18,7 @@ class Frame(mongoengine.Document, base.SimpleDoc):
     capturetime = mongoengine.DateTimeField()
     camera = mongoengine.StringField()
     features = mongoengine.ListField(mongoengine.EmbeddedDocumentField(FrameFeature))
-    #features 
-    
+    #features     
     
     height = mongoengine.IntField(default = 0)
     width = mongoengine.IntField(default = 0)
@@ -27,6 +26,11 @@ class Frame(mongoengine.Document, base.SimpleDoc):
     layerfile = mongoengine.FileField()
     _imgcache = ''
     results = [] #cache for result objects when frame is unsaved
+
+    meta = {
+        'indexes': ["capturetime", ('camera', '-capturetime')]
+    }
+
 
     @apply
     #TODO add thumbs
@@ -56,7 +60,9 @@ class Frame(mongoengine.Document, base.SimpleDoc):
        return "<SimpleSeer Frame Object %d,%d captured with '%s' at %s>" % (
             self.width, self.height, self.camera, self.capturetime.ctime()) 
         
-    def save(self):
+    def save(self, *args, **kwargs):
+        #TODO: sometimes we want a frame with no image data, basically at this
+        #point we're trusting that if that were the case we won't call .image
         if self._imgcache != '':
             s = StringIO()
             img = self._imgcache
@@ -79,12 +85,14 @@ class Frame(mongoengine.Document, base.SimpleDoc):
         results = self.results
         self.results = []
 
-        super(Frame, self).save()
+        super(Frame, self).save(*args, **kwargs)
         
+        #TODO, this is sloppy -- we should handle this with cascading saves
+        #or some other mechanism
         for r in results:
             if not r.frame:  
                 r.frame = self.id
-            r.save()  #TODO, check to make sure measurement/inspection are saved
+            r.save(*args, **kwargs)  #TODO, check to make sure measurement/inspection are saved
         
     @classmethod
     def capture(cls):
