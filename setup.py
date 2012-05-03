@@ -18,5 +18,5 @@ setup(name="SimpleSeer",
   zip_safe = False,
   requires=[],
   package_data  = { },
-  scripts=['scripts/simpleseer']
+  scripts=['scripts/simpleseer', 'scripts/simpleseer-scrub']
   )
