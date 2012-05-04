@@ -78,10 +78,6 @@ class SimpleSeer(object):
         super(SimpleSeer, self).__init__()
         self.daemon = True
         
-        if self.config.start_shell:
-            self.shell_thread = Shell.ShellThread()
-            self.shell_thread.start()
-
         M.Frame.capture()
         #~ Inspection.inspect()
         #self.update()
