@@ -1,10 +1,14 @@
 mongoengine
+decorator
 Flask
 Flask-REST
 jsonpickle
 ujson
+anyjson
 FormEncode
-gevent
-decorator
 pyzmq
+gevent
 gevent-zeromq
+gevent-websockets
+gevent-socketio
+

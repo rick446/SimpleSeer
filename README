@@ -41,6 +41,13 @@ Mac OS X (Using homebrew)
 > brew install zmq
 > sudo easy_install pip
 > sudo ARCHFLAGS="-arch i386 -arch x86_64" pip install -r pip.requirements 
+
+(i had to check out gevent-socketio from bitbucket and comment out #setup_requires line to get it working on mac)
+> hg clone https://bitbucket.org/Jeffrey/gevent-socketio
+> cd gevent-socketio
+> perl -pi -e "s/setup_requires/#setup_requires/" setup.py
+> sudo python setup.py install
+
 > (optional) hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.py install
 > curl http://npmjs.org/install.sh | sh
 > npm install -g brunch
