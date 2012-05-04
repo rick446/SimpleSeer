@@ -3,9 +3,11 @@ import logging
 import threading
 from functools import partial
 
-import gevent
-from gevent.server import StreamServer
+import zmq
+from IPython.zmq.ipkernel import IPKernelApp
+from SimpleCV.Shell import setup_shell
 
+from .realtime import ChannelManager
 
 log = logging.getLogger(__name__)
 
@@ -22,14 +24,22 @@ class patch(object):
         setattr(self._obj, name, partial(func, old_func))
         return func
 
-def kernel(seer):
-    from IPython.zmq.ipkernel import IPKernelApp
-    logging.getLogger('IPKernelApp').disabled = True
-    app = IPKernelApp()
-    app.initialize()
-    log.info('Kernel is running on %s', app.connection_file)
-    seer.connection_file = app.connection_file
-    app.start()
+class SeerKernel(object):
+
+    def __init__(self, seer):
+        self.seer = seer
+
+    def run(self):
+        logging.getLogger('IPKernelApp').disabled = True
+        app = IPKernelApp.instance()
+        app.connection_file='kernel-simpleseer.json'
+        app.initialize()
+        app.shell.user_ns.update(
+            seer=self.seer,
+            cm=ChannelManager(zmq.Context.instance()))
+        log.info('Kernel is running on %s', app.connection_file)
+        self.seer.config.connection_file = app.connection_file
+        app.start()
 
 def anotebook():
     from IPython.frontend.html.notebook.notebookapp import NotebookApp

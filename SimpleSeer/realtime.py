@@ -1,19 +1,27 @@
 import logging
 
-import gevent.queue
+import gevent
+from bson import BSON
+from gevent_zeromq import zmq
 
 from socketio.namespace import BaseNamespace
+
+from .Session import Session
 
 log = logging.getLogger(__name__)
 
 class ChannelManager(object):
     __shared_state = { "initialized": False }
 
-    def __init__(self):
+    def __init__(self, context):
         '''Yeah, it's a borg'''
         self.__dict__ = self.__shared_state
         if self.initialized: return
         self._channels = {}
+        self.config = Session()
+        self.context = context
+        self.pub_sock = self.context.socket(zmq.PUB)
+        self.pub_sock.connect(self.config.pub_uri)
 
     def __repr__(self):
         l = [ '<ChannelManager>' ]
@@ -24,31 +32,34 @@ class ChannelManager(object):
         return '\n'.join(l)
 
     def publish(self, channel, message):
-        for q in self._channels.get(channel, {}).values():
-            q.put(message)
+        self.pub_sock.send(channel, zmq.SNDMORE)
+        self.pub_sock.send(BSON.from_dict(message))
 
     def subscribe(self, name):
-        q = gevent.queue.Queue()
-        q.channel = name
-        log.info('Subscribe to %s: %s', name, id(q))
+        name=str(name)
+        sub_sock = self.context.socket(zmq.SUB)
+        sub_sock.connect(self.config.sub_uri)
+        sub_sock.setsockopt(zmq.SUBSCRIBE, name)
+        log.info('Subscribe to %s: %s', name, id(sub_sock))
         channel = self._channels.setdefault(name, {})
-        channel[id(q)] = q
-        return q
+        channel[id(sub_sock)] = sub_sock
+        return sub_sock
 
-    def unsubscribe(self, q):
-        log.info('Unubscribe to %s: %s', q.channel, id(q))
-        channel = self._channels.get(q.channel, None)
+    def unsubscribe(self, name, sub_sock):
+        log.info('Unubscribe to %s: %s', name, id(sub_sock))
+        channel = self._channels.get(name, None)
         if channel is None: return
-        channel.pop(id(q), None)
+        channel.pop(id(sub_sock), None)
         if not channel:
-            self._channels.pop(q.channel, None)
+            self._channels.pop(name, None)
 
 class RealtimeNamespace(BaseNamespace):
 
     def initialize(self):
         self._channel = None
+        self._channel_name = None
         self._greenlet = None
-        self._channel_manager = ChannelManager()
+        self._channel_manager = ChannelManager(zmq.Context())
 
     def disconnect(self, *args, **kwargs):
         if self._channel: self._unsubscribe()
@@ -64,10 +75,11 @@ class RealtimeNamespace(BaseNamespace):
 
     def _unsubscribe(self):
         self._greenlet.kill()
-        self._channel_manager.unsubscribe(self._channel)
-        self._channel = self._greenlet = None
+        self._channel_manager.unsubscribe(self._channel_name, self._channel)
+        self._channel = self._greenlet = self._channel_name = None
 
     def _relay(self):
         while True:
-            message = self._channel.get()
-            self.emit('message', message)
+            self._channel.recv() # discard the envelope
+            message = self._channel.recv()
+            self.emit('message', BSON(message).to_dict())

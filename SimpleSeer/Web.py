@@ -1,14 +1,14 @@
 import os
 
 import gevent
+from gevent_zeromq import zmq
 from flask import Flask
 from socketio.server import SocketIOServer
-from gevent.backdoor import BackdoorServer
 
 from . import views
 from . import realtime
 from . import crud
-from . import models as M
+from .Session import Session
 
 DEBUG = True
 
@@ -36,7 +36,7 @@ class WebServer(object):
               '/': os.path.join(os.path.dirname(__file__), 'static/public')
             })
         
-        hostport = M.Session().web["address"].split(":")
+        hostport = Session().web["address"].split(":")
         if len(hostport) == 2:
             host, port = hostport
             port = int(port)
@@ -45,13 +45,9 @@ class WebServer(object):
         self.host, self.port = host, port
 
     def run_gevent_server(self):
-        BackdoorServer(
-            ('localhost', 8022),
-            locals=dict(
-                cm=realtime.ChannelManager())
-            ).start()
+        context = zmq.Context()
         def data_gen():
-            cm = realtime.ChannelManager()
+            cm = realtime.ChannelManager(context)
             while True:
                 gevent.sleep(1)
                 cm.publish('foo', dict(u='data', m='tick'))

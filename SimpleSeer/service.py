@@ -29,12 +29,11 @@ class SeerClient(object):
         print res['res']
         assert res['status'] == 'ok'
 
+    def get_config(self, key):
+        return self('get_config', key=key)
+
     def get_image(self, index, camera):
         return self('get_image', index=index, camera=camera)
-
-    def get_connection_file(self):
-        '''For ipython --existing stuff'''
-        return self('get_connection_file')
 
 class SeerService(object):
 
@@ -66,8 +65,8 @@ class SeerService(object):
             res = dict(status='error', res=traceback.format_exc())
         return BSON.from_dict(res)
 
-    def handle_get_connection_file(self):
-        return dict(name=self.seer.connection_file)
+    def handle_get_config(self, key):
+        return dict(value=getattr(self.seer.config, key))
 
     def handle_get_image(self, index, camera):
         try:

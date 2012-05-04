@@ -1,5 +1,3 @@
-from Session import Session
-
 from Frame import Frame
 from FrameFeature import FrameFeature
 from Inspection import Inspection

@@ -2,13 +2,12 @@ import os
 import time
 import logging
 import warnings
+import threading
 from datetime import datetime
-
-import gevent
 
 from . import models as M
 from .base import SimpleLog, log
-from .service import SeerService
+from .Session import Session
 
 from SimpleCV import Camera, VirtualCamera
 from SimpleCV import ImageSet
@@ -40,7 +39,7 @@ class SimpleSeer(object):
             return  #successive calls to SimpleSeer simply return the borg'd object
 
         #read config file
-        self.config = M.Session()
+        self.config = Session()
 
         self.cameras = []
         
@@ -88,8 +87,6 @@ class SimpleSeer(object):
         if self.config.auto_start:
             self.start()
         self.connection_file = None
-        SeerService(self).start()
-        Shell.kernel(self)
 
     #i don't really like this too much -- it should really update on
     #an Inspection load/save
@@ -326,7 +323,9 @@ class SimpleSeer(object):
             time.sleep(0.1)
 
     def start(self):
-        self.greenlet = gevent.spawn(self.run)
+        self.thread = threading.Thread(target=self.run)
+        self.thread.daemon = True
+        self.thread.start()
     
     #TODO, this doesn't work yet
     def stop(self):  #this should be called from an external thread

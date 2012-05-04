@@ -1,71 +1,67 @@
 #!/usr/bin/env python
 import sys
+import time
 import logging
 
+import gevent
+from gevent import monkey
 from multiprocessing import Process
 
+from SimpleSeer.Session import Session
 from SimpleSeer import service
 
 def main():
-   # Process(target=web_server).start()
+   # Startup auxiliary processes
+   Process(target=pubsub_broker).start()
+   Process(target=web_server).start()
 
    compute_server()
 
 def compute_server():
    load_config(sys.argv)
    from SimpleSeer.SimpleSeer import SimpleSeer
-   SimpleSeer()
+   from SimpleSeer.service import SeerService
+   from SimpleSeer.Shell import SeerKernel
+   seer = SimpleSeer()
+   SeerService(seer).start()
+   # SeerKernel must run in main thread
+   SeerKernel(seer).run()
 
 def web_server():
-   import gevent
-   from gevent import monkey
-
-   monkey.patch_all()
-
-   logging.basicConfig(level=logging.DEBUG)
-
-   # Proxy access to the seer object
-   from SimpleSeer import SimpleSeer
-   SimpleSeer.SimpleSeer = service.SeerClient()
-
    load_config(sys.argv)
+   init_gevent_subprocess()
    from SimpleSeer.Web import WebServer, make_app
    web = WebServer(make_app())
    web.run_gevent_server()
+
+def pubsub_broker():
+   load_config(sys.argv)
+   init_gevent_subprocess()
+   from SimpleSeer.broker import PubSubBroker
+   psb = PubSubBroker(
+      Session().pub_uri,
+      Session().sub_uri)
+   psb.serve_forever()
+
+def ipython_kernel():
+   Shell.kernel(self)
+   
 
 def load_config(args):
    if (len(args) > 1):
       config_file = args[1]
    else:
       config_file = "../default.cfg"
-   from SimpleSeer import models as M
-   M.Session(config_file)
+   Session(config_file)
 
-
-def pm(etype, value, tb): # pragma no cover
-    import pdb, traceback
-    try:
-        from IPython.ipapi import make_session; make_session()
-        from IPython.Debugger import Pdb
-        sys.stderr.write('Entering post-mortem IPDB shell\n')
-        p = Pdb(color_scheme='Linux')
-        p.reset()
-        p.setup(None, tb)
-        p.print_stack_trace()
-        sys.stderr.write('%s: %s\n' % ( etype, value))
-        p.cmdloop()
-        p.forget()
-        # p.interaction(None, tb)
-    except ImportError:
-        sys.stderr.write('Entering post-mortem PDB shell\n')
-        traceback.print_exception(etype, value, tb)
-        pdb.post_mortem(tb)
+def init_gevent_subprocess():
+   # Monkey patch socket routines
+   monkey.patch_all()
+   logging.basicConfig(level=logging.DEBUG)
+   # Proxy access to the seer object
+   from SimpleSeer import SimpleSeer
+   SimpleSeer.SimpleSeer = service.SeerClient()
 
 if __name__ == '__main__':
    main()
-
-#sys.excepthook = pm
-
-# init seer
-    
 
