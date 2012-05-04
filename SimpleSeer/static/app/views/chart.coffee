@@ -8,25 +8,27 @@ module.exports = class ChartView extends SubView
   lastupdate: 0
 
   update: =>
-  
+
     url = "/olap/Motion"
-    
+
     if @lastupdate
       url = url + "/since/" + @lastupdate.toString()
-      
-    
+
+
     $.getJSON url, (data) =>
+      console.log 'Got data with length:', data.data.length
+      return if data.data.length == 0
       @lastupdate = data.data[data.data.length-1][0]
-      
+
       if not @smoothie.seriesSet.length
         @ts = new TimeSeries
-        
+
         delay = new Date().getTime() - @lastupdate * 1000
         delay = delay * 1.1 #a little extra padding
         @smoothie.streamTo(@$("#motion_canvas")[0], delay)
         @smoothie.addTimeSeries @ts,
           strokeStyle: 'rgb(0, 255, 0)'
-          
+
       setTimeout @update, 1000
       @lastupdate = data.data[data.data.length-1][0]
       tz = new Date().getTimezoneOffset() * 60 * 1000
@@ -47,7 +49,7 @@ module.exports = class ChartView extends SubView
       millisPerPixel: 200
       maxValue: 100
       minValue: 0
-        
-    
 
-    
+
+
+
