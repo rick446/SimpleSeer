@@ -32,7 +32,7 @@ class SeerKernel(object):
     def run(self):
         logging.getLogger('IPKernelApp').disabled = True
         app = IPKernelApp.instance()
-        app.connection_file='kernel-simpleseer.json'
+        app.connection_file='seer.json'
         app.initialize()
         app.shell.user_ns.update(
             seer=self.seer,
