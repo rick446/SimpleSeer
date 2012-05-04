@@ -147,7 +147,6 @@ class SimpleSeer(object):
             try:
                 plugins[plugin] = __import__("SimpleSeer.plugins."+plugin)
             except ImportError as e:
-                import pdb; pdb.set_trace()
                 warnings.warn("Plugin " + plugin + " failed " + str(e))
                 
         return self.plugins

@@ -3,8 +3,6 @@ import sys
 import time
 import logging
 
-import gevent
-from gevent import monkey
 from multiprocessing import Process
 
 from SimpleSeer.Session import Session
@@ -56,6 +54,7 @@ def load_config(args):
 
 def init_gevent_subprocess():
    # Monkey patch socket routines
+   from gevent import monkey
    monkey.patch_all()
    logging.basicConfig(level=logging.DEBUG)
    # Proxy access to the seer object
