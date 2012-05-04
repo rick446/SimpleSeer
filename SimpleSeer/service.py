@@ -4,7 +4,7 @@ from cStringIO import StringIO
 
 import zmq
 from bson import BSON, Binary
-
+from .Session import _decode_dict
 from . import util
 
 class SeerClient(object):
@@ -26,7 +26,6 @@ class SeerClient(object):
         b_res = self.socket.recv()
         res = BSON(b_res).to_dict()
         if res['status'] == 'ok': return res['res']
-        print res['res']
         assert res['status'] == 'ok'
 
     def get_config(self, key):
@@ -62,6 +61,7 @@ class SeerService(object):
             req = BSON(req).to_dict()
             s_method = 'handle_' + req.pop('method')
             method = getattr(self, s_method)
+            req = _decode_dict(req) #fixes the keyword param in unicode issue
             res = method(**req)
             res = dict(status='ok', res=res)
         except:
