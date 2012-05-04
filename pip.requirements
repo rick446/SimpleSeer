@@ -5,3 +5,4 @@ jsonpickle
 ujson
 FormEncode
 gevent
+pyzmq
