@@ -17,7 +17,9 @@ module.exports = class ChartView extends SubView
 
     $.getJSON url, (data) =>
       console.log 'Got data with length:', data.data.length
-      return if data.data.length == 0
+      if data.data.length == 0
+        setTimeout @update, 1000
+        return
       @lastupdate = data.data[data.data.length-1][0]
 
       if not @smoothie.seriesSet.length
