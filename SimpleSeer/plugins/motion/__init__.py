@@ -32,7 +32,7 @@ class Motion(SimpleCV.Feature):
     self.y = top + self.height() / 2 
   
 def motion(self, image):
-  SS = SimpleSeer.SimpleSeer()
+  SS = SimpleSeer()
   if len(SS.lastframes) > 1:
     #TODO, find the index of the named camera
     lastimage = SS.lastframes[-2][0].image
@@ -46,4 +46,4 @@ def motion(self, image):
   return [ff]
 
 M.Inspection.motion = motion
-import SimpleSeer
+from SimpleSeer.SimpleSeer import SimpleSeer
