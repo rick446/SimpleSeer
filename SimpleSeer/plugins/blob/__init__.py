@@ -50,7 +50,7 @@ def blob(self, image):
         
     return feats
 
-Inspection.blob = blob
+M.Inspection.blob = blob
 
 """
     Measurement(name =  "blob_length",
@@ -65,13 +65,13 @@ Inspection.blob = blob
 def blob_length(self, frame, featureset):            
     return [np.max(eval(featureset[0].featuredata["mMinRectangle"])[1])]
     
-Measurement.blob_length = blob_length
+M.Measurement.blob_length = blob_length
 
     
 def blob_count(self, frame, featureset):            
     return [len(featureset)]
     
-Measurement.blob_count = blob_count
+M.Measurement.blob_count = blob_count
     
     
     

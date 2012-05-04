@@ -1,0 +1,18 @@
+
+
+Inspection.objects.delete()
+Measurement.objects.delete()
+OLAP.objects.delete()
+
+
+insp = Inspection( name= "Motion", method="motion", camera = "Default Camera")
+insp.save()
+
+meas = Measurement( name="movement", label="Movement", method = "movement", parameters = dict(), units = "", featurecriteria = dict( index = 0 ), inspection = insp.id )
+meas.save()
+
+
+omove = OLAP(name='MotionMovingAverage', queryInfo = dict( name = 'Motion' ), descInfo = dict( formula = 'moving', window = 3), chartInfo = dict ( name='Line', color = 'blue'))
+omove.save()
+oraw = OLAP(name='Motion', queryInfo = dict( name = 'Motion' ), descInfo = None, chartInfo = dict ( name='Line', color = 'blue'))
+oraw.save()

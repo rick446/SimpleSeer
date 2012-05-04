@@ -1,8 +1,4 @@
-from SimpleSeer.base import *
-from SimpleSeer.Session import *
-from SimpleSeer.FrameFeature import FrameFeature
-from SimpleSeer.Inspection import Inspection
-
+from SimpleSeer.plugins.base import *
 
 class Region(SimpleCV.Feature):
     
@@ -35,4 +31,4 @@ def region(self, image):
     return [ff]
     
     
-Inspection.region = region
+M.Inspection.region = region

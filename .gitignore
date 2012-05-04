@@ -2,3 +2,4 @@
 *.log
 *_log
 default.cfg
+SimpleSeer/static/public/*

@@ -1,12 +1,20 @@
-from base import *
-from Session import Session
-from Inspection import Inspection
-from Watcher import Watcher
-from Web import *
+import os
+import gc
+import time
+import logging
+import warnings
+import threading
+from datetime import datetime
 
+from . import models as M
+from .Session import Session
 
+from SimpleCV import Camera, VirtualCamera
+from SimpleCV import ImageSet
 
-class SimpleSeer(threading.Thread):
+log = logging.getLogger(__name__)
+
+class SimpleSeer(object):
     """
     The SimpleSeer object 
     
@@ -60,9 +68,8 @@ class SimpleSeer(threading.Thread):
                     del camerainfo['crop']
                 self.cameras.append(Camera(id, camerainfo))
         #log initialized camera X
-        self.init_logging()
         
-        Session().redis.set("cameras", self.config.cameras)
+        #Session().redis.set("cameras", self.config.cameras)
         #tell redis what cameras we have
         
         self.reloadInspections() #initialize inspections so they get saved to redis
@@ -80,59 +87,33 @@ class SimpleSeer(threading.Thread):
         super(SimpleSeer, self).__init__()
         self.daemon = True
         
-        if self.config.start_shell:
-            self.shell_thread = Shell.ShellThread()
-            self.shell_thread.start()
-
-        Frame.capture()
+        M.Frame.capture()
         #~ Inspection.inspect()
-        self.update()
-        self.web_interface = Web()
-
+        #self.update()
+        if self.config.auto_start:
+            self.start()
+        self.connection_file = None
 
     #i don't really like this too much -- it should really update on
     #an Inspection load/save
 
-    def init_logging(self):
-      # set up logging to file - see previous section for more details
-      logging.basicConfig(level=logging.DEBUG,
-                          format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                          datefmt='%m-%d %H:%M',
-                          filename='seer.log',
-                          filemode='w')
-      # define a Handler which writes INFO messages or higher to the sys.stderr
-      console = logging.StreamHandler()
-      console.setLevel(logging.INFO)
-      # set a format which is simpler for console use
-      formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-      # tell the handler to use this format
-      console.setFormatter(formatter)
-      # add the handler to the root logger
-      logging.getLogger('').addHandler(console)
-
-
-    def log(self, param = None):
-      if param:
-        logging.debug(param)
-
-
-    def clear(self):
-        Inspection.objects.delete()
-        Measurement.objects.delete()
-        Watcher.objects.delete()
-        Frame.objects.delete()
-        self.lastframes = []
-        Session().redis.flushdb()
-        self.reloadInspections()
+#    def clear(self):
+#        Inspection.objects.delete()
+#        Measurement.objects.delete()
+#        Watcher.objects.delete()
+#        Frame.objects.delete()
+#        self.lastframes = []
+#        Session().redis.flushdb()
+#        self.reloadInspections()
         
 
     def reloadInspections(self):
-        i = list(Inspection.objects)
-        Session().redis.set("inspections", i)
-        m = list(Measurement.objects)
-        Session().redis.set("measurements", m)
-        w = list(Watcher.objects)
-        Session().redis.set("watchers", w) #TODO Fix encoding
+        i = list(M.Inspection.objects)
+#        Session().redis.set("inspections", i)
+        m = list(M.Measurement.objects)
+#        Session().redis.set("measurements", m)
+        w = list(M.Watcher.objects)
+#        Session().redis.set("watchers", w) #TODO Fix encoding
         self.inspections = i
         self.measurements = m
         self.watchers = w
@@ -142,8 +123,10 @@ class SimpleSeer(threading.Thread):
         self.plugins = {}
         plugins = self.plugins
 
-        
-        for plugin in [ name for name in os.listdir(self.pluginpath) if os.path.isdir(os.path.join(self.pluginpath, name)) ]:
+        plugin_dirs = [
+            name for name in os.listdir(self.pluginpath)
+            if os.path.isdir(os.path.join(self.pluginpath, name)) ]
+        for plugin in plugin_dirs:
             try:
                 plugins[plugin] = __import__("SimpleSeer.plugins."+plugin)
             except ImportError as e:
@@ -161,29 +144,25 @@ class SimpleSeer(threading.Thread):
         '''
 
         if imgs is None:
-          log("ImageSet cannot load: empty")
+          log.info("ImageSet cannot load: empty")
           return
 
-        if not isinstance(imgs, SimpleCV.ImageSet):
-          log("ImageSet needs SimpleCV imageSet passed")
+        if not isinstance(imgs, ImageSet):
+          log.info("ImageSet needs SimpleCV imageSet passed")
           return
 
         
         for i in imgs:
             img = i
-            frame = Frame(capturetime = datetime.now(), 
+            frame = M.Frame(capturetime = datetime.now(), 
                 camera = self.cameras[-1])
-            frame.image = img
-            
-            if self.config.record_all:
-                frame.save()
-            
+            frame.image = img            
              
             while len(self.lastframes) > self.config.max_frames:
                 self.lastframes.pop(0)
                             
             self.framecount = self.framecount + 1
-            Session().redis.set("framecount", self.framecount)
+#            Session().redis.set("framecount", self.framecount)
             self.lastframes.append(frame)
 
     def loadImageDirectory(self, path = None):
@@ -199,11 +178,12 @@ class SimpleSeer(threading.Thread):
 
       '''
 
-      imgs = SimpleCV.ImageSet(path)
+      imgs = ImageSet(path)
       self.loadImageSet(imgs)
       
         
     def capture(self):
+        gc.collect()
         count = 0
         currentframes = []
         self.framecount = self.framecount + 1
@@ -216,19 +196,16 @@ class SimpleSeer(threading.Thread):
               img = c.getImage()
             if self.config.cameras[0].has_key('crop'):
                 img = img.crop(*self.config.cameras[0]['crop'])
-            frame = Frame(capturetime = datetime.now(), 
+            frame = M.Frame(capturetime = datetime.utcnow(), 
                 camera= self.config.cameras[count]['name'])
             frame.image = img
-            
-            if self.config.record_all:
-                frame.save()
-            
             currentframes.append(frame)
             
             while len(self.lastframes) > self.config.max_frames:
                 self.lastframes.pop(0)
+            log.info('framecount is %s', len(self.lastframes))
                             
-            Session().redis.set("framecount", self.framecount)
+#            Session().redis.set("framecount", self.framecount)
             count = count + 1
             
                     
@@ -257,41 +234,48 @@ class SimpleSeer(threading.Thread):
                 for m in inspection.measurements:
                     frame.results += m.execute(frame, results)
                     
-            for watcher in list(Watcher.objects):
+            for watcher in self.watchers:
                 watcher.check(frame.results)
                     
         return 
 
     def frame(self, index = 0):
-        return self.lastframes[-1][index]
+        if len(self.lastframes):    
+            return self.lastframes[-1][index]
+        else:
+            frames = Frame.objects.order_by("-capturetime").skip(index)
+            if len(frames):
+                return frames[0]
+            else:
+                return None
         
     def check(self):
         for watcher in self.watchers:
             if watcher.enabled:
                 watcher.check()
                 
-    def update(self):
+#    def update(self):
         
-        count = 0
-        batch = { "histogram": [], "frame": [] }
-        for f in self.lastframes[-1]:
-            hist = f.image.histogram(50)
-            Session().redis.set("histogram_%d" % count, hist)
-            batch["histogram"].append(hist)
-            Session().redis.set("currentframedata_%d" % count, f)
-            batch["frame"].append(f)
-            count = count + 1
+#        count = 0
+#        batch = { "histogram": [], "frame": [] }
+#        for f in self.lastframes[-1]:
+#            hist = f.image.histogram(50)
+#            Session().redis.set("histogram_%d" % count, hist)
+#            batch["histogram"].append(hist)
+#            Session().redis.set("currentframedata_%d" % count, f)
+#            batch["frame"].append(f)
+#            count = count + 1
 
-        Session().redis.set("results", self.results) #TODO, PUT A LIMIT (last 50 readings?  time?)
-        batch["results"] = self.results
-        Session().redis.set("framecount", self.framecount)
-        Session().redis.set("batchframe", batch)
+#        Session().redis.set("results", self.results) #TODO, PUT A LIMIT (last 50 readings?  time?)
+#        batch["results"] = self.results
+#        Session().redis.set("framecount", self.framecount)
+#        Session().redis.set("batchframe", batch)
         #TODO add passes and failures to the batch
     
-    def refresh(self):
-        self.reloadInspections()
-        self.inspect()
-        self.update()
+#    def refresh(self):
+#        self.reloadInspections()
+#        self.inspect()
+#        self.update()
     
     @property
     def results(self):
@@ -313,16 +297,23 @@ class SimpleSeer(threading.Thread):
                 self.capture()
                 self.inspect()
                 self.check()
-                self.update()
-                
-                #self.display.send(frames)
+                if self.config.record_all:
+                    for frame in self.lastframes[-1]:
+                        frame.save(safe = False)
+
                 
                 timeleft = Session().poll_interval - (time.time() - timer_start)
+
                 if timeleft > 0:
                     time.sleep(timeleft)
                 else:
                     time.sleep(0)
             time.sleep(0.1)
+
+    def start(self):
+        self.thread = threading.Thread(target=self.run)
+        self.thread.daemon = True
+        self.thread.start()
     
     #TODO, this doesn't work yet
     def stop(self):  #this should be called from an external thread
@@ -330,42 +321,3 @@ class SimpleSeer(threading.Thread):
         
     def resume(self):
         self.halt = False
-        
-    def passed(self, state = None):
-        if state == None:
-            return Session().redis.get("passed")
-        
-        Session().redis.set("passed", state)
-        return state
-    
-    def addWarning(self, warning):
-        #self.passed(False)
-        #TODO, move this to rpush/lrange
-        warnjson = Session().redis.get("warnings")
-        if warnjson:
-            warnings = json.loads(warnjson)
-        else:
-            warnings = []
-        warnings.append(warning)
-        Session().redis.set("warnings", warnings)
-        
-    def addFail(self, failure):
-        self.passed(False)
-        #TODO, move this to rpush/lrange
-        failurejson = Session().redis.get("failures")
-        if failurejson:
-            failures = json.loads(failurejson)
-        else:
-            failures = []
-        
-        failures.append(failure)
-        Session().redis.set("failures", failures)
-
-    
-def log_wrapper(self, *arg, **kwargs):
-  return SimpleSeer().log(*arg, **kwargs)
-
-
-SimpleLog.__call__ = log_wrapper
-from Frame import Frame
-import Shell

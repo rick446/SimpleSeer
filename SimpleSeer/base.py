@@ -12,38 +12,29 @@ from StringIO import StringIO
 import types
 import atexit
 
-import cherrypy
+#~ import cherrypy
 import urllib
 try:
-  import Image as pil
+    import Image as pil
 except(ImportError):
-  import PIL.Image as pil
+    import PIL.Image as pil
 
 import cv
 
 try:
     import pyfirmata
 except:
-    print "Warning: Pyfirmata is not installed on this system, it is not required but recommended"
-import redis
+    warnings.warn(
+        'Pyfirmata is not installed on this system. '
+        'It is not required but recommended', Warning)
+
+#import redis
 import mongoengine
 import bson
 import jsonpickle
 import logging
 
 
-
-#cribbed from
-#http://stackoverflow.com/questions/1254454/fastest-way-to-convert-a-dicts-keys-values-from-unicode-to-str
-def utf8convert(data):
-    if isinstance(data, unicode):
-        return str(data)
-    elif isinstance(data, collections.Mapping):
-        return dict(map(utf8convert, data.iteritems()))
-    elif isinstance(data, collections.Iterable):
-        return type(data)(map(utf8convert, data))
-    else:
-        return data
 
 
 try:
@@ -62,45 +53,7 @@ def jsonencode(obj):
 def jsondecode(data):
     return json.loads(data)
         
-class SimpleDoc(mongoengine.Document):
-    """
-    All Seer objects should extend SimpleDoc, which wraps mongoengine.Document
-    """
-    _jsonignore = [None]
-    
-    
-    def __getstate__(self):  
-        ret = {}
-        if self._data.has_key(None):
-            ret["id"] = self._data[None]
-        else:
-            ret["id"] = None
-
-        for k in self._data.keys():
-            if not k:
-                continue
-              
-            v = self._data[k]
-            if k[0] == "_" or k in self._jsonignore:
-                continue
-            if (hasattr(v, "__json__")):
-                ret[k] = v.__json__()
-            elif isinstance(v, SimpleCV.Image):
-                ret[k] = v.applyLayers().getBitmap().tostring().encode("base64")
-            elif isinstance(v, datetime):
-                ret[k] = int(time.mktime(v.timetuple()) + v.microsecond/1e6)
-            else:
-                ret[k] = v
-            
-        return ret 
-        
-class SimpleEmbeddedDoc(mongoengine.EmbeddedDocument):
-    """
-    Any embedded docs (for object trees) should extend SimpleEmbeddedDoc
-    """
-    _jsonignore = [None]
-    
-    
+   
 #note these handlers are not ok for "picklable" stuff
 class BSONObjectIDHandler(jsonpickle.handlers.BaseHandler):
     def flatten(self, obj, data):
@@ -134,15 +87,6 @@ jsonpickle.handlers.Registry().register(bson.objectid.ObjectId, BSONObjectIDHand
 jsonpickle.handlers.Registry().register(mongoengine.base.BaseList, MongoEngineBaseListHandler)
 jsonpickle.handlers.Registry().register(mongoengine.base.BaseDict, MongoEngineBaseDictHandler)
 jsonpickle.handlers.Registry().register(mongoengine.fields.GridFSProxy, MongoEngineFileFieldHandler)
-
-
-
-class SimpleLog(object):
-  def __call__(self, *args, **kwargs):
-    pass
-
-
-log = SimpleLog()
 
 
 

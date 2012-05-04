@@ -1,7 +1,14 @@
 mongoengine
-cherrypy
+decorator
+Flask
+Flask-REST
 jsonpickle
 ujson
-supervisor
-redis
+anyjson
+FormEncode
+pyzmq
+gevent
+gevent-zeromq
+gevent-websocket
+gevent-socketio
 

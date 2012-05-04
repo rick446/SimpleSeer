@@ -1,0 +1,57 @@
+<h1>Socket.io Chatterbox</h1>
+<div style="border:1px solid black;">
+  <b id="status">Disconnected</b></div>
+<div style="border:1px solid black;">
+  Channel: <span id="channel">none</span>
+</div>
+<form>
+  <input id="input" style="width: 35em;">
+</form>
+<div id="data" style="border:1px solid black;"></div>
+<script type="text/javascript" 
+        src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
+<script type="text/javascript" src="/static/vendor/scripts/socket.io.js"></script>
+<script type="text/javascript" 
+        src="http://cdnjs.cloudflare.com/ajax/libs/coffee-script/1.1.2/coffee-script.min.js"></script>
+
+<script type="text/coffeescript">
+#<![CDATA[
+$ ->
+  main_socket = io.connect()
+
+  socket = io.connect '/rt'
+
+  $status = $ '#status'
+  $form = $ 'form'
+  $input = $ '#input'
+  $data = $ '#data'
+  $chan = $ '#channel'
+
+  # Info messages
+  main_socket.on 'connect', ->
+    console.log 'connect'
+    $status.html "Connected: #{socket.socket.transport.name}"
+  main_socket.on 'error', ->
+    console.log 'connect'
+    $status.html "Error"
+  main_socket.on 'disconnect', ->
+    console.log 'connect'
+    $status.html "Closed"
+
+  socket.on 'message', (msg) ->
+    console.log 'Got message', msg
+    u = msg.u or 'SYSTEM'
+    $data.prepend $("<em>#{u}</em>: #{msg.m}<br/>")
+
+  $form.bind 'submit', (ev) ->
+    ev.preventDefault()
+    ev.stopPropagation()
+    val = $input.val()
+    $input.val ''
+    socket.emit 'connect', val
+    $chan.html val
+
+  console.log 'All is ready'
+#]]>
+</script>
+  
