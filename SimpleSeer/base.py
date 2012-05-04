@@ -91,15 +91,6 @@ jsonpickle.handlers.Registry().register(mongoengine.fields.GridFSProxy, MongoEng
 
 
 
-class SimpleLog(object):
-  def __call__(self, *args, **kwargs):
-    pass
-
-
-log = SimpleLog()
-
-
-
 import SimpleCV
 #from SimpleCV.Shell import *
 from SimpleCV import Image, JpegStreamer, Camera, Color, cv, VirtualCamera
