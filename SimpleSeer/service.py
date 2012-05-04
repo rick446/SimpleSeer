@@ -35,6 +35,9 @@ class SeerClient(object):
     def get_image(self, index, camera):
         return self('get_image', index=index, camera=camera)
 
+    def reload_inspections(self, index, camera):
+        return self('get_image', index=index, camera=camera)
+
 class SeerService(object):
 
     def __init__(self, seer):
@@ -87,3 +90,7 @@ class SeerService(object):
             return dict(
                 content_type='image/jpeg',
                 data=Binary(s.getvalue()))
+
+    def handle_reload_inspections(self):
+        self.seer.reloadInspections()
+        return dict()

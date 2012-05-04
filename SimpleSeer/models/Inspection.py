@@ -122,9 +122,8 @@ class Inspection(mongoengine.Document, SimpleDoc):
 
     #overload the save function so that all inspections are reloaded if one is updated
     def save(self):
-        import SimpleSeer
         ret = super(Inspection, self).save()
-        SimpleSeer.SimpleSeer().reloadInspections()
+        util.get_seer().reloadInspections()
         return ret
     
     

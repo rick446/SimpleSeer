@@ -1,6 +1,8 @@
-from SimpleSeer.base import *
-from SimpleSeer.plugins.base import *
 import numpy as np
+
+import SimpleCV
+from SimpleSeer import models as M
+from SimpleSeer import util
 
 """
 Overly simplified motion detection plugin
@@ -32,7 +34,7 @@ class Motion(SimpleCV.Feature):
     self.y = top + self.height() / 2 
   
 def motion(self, image):
-  SS = SimpleSeer()
+  SS = util.get_seer()
   if len(SS.lastframes) > 1:
     #TODO, find the index of the named camera
     lastimage = SS.lastframes[-2][0].image
@@ -41,7 +43,7 @@ def motion(self, image):
 
   diff = (image - lastimage) + (lastimage - image)
   
-  ff = FrameFeature()
+  ff = M.FrameFeature()
   ff.setFeature(Motion(image, np.mean(diff.meanColor())))
   return [ff]
 
