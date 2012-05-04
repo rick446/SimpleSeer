@@ -313,7 +313,7 @@ class SimpleSeer(object):
                         frame.save(safe = False)
 
                 
-                timeleft = M.Session().poll_interval - (time.time() - timer_start)
+                timeleft = Session().poll_interval - (time.time() - timer_start)
 
                 if timeleft > 0:
                     time.sleep(timeleft)
