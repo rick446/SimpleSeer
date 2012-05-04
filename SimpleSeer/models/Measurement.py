@@ -1,7 +1,7 @@
 import mongoengine
 
 from .base import SimpleDoc
-from .result import Result
+from .Result import Result
 
 class Measurement(mongoengine.Document, SimpleDoc):
     """
