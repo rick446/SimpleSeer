@@ -9,6 +9,6 @@ FormEncode
 pyzmq
 gevent
 gevent-zeromq
-gevent-websockets
+gevent-websocket
 gevent-socketio
 
