@@ -33,6 +33,8 @@ def register(app):
     handlers = [
         ModelHandler(M.Inspection, InspectionSchema,
                      'inspection', '/inspections'),
+		ModelHandler(M.OLAP, OLAPSchema,
+					 'olap', '/olap')
        ]
 
     for h in handlers:
@@ -53,6 +55,24 @@ class InspectionSchema(fes.Schema):
     filters = V.JSON(if_empty=dict, if_missing=None)
     richattributes = V.JSON(if_empty=dict, if_missing=None)
     morphs = fe.ForEach(fev.UnicodeString(), convert_to_list=True)
+
+class OLAPSchema(fes.Schema):
+	name = fev.UnicodeString(not_empty=True)
+	queryInfo = V.JSON(not_empty=True)
+	descInfo = V.JSON(if_empty=None, if_missing=None)
+	chartInfo = V.JSON(not_empty=True)
+	
+class QueryInfoSchema(fes.Schema):
+	name = fev.UnicodeString(not_empty = True)
+	since = V.DateTime(if_empty=0, if_missing=None)
+	
+class DescInfoSchema(fes.Schema):
+	formula = fev.OneOf(['moving', 'mean', 'std'], if_missing=None)
+	window = fev.Int(if_missing=None)
+
+class ChartInfoSchema(fes.Schema):
+	chartType = fev.OneOf(['line', 'bar', 'pie'])
+	chartColor = fev.OneOf(['red', 'green', 'blue'])
 
 class ModelHandler(object):
 
