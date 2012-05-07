@@ -1,4 +1,5 @@
 import os
+import gc
 import time
 import logging
 import warnings
@@ -6,11 +7,12 @@ import threading
 from datetime import datetime
 
 from . import models as M
-from .base import SimpleLog, log
 from .Session import Session
 
 from SimpleCV import Camera, VirtualCamera
 from SimpleCV import ImageSet
+
+log = logging.getLogger(__name__)
 
 class SimpleSeer(object):
     """
@@ -57,7 +59,6 @@ class SimpleSeer(object):
                     del camerainfo['crop']
                 self.cameras.append(Camera(id, camerainfo))
         #log initialized camera X
-        self.init_logging()
         
         #Session().redis.set("cameras", self.config.cameras)
         #tell redis what cameras we have
@@ -77,10 +78,6 @@ class SimpleSeer(object):
         super(SimpleSeer, self).__init__()
         self.daemon = True
         
-        if self.config.start_shell:
-            self.shell_thread = Shell.ShellThread()
-            self.shell_thread.start()
-
         M.Frame.capture()
         #~ Inspection.inspect()
         #self.update()
@@ -90,29 +87,6 @@ class SimpleSeer(object):
 
     #i don't really like this too much -- it should really update on
     #an Inspection load/save
-
-    def init_logging(self):
-      # set up logging to file - see previous section for more details
-      logging.basicConfig(level=logging.DEBUG,
-                          format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
-                          datefmt='%m-%d %H:%M',
-                          filename='seer.log',
-                          filemode='w')
-      # define a Handler which writes INFO messages or higher to the sys.stderr
-      console = logging.StreamHandler()
-      console.setLevel(logging.INFO)
-      # set a format which is simpler for console use
-      formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
-      # tell the handler to use this format
-      console.setFormatter(formatter)
-      # add the handler to the root logger
-      logging.getLogger('').addHandler(console)
-
-
-    def log(self, param = None):
-      if param:
-        logging.debug(param)
-
 
 #    def clear(self):
 #        Inspection.objects.delete()
@@ -161,11 +135,11 @@ class SimpleSeer(object):
         '''
 
         if imgs is None:
-          log("ImageSet cannot load: empty")
+          log.info("ImageSet cannot load: empty")
           return
 
         if not isinstance(imgs, ImageSet):
-          log("ImageSet needs SimpleCV imageSet passed")
+          log.info("ImageSet needs SimpleCV imageSet passed")
           return
 
         
@@ -200,6 +174,7 @@ class SimpleSeer(object):
       
         
     def capture(self):
+        gc.collect()
         count = 0
         currentframes = []
         self.framecount = self.framecount + 1
@@ -215,6 +190,7 @@ class SimpleSeer(object):
             
             while len(self.lastframes) > self.config.max_frames:
                 self.lastframes.pop(0)
+            log.info('framecount is %s', len(self.lastframes))
                             
 #            Session().redis.set("framecount", self.framecount)
             count = count + 1
@@ -332,10 +308,3 @@ class SimpleSeer(object):
         
     def resume(self):
         self.halt = False
-    
-def log_wrapper(self, *arg, **kwargs):
-  return SimpleSeer().log(*arg, **kwargs)
-
-
-SimpleLog.__call__ = log_wrapper
-import Shell

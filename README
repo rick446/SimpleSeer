@@ -7,8 +7,11 @@ Examples of usage:
 To start SimpleSeer in continuous mode:
 
     $ cd SimpleSeer
-    $ python __init__.py
-    >>> SimpleSeer().start()
+    $ simpleseer default.cfg 
+
+To start an iPython shell:
+
+    $ ipython console --existing seer.json
 
 To capture an image, display, and store in the database:
 
@@ -49,10 +52,12 @@ Mac OS X (Using homebrew)
 > sudo python setup.py install
 
 > (optional) hg clone https://bitbucket.org/tino/pyfirmata && cd pyfirmata && python setup.py install
+
 > curl http://npmjs.org/install.sh | sh
 > npm install -g brunch
 > npm install -g brunch-less
 > python setup.py develop
+
 
 
 
@@ -65,3 +70,4 @@ Ubuntu Linux 12.04 (Using apt-get)
 
 *NOTE: Don't install python-pymongo from the repos as it is much too far out of date and requires 2+
 =======
+

@@ -15,19 +15,39 @@ def main():
 
    compute_server()
 
+def configure_logging():
+   logging.basicConfig(
+      level=logging.DEBUG,
+      format='%(asctime)s %(name)-12s %(levelname)-8s %(message)s',
+      datefmt='%m-%d %H:%M',
+      filename='seer.log',
+      filemode='w')
+   console = logging.StreamHandler()
+   console.setLevel(logging.INFO)
+   # set a format which is simpler for console use
+   formatter = logging.Formatter('%(name)-12s: %(levelname)-8s %(message)s')
+   # tell the handler to use this format
+   console.setFormatter(formatter)
+   # add the handler to the root logger
+   logging.getLogger('').addHandler(console)
+
+
 def compute_server():
    load_config(sys.argv)
+   configure_logging()
    from SimpleSeer.SimpleSeer import SimpleSeer
    from SimpleSeer.service import SeerService
    from SimpleSeer.Shell import SeerKernel
    seer = SimpleSeer()
    SeerService(seer).start()
+   # SeerService(seer).run()
    # SeerKernel must run in main thread
    SeerKernel(seer).run()
 
 def web_server():
    load_config(sys.argv)
    init_gevent_subprocess()
+   configure_logging()
    from SimpleSeer.Web import WebServer, make_app
    web = WebServer(make_app())
    web.run_gevent_server()
@@ -35,6 +55,7 @@ def web_server():
 def pubsub_broker():
    load_config(sys.argv)
    init_gevent_subprocess()
+   configure_logging()
    from SimpleSeer.broker import PubSubBroker
    psb = PubSubBroker(
       Session().pub_uri,
