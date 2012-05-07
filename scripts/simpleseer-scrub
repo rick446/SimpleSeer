@@ -10,7 +10,7 @@ else:
 
 Session(config_file)
 
-from SimpleSeer.Frame import Frame
+from SimpleSeer.models.Frame import Frame
 
 if not Session().max_imagedata:
   print "No maximum number of images set, skipping cleanup" 
