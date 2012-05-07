@@ -26,7 +26,6 @@ class OLAP(mongoengine.Document, SimpleDoc):
     queryInfo = mongoengine.DictField()
     descInfo = mongoengine.DictField()
     chartInfo = mongoengine.DictField()
-    timeStamp = mongoengine.DateTimeField()
     
     def __repr__(self):
         return "<OLAP %s>" % self.name
@@ -56,6 +55,23 @@ class OLAP(mongoengine.Document, SimpleDoc):
 class Chart:
     # Takes the data and puts it in a format for charting
     
+    def dataRange(self, dataSet):
+	# compute the min and max values suggested for the chart drawing
+	
+		yvals = np.hsplit(np.array(dataSet),2)[1]
+		std = np.std(yvals)
+		mean = np.mean(yvals)
+		
+		minFound = np.min(yvals)
+		
+		maxRange = mean + 3*std
+		minRange = mean - 3*std
+		 
+		# Try to detect cases where the data is always positive
+		if (minFound == 0) and (minRange < 0): minRange = 0 	
+		 
+		return {'min': minRange, 'max': maxRange}
+    
     def createChart(self, resultSet, chartInfo):
         # This function will change to handle the different formats
         # required for different charts.  For now, just assume nice
@@ -64,10 +80,11 @@ class Chart:
         chartData = { 'chartType': chartInfo['name'],
                       'chartColor': chartInfo['color'],
                       'labels': resultSet['labels'],
+                      'range': self.dataRange(resultSet['data']),
                       'data': resultSet['data'] }
         
         return chartData
-                      
+
 
 class DescriptiveStatistic:
     # Will be used for computing basic descriptives on query results
@@ -100,10 +117,7 @@ class ResultSet:
     
     def execute(self, queryInfo):
         # Execute the querystring, returning the results of the
-        # query as a numpy vector
-        #
-        # Entering a 'random' querystring will return a matrix with
-        # sequential x values and random y values between 0 and 1
+        # query as a list
         #
         # Entering 'inspection' will do a predefined query to return
         # inspection objects
@@ -123,10 +137,12 @@ class ResultSet:
         outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric] for r in rs]
         #our timestamps are already in UTC, so we need to use a localtime conversion
         
-        dataset = { 'startTime': 'all',
-                        'endTime': 'all',
-                        'timestamp': gmtime(),
-                        'labels': {'dim1': 'Time', 'dim2': 'Motion'},
-                        'data': outputVals}
+        dataset = { 'startTime': outputVals[0][0],
+                    'endTime': outputVals[-1][0],
+                    'timestamp': gmtime(),
+                    'labels': {'dim1': 'Time', 'dim2': 'Motion'},
+                    'data': outputVals}
         
         return dataset
+	
+
