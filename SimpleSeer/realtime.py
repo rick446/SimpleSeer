@@ -82,4 +82,4 @@ class RealtimeNamespace(BaseNamespace):
         while True:
             self._channel.recv() # discard the envelope
             message = self._channel.recv()
-            self.emit('message', BSON(message).to_dict())
+            self.emit('message', BSON(message).decode())

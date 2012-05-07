@@ -21,10 +21,10 @@ class SeerClient(object):
 
     def __call__(self, method, **args):
         req = dict(method=method, **args)
-        b_req = BSON.from_dict(req)
+        b_req = BSON.encode(req)
         self.socket.send(b_req)
         b_res = self.socket.recv()
-        res = BSON(b_res).to_dict()
+        res = BSON(b_res).decode()
         if res['status'] == 'ok': return res['res']
         assert res['status'] == 'ok'
 
@@ -58,7 +58,7 @@ class SeerService(object):
 
     def handle(self, req):
         try:
-            req = BSON(req).to_dict()
+            req = BSON(req).decode()
             s_method = 'handle_' + req.pop('method')
             method = getattr(self, s_method)
             req = _decode_dict(req) #fixes the keyword param in unicode issue
@@ -66,7 +66,7 @@ class SeerService(object):
             res = dict(status='ok', res=res)
         except:
             res = dict(status='error', res=traceback.format_exc())
-        return BSON.from_dict(res)
+        return BSON.encode(res)
 
     def handle_get_config(self, key):
         return dict(value=getattr(self.seer.config, key))
