@@ -9,8 +9,9 @@ from datetime import datetime
 from . import models as M
 from .Session import Session
 
-from SimpleCV import Camera, VirtualCamera
-from SimpleCV import ImageSet
+from SimpleCV import Camera, VirtualCamera, Kinect
+from SimpleCV import ImageSet, Image
+import numpy as np
 
 log = logging.getLogger(__name__)
 
@@ -55,11 +56,13 @@ class SimpleSeer(object):
                 self.cameras.append(VirtualCamera(camerainfo['source'], camerainfo['virtual']))
             elif camerainfo.has_key('kinect'):
                 k = Kinect()
+                k._usedepth = 0
+                k._usematrix = 0
                 if camerainfo["kinect"] == "depth":
                     k._usedepth = 1
-                else:
-                    k._usedepth = 0
-
+                elif camerainfo["kinect"] == "matrix":
+                    k._usematrix = 1
+                
                 self.cameras.append(k)
             else:
                 id = camerainfo['id']
@@ -191,9 +194,12 @@ class SimpleSeer(object):
         for c in self.cameras:
             img = ""
             if c.__class__.__name__ == "Kinect" and c._usedepth == 1: 
-              img = c.getDepth() 
+                img = c.getDepth()
+            elif c.__class__.__name__ == "Kinect" and c._usematrix == 1:
+                mat = c.getDepthMatrix().transpose()
+                img = Image(np.clip(mat - np.min(mat), 0, 255))
             else:
-              img = c.getImage()
+                img = c.getImage()
             if self.config.cameras[0].has_key('crop'):
                 img = img.crop(*self.config.cameras[0]['crop'])
             frame = M.Frame(capturetime = datetime.utcnow(), 

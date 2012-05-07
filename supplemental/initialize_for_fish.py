@@ -1,4 +1,19 @@
+#!/usr/bin/env python
 
+from SimpleSeer.base import *
+from SimpleSeer.Session import Session
+
+if (len(sys.argv) > 1):
+   config_file = sys.argv[1] 
+else:
+   config_file = "../default.cfg"
+
+Session(config_file)
+
+from SimpleSeer.models.Inspection import Inspection
+from SimpleSeer.models.Inspection import Measurement 
+from SimpleSeer.models.OLAP import OLAP 
+ 
 
 Inspection.objects.delete()
 Measurement.objects.delete()

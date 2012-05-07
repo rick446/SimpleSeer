@@ -12,15 +12,17 @@ Session(config_file)
 
 from SimpleSeer.models.Frame import Frame
 
-if not Session().max_imagedata:
-  print "No maximum number of images set, skipping cleanup" 
+if not Session().retention:
+  print "No retention policy set, skipping cleanup" 
   exit()
 
-max = Session().max_imagedata
+retention = Session().retention
 
-for f in Frame.objects(imgfile__ne = None).order_by('-capturetime').skip(max):
-  f.imgfile.delete()
-  f.imgfile = None
-  f.save(False)
+while retention["interval"]:
+  for f in Frame.objects(imgfile__ne = None).order_by('-capturetime').skip(retention['maxframes']):
+    f.imgfile.delete()
+    f.imgfile = None
+    f.save(False)
+  sleep(retention["interval"])
 
 
