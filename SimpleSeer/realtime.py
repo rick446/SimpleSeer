@@ -33,7 +33,7 @@ class ChannelManager(object):
 
     def publish(self, channel, message):
         self.pub_sock.send(channel, zmq.SNDMORE)
-        self.pub_sock.send(BSON.from_dict(message))
+        self.pub_sock.send(BSON.encode(message))
 
     def subscribe(self, name):
         name=str(name)

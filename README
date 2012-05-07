@@ -61,9 +61,10 @@ Mac OS X (Using homebrew)
 
 
 
-Ubuntu Linux 12.04 (Using apt-get)
+Ubuntu Linux 12.04 (as root)
 =======
-> apt-get install mongodb-server python-dev
+> (TODO add simplecv setup instructions here)
+> apt-get install mongodb-server python-dev libzmq-dev
 > pip install -r pip.requirements
 > python setup.py develop
 
