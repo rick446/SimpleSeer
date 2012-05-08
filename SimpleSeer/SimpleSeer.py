@@ -9,11 +9,26 @@ from datetime import datetime
 from . import models as M
 from .Session import Session
 
-from SimpleCV import Camera, VirtualCamera, Kinect
+from SimpleCV import Camera, VirtualCamera, Kinect, FrameSource
 from SimpleCV import ImageSet, Image
 import numpy as np
+from glob import glob
 
 log = logging.getLogger(__name__)
+
+class DirectoryCamera(FrameSource):
+    filelist = []
+    counter = 0
+
+    def __init__(self, path):
+        self.filelist = glob(path)
+        self.counter = 0
+        
+    def getImage(self):
+        i = Image(self.filelist[self.counter])
+        self.counter = (self.counter + 1) % len(self.filelist)
+        return i
+
 
 class SimpleSeer(object):
     """
@@ -54,6 +69,8 @@ class SimpleSeer(object):
 
             if camerainfo.has_key('virtual'):
                 self.cameras.append(VirtualCamera(camerainfo['source'], camerainfo['virtual']))
+            elif camerainfo.has_key('directory'):
+                self.cameras.append(DirectoryCamera(camerainfo['directory']))
             elif camerainfo.has_key('kinect'):
                 k = Kinect()
                 k._usedepth = 0

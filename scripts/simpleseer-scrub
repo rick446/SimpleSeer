@@ -19,10 +19,12 @@ if not Session().retention:
 retention = Session().retention
 
 while retention["interval"]:
-  for f in Frame.objects(imgfile__ne = None).order_by('-capturetime').skip(retention['maxframes']):
+  csr = Frame.objects(imgfile__ne = None).order_by('-capturetime').skip(retention['maxframes'])
+  for f in csr:
     f.imgfile.delete()
     f.imgfile = None
     f.save(False)
+  print "purged ",csr.count()," frame files"
   time.sleep(retention["interval"])
 
 
