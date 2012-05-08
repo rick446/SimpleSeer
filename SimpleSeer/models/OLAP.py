@@ -64,30 +64,29 @@ class Chart:
     
     def dataRange(self, dataSet):
 	# compute the min and max values suggested for the chart drawing
+		ranges = dict()
 	
 		yvals = np.hsplit(np.array(dataSet),2)[1]
 		std = np.std(yvals)
 		mean = np.mean(yvals)
 		
-		minFound = np.min(yvals)
+		ranges['max'] = int(mean + 3*std)
+		ranges['min'] = int(mean - 3*std)
 		
-		maxRange = mean + 3*std
-		minRange = mean - 3*std
-		 
-		# Try to detect cases where the data is always positive
-		if (minFound == 0) and (minRange < 0): minRange = 0 	
-		 
-		return {'min': minRange, 'max': maxRange}
+		return ranges
     
     def createChart(self, resultSet, chartInfo):
         # This function will change to handle the different formats
         # required for different charts.  For now, just assume nice
         # graphs of (x,y) coordiantes
         
+        chartRange = self.dataRange(resultSet['data'])
+        print chartRange
+        
         chartData = { 'chartType': chartInfo['name'],
                       'chartColor': chartInfo['color'],
                       'labels': resultSet['labels'],
-                      'range': self.dataRange(resultSet['data']),
+                      'range': chartRange,
                       'data': resultSet['data'] }
         
         return chartData
