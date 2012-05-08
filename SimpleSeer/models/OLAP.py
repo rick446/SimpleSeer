@@ -70,8 +70,12 @@ class Chart:
 		std = np.std(yvals)
 		mean = np.mean(yvals)
 		
+		minFound = np.min(yvals)
+		
 		ranges['max'] = int(mean + 3*std)
 		ranges['min'] = int(mean - 3*std)
+		
+		if (minFound > 0) and (ranges['min'] < 0): ranges['min'] = 0
 		
 		return ranges
     
