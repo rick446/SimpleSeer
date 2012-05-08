@@ -8,7 +8,7 @@ from SimpleSeer import util
 from .base import SimpleDoc
 from .FrameFeature import FrameFeature
 
-class Frame(mongoengine.Document, SimpleDoc):
+class Frame(SimpleDoc, mongoengine.Document):
     """
         Frame Objects are a mongo-friendly wrapper for SimpleCV image objects,
         containing additional properties for the originating camera and time of capture.

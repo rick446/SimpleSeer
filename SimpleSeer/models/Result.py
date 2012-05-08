@@ -2,7 +2,7 @@ import mongoengine
 
 from .base import SimpleDoc
 
-class Result(mongoengine.Document, SimpleDoc):
+class Result(SimpleDoc, mongoengine.Document):
     """
     """
     #this needs some work yet, should be much simpler

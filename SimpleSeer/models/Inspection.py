@@ -8,7 +8,7 @@ from .base import SimpleDoc
 from .Measurement import Measurement
 from .FrameFeature import FrameFeature
 
-class Inspection(mongoengine.Document, SimpleDoc):
+class Inspection(SimpleDoc, mongoengine.Document):
     """
     
     An Inspection determines what part of an image to look at from a given camera

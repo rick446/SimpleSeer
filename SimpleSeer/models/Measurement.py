@@ -3,7 +3,7 @@ import mongoengine
 from .base import SimpleDoc
 from .Result import Result
 
-class Measurement(mongoengine.Document, SimpleDoc):
+class Measurement(SimpleDoc, mongoengine.Document):
     """
         The measurement object takes any regions of interest in an Inspection and
         returns a Result object with the appropriate measurement.

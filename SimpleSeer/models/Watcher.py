@@ -3,7 +3,7 @@ import mongoengine
 from .base import SimpleDoc
 from SimpleSeer import util 
 
-class Watcher(mongoengine.Document, SimpleDoc):
+class Watcher(SimpleDoc, mongoengine.Document):
     """
     The Watcher reviews results in SimpleSeer, and has two handler patterns:
       - self.conditions holds a list of conditions and parameters and returns a message pass or fail.

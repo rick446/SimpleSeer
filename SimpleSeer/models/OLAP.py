@@ -9,7 +9,7 @@ from .base import SimpleDoc
 from .Inspection import Inspection
 from .Result import Result
 
-class OLAP(mongoengine.Document, SimpleDoc):
+class OLAP(SimpleDoc, mongoengine.Document):
     # General flow designed for:
     # - One or more Queries to retrieve data from database
     # - Zero or more DescriptiveStatistics, computed from Queries
@@ -57,8 +57,8 @@ class OLAP(mongoengine.Document, SimpleDoc):
         c = Chart()
         chartSpec = c.createChart(resultSet, self.chartInfo)
         return chartSpec
-
         
+
 class Chart:
     # Takes the data and puts it in a format for charting
     
