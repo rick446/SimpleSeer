@@ -6,7 +6,7 @@ import numpy as np
 from .base import SimpleDoc
 from .Measurement import Measurement
 
-class Statistic(mongoengine.Document, SimpleDoc):
+class Statistic(SimpleDoc, mongoengine.Document):
     """
     NOTE: this class is not tested code
     s = Statistic( {

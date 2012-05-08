@@ -9,7 +9,7 @@ from .base import SimpleDoc
 from .Inspection import Inspection
 from .Result import Result
 
-class OLAP(mongoengine.Document, SimpleDoc):
+class OLAP(SimpleDoc, mongoengine.Document):
     # General flow designed for:
     # - One or more Queries to retrieve data from database
     # - Zero or more DescriptiveStatistics, computed from Queries
@@ -30,15 +30,22 @@ class OLAP(mongoengine.Document, SimpleDoc):
     def __repr__(self):
         return "<OLAP %s>" % self.name
         
-    def execute(self, sincetime = 0):
-        # Get the resultset
-        # Currently assume only one query (which will give random data)
+    def execute(self, sincetime = 0, limitresults = None):
         r = ResultSet()
         
         queryinfo = self.queryInfo.copy()
         if sincetime > 0:
             queryinfo['since'] = sincetime
         
+        # If provided a limit, always use that limit
+        # Else, if not defined in OLAP, use 500
+        # Otherwise, use the one defined in OLAP
+        if limitresults:
+			queryinfo['limit'] = limitresults
+        elif not queryinfo.has_key('limit'):
+			queryinfo['limit'] = 500
+		
+			
         resultSet = r.execute(queryinfo)
         
         # Check if any descriptive processing
@@ -50,8 +57,8 @@ class OLAP(mongoengine.Document, SimpleDoc):
         c = Chart()
         chartSpec = c.createChart(resultSet, self.chartInfo)
         return chartSpec
-
         
+
 class Chart:
     # Takes the data and puts it in a format for charting
     
@@ -132,7 +139,7 @@ class ResultSet:
         if queryInfo.has_key('since'):
             query['capturetime__gt']= datetime.utcfromtimestamp(queryInfo['since'])
 
-        rs = Result.objects(**query).order_by('capturetime')
+        rs = Result.objects(**query).order_by('capturetime')[:queryInfo['limit']]
 
         outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric] for r in rs]
         #our timestamps are already in UTC, so we need to use a localtime conversion

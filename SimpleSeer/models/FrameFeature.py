@@ -8,7 +8,7 @@ import SimpleCV
 
 from .base import SimpleEmbeddedDoc
 
-class FrameFeature(mongoengine.EmbeddedDocument, SimpleEmbeddedDoc):
+class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
    
     featuretype = mongoengine.StringField()
     featuredata = mongoengine.DictField()  #this holds any type-specific feature data
