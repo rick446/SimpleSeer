@@ -23,6 +23,6 @@ while retention["interval"]:
     f.imgfile.delete()
     f.imgfile = None
     f.save(False)
-  sleep(retention["interval"])
+  time.sleep(retention["interval"])
 
 
