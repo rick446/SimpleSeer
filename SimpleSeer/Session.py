@@ -34,7 +34,7 @@ class Session():
         for k in config.keys():
             self.__dict__[k] = config[k]
             
-        mongoengine.connect(self.database, self.mongo)
+        mongoengine.connect(self.database, **self.mongo)
         
         #self.redis = SmartJSONRedis(**self.redis_config)
         #for k in config.keys():
