@@ -260,11 +260,17 @@ def olap_since(olap_name, timestamp):
 
 @route('/olap/<olap_name>/since/<timestamp>/limit/<limit>', methods=['GET'])
 @util.jsonify
-def olap_since_limit(olap_name, timestamp):
+def olap_since_limit(olap_name, timestamp, limit):
     o = M.OLAP.objects.get(name = olap_name)
 
-    return o.execute(sincetime = int(timestamp), limitresults=limit)
+    return o.execute(sincetime = int(timestamp), limitresults=int(limit))
 
+@route('/olap/<olap_name>/limit/<limit>', methods=['GET'])
+@util.jsonify
+def olap_limit(olap_name, limit):
+    o = M.OLAP.objects.get(name = olap_name)
+
+    return o.execute(limitresults=int(limit))
 
 @route('/plugin_js', methods=['GET', 'POST'])
 def plugin_js():
