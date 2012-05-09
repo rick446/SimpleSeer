@@ -10,9 +10,12 @@ from SimpleSeer import service
 
 def main():
    # Startup auxiliary processes
-   Process(target=pubsub_broker).start()
-   Process(target=web_server).start()
-
+   pubsub = Process(target=pubsub_broker)
+   pubsub.daemon = True
+   pubsub.start()
+   web = Process(target=web_server)
+   web.daemon = True
+   web.start()
    compute_server()
 
 def configure_logging():
