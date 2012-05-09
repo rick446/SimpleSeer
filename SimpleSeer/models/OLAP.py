@@ -142,7 +142,7 @@ class ResultSet:
         if queryInfo.has_key('since'):
             query['capturetime__gt']= datetime.utcfromtimestamp(queryInfo['since'])
 
-        rs = Result.objects(**query).order_by('capturetime')[:queryInfo['limit']]
+        rs = Result.objects(**query).order_by('capturetime')[len(Result.objects)-queryInfo['limit']:len(Result.objects)]
 
         outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric] for r in rs]
         #our timestamps are already in UTC, so we need to use a localtime conversion
