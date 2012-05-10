@@ -29,7 +29,7 @@ class SeerKernel(object):
         self.seer = seer
 
     def run(self):
-        from SimpleSeer import models as M
+        from . import models as M
         from IPython.zmq.ipkernel import IPKernelApp
         logging.getLogger('IPKernelApp').disabled = True
         app = IPKernelApp.instance()
