@@ -19,6 +19,8 @@ def main():
         'core', description='Run the core server')
     scrub = subparsers.add_parser(
         'scrub', description='Run the frame scrubber')
+    shell = subparsers.add_parser(
+        'shell', description='Run the ipython shell')
 
     parser.add_argument(
         '-l', '--logging', dest='logging', default='logging.ini')

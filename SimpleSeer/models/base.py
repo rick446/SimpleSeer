@@ -51,4 +51,5 @@ class WithPlugins(object):
 
     def get_plugin(self, name):
         '''Get a named plugin and instantiate it with the model instance'''
-        return self._plugins[name](self)
+        plugins = getattr(self, '_plugins', {})
+        return plugins[name](self)
