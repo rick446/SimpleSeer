@@ -7,60 +7,83 @@ import logging.config
 from multiprocessing import Process
 
 def main():
-   parser = argparse.ArgumentParser()
-   subparsers = parser.add_subparsers(
-      title='subcommands',
-      description='valid subcommands')
-   broker = subparsers.add_parser(
-      'broker', description='Run the message broker')
-   web = subparsers.add_parser(
-      'web', description='Run the web server')
-   core = subparsers.add_parser(
-      'core', description='Run the core server')
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(
+        title='subcommands',
+        description='valid subcommands')
+    broker = subparsers.add_parser(
+        'broker', description='Run the message broker')
+    web = subparsers.add_parser(
+        'web', description='Run the web server')
+    core = subparsers.add_parser(
+        'core', description='Run the core server')
+    scrub = subparsers.add_parser(
+        'scrub', description='Run the frame scrubber')
 
-   parser.add_argument('-l', '--logging', dest='logging', default='logging.ini')
-   parser.add_argument('-c', '--config', dest='config', default='default.cfg')
-   broker.set_defaults(func=pubsub_broker)
-   web.set_defaults(func=web_server)
-   core.set_defaults(func=compute_server)
+    parser.add_argument(
+        '-l', '--logging', dest='logging', default='logging.ini')
+    parser.add_argument(
+        '-c', '--config', dest='config', default='default.cfg')
+    broker.set_defaults(func=pubsub_broker)
+    web.set_defaults(func=web_server)
+    core.set_defaults(func=compute_server)
+    scrub.set_defaults(func=scrub)
 
-   args = parser.parse_args()
-   logging.config.fileConfig(args.logging)
-   from SimpleSeer.Session import Session
+    args = parser.parse_args()
+    logging.config.fileConfig(args.logging)
+    from SimpleSeer.Session import Session
 
-   session = Session(args.config)
-   args.func(session)
+    session = Session(args.config)
+    args.func(session)
 
 def compute_server(session):
-   from SimpleSeer.SimpleSeer import SimpleSeer
-   from SimpleSeer.service import SeerService
-   from SimpleSeer.Shell import SeerKernel
-   seer = SimpleSeer()
-   SeerService(seer).start()
-   # SeerService(seer).run()
-   # SeerKernel must run in main thread
-   SeerKernel(seer).run()
+    from SimpleSeer.SimpleSeer import SimpleSeer
+    from SimpleSeer.service import SeerService
+    from SimpleSeer.Shell import SeerKernel
+    seer = SimpleSeer()
+    SeerService(seer).start()
+    # SeerService(seer).run()
+    # SeerKernel must run in main thread
+    SeerKernel(seer).run()
 
 def web_server(session):
-   init_gevent_subprocess()
-   from SimpleSeer.Web import WebServer, make_app
-   web = WebServer(make_app())
-   web.run_gevent_server()
+    init_gevent_subprocess()
+    from SimpleSeer.Web import WebServer, make_app
+    web = WebServer(make_app())
+    web.run_gevent_server()
 
 def pubsub_broker(session):
-   init_gevent_subprocess()
-   from SimpleSeer.broker import PubSubBroker
-   psb = PubSubBroker(session.pub_uri, session.sub_uri)
-   psb.serve_forever()
+    init_gevent_subprocess()
+    from SimpleSeer.broker import PubSubBroker
+    psb = PubSubBroker(session.pub_uri, session.sub_uri)
+    psb.serve_forever()
+
+def scrub(session):
+    from SimpleSeer import models as M
+    retention = session.retention
+    if not retention:
+        log.info('No retention policy set, skipping cleanup')
+        return
+    while retention['interval']:
+        q_csr = M.Frame.objects(imgfile__ne = None)
+        q_csr = q_csr.order_by('-capturetime')
+        q_csr = q_csr.skip(retention['maxframes'])
+        for f in csr:
+            f.imgfile.delete()
+            f.imgfile = None
+            f.save(False)
+        log.info('Purged %d frame files', csr.count())
+        time.sleep(retention["interval"])
 
 def init_gevent_subprocess():
-   # Monkey patch socket routines
-   from gevent import monkey
-   monkey.patch_all()
-   # Proxy access to the seer object
-   from SimpleSeer import SimpleSeer
-   from SimpleSeer.service import SeerClient
-   SimpleSeer.SimpleSeer = SeerClient()
+    # Monkey patch socket routines
+    from gevent import monkey
+    monkey.patch_all()
+
+    # Proxy access to the seer object
+    from SimpleSeer import SimpleSeer
+    from SimpleSeer.service import SeerClient
+    SimpleSeer.SimpleSeer = SeerClient()
 
 if __name__ == '__main__':
    main()
