@@ -4,7 +4,6 @@ import threading
 from functools import partial
 
 import zmq
-from IPython.zmq.ipkernel import IPKernelApp
 from SimpleCV.Shell import setup_shell
 
 from .realtime import ChannelManager
@@ -30,6 +29,7 @@ class SeerKernel(object):
         self.seer = seer
 
     def run(self):
+        from IPython.zmq.ipkernel import IPKernelApp
         logging.getLogger('IPKernelApp').disabled = True
         app = IPKernelApp.instance()
         app.connection_file='seer.json'

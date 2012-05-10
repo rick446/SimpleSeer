@@ -1,9 +1,9 @@
 import mongoengine
 
-from .base import SimpleDoc
+from .base import SimpleDoc, WithPlugins
 from .Result import Result
 
-class Measurement(SimpleDoc, mongoengine.Document):
+class Measurement(SimpleDoc, WithPlugins, mongoengine.Document):
     """
         The measurement object takes any regions of interest in an Inspection and
         returns a Result object with the appropriate measurement.
@@ -49,7 +49,7 @@ class Measurement(SimpleDoc, mongoengine.Document):
         #TODO more advanced filtering options here
         
         if hasattr(self, self.method):
-            function_ref = getattr(self, self.method)
+            function_ref = self.get_plugin(self.method)
             values = function_ref(frame, featureset)
 
             return self.toResults(frame, values)

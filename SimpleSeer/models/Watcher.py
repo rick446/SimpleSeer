@@ -1,9 +1,9 @@
 import mongoengine
 
-from .base import SimpleDoc
+from .base import SimpleDoc, WithPlugins
 from SimpleSeer import util 
 
-class Watcher(SimpleDoc, mongoengine.Document):
+class Watcher(SimpleDoc, WithPlugins, mongoengine.Document):
     """
     The Watcher reviews results in SimpleSeer, and has two handler patterns:
       - self.conditions holds a list of conditions and parameters and returns a message pass or fail.
@@ -49,7 +49,7 @@ class Watcher(SimpleDoc, mongoengine.Document):
             outcomes.append(method_ref(results, **condition))
                 
         for handler in self.handlers:
-            function_ref = getattr(self, handler)
+            function_ref = self.get_plugin(handler)
             function_ref(outcomes)
     
         return outcomes

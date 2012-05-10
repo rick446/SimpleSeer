@@ -19,5 +19,18 @@ setup(name="SimpleSeer",
   requires=[],
   package_data  = { },
   scripts=['scripts/simpleseer', 'scripts/simpleseer-scrub'],
-  data_files=[ ('/etc/',['etc/simpleseer.cfg']) ]
-  )
+  data_files=[ ('/etc/',['etc/simpleseer.cfg']) ],
+  entry_points='''
+  [seer.plugins.inspection]
+  barcode=SimpleSeer.plugins.barcode:Barcode
+  blob=SimpleSeer.plugins.blob:Blob
+  motion=SimpleSeer.plugins.motion:Motion
+  region=SimpleSeer.plugins.region:Region
+
+  [seer.plugins.measurement]
+  blob_length=SimpleSeer.plugins.blob:BlobLength
+  blob_count=SimpleSeer.plugins.blob:BlobCount
+
+  [seer.plugins.watcher]
+  smsalert=SimpleSeer.plugins.smsalert:SMSAlert
+  ''')

@@ -4,11 +4,11 @@ import mongoengine
 
 from SimpleSeer import util 
 
-from .base import SimpleDoc
+from .base import SimpleDoc, WithPlugins
 from .Measurement import Measurement
 from .FrameFeature import FrameFeature
 
-class Inspection(SimpleDoc, mongoengine.Document):
+class Inspection(SimpleDoc, WithPlugins, mongoengine.Document):
     """
     
     An Inspection determines what part of an image to look at from a given camera
@@ -72,7 +72,7 @@ class Inspection(SimpleDoc, mongoengine.Document):
         if parents.has_key(self.id):
             return []
         
-        method_ref = getattr(self, self.method)
+        method_ref = self.get_plugin(self.method)
         #get the ROI function that we want
         #note that we should validate/roi method
  

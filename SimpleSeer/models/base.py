@@ -40,3 +40,15 @@ class SimpleEmbeddedDoc(object):
     """
     _jsonignore = [None]
     
+class WithPlugins(object):
+
+    @classmethod
+    def register_plugin(cls, name, value):
+        '''Register a plugin on the class'''
+        if not hasattr(cls, '_plugins'):
+            cls._plugins = {}
+        cls._plugins[name] = value
+
+    def get_plugin(self, name):
+        '''Get a named plugin and instantiate it with the model instance'''
+        return self._plugins[name](self)
