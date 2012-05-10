@@ -2,20 +2,31 @@
 import sys
 import time
 import logging
+import signal
 
 from multiprocessing import Process
 
 from SimpleSeer.Session import Session
 from SimpleSeer import service
 
+pubsub = None
+web = None
+
+def signal_handler(signal, frame):
+   pubsub.terminate()
+   web.terminate()
+
 def main():
    # Startup auxiliary processes
+   global pubsub
+   global web
    pubsub = Process(target=pubsub_broker)
    pubsub.daemon = True
    pubsub.start()
    web = Process(target=web_server)
    web.daemon = True
    web.start()
+   signal.signal(signal.SIGTERM, signal_handler)
    compute_server()
 
 def configure_logging():
