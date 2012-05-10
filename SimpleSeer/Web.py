@@ -1,4 +1,5 @@
 import os
+import logging
 
 import gevent
 from gevent_zeromq import zmq
@@ -11,6 +12,8 @@ from . import crud
 from .Session import Session
 
 DEBUG = True
+
+log = logging.getLogger(__name__)
 
 def make_app():
     app = Flask(__name__)
@@ -56,6 +59,7 @@ class WebServer(object):
             (self.host, self.port),
             self.app, namespace='socket.io',
             policy_server=False)
+        log.info('Web server running on %s:%s', self.host, self.port)
         server.serve_forever()
         
 

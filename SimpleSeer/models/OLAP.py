@@ -148,7 +148,6 @@ class ResultSet:
 
         outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric] for r in rs[::-1]]
         #our timestamps are already in UTC, so we need to use a localtime conversion
-        
         dataset = { 'startTime': outputVals[0][0],
                     'endTime': outputVals[-1][0],
                     'timestamp': gmtime(),
