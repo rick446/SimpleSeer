@@ -18,5 +18,6 @@ setup(name="SimpleSeer",
   zip_safe = False,
   requires=[],
   package_data  = { },
-  scripts=['scripts/simpleseer', 'scripts/simpleseer-scrub']
+  scripts=['scripts/simpleseer', 'scripts/simpleseer-scrub'],
+  data_files=[ ('/etc/',['etc/simpleseer.cfg']) ]
   )

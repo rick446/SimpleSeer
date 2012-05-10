@@ -60,9 +60,12 @@ class SimpleSeer(object):
         self.config = Session()
 
         self.cameras = []
-        
+       
+
         #TODO, make this sensitive to module.__path__
-        self.pluginpath = "./SimpleSeer/plugins"
+	#modules don't have __path__, but they do have __file__
+	#can hack out the path from there
+	self.pluginpath = __file__[:-14] + '/plugins'
         
         for camera in self.config.cameras:
             camerainfo = camera.copy()
