@@ -4,7 +4,7 @@ import time
 import argparse
 import logging.config
 
-from multiprocessing import Process
+import Pyro4
 
 def main():
     parser = argparse.ArgumentParser()
@@ -26,10 +26,10 @@ def main():
         '-l', '--logging', dest='logging', default='logging.ini')
     parser.add_argument(
         '-c', '--config', dest='config', default='default.cfg')
-    broker.set_defaults(func=pubsub_broker)
-    web.set_defaults(func=web_server)
-    core.set_defaults(func=compute_server)
-    scrub.set_defaults(func=scrub_data)
+    core.set_defaults(func=run_core)
+    broker.set_defaults(func=run_broker)
+    web.set_defaults(func=run_web)
+    scrub.set_defaults(func=run_scrubber)
     shell.set_defaults(func=run_shell)
 
     args = parser.parse_args()
@@ -40,29 +40,29 @@ def main():
     print args
     args.func(session)
 
-def compute_server(session):
+def run_core(session):
     from SimpleSeer.SimpleSeer import SimpleSeer
-    from SimpleSeer.service import SeerService
-    from SimpleSeer.Shell import SeerKernel
-    seer = SimpleSeer()
-    SeerService(seer).start()
-    # SeerService(seer).run()
-    # SeerKernel must run in main thread
-    SeerKernel(seer).run()
 
-def web_server(session):
+    seer = SimpleSeer()
+    Pyro4.Daemon.serveSimple(
+        {
+            seer: "sightmachine.seer"
+            },
+        ns=True)
+
+def run_web(session):
     init_gevent_subprocess()
     from SimpleSeer.Web import WebServer, make_app
     web = WebServer(make_app())
     web.run_gevent_server()
 
-def pubsub_broker(session):
+def run_broker(session):
     init_gevent_subprocess()
     from SimpleSeer.broker import PubSubBroker
     psb = PubSubBroker(session.pub_uri, session.sub_uri)
     psb.serve_forever()
 
-def scrub_data(session):
+def run_scrubber(session):
     from SimpleSeer import models as M
     
     log = logging.getLogger(__name__)
@@ -82,18 +82,29 @@ def scrub_data(session):
         time.sleep(retention["interval"])
 
 def run_shell(session):
-    log = logging.getLogger(__name__)
-    log.error('SHell not supported yet')
+    from IPython.config.loader import Config
+    from IPython.frontend.terminal.embed import InteractiveShellEmbed
+    from SimpleSeer.service import SeerProxy2
+    banner = '''\nRunning the SimpleSeer interactive shell.\n'''
+    exit_msg = '\n... [Exiting the SimpleSeer interactive shell] ...\n'
+    user_ns = dict(
+        seer=SeerProxy2())
+    cfg = Config()
+    cfg.PromptManager.in_template = "SimpleSeer:\\#> "
+    cfg.PromptManager.out_template = "SimpleSeer:\\#: "
+    shell= InteractiveShellEmbed(
+        config=cfg, banner1=banner, exit_msg=exit_msg,
+        user_ns=user_ns)
+    shell()
 
 def init_gevent_subprocess():
     # Monkey patch socket routines
     from gevent import monkey
     monkey.patch_all()
 
-    # Proxy access to the seer object
+    # Disable access to the seer object (just in case!)
     from SimpleSeer import SimpleSeer
-    from SimpleSeer.service import SeerClient
-    SimpleSeer.SimpleSeer = SeerClient()
+    SimpleSeer.SimpleSeer = None
 
 if __name__ == '__main__':
    main()

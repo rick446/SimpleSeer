@@ -1,96 +1,37 @@
-import threading
-import traceback
-from cStringIO import StringIO
+from itertools import chain
 
-import zmq
-from bson import BSON, Binary
-from .Session import _decode_dict
-from . import util
+import Pyro4
 
-class SeerClient(object):
+from . import models as M
+
+class SeerProxy2(object):
+    '''It's a proxy of a Pyro4.Proxy, so it's a proxy^2. Get it?'''
     __shared_state = { "initialized": False }
 
     def __init__(self):
         self.__dict__ = self.__shared_state
         if self.initialized: return
         self.initialized = True
+        self._proxy = Pyro4.Proxy('PYRONAME:sightmachine.seer')
 
-        context = zmq.Context.instance()
-        self.socket = context.socket(zmq.REQ)
-        self.socket.connect('ipc:///tmp/seer')
+    @property
+    def lastframes(self):
+        frame_ids = self.get_last_frame_ids()
+        all_ids = [ id for id in chain(*frame_ids)
+                    if id is not None ]
+        frame_index = dict(
+            (f.id, f) for f in M.Frame.objects(id__in=all_ids))
+        frames = [
+            [ frame_index.get(id) for id in ids ]
+            for ids in frame_ids ]
+        return frames
 
-    def __call__(self, method, **args):
-        req = dict(method=method, **args)
-        b_req = BSON.encode(req)
-        self.socket.send(b_req)
-        b_res = self.socket.recv()
-        res = BSON(b_res).decode()
-        if res['status'] == 'ok': return res['res']
-        assert res['status'] == 'ok'
+    def get_frame(self, index, camera):
+        id = self.get_frame_id(index, camera)
+        if id is None: return None
+        objs = M.Frame.objects(id=id)
+        if objs: return objs[0]
+        return None
 
-    def get_config(self, key):
-        return self('get_config', key=key)
-
-    def get_image(self, index, camera):
-        return self('get_image', index=index, camera=camera)
-
-    def reload_inspections(self, index, camera):
-        return self('get_image', index=index, camera=camera)
-
-class SeerService(object):
-
-    def __init__(self, seer):
-        self.seer = seer
-
-    def start(self):
-        thd = threading.Thread(target=self.run)
-        thd.daemon = True
-        thd.start()
-
-    def run(self):
-        context = zmq.Context.instance()
-        socket = context.socket(zmq.REP)
-        socket.bind('ipc:///tmp/seer')
-        while True:
-            req = socket.recv()
-            res = self.handle(req)
-            socket.send(res)
-
-    def handle(self, req):
-        try:
-            req = BSON(req).decode()
-            s_method = 'handle_' + req.pop('method')
-            method = getattr(self, s_method)
-            req = _decode_dict(req) #fixes the keyword param in unicode issue
-            res = method(**req)
-            res = dict(status='ok', res=res)
-        except:
-            res = dict(status='error', res=traceback.format_exc())
-        return BSON.encode(res)
-
-    def handle_get_config(self, key):
-        return dict(value=getattr(self.seer.config, key))
-
-    def handle_get_image(self, index, camera):
-        try:
-            f = util.get_seer().lastframes[index][camera]
-            image = f.image.getPIL()
-        except Exception, ex:
-            print 'Error acquiring image (%r), substituting logo' % ex
-            import SimpleCV
-            image = SimpleCV.Image('logo').getPIL()
-        s = StringIO()
-        try:
-            image.save(s, "webp", quality = 80)
-            return dict(
-                content_type='image/webp',
-                data=Binary(s.getvalue()))
-        except:
-            image.save(s, "jpeg", quality = 80)
-            return dict(
-                content_type='image/jpeg',
-                data=Binary(s.getvalue()))
-
-    def handle_reload_inspections(self):
-        self.seer.reloadInspections()
-        return dict()
+    def __getattr__(self, name):
+        return getattr(self._proxy, name)

@@ -1,7 +1,6 @@
 import os
 import re
 import json
-from cStringIO import StringIO
 
 import bson
 from socketio import socketio_manage
@@ -10,7 +9,7 @@ from flask import request, make_response
 from . import models as M
 from . import util
 from .realtime import RealtimeNamespace
-from .service import SeerClient
+from .service import SeerProxy2
 
 class route(object):
     routes = []
@@ -58,9 +57,9 @@ def frame():
         'camera': 0,
         }
     params.update(request.values)
-    cli = SeerClient()
-    result = cli.get_image(
-        params['index'], params['camera'])
+    seer = SeerProxy2()
+    frame = seer.get_frame(**params)
+    result = frame.serialize()
     resp = make_response(result['data'], 200)
     resp.headers['Content-Type'] = result['content_type']
     return resp

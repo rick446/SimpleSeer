@@ -41,16 +41,6 @@ class SimpleSeer(object):
     web_interface = None
     halt = False
     plugins = {}
-#    cameras = []
-#    shell_thread = ''
-#    display = ''
-#    camera_on = 0
-#    lastframes = []
-#    config = {}
-#    framecount = {}
-#    warnings = []
-#    alerts = []
-#    passed = []
 
     def __init__(self):
         self.__dict__ = self.__shared_state
@@ -63,12 +53,6 @@ class SimpleSeer(object):
 
         self.cameras = []
        
-
-        #TODO, make this sensitive to module.__path__
-	#modules don't have __path__, but they do have __file__
-	#can hack out the path from there
-	self.pluginpath = __file__[:-14] + '/plugins'
-        
         for camera in self.config.cameras:
             camerainfo = camera.copy()
 
@@ -142,11 +126,8 @@ class SimpleSeer(object):
         self.inspections = i
         self.measurements = m
         self.watchers = w
-        return i
 
     def loadPlugins(self):
-        self.plugins = {}
-        plugins = self.plugins
         plugin_types = dict(
             inspection=M.Inspection,
             measurement=M.Measurement,
@@ -158,18 +139,6 @@ class SimpleSeer(object):
                     cls.register_plugin(ep.name, ep.load())
                 except Exception, err:
                     log.error('Failed to load %s plugin %s: %s', ptype, ep.name, err)
-        return self.plugins
-
-        plugin_dirs = [
-            name for name in os.listdir(self.pluginpath)
-            if os.path.isdir(os.path.join(self.pluginpath, name)) ]
-        for plugin in plugin_dirs:
-            try:
-                plugins[plugin] = __import__("SimpleSeer.plugins."+plugin)
-            except ImportError as e:
-                warnings.warn("Plugin " + plugin + " failed " + str(e))
-                
-        return self.plugins
 
     def loadImageSet(self, imgs = None):
         '''
@@ -243,7 +212,7 @@ class SimpleSeer(object):
             
             while len(self.lastframes) > self.config.max_frames:
                 self.lastframes.pop(0)
-            log.info('framecount is %s', len(self.lastframes))
+            # log.info('framecount is %s', len(self.lastframes))
                             
 #            Session().redis.set("framecount", self.framecount)
             count = count + 1
@@ -283,7 +252,7 @@ class SimpleSeer(object):
         if len(self.lastframes):    
             return self.lastframes[-1][index]
         else:
-            frames = Frame.objects.order_by("-capturetime").skip(index)
+            frames = M.Frame.objects.order_by("-capturetime").skip(index)
             if len(frames):
                 return frames[0]
             else:
@@ -293,6 +262,13 @@ class SimpleSeer(object):
         for watcher in self.watchers:
             if watcher.enabled:
                 watcher.check()
+
+    def get_last_frame_ids(self):
+        return [ [ f.id for f in frames ]
+                 for frames in self.lastframes ]
+
+    def get_frame_id(self, index, camera):
+        return self.lastframes[index][camera].id
                 
 #    def update(self):
         

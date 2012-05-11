@@ -1,6 +1,7 @@
 import time
 from datetime import datetime
 
+import mongoengine
 from SimpleCV import Image
 
 class SimpleDoc(object):
@@ -25,6 +26,12 @@ class SimpleDoc(object):
                 ret[k] = v.applyLayers().getBitmap().tostring().encode("base64")
             elif isinstance(v, datetime):
                 ret[k] = int(time.mktime(v.timetuple()) + v.microsecond/1e6)
+            elif isinstance(v, mongoengine.fields.GridFSProxy):
+                data = v.read()
+                if data is None:
+                    ret[k] = None
+                else:
+                    ret['k'] = data.encode('base64')
             else:
                 ret[k] = v
             
