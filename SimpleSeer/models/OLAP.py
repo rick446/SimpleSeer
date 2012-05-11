@@ -67,15 +67,19 @@ class Chart:
 		ranges = dict()
 	
 		yvals = np.hsplit(np.array(dataSet),2)[1]
-		std = np.std(yvals)
-		mean = np.mean(yvals)
-		
-		minFound = np.min(yvals)
-		
-		ranges['max'] = int(mean + 3*std)
-		ranges['min'] = int(mean - 3*std)
-		
-		if (minFound > 0) and (ranges['min'] < 0): ranges['min'] = 0
+		if (len(yvals) > 0):
+			std = np.std(yvals)
+			mean = np.mean(yvals)
+			
+			minFound = np.min(yvals)
+			
+			ranges['max'] = int(mean + 3*std)
+			ranges['min'] = int(mean - 3*std)
+			
+			if (minFound > 0) and (ranges['min'] < 0): ranges['min'] = 0
+		else:
+			ranges['max'] = 0
+			ranges['min'] = 0
 		
 		return ranges
     
@@ -147,9 +151,17 @@ class ResultSet:
 
 
         outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric] for r in rs[::-1]]
+        
+        if (len(outputVals) > 0):
+            startTime = outputVals[0][0]
+            endTime = outputVals[-1][0]
+        else:
+            startTime = 0
+            endTime = 0
+        
         #our timestamps are already in UTC, so we need to use a localtime conversion
-        dataset = { 'startTime': outputVals[0][0],
-                    'endTime': outputVals[-1][0],
+        dataset = { 'startTime': startTime,
+                    'endTime': endTime,
                     'timestamp': gmtime(),
                     'labels': {'dim1': 'Time', 'dim2': 'Motion'},
                     'data': outputVals}
