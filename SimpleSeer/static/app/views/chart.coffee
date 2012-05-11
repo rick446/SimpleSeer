@@ -14,11 +14,11 @@ module.exports = class ChartView extends SubView
     if @lastupdate
       url = url + "/since/" + @lastupdate.toString()
 
-
-    $.getJSON url, (data) =>
+    $.getJSON(url, (data) =>
       if data.data.length == 0
         setTimeout @update, 1000
         return
+   
       @lastupdate = data.data[data.data.length-1][0]
 
       if not @smoothie.seriesSet.length
@@ -33,9 +33,13 @@ module.exports = class ChartView extends SubView
       setTimeout @update, 1000
       @lastupdate = data.data[data.data.length-1][0]
       tz = new Date().getTimezoneOffset() * 60 * 1000
+      $('.alert_error').remove();
       for d in data.data
         @ts.append d[0] * 1000, d[1]
       return
+     ).error =>
+       SimpleSeer.alert('Connection lost','error')
+       setTimeout @update, 1000
 
   render: =>
     super()
