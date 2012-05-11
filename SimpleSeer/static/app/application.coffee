@@ -5,17 +5,24 @@ Application =
     FrameView = require 'views/frame'
     ChartView = require 'views/chart'
     Router = require 'lib/router'
-    OLAP = require 'models/olap'
+    Inspections = require 'collections/inspections'
+    Measurements = require 'collections/measurements'
+    OLAPs = require 'collections/OLAPs'
 
     # Ideally, initialized classes should be kept in controllers & mediator.
     # If you're making big webapp, here's more sophisticated skeleton
     # https://github.com/paulmillr/brunch-with-chaplin
     @homeView = new HomeView()
     @chartView = new ChartView()
-    @charts = new Backbone.Collection
-
-    @charts.url = OLAP.url
+    
+    @inspections = new Inspections()
+    @inspections.fetch()
+    
+    @charts = new OLAPs()
     @charts.fetch()
+    
+    @measurements = new Measurements()
+    @measurements.fetch()
 
     # Instantiate the router
     @router = new Router()

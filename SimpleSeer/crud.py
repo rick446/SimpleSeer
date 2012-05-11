@@ -2,8 +2,6 @@ import bson
 import formencode as fe
 import flask
 import flask_rest
-from formencode import validators as fev
-from formencode import schema as fes
 from werkzeug import exceptions
 
 from .base import jsonencode
@@ -31,10 +29,10 @@ def register(app):
         return error.description, error.code
 
     handlers = [
-        ModelHandler(M.Inspection, InspectionSchema,
+        ModelHandler(M.Inspection, M.InspectionSchema,
                      'inspection', '/inspections'),
-		ModelHandler(M.OLAP, OLAPSchema,
-					 'olap', '/olap')
+        ModelHandler(M.OLAP, M.OLAPSchema, 'olap', '/olaps'),
+        ModelHandler(M.Measurement, M.MeasurementSchema, 'measurement', '/measurements')
        ]
 
     for h in handlers:
@@ -46,33 +44,9 @@ def register(app):
     app.register_blueprint(bp)
 
 
-class InspectionSchema(fes.Schema):
-    parent = V.ObjectId(if_empty=None, if_missing=None)
-    name = fev.UnicodeString(not_empty=True)
-    method = fev.UnicodeString(not_empty=True)
-    camera = fev.UnicodeString(not_empty=True)
-    parameters = V.JSON(if_empty=dict, if_missing=None)
-    filters = V.JSON(if_empty=dict, if_missing=None)
-    richattributes = V.JSON(if_empty=dict, if_missing=None)
-    morphs = fe.ForEach(fev.UnicodeString(), convert_to_list=True)
 
-class OLAPSchema(fes.Schema):
-	name = fev.UnicodeString(not_empty=True)
-	queryInfo = V.JSON(not_empty=True)
-	descInfo = V.JSON(if_empty=None, if_missing=None)
-	chartInfo = V.JSON(not_empty=True)
-	
-class QueryInfoSchema(fes.Schema):
-	name = fev.UnicodeString(not_empty = True)
-	since = V.DateTime(if_empty=0, if_missing=None)
-	
-class DescInfoSchema(fes.Schema):
-	formula = fev.OneOf(['moving', 'mean', 'std'], if_missing=None)
-	window = fev.Int(if_missing=None)
 
-class ChartInfoSchema(fes.Schema):
-	chartType = fev.OneOf(['line', 'bar', 'pie'])
-	chartColor = fev.OneOf(['red', 'green', 'blue'])
+
 
 class ModelHandler(object):
 

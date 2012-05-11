@@ -4,10 +4,34 @@ from datetime import datetime
 
 import mongoengine
 import numpy as np
+from formencode import validators as fev
+from formencode import schema as fes
+import formencode as fe
 
+
+from SimpleSeer import validators as V
 from .base import SimpleDoc
 from .Inspection import Inspection
 from .Result import Result
+
+
+class OLAPSchema(fes.Schema):
+    name = fev.UnicodeString(not_empty=True)
+    queryInfo = V.JSON(not_empty=True)
+    descInfo = V.JSON(if_empty=None, if_missing=None)
+    chartInfo = V.JSON(not_empty=True)
+  
+class QueryInfoSchema(fes.Schema):
+    name = fev.UnicodeString(not_empty = True)
+    since = V.DateTime(if_empty=0, if_missing=None)
+    
+class DescInfoSchema(fes.Schema):
+    formula = fev.OneOf(['moving', 'mean', 'std'], if_missing=None)
+    window = fev.Int(if_missing=None)
+
+class ChartInfoSchema(fes.Schema):
+    chartType = fev.OneOf(['line', 'bar', 'pie'])
+    chartColor = fev.OneOf(['red', 'green', 'blue'])
 
 class OLAP(SimpleDoc, mongoengine.Document):
     # General flow designed for:
