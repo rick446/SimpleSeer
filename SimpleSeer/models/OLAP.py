@@ -66,7 +66,7 @@ class Chart:
 	# compute the min and max values suggested for the chart drawing
 		ranges = dict()
 	
-		yvals = np.hsplit(np.array(dataSet),2)[1]
+		yvals = np.hsplit(np.array(dataSet),[1,2])[1]
 		if (len(yvals) > 0):
 			std = np.std(yvals)
 			mean = np.mean(yvals)
@@ -116,28 +116,27 @@ class DescriptiveStatistic:
                 return resultSet
             
             # assume I want to do the averge on the second dimension
-            xvals, yvals = np.hsplit(np.array(resultSet['data']), 2)
+            xvals, yvals, ids = np.hsplit(np.array(resultSet['data']), [1,2])
             weights = np.repeat(1.0, window) / window
             yvals = np.convolve(yvals.flatten(), weights)[window-1:-(window-1)]
             xvals = xvals[window-1:]
+            ids = ids[window-1:]
             
-            resultSet['data'] = np.hstack((xvals, yvals.reshape(len(xvals),1))).tolist()
+            resultSet['data'] = np.hstack((xvals, yvals.reshape(len(xvals),1), ids)).tolist()
             return resultSet
 
 class ResultSet:    
-    # Class to retrieve data from the database and return as
-    # Numpy matrix
+    # Class to retrieve data from the database and add basic metadata
     
     
     def execute(self, queryInfo):
         # Execute the querystring, returning the results of the
         # query as a list
         #
-        # Entering 'inspection' will do a predefined query to return
+        # Entering 'Motion' will do a predefined query to return
         # inspection objects
         #
         # Other query handling deferred for another day.
-
 
         insp = Inspection.objects.get(name=queryInfo['name'])
 
@@ -148,9 +147,7 @@ class ResultSet:
 
         rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['limit']])
         
-
-
-        outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric] for r in rs[::-1]]
+        outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric, r.inspection, r.frame, r.measurement] for r in rs[::-1]]
         
         if (len(outputVals) > 0):
             startTime = outputVals[0][0]
@@ -163,9 +160,8 @@ class ResultSet:
         dataset = { 'startTime': startTime,
                     'endTime': endTime,
                     'timestamp': gmtime(),
-                    'labels': {'dim1': 'Time', 'dim2': 'Motion'},
+                    'labels': {'dim0': 'Time', 'dim1': 'Motion', 'dim2': 'InspectionID', 'dim3': 'FrameID', 'dim4':'MeasurementID'},
                     'data': outputVals}
         
         return dataset
 	
-
