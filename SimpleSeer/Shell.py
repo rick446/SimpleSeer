@@ -35,7 +35,7 @@ class SeerKernel(object):
         logging.getLogger('IPKernelApp').disabled = True
         app = IPKernelApp.instance()
         app.connection_file='seer.json'
-        app.initialize()
+        app.initialize([])
         app.shell.user_ns.update(
             seer=self.seer,
             M=M,
