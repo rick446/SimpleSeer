@@ -3,6 +3,22 @@ import mongoengine
 from .base import SimpleDoc, WithPlugins
 from .Result import Result
 
+from formencode import validators as fev
+from formencode import schema as fes
+import formencode as fe
+
+from SimpleSeer import validators as V
+
+class MeasurementSchema(fes.Schema):
+    name = fev.UnicodeString(not_empty=True) #TODO, validate on unique name
+    label = fev.UnicodeString(if_missing=None)
+    method = fev.UnicodeString(not_empty=True)
+    parameters = V.JSON(if_empty=dict, if_missing=None)
+    units = fev.UnicodeString(if_missing="px")
+    inspection = V.ObjectId(not_empty=True)
+    featurecriteria = V.JSON(if_empty=dict, if_missing=None)
+
+
 class Measurement(SimpleDoc, WithPlugins, mongoengine.Document):
     """
         The measurement object takes any regions of interest in an Inspection and

@@ -6,6 +6,8 @@ Application =
     ChartView = require 'views/chart'
     Router = require 'lib/router'
     Inspections = require 'collections/inspections'
+    Measurements = require 'collections/measurements'
+    OLAPs = require 'collections/OLAPs'
 
     # Ideally, initialized classes should be kept in controllers & mediator.
     # If you're making big webapp, here's more sophisticated skeleton
@@ -15,6 +17,12 @@ Application =
     
     @inspections = new Inspections()
     @inspections.fetch()
+    
+    @charts = new OLAPs()
+    @charts.fetch()
+    
+    @measurements = new Measurements()
+    @measurements.fetch()
 
     # Instantiate the router
     @router = new Router()

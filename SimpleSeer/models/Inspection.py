@@ -1,12 +1,29 @@
 from copy import deepcopy
 
 import mongoengine
+from formencode import validators as fev
+from formencode import schema as fes
+import formencode as fe
 
-from SimpleSeer import util 
+
+from SimpleSeer import validators as V
+from SimpleSeer import util
+
 
 from .base import SimpleDoc, WithPlugins
 from .Measurement import Measurement
 from .FrameFeature import FrameFeature
+
+class InspectionSchema(fes.Schema):
+    parent = V.ObjectId(if_empty=None, if_missing=None)
+    name = fev.UnicodeString(not_empty=True)
+    method = fev.UnicodeString(not_empty=True)
+    camera = fev.UnicodeString(not_empty=True)
+    parameters = V.JSON(if_empty=dict, if_missing=None)
+    filters = V.JSON(if_empty=dict, if_missing=None)
+    richattributes = V.JSON(if_empty=dict, if_missing=None)
+    morphs = fe.ForEach(fev.UnicodeString(), convert_to_list=True)
+
 
 class Inspection(SimpleDoc, WithPlugins, mongoengine.Document):
     """
