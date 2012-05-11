@@ -37,7 +37,6 @@ def main():
     from SimpleSeer.Session import Session
     
     session = Session(args.config)
-    print args
     args.func(session)
 
 def run_core(session):
