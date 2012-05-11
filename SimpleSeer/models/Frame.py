@@ -102,3 +102,16 @@ class Frame(SimpleDoc, mongoengine.Document):
     @classmethod
     def capture(cls):
         return util.get_seer().capture()
+
+    def serialize(self):
+        s = StringIO()
+        try:
+            self.image.save(s, "webp", quality = 80)
+            return dict(
+                content_type='image/webp',
+                data=s.getvalue())
+        except:
+            self.image.save(s, "jpeg", quality = 80)
+            return dict(
+                content_type='image/jpeg',
+                data=s.getvalue())
