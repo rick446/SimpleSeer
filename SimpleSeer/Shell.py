@@ -4,6 +4,7 @@ import threading
 from functools import partial
 
 import zmq
+from IPython.config.loader import Config
 from SimpleCV.Shell import setup_shell
 
 from .realtime import ChannelManager
@@ -36,6 +37,10 @@ class SeerKernel(object):
         app = IPKernelApp.instance()
         app.connection_file='seer.json'
         app.initialize()
+        cfg = Config()
+        cfg.PromptManager.in_template = "SimpleSeer:\\#> "
+        cfg.PromptManager.out_template = "SimpleSeer:\\#: "
+        app.shell.config = cfg
         app.shell.user_ns.update(
             seer=self.seer,
             M=M,
@@ -43,6 +48,17 @@ class SeerKernel(object):
         log.info('Kernel is running on %s', app.connection_file)
         self.seer.config.connection_file = app.connection_file
         app.start()
+
+class EmbeddedShell(object):
+
+    def __init__(self, kernel_file):
+        from IPython.frontend.terminal.ipapp import TerminalIPythonApp
+        from IPython.zmq.zmqshell import ZMQInteractiveShell
+        self.app = TerminalIPythonApp.instance()
+        self.app.initialize(['console', '--existing', 'seer.json'])
+
+    def run(self):
+        self.app.start()
 
 def anotebook():
     from IPython.frontend.html.notebook.notebookapp import NotebookApp
