@@ -22,4 +22,12 @@ Application =
     # Freeze the object
     Object.freeze? this
 
+  alert: (message, alert_type) ->
+    _set = true
+    $(".alert_"+alert_type).each (e,v)->
+      if v.innerHTML == message
+        _set = false
+    if _set
+      $("#messages").append('<div class="alert alert_'+alert_type+'">'+message+'</div>')
+
 module.exports = Application
