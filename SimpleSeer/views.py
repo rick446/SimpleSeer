@@ -58,8 +58,7 @@ def frame():
         }
     params.update(request.values)
     seer = SeerProxy2()
-    frame = seer.get_frame(**params)
-    result = frame.serialize()
+    result = seer.get_image(**params)
     resp = make_response(result['data'], 200)
     resp.headers['Content-Type'] = result['content_type']
     return resp

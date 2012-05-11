@@ -270,6 +270,10 @@ class SimpleSeer(object):
     def get_frame_id(self, index, camera):
         return self.lastframes[index][camera].id
                 
+    def get_image(self, index, camera):
+        frame = self.lastframes[index][camera]
+        return frame.serialize()
+
 #    def update(self):
         
 #        count = 0
