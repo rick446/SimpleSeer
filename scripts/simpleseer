@@ -30,6 +30,7 @@ def main():
     web.set_defaults(func=web_server)
     core.set_defaults(func=compute_server)
     scrub.set_defaults(func=scrub)
+    shell.set_defaults(func=run_shell)
 
     args = parser.parse_args()
     logging.config.fileConfig(args.logging)
@@ -76,6 +77,10 @@ def scrub(session):
             f.save(False)
         log.info('Purged %d frame files', csr.count())
         time.sleep(retention["interval"])
+
+def run_shell(session):
+    log = logging.getLogger(__name__)
+    log.error('SHell not supported yet')
 
 def init_gevent_subprocess():
     # Monkey patch socket routines

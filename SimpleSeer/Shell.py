@@ -29,7 +29,8 @@ class SeerKernel(object):
         self.seer = seer
 
     def run(self):
-        #from SimpleSeer.models import Frame, Inspection, Measurement, FrameFeature, OLAP
+
+        from . import models as M
         from IPython.zmq.ipkernel import IPKernelApp
         logging.getLogger('IPKernelApp').disabled = True
         app = IPKernelApp.instance()
@@ -37,7 +38,7 @@ class SeerKernel(object):
         app.initialize()
         app.shell.user_ns.update(
             seer=self.seer,
-            #M=M,
+            M=M,
             cm=ChannelManager(zmq.Context.instance()))
         log.info('Kernel is running on %s', app.connection_file)
         self.seer.config.connection_file = app.connection_file

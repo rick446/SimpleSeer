@@ -16,7 +16,6 @@ module.exports = class ChartView extends SubView
 
 
     $.getJSON url, (data) =>
-      console.log 'Got data with length:', data.data.length
       if data.data.length == 0
         setTimeout @update, 1000
         return
