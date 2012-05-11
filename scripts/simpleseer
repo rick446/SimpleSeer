@@ -29,14 +29,15 @@ def main():
     broker.set_defaults(func=pubsub_broker)
     web.set_defaults(func=web_server)
     core.set_defaults(func=compute_server)
-    scrub.set_defaults(func=scrub)
+    scrub.set_defaults(func=scrub_data)
     shell.set_defaults(func=run_shell)
 
     args = parser.parse_args()
     logging.config.fileConfig(args.logging)
     from SimpleSeer.Session import Session
-
+    
     session = Session(args.config)
+    print args
     args.func(session)
 
 def compute_server(session):
@@ -61,8 +62,10 @@ def pubsub_broker(session):
     psb = PubSubBroker(session.pub_uri, session.sub_uri)
     psb.serve_forever()
 
-def scrub(session):
+def scrub_data(session):
     from SimpleSeer import models as M
+    
+    log = logging.getLogger(__name__)
     retention = session.retention
     if not retention:
         log.info('No retention policy set, skipping cleanup')
@@ -71,11 +74,11 @@ def scrub(session):
         q_csr = M.Frame.objects(imgfile__ne = None)
         q_csr = q_csr.order_by('-capturetime')
         q_csr = q_csr.skip(retention['maxframes'])
-        for f in csr:
+        for f in q_csr:
             f.imgfile.delete()
             f.imgfile = None
             f.save(False)
-        log.info('Purged %d frame files', csr.count())
+        log.info('Purged %d frame files', q_csr.count())
         time.sleep(retention["interval"])
 
 def run_shell(session):
