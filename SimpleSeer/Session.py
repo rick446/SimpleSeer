@@ -26,26 +26,21 @@ class Session():
         
         if not json_config:
             return  #return the existing shared context
-        
-        self.__dict__.clear()   #flush if this is a reload
-           
-        #convert simplejson's default unicode to utf-8 so it works as parameters
-        config = json.load(open(json_config), object_hook=_decode_dict)
-        for k in config.keys():
-            self.__dict__[k] = config[k]
-            
+
+        config_dict = json.load(open(json_config), object_hook=_decode_dict)
+        self.configure(config_dict)
+
+    def configure(self, d):
+        self._config = d
         mongoengine.connect(self.database, **self.mongo)
-        
-        #self.redis = SmartJSONRedis(**self.redis_config)
-        #for k in config.keys():
-        #    self.redis.set(k, config[k])
-        # we need to do this selectively since we have twilio keys now
-        
         self.log = logging.getLogger(__name__)
-        
-    def __getattr__(self, attr):
-        return ''  #return false on any non-present properties
-    
+
+    def get_config(self):
+        return self._config
+
+    def __getattr__(self, name):
+        return self._config.get(name, '')
+
     def __repr__(self):
         return "SimpleSeer Session Object"
 

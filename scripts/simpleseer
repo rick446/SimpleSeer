@@ -11,16 +11,18 @@ def main():
     subparsers = parser.add_subparsers(
         title='subcommands',
         description='valid subcommands')
+    core = subparsers.add_parser(
+        'core', description='Run the core server')
     broker = subparsers.add_parser(
         'broker', description='Run the message broker')
     web = subparsers.add_parser(
         'web', description='Run the web server')
-    core = subparsers.add_parser(
-        'core', description='Run the core server')
     scrub = subparsers.add_parser(
         'scrub', description='Run the frame scrubber')
     shell = subparsers.add_parser(
         'shell', description='Run the ipython shell')
+    notebook = subparsers.add_parser(
+        'notebook', description='Run the ipython notebook server')
 
     parser.add_argument(
         '-l', '--logging', dest='logging', default='logging.ini')
@@ -31,6 +33,7 @@ def main():
     web.set_defaults(func=run_web)
     scrub.set_defaults(func=run_scrubber)
     shell.set_defaults(func=run_shell)
+    notebook.set_defaults(func=run_notebook)
 
     args = parser.parse_args()
     logging.config.fileConfig(args.logging)
@@ -86,15 +89,22 @@ def run_shell(session):
     from SimpleSeer.service import SeerProxy2
     banner = '''\nRunning the SimpleSeer interactive shell.\n'''
     exit_msg = '\n... [Exiting the SimpleSeer interactive shell] ...\n'
-    user_ns = dict(
-        seer=SeerProxy2())
-    cfg = Config()
-    cfg.PromptManager.in_template = "SimpleSeer:\\#> "
-    cfg.PromptManager.out_template = "SimpleSeer:\\#: "
     shell= InteractiveShellEmbed(
-        config=cfg, banner1=banner, exit_msg=exit_msg,
-        user_ns=user_ns)
+        banner1=banner, exit_msg=exit_msg, user_ns={})
+    shell.extension_manager.load_extension('SimpleSeer.ipython_extension')
     shell()
+
+def run_notebook(session):
+    from IPython.frontend.html.notebook import notebookapp
+    from IPython.frontend.html.notebook import kernelmanager
+
+    kernelmanager.MappingKernelManager.first_beat=30.0
+    app = notebookapp.NotebookApp.instance()
+    app.initialize([
+            '--no-browser',
+            '--port', '5050',
+            '--ext', 'SimpleSeer.ipython_extension'])
+    app.start()
 
 def init_gevent_subprocess():
     # Monkey patch socket routines

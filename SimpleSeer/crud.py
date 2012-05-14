@@ -30,9 +30,9 @@ def register(app):
 
     handlers = [
         ModelHandler(M.Inspection, M.InspectionSchema,
-                     'inspection', '/inspections'),
-        ModelHandler(M.OLAP, M.OLAPSchema, 'olap', '/olaps'),
-        ModelHandler(M.Measurement, M.MeasurementSchema, 'measurement', '/measurements')
+                     'inspection', '/inspection'),
+        ModelHandler(M.OLAP, M.OLAPSchema, 'olap', '/olap'),
+        ModelHandler(M.Measurement, M.MeasurementSchema, 'measurement', '/measurement')
        ]
 
     for h in handlers:
@@ -79,21 +79,27 @@ class ModelHandler(object):
         obj.save()
         return 201, obj
 
-    def update(self, inspection_id):
-        obj = self._get_object(inspection_id)
+    def update(self, *kwargs):
+        id = kwargs.values()[0]
+        obj = self._get_object(id)
         values = self._get_body(flask.request.json)
         obj.update_from_json(values)
         obj.save()
         return 200, obj
 
-    def delete(self, inspection_id):
-        obj = self._get_object(inspection_id)
+    def delete(self, *kwargs):
+        id = kwargs.values()[0]
+
+
+        obj = self._get_object(id)
         d = obj.__getstate__()
         obj.delete()
         return 200, d
 
-    def get(self, inspection_id):
-        obj = self._get_object(inspection_id)
+    def get(self, **kwargs):
+        id = kwargs.values()[0]
+
+        obj = self._get_object(id)
         return 200, obj
 
     def list(self):

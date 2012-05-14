@@ -274,6 +274,9 @@ class SimpleSeer(object):
         frame = self.lastframes[index][camera]
         return frame.serialize()
 
+    def get_config(self):
+        return Session().get_config()
+
 #    def update(self):
         
 #        count = 0
