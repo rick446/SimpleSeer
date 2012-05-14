@@ -171,7 +171,7 @@ class ResultSet:
 
         rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['limit']])
         
-        outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric, r.inspection, r.frame, r.measurement] for r in rs[::-1]]
+        outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric, r.inspection, r.frame, r.measurement, r.id] for r in rs[::-1]]
         
         if (len(outputVals) > 0):
             startTime = outputVals[0][0]
@@ -184,7 +184,7 @@ class ResultSet:
         dataset = { 'startTime': startTime,
                     'endTime': endTime,
                     'timestamp': gmtime(),
-                    'labels': {'dim0': 'Time', 'dim1': 'Motion', 'dim2': 'InspectionID', 'dim3': 'FrameID', 'dim4':'MeasurementID'},
+                    'labels': {'dim0': 'Time', 'dim1': 'Motion', 'dim2': 'InspectionID', 'dim3': 'FrameID', 'dim4':'MeasurementID', 'dim5': 'ResultID'},
                     'data': outputVals}
         
         return dataset
