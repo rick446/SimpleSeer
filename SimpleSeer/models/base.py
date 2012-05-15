@@ -22,16 +22,13 @@ class SimpleDoc(object):
                 continue
             if (hasattr(v, "__json__")):
                 ret[k] = v.__json__()
-            elif isinstance(v, Image):
-                ret[k] = v.applyLayers().getBitmap().tostring().encode("base64")
             elif isinstance(v, datetime):
                 ret[k] = int(time.mktime(v.timetuple()) + v.microsecond/1e6)
             elif isinstance(v, mongoengine.fields.GridFSProxy):
-                data = v.read()
-                if data is None:
+                if v is None:
                     ret[k] = None
                 else:
-                    ret['k'] = data.encode('base64')
+                    ret[k] = "/grid/"+k+"/" + str(self.id)
             else:
                 ret[k] = v
             
