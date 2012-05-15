@@ -69,7 +69,7 @@ class Frame(SimpleDoc, mongoengine.Document):
     def save(self, *args, **kwargs):
         #TODO: sometimes we want a frame with no image data, basically at this
         #point we're trusting that if that were the case we won't call .image
-        realtime.ChannelManager().publish('frame', self)
+        realtime.ChannelManager().publish('frame.', self)
 
         if self._imgcache != '':
             s = StringIO()
