@@ -11,6 +11,8 @@ from . import realtime
 from . import crud
 from .Session import Session
 
+from .models.OLAP import OLAP
+
 DEBUG = True
 
 log = logging.getLogger(__name__)
@@ -49,12 +51,27 @@ class WebServer(object):
 
     def run_gevent_server(self):
         context = zmq.Context()
-        def data_gen():
-            cm = realtime.ChannelManager(context)
+
+        # Will later change these so that they are only triggered by events
+        # Such as entry of a new Result
+        # But this is a quick and easy way to get data so we can begin testing
+        def motion():
+            oMotion = OLAP.objects.get(name='Motion')
+                
             while True:
                 gevent.sleep(1)
-                cm.publish('foo', dict(u='data', m='tick'))
-        gevent.spawn(data_gen)
+                oMotion.realtime(context)
+                
+        def motionavg():
+            oMotionAvg = OLAP.objects.get(name='MotionMovingAverage')
+                
+            while True:
+                gevent.sleep(1)
+                oMotionAvg.realtime(context)
+        
+        gevent.spawn(motionavg)
+        gevent.spawn(motion)
+        
         server = SocketIOServer(
             (self.host, self.port),
             self.app, namespace='socket.io',

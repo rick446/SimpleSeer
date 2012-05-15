@@ -7,6 +7,7 @@ from gevent_zeromq import zmq
 from socketio.namespace import BaseNamespace
 
 from .Session import Session
+from .base import jsonencode, jsondecode
 
 log = logging.getLogger(__name__)
 
@@ -33,7 +34,9 @@ class ChannelManager(object):
 
     def publish(self, channel, message):
         self.pub_sock.send(channel, zmq.SNDMORE)
-        self.pub_sock.send(BSON.encode(message))
+        # TODO: This was BSON.encode before, but zmq doesn't like unicode
+        # jsonencode solved the problem for me, tho not sure why yet
+        self.pub_sock.send(jsonencode(message))
 
     def subscribe(self, name):
         name=str(name)
@@ -82,4 +85,5 @@ class RealtimeNamespace(BaseNamespace):
         while True:
             self._channel.recv() # discard the envelope
             message = self._channel.recv()
-            self.emit('message', BSON(message).decode())
+            #self.emit('message', BSON(message).decode())
+            self.emit('message', jsondecode(message))

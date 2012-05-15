@@ -8,6 +8,9 @@ from formencode import validators as fev
 from formencode import schema as fes
 import formencode as fe
 
+from ..realtime import ChannelManager
+import gevent as g
+from SimpleSeer.util import utf8convert
 
 from SimpleSeer import validators as V
 from .base import SimpleDoc
@@ -50,26 +53,22 @@ class OLAP(SimpleDoc, mongoengine.Document):
     queryInfo = mongoengine.DictField()
     descInfo = mongoengine.DictField()
     chartInfo = mongoengine.DictField()
-    
+        
     def __repr__(self):
         return "<OLAP %s>" % self.name
         
     def execute(self, sincetime = 0, limitresults = None):
         r = ResultSet()
         
-        queryinfo = self.queryInfo.copy()
-        if sincetime > 0:
-            queryinfo['since'] = sincetime
         
-        # If provided a limit, always use that limit
-        # Else, if not defined in OLAP, use 500
-        # Otherwise, use the one defined in OLAP
-        if limitresults:
-			queryinfo['limit'] = limitresults
-        elif not queryinfo.has_key('limit'):
-			queryinfo['limit'] = 500
-		
-			
+        # Process configuration parameters
+        queryinfo = self.queryInfo.copy()
+        queryinfo['since'] = sincetime
+        queryinfo['limit'] = self.limitResults(limitresults)
+        print limitresults
+        print queryinfo['limit']
+        
+        # Get the resultset
         resultSet = r.execute(queryinfo)
         
         # Check if any descriptive processing
@@ -82,7 +81,45 @@ class OLAP(SimpleDoc, mongoengine.Document):
         chartSpec = c.createChart(resultSet, self.chartInfo)
         return chartSpec
         
-
+    def realtime(self, context):
+        # Pull up the channel manager to handle publishing results
+        cm = ChannelManager(context)
+        
+        channelName = utf8convert('OLAP_' + self.name)
+        
+        if (not self.queryInfo.has_key('limit')): self.queryInfo['limit'] = 500
+        if (not self.queryInfo.has_key('since')): self.queryInfo['since'] = 0
+        
+        r = ResultSet()
+        rset = r.execute(self.queryInfo)
+        
+        if len(rset['data']) > 0:
+            # Check if any descriptive processing
+            
+            if (self.descInfo):
+                d = DescriptiveStatistic()
+                newrset = d.execute(rset, self.descInfo)
+                
+            # Push to the channel
+            cm.publish(channelName, dict(u='data', m=[channelName, self.queryInfo['since'], rset['data']]))
+        
+            self.queryInfo['since'] = rset['data'][-1][0] + 1
+        
+    def limitResults(self, thelimit):
+        # If provided a limit, always use that limit
+        # Else, if not defined in OLAP, use 500
+        # Otherwise, use the one defined in OLAP
+        if thelimit:
+			return thelimit
+        elif not self.queryInfo.has_key('limit'):
+			return 500
+        
+        return self.queryInfo['limit']
+		
+        
+			
+        
+        
 class Chart:
     # Takes the data and puts it in a format for charting
     
@@ -113,7 +150,6 @@ class Chart:
         # graphs of (x,y) coordiantes
         
         chartRange = self.dataRange(resultSet['data'])
-        print chartRange
         
         chartData = { 'chartType': chartInfo['name'],
                       'chartColor': chartInfo['color'],
@@ -163,15 +199,23 @@ class ResultSet:
         # Other query handling deferred for another day.
 
         insp = Inspection.objects.get(name=queryInfo['name'])
-
         query = dict(inspection = insp.id)
-
+        
         if queryInfo.has_key('since'):
             query['capturetime__gt']= datetime.utcfromtimestamp(queryInfo['since'])
 
         rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['limit']])
         
+        # When performing some computations, require additional data
+        # E.g., 5 period moving average means we need _limit_ data points, plus four more
+        # Check if we got enough entries
+        if (len(rs) > 0) and (queryInfo.has_key('required')) and (len(rs) < queryInfo['required']):
+            # If not, relax the capture time but only take the num records required
+            del(query['capturetime__gt'])
+            rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['required']])
+        
         outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric, r.inspection, r.frame, r.measurement, r.id] for r in rs[::-1]]
+        
         
         if (len(outputVals) > 0):
             startTime = outputVals[0][0]
@@ -186,6 +230,6 @@ class ResultSet:
                     'timestamp': gmtime(),
                     'labels': {'dim0': 'Time', 'dim1': 'Motion', 'dim2': 'InspectionID', 'dim3': 'FrameID', 'dim4':'MeasurementID', 'dim5': 'ResultID'},
                     'data': outputVals}
-        
+                    
         return dataset
 	
