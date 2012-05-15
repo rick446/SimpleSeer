@@ -85,7 +85,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
         # Pull up the channel manager to handle publishing results
         cm = ChannelManager(context)
         
-        channelName = utf8convert('OLAP_' + self.name)
+        channelName = utf8convert('OLAP_' + self.name + '.')
         
         if (not self.queryInfo.has_key('limit')): self.queryInfo['limit'] = 500
         if (not self.queryInfo.has_key('since')): self.queryInfo['since'] = 0
@@ -101,7 +101,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
                 newrset = d.execute(rset, self.descInfo)
                 
             # Push to the channel
-            cm.publish(channelName, dict(u='data', m=[channelName, self.queryInfo['since'], rset['data']]))
+            cm.publish(channelName, dict(u='data', m=[rset['data']]))
         
             self.queryInfo['since'] = rset['data'][-1][0] + 1
         

@@ -59,18 +59,18 @@ class WebServer(object):
             oMotion = OLAP.objects.get(name='Motion')
                 
             while True:
-                gevent.sleep(1)
+                gevent.sleep(.25)
                 oMotion.realtime(context)
                 
         def motionavg():
             oMotionAvg = OLAP.objects.get(name='MotionMovingAverage')
                 
             while True:
-                gevent.sleep(1)
+                gevent.sleep(.25)
                 oMotionAvg.realtime(context)
         
-        gevent.spawn(motionavg)
-        gevent.spawn(motion)
+        #gevent.spawn(motionavg)
+        #gevent.spawn(motion)
         
         server = SocketIOServer(
             (self.host, self.port),
