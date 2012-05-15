@@ -3,7 +3,6 @@ Application =
   initialize: ->
     HomeView = require 'views/home_view'
     FrameView = require 'views/frame'
-    ChartView = require 'views/chart'
     Router = require 'lib/router'
     Inspections = require 'collections/inspections'
     Measurements = require 'collections/measurements'
@@ -13,13 +12,12 @@ Application =
     # If you're making big webapp, here's more sophisticated skeleton
     # https://github.com/paulmillr/brunch-with-chaplin
     @homeView = new HomeView()
-    @chartView = new ChartView()
     
     @inspections = new Inspections()
     @inspections.fetch()
     
     @charts = new OLAPs()
-    @charts.fetch()
+    @charts.fetch({success:@charts.onSuccess})
     
     @measurements = new Measurements()
     @measurements.fetch()
