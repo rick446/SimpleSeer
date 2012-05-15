@@ -3,13 +3,15 @@ import re
 import json
 
 import bson
+import gevent
 from socketio import socketio_manage
-from flask import request, make_response
+from flask import request, make_response, Response
 
 from . import models as M
 from . import util
 from .realtime import RealtimeNamespace
 from .service import SeerProxy2
+from .Session import Session
 
 class route(object):
     routes = []
@@ -62,6 +64,36 @@ def frame():
     resp = make_response(result['data'], 200)
     resp.headers['Content-Type'] = result['content_type']
     return resp
+
+@route('/videofeed', methods=['GET'])
+def videofeed():
+    params = {
+        'index': -1,
+        'camera': 0,
+        }
+    params.update(request.values)
+    seer = SeerProxy2()
+    def generate():
+        while True:
+            img = seer.get_image(**params)
+            yield '--BOUNDARYSTRING\r\n'
+            yield 'Content-Type: %s\r\n' % img['content_type']
+            yield 'Content-Length: %d\r\n' % len(img['data'])
+
+            yield '\r\n'
+            yield img['data']
+            yield '\r\n'
+            gevent.sleep(Session().poll_interval)
+    return Response(
+        generate(),
+        headers=[
+            ('Connection', 'close'),
+            ('Max-Age', '0'),
+            ('Expires', '0'),
+            ('Cache-Control', 'no-cache, private'),
+            ('Pragma', 'no-cache'),
+            ('Content-Type',
+             "multipart/x-mixed-replace; boundary=--BOUNDARYSTRING") ])
 
 
 @route('/frame_capture', methods=['GET', 'POST'])
