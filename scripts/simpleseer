@@ -62,7 +62,8 @@ def run_broker(session):
     init_gevent_subprocess()
     from SimpleSeer.broker import PubSubBroker
     psb = PubSubBroker(session.pub_uri, session.sub_uri)
-    psb.serve_forever()
+    psb.start()
+    psb.join()
 
 def run_scrubber(session):
     from SimpleSeer import models as M
@@ -110,6 +111,8 @@ def init_gevent_subprocess():
     # Monkey patch socket routines
     from gevent import monkey
     monkey.patch_all()
+    import gevent_zeromq
+    gevent_zeromq.monkey_patch()
 
     # Disable access to the seer object (just in case!)
     from SimpleSeer import SimpleSeer

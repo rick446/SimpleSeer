@@ -1,3 +1,4 @@
+import logging
 import calendar
 from time import gmtime
 from datetime import datetime
@@ -16,6 +17,8 @@ from SimpleSeer import validators as V
 from .base import SimpleDoc
 from .Inspection import Inspection
 from .Result import Result
+
+log = logging.getLogger(__name__)
 
 
 class OLAPSchema(fes.Schema):
@@ -101,6 +104,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
                 newrset = d.execute(rset, self.descInfo)
                 
             # Push to the channel
+            log.info('Publish %r', channelName)
             cm.publish(channelName, dict(u='data', m=[rset['data']]))
         
             self.queryInfo['since'] = rset['data'][-1][0] + 1

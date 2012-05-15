@@ -1,8 +1,7 @@
 import logging
 
+import zmq
 import gevent
-from bson import BSON
-from gevent_zeromq import zmq
 
 from socketio.namespace import BaseNamespace
 
@@ -14,13 +13,13 @@ log = logging.getLogger(__name__)
 class ChannelManager(object):
     __shared_state = { "initialized": False }
 
-    def __init__(self, context):
+    def __init__(self, context=None):
         '''Yeah, it's a borg'''
         self.__dict__ = self.__shared_state
         if self.initialized: return
         self._channels = {}
         self.config = Session()
-        self.context = context
+        self.context = context or zmq.Context.instance()
         self.pub_sock = self.context.socket(zmq.PUB)
         self.pub_sock.connect(self.config.pub_uri)
 
@@ -33,9 +32,12 @@ class ChannelManager(object):
         return '\n'.join(l)
 
     def publish(self, channel, message):
+        '''Publish a JSON message over the channel. Note that while it would be
+        nice to use a compact and fast encoding like BSON, these messages need to
+        get relayed down to the browser, which is expecting JSON.
+        '''
+
         self.pub_sock.send(channel, zmq.SNDMORE)
-        # TODO: This was BSON.encode before, but zmq doesn't like unicode
-        # jsonencode solved the problem for me, tho not sure why yet
         self.pub_sock.send(jsonencode(message))
 
     def subscribe(self, name):
@@ -62,7 +64,7 @@ class RealtimeNamespace(BaseNamespace):
         self._channel = None
         self._channel_name = None
         self._greenlet = None
-        self._channel_manager = ChannelManager(zmq.Context())
+        self._channel_manager = ChannelManager()
 
     def disconnect(self, *args, **kwargs):
         if self._channel: self._unsubscribe()
@@ -85,5 +87,4 @@ class RealtimeNamespace(BaseNamespace):
         while True:
             self._channel.recv() # discard the envelope
             message = self._channel.recv()
-            #self.emit('message', BSON(message).decode())
             self.emit('message', jsondecode(message))
