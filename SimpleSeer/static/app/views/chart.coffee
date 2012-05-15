@@ -50,7 +50,9 @@ module.exports = class ChartView extends View
   drawChart: (data) =>
     renderData = @getRenderData()
     @.chart = new Highcharts.Chart
-      chart: {renderTo: @.anchorId,type: renderData.chartInfo.name.toLowerCase(),marginRight: 10}
+      chart: {renderTo: @.anchorId,type: renderData.chartInfo.name.toLowerCase(),className: 'graph'}
+      title: {text:null}
+      legend: {enabled: false}
       series: [{name: renderData.name,data: data}]
       xAxis: {type: 'datetime',tickPixelInterval: 150}
       yAxis: {title: {text: 'Value'},plotLines: [{value: 0,width: 1,color: '#808080'}],min:0}
