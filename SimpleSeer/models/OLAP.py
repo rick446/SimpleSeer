@@ -33,8 +33,9 @@ class DescInfoSchema(fes.Schema):
     window = fev.Int(if_missing=None)
 
 class ChartInfoSchema(fes.Schema):
-    chartType = fev.OneOf(['line', 'bar', 'pie'])
-    chartColor = fev.OneOf(['red', 'green', 'blue'])
+    chartType = fev.OneOf(['line', 'bar', 'pie', 'spline', 'area', 'areaspline','column','scatter'])
+    chartColor = fev.UnicodeString(if_empty="")
+    #TODO, this should maybe be validated to a hex string or web color
 
 class OLAP(SimpleDoc, mongoengine.Document):
     # General flow designed for:

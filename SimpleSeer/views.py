@@ -94,6 +94,10 @@ def videofeed():
     seer = SeerProxy2()
     log.info('Feeding video in greenlet %s', gevent.getcurrent())
     def generate():
+        inverval = Session().poll_interval
+        if interval < 1:
+            interval = 1
+        
         while True:
             img = seer.get_image(**params)
             yield '--BOUNDARYSTRING\r\n'
@@ -103,7 +107,7 @@ def videofeed():
             yield '\r\n'
             yield img['data']
             yield '\r\n'
-            gevent.sleep(Session().poll_interval)
+            gevent.sleep(interval)
     return Response(
         generate(),
         headers=[
