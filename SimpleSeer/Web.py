@@ -55,17 +55,19 @@ class WebServer(object):
         # Will later change these so that they are only triggered by events
         # Such as entry of a new Result
         # But this is a quick and easy way to get data so we can begin testing
-        def olapfeed(o):
-            if not o:
+        def olapfeed(olaps):
+            if not olaps:
               return
             cm = realtime.ChannelManager(context)
                 
             while True:
                 gevent.sleep(.25)
-                o.realtime(cm)
+                for o in olaps:
+                    o.realtime(cm)
                 
-        for o in OLAP.objects:
-          gevent.spawn(olapfeed,o)
+        olaps = OLAP.objects
+        if len(olaps):
+          gevent.spawn(olapfeed,list(olaps))
         
         server = SocketIOServer(
             (self.host, self.port),
