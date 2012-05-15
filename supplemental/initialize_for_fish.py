@@ -27,7 +27,7 @@ meas = Measurement( name="movement", label="Movement", method = "movement", para
 meas.save()
 
 
-omove = OLAP(name='MotionMovingAverage', queryInfo = dict( name = 'Motion' ), descInfo = dict( formula = 'moving', window = 3), chartInfo = dict ( name='Line', color = 'blue'))
+omove = OLAP(name='MotionMovingAverage', queryInfo = dict( name = 'Motion' ), descInfo = dict( formula = 'moving', window = 3), chartInfo = dict ( name='line', color = 'blue'))
 omove.save()
-oraw = OLAP(name='Motion', queryInfo = dict( name = 'Motion' ), descInfo = None, chartInfo = dict ( name='Line', color = 'blue'))
+oraw = OLAP(name='Motion', queryInfo = dict( name = 'Motion' ), descInfo = None, chartInfo = dict ( name='line', color = 'blue'))
 oraw.save()
