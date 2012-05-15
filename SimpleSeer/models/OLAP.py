@@ -81,9 +81,8 @@ class OLAP(SimpleDoc, mongoengine.Document):
         chartSpec = c.createChart(resultSet, self.chartInfo)
         return chartSpec
         
-    def realtime(self, context):
+    def realtime(self, cm):
         # Pull up the channel manager to handle publishing results
-        cm = ChannelManager(context)
         
         channelName = utf8convert('OLAP_' + self.name + '.')
         

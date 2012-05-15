@@ -57,20 +57,22 @@ class WebServer(object):
         # But this is a quick and easy way to get data so we can begin testing
         def motion():
             oMotion = OLAP.objects.get(name='Motion')
+            cm = realtime.ChannelManager(context)
                 
             while True:
                 gevent.sleep(.25)
-                oMotion.realtime(context)
+                oMotion.realtime(cm)
                 
         def motionavg():
             oMotionAvg = OLAP.objects.get(name='MotionMovingAverage')
-                
+            cm = realtime.ChannelManager(context)
+            
             while True:
                 gevent.sleep(.25)
-                oMotionAvg.realtime(context)
+                oMotionAvg.realtime(cm)
         
-        #gevent.spawn(motionavg)
-        #gevent.spawn(motion)
+        gevent.spawn(motionavg)
+        gevent.spawn(motion)
         
         server = SocketIOServer(
             (self.host, self.port),
