@@ -63,7 +63,22 @@ def frame():
     resp.headers['Content-Type'] = result['content_type']
     return resp
 
+@route('/lastframes', methods=['GET'])
+@util.jsonify
+def lastframes():
+    frames = M.Frame.objects().order_by("-createtime").limit(20)
+    return list(frames)
 
+#TODO, abstract this for layers and thumbnails        
+@route('/grid/imgfile/<frame_id>', methods=['GET'])
+def imgfile(frame_id):
+    frame = M.Frame.objects(id = bson.ObjectId(frame_id))
+    if not frame or not frame[0].imgfile:
+        return "Image not found", 404
+    resp = make_response(frame[0].imgfile.read(), 200)
+    resp.headers['Content-Type'] = frame[0].imgfile.content_type
+    return resp    
+    
 @route('/frame_capture', methods=['GET', 'POST'])
 @util.jsonify
 def frame_capture():
