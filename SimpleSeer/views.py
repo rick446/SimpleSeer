@@ -1,6 +1,7 @@
 import os
 import re
 import json
+import logging
 
 import bson
 import gevent
@@ -12,6 +13,8 @@ from . import util
 from .realtime import RealtimeNamespace
 from .service import SeerProxy2
 from .Session import Session
+
+log = logging.getLogger()
 
 class route(object):
     routes = []
@@ -73,6 +76,7 @@ def videofeed():
         }
     params.update(request.values)
     seer = SeerProxy2()
+    log.info('Feeding video in greenlet %s', gevent.getcurrent())
     def generate():
         while True:
             img = seer.get_image(**params)

@@ -4,8 +4,6 @@ import time
 import argparse
 import logging.config
 
-import Pyro4
-
 def main():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(
@@ -44,6 +42,8 @@ def main():
 
 def run_core(session):
     from SimpleSeer.SimpleSeer import SimpleSeer
+    import Pyro4
+
 
     seer = SimpleSeer()
     Pyro4.Daemon.serveSimple(
