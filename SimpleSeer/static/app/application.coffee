@@ -2,19 +2,30 @@
 Application =
   initialize: ->
     HomeView = require 'views/home_view'
+<<<<<<< HEAD
     FramelistView = require 'views/framelist_view'
+=======
+    FrameView = require 'views/frame'
+>>>>>>> 1f8187ddd285bfbb858e6e36d4c07854f63e29ff
     Router = require 'lib/router'
     Inspections = require 'collections/inspections'
     Measurements = require 'collections/measurements'
     Frames = require 'collections/frames'
     OLAPs = require 'collections/OLAPs'
 
+<<<<<<< HEAD
+=======
+    # Ideally, initialized classes should be kept in controllers & mediator.
+    # If you're making big webapp, here's more sophisticated skeleton
+    # https://github.com/paulmillr/brunch-with-chaplin
+    @homeView = new HomeView()
+>>>>>>> 1f8187ddd285bfbb858e6e36d4c07854f63e29ff
     
     @inspections = new Inspections()
     @inspections.fetch()
     
     @charts = new OLAPs()
-    @charts.fetch()
+    @charts.fetch({success:@charts.onSuccess})
     
     @measurements = new Measurements()
     @measurements.fetch()
