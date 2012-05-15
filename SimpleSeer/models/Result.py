@@ -1,6 +1,7 @@
 import mongoengine
 
 from .base import SimpleDoc
+from .. import realtime
 
 class Result(SimpleDoc, mongoengine.Document):
     """
@@ -19,3 +20,8 @@ class Result(SimpleDoc, mongoengine.Document):
     meta = {
         'indexes': ["capturetime", ('camera', '-capturetime'), "frame", "inspection", "measurement"]
     }
+
+    def save(self, *args, **kwargs):
+        realtime.ChannelManager().publish('frame', dict(
+                string=self.string, object=self))
+        super(Result, self).save(*args, **kwargs)
