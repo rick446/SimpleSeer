@@ -85,7 +85,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
     def realtime(self, cm):
         # Pull up the channel manager to handle publishing results
         
-        channelName = utf8convert('OLAP_' + self.name + '.')
+        channelName = utf8convert('OLAP')
         
         if (not self.queryInfo.has_key('limit')): self.queryInfo['limit'] = 500
         if (not self.queryInfo.has_key('since')): self.queryInfo['since'] = 0
