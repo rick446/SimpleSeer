@@ -8,9 +8,9 @@ module.exports = class Router extends Backbone.Router
 
   home: ->
     application.charts.fetch
-      success: ->
+      success: (d1, d2) ->
         $('#main').html application.homeView.render().el    
-        application.charts.onSuccess()
+        application.charts.onSuccess(d1, d2)
 
   framelist: ->
     application.lastframes.fetch
