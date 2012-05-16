@@ -52,7 +52,7 @@ Run all these commands from within the SimpleSeer directory:
 	pip install -r pip.requirements
 	python setup.py develop
   sudo mkdir /etc/simpleseer
-  sudo ln -s `pwd`/SimpleSeer/static/
+  sudo ln -s `pwd`/SimpleSeer/static/ /etc/simpleseer/static
   sudo ln -s `pwd`/etc/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
 	sudo ln -s `pwd`/etc/default.cfg /etc/simpleseer.cfg
   sudo ln -s `pwd`/etc/simpleseer-logging.cfg /etc/simpleseer-logging.cfg
