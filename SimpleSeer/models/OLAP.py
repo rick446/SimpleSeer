@@ -49,13 +49,15 @@ class RealtimeOLAP:
             
             data = rset['data']
             msgdata = [dict(
-                id = o.id,
-                data = d[0:1],
+                id = str(o.id),
+                data = d[0:2],
                 inspection_id =  str(d[2]),
-                frame_id = d[3],
-                measurement_id= d[4],
-                result_id= d[5]
+                frame_id = str(d[3]),
+                measurement_id= str(d[4]),
+                result_id= str(d[5])
             ) for d in data]
+            
+            #log.info(msgdata)
             ChannelManager().publish('OLAP', dict(u='data', m=msgdata))
             
 
