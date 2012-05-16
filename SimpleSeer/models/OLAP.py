@@ -103,7 +103,16 @@ class OLAP(SimpleDoc, mongoengine.Document):
                 
             # Push to the channel
             log.info('Publish %r', channelName)
-            cm.publish(channelName, dict(u='data', m=[rset['data']]))
+            data = rset['data']
+            msgdata = [dict(
+                id = self.id,
+                data = d[0:1],
+                inspection_id =  str(d[2]),
+                frame_id = d[3],
+                measurement_id= d[4],
+                result_id= d[5]
+            ) for d in data]
+            cm.publish(channelName, dict(u='data', m=msgdata))
         
             self.queryInfo['since'] = rset['data'][-1][0] + 1
         
