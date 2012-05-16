@@ -10,7 +10,6 @@ from formencode import schema as fes
 import formencode as fe
 
 from ..realtime import ChannelManager
-import gevent as g
 from SimpleSeer.util import utf8convert
 
 from SimpleSeer import validators as V
@@ -39,6 +38,16 @@ class ChartInfoSchema(fes.Schema):
     chartType = fev.OneOf(['line', 'bar', 'pie', 'spline', 'area', 'areaspline','column','scatter'])
     chartColor = fev.UnicodeString(if_empty="")
     #TODO, this should maybe be validated to a hex string or web color
+
+class RealtimeOLAP:
+
+    def realtime(self):
+        olaps = OLAP.objects
+        for o in olaps:
+            o.queryInfo['limit'] = 1
+            d = o.execute()
+            ChannelManager().publish(utf8convert('OLAP_' + o.name), d)
+
 
 class OLAP(SimpleDoc, mongoengine.Document):
     # General flow designed for:
@@ -83,38 +92,6 @@ class OLAP(SimpleDoc, mongoengine.Document):
         chartSpec = c.createChart(resultSet, self.chartInfo)
         return chartSpec
         
-    def realtime(self, cm):
-        # Pull up the channel manager to handle publishing results
-        
-        channelName = utf8convert('OLAP')
-        
-        if (not self.queryInfo.has_key('limit')): self.queryInfo['limit'] = 500
-        if (not self.queryInfo.has_key('since')): self.queryInfo['since'] = 0
-        
-        r = ResultSet()
-        rset = r.execute(self.queryInfo)
-        
-        if len(rset['data']) > 0:
-            # Check if any descriptive processing
-            
-            if (self.descInfo):
-                d = DescriptiveStatistic()
-                rset = d.execute(rset, self.descInfo)
-                
-            # Push to the channel
-            log.info('Publish %r', channelName)
-            data = rset['data']
-            msgdata = [dict(
-                id = self.id,
-                data = d[0:1],
-                inspection_id =  str(d[2]),
-                frame_id = d[3],
-                measurement_id= d[4],
-                result_id= d[5]
-            ) for d in data]
-            cm.publish(channelName, dict(u='data', m=msgdata))
-        
-            self.queryInfo['since'] = rset['data'][-1][0] + 1
         
     def limitResults(self, thelimit):
         # If provided a limit, always use that limit
