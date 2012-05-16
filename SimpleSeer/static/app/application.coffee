@@ -11,6 +11,16 @@ Application =
     OLAPs = require 'collections/OLAPs'
 
     @homeView = new HomeView()
+
+    @.socket = io.connect '/rt'
+    @.socket.on 'connect', ->
+      alert 'connect'
+    @.socket.on 'error', ->
+      alert 'error'
+    @.socket.on 'disconnect', ->
+      alert 'disconnect'
+    #@.socket.on 'message', (msg) ->
+    #  console.log 'Got message', msg
     
     @inspections = new Inspections()
     @inspections.fetch()
