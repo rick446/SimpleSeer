@@ -32,7 +32,7 @@ class QueryInfoSchema(fes.Schema):
     since = V.DateTime(if_empty=0, if_missing=None)
     
 class DescInfoSchema(fes.Schema):
-    formula = fev.OneOf(['moving', 'mean', 'std'], if_missing=None)
+    formula = fev.OneOf(['moving', 'mean', 'median', 'mode', 'var', 'std', 'max', 'min', 'first', 'last', 'uq', 'lq'], if_missing=None)
     window = fev.Int(if_missing=None)
 
 class ChartInfoSchema(fes.Schema):
@@ -99,7 +99,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
             
             if (self.descInfo):
                 d = DescriptiveStatistic()
-                newrset = d.execute(rset, self.descInfo)
+                rset = d.execute(rset, self.descInfo)
                 
             # Push to the channel
             log.info('Publish %r', channelName)
