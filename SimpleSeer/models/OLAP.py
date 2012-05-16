@@ -1,5 +1,5 @@
 import calendar
-from time import gmtime
+from time import gmtime, localtime, mktime
 from datetime import datetime
 
 import mongoengine
@@ -65,8 +65,6 @@ class OLAP(SimpleDoc, mongoengine.Document):
         queryinfo = self.queryInfo.copy()
         queryinfo['since'] = sincetime
         queryinfo['limit'] = self.limitResults(limitresults)
-        print limitresults
-        print queryinfo['limit']
         
         # Get the resultset
         resultSet = r.execute(queryinfo)
@@ -168,21 +166,117 @@ class DescriptiveStatistic:
     
     def execute(self, resultSet, descInfo):
         if (descInfo['formula'] == 'moving'):
-            window = descInfo['window']
+            resultSet['data'] = self.movingAverage(resultSet['data'], descInfo['window'])
+            resultSet['labels']['dim1'] = str(descInfo['window']) + ' Measurement Moving Average'
+        elif (descInfo['formula'] == 'mean'):
+            resultSet['data'] = self.mean(resultSet['data'], descInfo['window'])
+            resultSet['labels']['dim1'] = 'Average by ' + self.epochToText(descInfo['window'])
             
-            # Just return the raw data if window too big
-            if (len(resultSet['data']) < window):
-                return resultSet
             
-            # assume I want to do the averge on the second dimension
-            xvals, yvals, ids = np.hsplit(np.array(resultSet['data']), [1,2])
-            weights = np.repeat(1.0, window) / window
-            yvals = np.convolve(yvals.flatten(), weights)[window-1:-(window-1)]
-            xvals = xvals[window-1:]
-            ids = ids[window-1:]
             
-            resultSet['data'] = np.hstack((xvals, yvals.reshape(len(xvals),1), ids)).tolist()
-            return resultSet
+        return resultSet
+
+    def movingAverage(self, dataSet, window):
+        # Just return the raw data if window too big
+        if (len(dataSet) < window):
+            return dataSet
+            
+        # Right now, hard code to do the average on the second dimension (y vals)
+        xvals, yvals, ids = np.hsplit(np.array(dataSet), [1,2])
+        weights = np.repeat(1.0, window) / window
+        yvals = np.convolve(yvals.flatten(), weights)[window-1:-(window-1)]
+        xvals = xvals[window-1:]
+        ids = ids[window-1:]
+
+        dataSet = np.hstack((xvals, yvals.reshape(len(xvals),1), ids)).tolist()
+        return dataSet
+    
+    def mean(self, dataSet, groupBy):
+        # Compute a simple mean for the data, grouped in the interval specified in groupBy
+        
+        # First trim the partial time and put into bins
+        trimSet = self.trimData(dataSet, groupBy)
+        [binSet, bins] = self.binData(trimSet, groupBy)
+        
+        numBins = len(bins)
+        
+        means = []
+        objectids = []
+        
+        # Compute the means for each set of bins
+        for b in binSet:
+            xvals, yvals, ids = np.hsplit(np.array(b), [1,2])
+            if (len(yvals) > 0):
+                means.append(np.mean(yvals)) 
+                objectids.append(ids[-1].tolist())
+            else:
+                means.append(0)
+                objectids.append([])
+        
+        # Replace the old time (x) values with the bin value    
+        dataSet = np.hstack((np.array(bins).reshape(numBins, 1), np.array(means).reshape(numBins, 1), np.array(objectids).reshape(numBins, 1))).tolist()
+        return dataSet
+    
+    def binData(self, dataSet, groupBy):
+        # Note: bins are defined by the maximum value of an item allowed in the bin
+        
+        minBinVal = dataSet[0][0] + groupBy
+        maxBinVal = dataSet[-1][0] + groupBy
+        
+        # Round the time to the nearest groupBy interval
+        minBinVal -= (minBinVal % groupBy)
+        maxBinVal -= (maxBinVal % groupBy)
+        
+        # Find the number of bins and size per bin
+        numBins = (maxBinVal - minBinVal) / groupBy + 1
+        bins = range(minBinVal, maxBinVal + 1, groupBy)
+        
+        # Identify which x values should appear in each bin
+        xvals, rest = np.hsplit(np.array(dataSet), [1])
+        # Hack to change xvals from type object to int
+        xvals = np.array(xvals.flatten().tolist())
+        inds = np.digitize(xvals, bins)
+
+        # Put each data element i nits appropriate bin
+        binified = [ [] for x in bins ]        
+        for binNum, val in zip(inds, dataSet):
+            binified[binNum].append(val)
+        
+        # Return the bin-ified original data and the bin labels (values)    
+        return [binified, bins]
+        
+    def trimData(self, dataSet, groupBy):
+        # Remove the fractional (minute, hour, day) from the beginning and end of the dataset
+        
+        startTime = dataSet[0][0] + groupBy
+        endTime = dataSet[-1][0]
+        
+        # Round the time to the nearest groupBy interval
+        startTime -= (startTime % groupBy)
+        endTime -= (endTime % groupBy)
+        
+        # Filter out the beginning and end
+        dataArr = np.array(dataSet)
+        dataArr = dataArr[dataArr[0:len(dataArr),0:1].flatten() > startTime]
+        dataArr = dataArr[dataArr[0:len(dataArr),0:1].flatten() < endTime]
+        
+        return dataArr.tolist()
+        
+    def epochToTupleIndex(self, groupBy):
+        if groupBy == 60: return 4      # minutes
+        elif groupBy == 3600: return 3  # hours
+        elif groupBy == 86400: return 2 # days
+
+        # Assume the default is 5, which will basically cause nothing
+        # to happen in the trim function
+        return 5
+
+    def epochToText(self, groupBy):
+        if groupBy == 60: return 'Minute'
+        elif groupBy == 3600: return 'Hour'
+        elif groupBy == 86400: return 'Day'
+
+        return 'Group Increment Error'
 
 class ResultSet:    
     # Class to retrieve data from the database and add basic metadata
@@ -206,8 +300,6 @@ class ResultSet:
         rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['limit']])
         
         # When performing some computations, require additional data
-        # E.g., 5 period moving average means we need _limit_ data points, plus four more
-        # Check if we got enough entries
         if (len(rs) > 0) and (queryInfo.has_key('required')) and (len(rs) < queryInfo['required']):
             # If not, relax the capture time but only take the num records required
             del(query['capturetime__gt'])
