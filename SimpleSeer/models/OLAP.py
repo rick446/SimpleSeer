@@ -57,7 +57,7 @@ class RealtimeOLAP:
                 result_id= str(d[5])
             ) for d in data]
             
-            olapName = 'OLAP/' + utf8convert(o.name)
+            olapName = 'OLAP/' + utf8convert(o.name) + '/'
             
             #log.info(msgdata)
             ChannelManager().publish(olapName, dict(u='data', m=msgdata))
