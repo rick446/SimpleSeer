@@ -46,7 +46,7 @@ class RealtimeOLAP:
         for o in olaps:
             o.queryInfo['limit'] = 1
             d = o.execute()
-            ChannelManager().publish('OLAP'), d)
+            ChannelManager().publish('OLAP', d)
 
 
 class OLAP(SimpleDoc, mongoengine.Document):
