@@ -14,10 +14,7 @@ Application =
     
     @inspections = new Inspections()
     @inspections.fetch()
-    
-    @charts = new OLAPs()
-    @charts.fetch({success:@charts.onSuccess})
-    
+    @charts = new OLAPs()    
     @measurements = new Measurements()
     @measurements.fetch()
     

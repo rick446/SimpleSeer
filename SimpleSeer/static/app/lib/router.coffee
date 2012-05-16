@@ -7,8 +7,11 @@ module.exports = class Router extends Backbone.Router
     'frames': 'framelist'
 
   home: ->
-    $('#main').html application.homeView.render().el
-    
+    application.charts.fetch
+      success: ->
+        $('#main').html application.homeView.render().el    
+        application.charts.onSuccess()
+
   framelist: ->
     application.lastframes.fetch
       success: ->
