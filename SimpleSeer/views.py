@@ -1,15 +1,20 @@
 import os
 import re
 import json
+import logging
 
 import bson
+import gevent
 from socketio import socketio_manage
-from flask import request, make_response
+from flask import request, make_response, Response
 
 from . import models as M
 from . import util
 from .realtime import RealtimeNamespace
 from .service import SeerProxy2
+from .Session import Session
+
+log = logging.getLogger()
 
 class route(object):
     routes = []
@@ -62,6 +67,57 @@ def frame():
     resp = make_response(result['data'], 200)
     resp.headers['Content-Type'] = result['content_type']
     return resp
+
+@route('/lastframes', methods=['GET'])
+@util.jsonify
+def lastframes():
+    frames = M.Frame.objects().order_by("-createtime").limit(20)
+    return list(frames)
+
+#TODO, abstract this for layers and thumbnails        
+@route('/grid/imgfile/<frame_id>', methods=['GET'])
+def imgfile(frame_id):
+    frame = M.Frame.objects(id = bson.ObjectId(frame_id))
+    if not frame or not frame[0].imgfile:
+        return "Image not found", 404
+    resp = make_response(frame[0].imgfile.read(), 200)
+    resp.headers['Content-Type'] = frame[0].imgfile.content_type
+    return resp    
+    
+@route('/videofeed', methods=['GET'])
+def videofeed():
+    params = {
+        'index': -1,
+        'camera': 0,
+        }
+    params.update(request.values)
+    seer = SeerProxy2()
+    log.info('Feeding video in greenlet %s', gevent.getcurrent())
+    def generate():
+        inverval = Session().poll_interval
+        if interval < 1:
+            interval = 1
+        
+        while True:
+            img = seer.get_image(**params)
+            yield '--BOUNDARYSTRING\r\n'
+            yield 'Content-Type: %s\r\n' % img['content_type']
+            yield 'Content-Length: %d\r\n' % len(img['data'])
+
+            yield '\r\n'
+            yield img['data']
+            yield '\r\n'
+            gevent.sleep(interval)
+    return Response(
+        generate(),
+        headers=[
+            ('Connection', 'close'),
+            ('Max-Age', '0'),
+            ('Expires', '0'),
+            ('Cache-Control', 'no-cache, private'),
+            ('Pragma', 'no-cache'),
+            ('Content-Type',
+             "multipart/x-mixed-replace; boundary=--BOUNDARYSTRING") ])
 
 
 @route('/frame_capture', methods=['GET', 'POST'])

@@ -41,7 +41,10 @@ $ ->
   socket.on 'message', (msg) ->
     console.log 'Got message', msg
     u = msg.u or 'SYSTEM'
-    $data.prepend $("<em>#{u}</em>: #{msg.m}<br/>")
+    if msg.m?
+      $data.prepend $("<em>#{u}</em>: #{msg.m}<br/>")
+    else
+      $data.prepend $("<em>#{u}</em>: #{msg}<br/>")
 
   $form.bind 'submit', (ev) ->
     ev.preventDefault()

@@ -2,7 +2,6 @@ import os
 import logging
 
 import gevent
-from gevent_zeromq import zmq
 from flask import Flask
 from socketio.server import SocketIOServer
 
@@ -50,29 +49,22 @@ class WebServer(object):
         self.host, self.port = host, port
 
     def run_gevent_server(self):
-        context = zmq.Context()
-
         # Will later change these so that they are only triggered by events
         # Such as entry of a new Result
         # But this is a quick and easy way to get data so we can begin testing
-        def motion():
-            oMotion = OLAP.objects.get(name='Motion')
-            cm = realtime.ChannelManager(context)
+        def olapfeed(olaps):
+            if not olaps:
+              return
+            cm = realtime.ChannelManager()
                 
             while True:
                 gevent.sleep(.25)
-                oMotion.realtime(cm)
+                for o in olaps:
+                    o.realtime(cm)
                 
-        def motionavg():
-            oMotionAvg = OLAP.objects.get(name='MotionMovingAverage')
-            cm = realtime.ChannelManager(context)
-            
-            while True:
-                gevent.sleep(.25)
-                oMotionAvg.realtime(cm)
-        
-        gevent.spawn(motionavg)
-        gevent.spawn(motion)
+        olaps = OLAP.objects
+        if len(olaps):
+          gevent.spawn_link_exception(olapfeed,list(olaps))
         
         server = SocketIOServer(
             (self.host, self.port),

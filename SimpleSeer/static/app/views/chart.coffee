@@ -1,60 +1,64 @@
-SubView = require './subview'
+#SubView = require './subview'
+View = require './view'
 template = require './templates/chart'
 view_helper = require 'lib/view_helper'
+application = require 'application'
 
-module.exports = class ChartView extends SubView
-  id: 'chart-view'
+module.exports = class ChartView extends View
   template: template
   lastupdate: 0
-
+  getRenderData: =>
+    retVal = application.charts._byId[@.anchorId]
+    if retVal
+      return retVal.attributes
+    return false
+    
   update: =>
 
     url = "/olap/Motion"
-
     if @lastupdate
       url = url + "/since/" + @lastupdate.toString()
-
+    else
+      #todo: set limit
+      url = url + "/limit/500"
     $.getJSON(url, (data) =>
       if data.data.length == 0
         setTimeout @update, 1000
         return
    
       @lastupdate = data.data[data.data.length-1][0]
-
-      if not @smoothie.seriesSet.length
-        @ts = new TimeSeries
-
-        delay = new Date().getTime() - @lastupdate * 1000
-        delay = delay * 1.1 #a little extra padding
-        @smoothie.streamTo(@$("#motion_canvas")[0], delay)
-        @smoothie.addTimeSeries @ts,
-          strokeStyle: 'rgb(0, 255, 0)'
+      dd = []
+      if !@.chart
+        for d in data.data
+          x = new Date(d[0])
+          dd.push {x:x,y:d[1],marker:{enabled:false}}
+        @.drawChart dd
+      else
+        series = @.chart.series[0]
+        for d in data.data
+          series.addPoint {x: new Date(d[0]),y: d[1], marker:{enabled:false}} , true , true
 
       setTimeout @update, 1000
-      @lastupdate = data.data[data.data.length-1][0]
+      @lastupdate++
       tz = new Date().getTimezoneOffset() * 60 * 1000
       $('.alert_error').remove();
-      for d in data.data
-        @ts.append d[0] * 1000, d[1]
       return
      ).error =>
        SimpleSeer.alert('Connection lost','error')
        setTimeout @update, 1000
 
+  drawChart: (data) =>
+    renderData = @getRenderData()
+    @.chart = new Highcharts.Chart
+      chart: {renderTo: @.anchorId,type: renderData.chartInfo.name.toLowerCase(),className: 'graph'}
+      title: {text:null}
+      legend: {enabled: false}
+      series: [{name: renderData.name,data: data}]
+      xAxis: {type: 'datetime',tickPixelInterval: 150}
+      yAxis: {title: {text: 'Value'},plotLines: [{value: 0,width: 1,color: '#808080'}],min:0}
+
   render: =>
     super()
+    $('#chart-container').append @.$el
     setTimeout @update, 10
-    @$("#motion_canvas")[0].width = 630 #TODO, fix this by checking it post-render
-    @smoothie = new SmoothieChart
-      grid:
-        strokeStyle: 'rgb(0, 144, 214)'
-        fillStyle: 'rgb(0, 0, 40)'
-        lineWidth: 1
-        millisPerLine: 10000
-      millisPerPixel: 200
-      maxValue: 100
-      minValue: 0
-
-
-
-
+    this

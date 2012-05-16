@@ -1,3 +1,4 @@
+import logging
 import calendar
 from time import gmtime, localtime, mktime
 from datetime import datetime
@@ -17,6 +18,8 @@ from .base import SimpleDoc
 from .Inspection import Inspection
 from .Result import Result
 
+log = logging.getLogger(__name__)
+
 
 class OLAPSchema(fes.Schema):
     name = fev.UnicodeString(not_empty=True)
@@ -33,8 +36,9 @@ class DescInfoSchema(fes.Schema):
     window = fev.Int(if_missing=None)
 
 class ChartInfoSchema(fes.Schema):
-    chartType = fev.OneOf(['line', 'bar', 'pie'])
-    chartColor = fev.OneOf(['red', 'green', 'blue'])
+    chartType = fev.OneOf(['line', 'bar', 'pie', 'spline', 'area', 'areaspline','column','scatter'])
+    chartColor = fev.UnicodeString(if_empty="")
+    #TODO, this should maybe be validated to a hex string or web color
 
 class OLAP(SimpleDoc, mongoengine.Document):
     # General flow designed for:
@@ -82,7 +86,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
     def realtime(self, cm):
         # Pull up the channel manager to handle publishing results
         
-        channelName = utf8convert('OLAP_' + self.name + '.')
+        channelName = utf8convert('OLAP')
         
         if (not self.queryInfo.has_key('limit')): self.queryInfo['limit'] = 500
         if (not self.queryInfo.has_key('since')): self.queryInfo['since'] = 0
@@ -98,6 +102,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
                 newrset = d.execute(rset, self.descInfo)
                 
             # Push to the channel
+            log.info('Publish %r', channelName)
             cm.publish(channelName, dict(u='data', m=[rset['data']]))
         
             self.queryInfo['since'] = rset['data'][-1][0] + 1
