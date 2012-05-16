@@ -32,7 +32,7 @@ class QueryInfoSchema(fes.Schema):
     since = V.DateTime(if_empty=0, if_missing=None)
     
 class DescInfoSchema(fes.Schema):
-    formula = fev.OneOf(['moving', 'mean', 'std'], if_missing=None)
+    formula = fev.OneOf(['moving', 'mean', 'median', 'mode', 'var', 'std', 'max', 'min', 'first', 'last', 'uq', 'lq'], if_missing=None)
     window = fev.Int(if_missing=None)
 
 class ChartInfoSchema(fes.Schema):
@@ -99,7 +99,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
             
             if (self.descInfo):
                 d = DescriptiveStatistic()
-                newrset = d.execute(rset, self.descInfo)
+                rset = d.execute(rset, self.descInfo)
                 
             # Push to the channel
             log.info('Publish %r', channelName)
@@ -172,22 +172,60 @@ class Chart:
 
 
 class DescriptiveStatistic:
-    # Will be used for computing basic descriptives on query results
-    # (e.g., sums, counts, means, moving averages)
-
-    # TODO: This is just a quick hack to make it work.  Future: make
-    # more plugin-able and configurable
     
     def execute(self, resultSet, descInfo):
+        # Moving Average
         if (descInfo['formula'] == 'moving'):
             resultSet['data'] = self.movingAverage(resultSet['data'], descInfo['window'])
             resultSet['labels']['dim1'] = str(descInfo['window']) + ' Measurement Moving Average'
+        # Mean
         elif (descInfo['formula'] == 'mean'):
-            resultSet['data'] = self.mean(resultSet['data'], descInfo['window'])
-            resultSet['labels']['dim1'] = 'Average by ' + self.epochToText(descInfo['window'])
-            
-            
-            
+            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.mean)
+            resultSet['labels']['dim1'] = 'Mean, group by ' + self.epochToText(descInfo['window'])
+        # Median
+        elif (descInfo['formula'] == 'median'):
+            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.median)
+            resultSet['labels']['dim1'] = 'Median, group by ' + self.epochToText(descInfo['window'])
+        # Mode
+        elif (descInfo['formula'] == 'mode'):
+            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], self.mode)
+            resultSet['labels']['dim1'] = 'Mode, group by ' + self.epochToText(descInfo['window'])
+        # Variance
+        elif (descInfo['formula'] == 'var'):
+            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.var)
+            resultSet['labels']['dim1'] = 'Variance, group by ' + self.epochToText(descInfo['window'])
+        # Standard Deviation
+        elif (descInfo['formula'] == 'std'):
+            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.std)
+            resultSet['labels']['dim1'] = 'Standard Deviation, group by ' + self.epochToText(descInfo['window'])
+        # Max
+        elif (descInfo['formula'] == 'max'):
+            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.max)
+            resultSet['labels']['dim1'] = 'Maximum, group by ' + self.epochToText(descInfo['window'])
+        # Min
+        elif (descInfo['formula'] == 'min'):
+            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.min)
+            resultSet['labels']['dim1'] = 'Minimum, group by ' + self.epochToText(descInfo['window'])
+        # First
+        elif (descInfo['formula'] == 'first'):
+            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], self.first)
+            resultSet['labels']['dim1'] = 'First, group by ' + self.epochToText(descInfo['window'])
+        # Last
+        elif (descInfo['formula'] == 'last'):
+            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], self.last)
+            resultSet['labels']['dim1'] = 'Last, group by ' + self.epochToText(descInfo['window'])
+        # Lower Quartile
+        elif (descInfo['formula'] == 'lq'):
+            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], self.lq)
+            resultSet['labels']['dim1'] = 'Lower Quartile, group by ' + self.epochToText(descInfo['window'])
+        # Upper Quartile
+        elif (descInfo['formula'] == 'uq'):
+            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], self.uq)
+            resultSet['labels']['dim1'] = 'Upper Quartile, group by ' + self.epochToText(descInfo['window'])
+        else:
+            # If no matching function, just return the original result set    
+            log.warn('Descriptive statistic got unknown formula: ' + descInfo['formula'])
+        
         return resultSet
 
     def movingAverage(self, dataSet, window):
@@ -204,9 +242,30 @@ class DescriptiveStatistic:
 
         dataSet = np.hstack((xvals, yvals.reshape(len(xvals),1), ids)).tolist()
         return dataSet
+
+    def mode(self, x):
+        # A little hack since the related SciPy function returns unnecessary data
+        from scipy import stats
+        return stats.mode(x)[0][0].tolist()
+        
+    def first(self, x):
+        return x[0]
+        
+    def last(self, x):
+        return x[-1]
     
-    def mean(self, dataSet, groupBy):
-        # Compute a simple mean for the data, grouped in the interval specified in groupBy
+    def lq(self, x):
+        # The lower quartile/25th percentile
+        from scipy import stats
+        return stats.scoreatpercentile(x, 25)
+        
+    def uq(self, x):
+        # The upper quartile/75th percentile
+        from scipy import stats
+        return stats.scoreatpercentile(x, 75)
+    
+    def binStatistic(self, dataSet, groupBy, func):
+        # Computed the indicated statistic (func) on each bin of data set
         
         # First trim the partial time and put into bins
         trimSet = self.trimData(dataSet, groupBy)
@@ -221,14 +280,14 @@ class DescriptiveStatistic:
         for b in binSet:
             xvals, yvals, ids = np.hsplit(np.array(b), [1,2])
             if (len(yvals) > 0):
-                means.append(np.mean(yvals)) 
+                means.append(func(yvals)) 
                 objectids.append(ids[-1].tolist())
             else:
                 means.append(0)
                 objectids.append([])
         
         # Replace the old time (x) values with the bin value    
-        dataSet = np.hstack((np.array(bins).reshape(numBins, 1), np.array(means).reshape(numBins, 1), np.array(objectids).reshape(numBins, 1))).tolist()
+        dataSet = np.hstack((np.array(bins).reshape(numBins, 1), np.array(means).reshape(numBins, 1), np.array(objectids).reshape(numBins, len(objectids[0])))).tolist()
         return dataSet
     
     def binData(self, dataSet, groupBy):
@@ -276,22 +335,15 @@ class DescriptiveStatistic:
         
         return dataArr.tolist()
         
-    def epochToTupleIndex(self, groupBy):
-        if groupBy == 60: return 4      # minutes
-        elif groupBy == 3600: return 3  # hours
-        elif groupBy == 86400: return 2 # days
-
-        # Assume the default is 5, which will basically cause nothing
-        # to happen in the trim function
-        return 5
-
+        
     def epochToText(self, groupBy):
-        if groupBy == 60: return 'Minute'
-        elif groupBy == 3600: return 'Hour'
-        elif groupBy == 86400: return 'Day'
+        if groupBy < 60: return str(groupBy) + ' Second(s)'
+        elif groupBy < 3600: return str(groupBy / 60) + ' Minute(s)'
+        elif groupBy < 86400: return str(groupBy / 3600) + ' Hour(s)'
+        elif groupBy < 604800: return str(groupBy / 86400) + ' Day(s)'
+        else: return str(groupBy / 604800) + ' Week(s)'
 
-        return 'Group Increment Error'
-
+        
 class ResultSet:    
     # Class to retrieve data from the database and add basic metadata
     
