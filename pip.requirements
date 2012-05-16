@@ -11,5 +11,5 @@ gevent
 gevent-zeromq
 gevent-websocket
 gevent-socketio
-cython
 pyro4
+cython

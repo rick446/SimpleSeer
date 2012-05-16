@@ -57,8 +57,7 @@ Run all these commands from within the SimpleSeer directory:
 	sudo ln -s `pwd`/etc/default.cfg /etc/simpleseer.cfg
   sudo ln -s `pwd`/etc/simpleseer-logging.cfg /etc/simpleseer-logging.cfg
   sudo supervisorctl reload
-  sudo supervisorctl
-  start seer-dev:
+  sudo supervisorctl start seer-dev:
 
 
 *NOTE: Don't install python-pymongo from the repos as it is much too far out of date and requires 2+
