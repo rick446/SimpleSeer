@@ -7,9 +7,9 @@ ujson
 anyjson
 FormEncode
 pyzmq
-cython
 gevent
 gevent-zeromq
 gevent-websocket
 gevent-socketio
+cython
 pyro4
