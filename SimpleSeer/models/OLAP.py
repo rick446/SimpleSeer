@@ -45,8 +45,19 @@ class RealtimeOLAP:
         olaps = OLAP.objects
         for o in olaps:
             o.queryInfo['limit'] = 1
-            d = o.execute()
-            ChannelManager().publish('OLAP', d)
+            rset = o.execute()
+            
+            data = rset['data']
+            msgdata = [dict(
+                id = o.id,
+                data = d[0:1],
+                inspection_id =  str(d[2]),
+                frame_id = d[3],
+                measurement_id= d[4],
+                result_id= d[5]
+            ) for d in data]
+            ChannelManager().publish('OLAP', dict(u='data', m=msgdata))
+            
 
 
 class OLAP(SimpleDoc, mongoengine.Document):
