@@ -24,15 +24,11 @@ Application =
     
     @inspections = new Inspections()
     @inspections.fetch()
-    @charts = new OLAPs()    
+    @charts = new OLAPs()
     @measurements = new Measurements()
     @measurements.fetch()
-    
+
     @lastframes = new Frames()
-
-
-    @homeView = new HomeView()
-    @framelistView = new FramelistView()
 
 
     # Instantiate the router

@@ -84,7 +84,7 @@ def imgfile(frame_id):
     resp.headers['Content-Type'] = frame[0].imgfile.content_type
     return resp    
     
-@route('/videofeed', methods=['GET'])
+@route('/videofeed.mjpeg', methods=['GET'])
 def videofeed():
     params = {
         'index': -1,

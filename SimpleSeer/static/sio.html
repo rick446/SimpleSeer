@@ -69,12 +69,12 @@ $ ->
     sub_li = $("<li>#{channel} <a class=\"unsubscribe\" href=\"#{channel}\">Unsubscribe</a></li>")
     $subs.append(sub_li);
     socket.on "message:#{channel}", (msg) ->
-      console.log 'Got message', msg
+      console.log 'Got message on sub', channel, msg
       msg_channel = msg.channel
-      msg_data = JSON.stringify(msg)
-      to_prepend = $("<div><em>#{channel}: #{msg_channel}</em>: #{msg_data}</div>")
-      console.log to_prepend
+      msg_data = JSON.stringify msg, null, 4
+      to_prepend = $("<div class=\"message\"><em>#{channel}: #{msg_channel}</em><pre>#{msg_data}</pre>")
       $data.prepend to_prepend
+      $data.find('.message').slice(10).remove()
 
   console.log 'All is ready', socket
 #]]>
