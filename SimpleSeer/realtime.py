@@ -17,6 +17,7 @@ class ChannelManager(object):
         '''Yeah, it's a borg'''
         self.__dict__ = self.__shared_state
         if self.initialized: return
+        self.initialized = True
         self._channels = {}
         self.config = Session()
         self.context = context or zmq.Context.instance()

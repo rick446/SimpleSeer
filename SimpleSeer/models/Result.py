@@ -22,6 +22,5 @@ class Result(SimpleDoc, mongoengine.Document):
     }
 
     def save(self, *args, **kwargs):
-        realtime.ChannelManager().publish('OLAP.', dict(
-                string=self.string, object=self))
+        realtime.ChannelManager().publish('OLAP.', self)
         super(Result, self).save(*args, **kwargs)
