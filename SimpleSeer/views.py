@@ -94,7 +94,7 @@ def videofeed():
     seer = SeerProxy2()
     log.info('Feeding video in greenlet %s', gevent.getcurrent())
     def generate():
-        inverval = Session().poll_interval
+        interval = Session().poll_interval
         if interval < 1:
             interval = 1
         
