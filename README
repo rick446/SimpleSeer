@@ -45,19 +45,19 @@ Download or git clone the repo:
 	wget https://github.com/ingenuitas/SimpleSeer/zipball/master -O SimpleSeer.zip; unzip SimpleSeer.zip; mv ingenuitas-* SimpleSeer;
 	cd SimpleSeer
 
-Run all these commands from within the SimpleSeer directory:
+Run all these commands from WITHIN the SimpleSeer directory:
 
 	sudo apt-get install python-dev python-setuptools python-pip libzmq-dev mongodb nodejs npm build-essential python-gevent libevent-dev supervisor
 	sudo npm install -g brunch
 	pip install -r pip.requirements
 	python setup.py develop
-  sudo mkdir /etc/simpleseer
-  sudo ln -s `pwd`/SimpleSeer/static/ /etc/simpleseer/static
-  sudo ln -s `pwd`/etc/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
-	sudo ln -s `pwd`/etc/default.cfg /etc/simpleseer.cfg
-  sudo ln -s `pwd`/etc/simpleseer-logging.cfg /etc/simpleseer-logging.cfg
-  sudo supervisorctl reload
-  sudo supervisorctl start seer-dev:
+	sudo mkdir /etc/simpleseer
+	sudo ln -s `pwd`/SimpleSeer/static/ /etc/simpleseer/static
+	sudo ln -s `pwd`/etc/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
+	sudo ln -s `pwd`/etc/simpleseer.cfg /etc/simpleseer.cfg
+	sudo ln -s `pwd`/etc/simpleseer-logging.cfg /etc/simpleseer-logging.cfg
+	sudo supervisorctl reload
+	sudo supervisorctl start seer-dev:
 
 
 *NOTE: Don't install python-pymongo from the repos as it is much too far out of date and requires 2+
