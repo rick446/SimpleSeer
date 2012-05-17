@@ -23,5 +23,5 @@ module.exports = class HomeView extends View
       application.charts.pause()
     else
       application.charts.unpause()
-    control.toggleClass "active"
+    #control.toggleClass "active"
     return
