@@ -14,11 +14,11 @@ Application =
 
     @.socket = io.connect '/rt'
     @.socket.on 'connect', ->
-      alert 'connect'
+      #alert 'connect'
     @.socket.on 'error', ->
-      alert 'error'
+      #alert 'error'
     @.socket.on 'disconnect', ->
-      alert 'disconnect'
+      #alert 'disconnect'
     #@.socket.on 'message', (msg) ->
     #  console.log 'Got message', msg
     
