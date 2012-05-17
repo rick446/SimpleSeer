@@ -11,4 +11,4 @@ module.exports = class FrameView extends SubView
 
   rerender: =>
     img = @$('img')
-    img.attr('src', '/videofeed.mjpeg?' + Date.UTC()
+    img.attr('src', '/videofeed.mjpeg?' + Date.UTC())
