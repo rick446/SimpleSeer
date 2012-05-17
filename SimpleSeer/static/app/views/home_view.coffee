@@ -10,7 +10,7 @@ module.exports = class HomeView extends View
     
   
   events:
-    "click #realtime-control": "realtimeControl"
+    "click #realtimecontrol": "realtimeControl"
     
   id: 'home-view'
   template: template

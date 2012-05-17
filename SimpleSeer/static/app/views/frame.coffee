@@ -8,6 +8,7 @@ module.exports = class FrameView extends SubView
   initialize: (args...) =>
     super(args...)
     #setInterval @rerender, 5000
+    @rerender()
 
   rerender: =>
     img = @$('img')

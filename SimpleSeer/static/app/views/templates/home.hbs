@@ -1,14 +1,10 @@
 		<div id="messages"></div>
-    <button class="btn active" data-toggle="button">Realtime</button>
+    <button id="realtimecontrol" class="btn active" data-toggle="button">Realtime</button>
 		<div id="content" class="row">
-		  <div id="frame-container" class="span{{#if chartcount}}5{{else}}12{{/if}}">
-		  </div>
+		  <div id="frame-container" class="span{{#if chartcount}}5{{else}}12{{/if}}"></div>
           {{#if chartcount}} 
 		  <div id="chart-container" class="span7">
 		  </div>
           {{/if}}
 		</div>
-		</div>
-		<div class="modal" id="frame-modal">
-		  <img src="">
 		</div>
