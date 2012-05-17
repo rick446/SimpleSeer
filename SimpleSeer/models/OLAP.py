@@ -363,7 +363,7 @@ class ResultSet:
             del(query['capturetime__gt'])
             rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['required']])
         
-        outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric, r.inspection, r.frame, r.measurement, r.id] for r in rs[::-1]]
+        outputVals = [[calendar.timegm(r.capturetime.timetuple()) + r.capturetime.time().microsecond / 1000000.0, r.numeric, r.inspection, r.frame, r.measurement, r.id] for r in rs[::-1]]
         
         
         if (len(outputVals) > 0):

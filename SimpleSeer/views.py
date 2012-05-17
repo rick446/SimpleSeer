@@ -84,9 +84,10 @@ def imgfile(frame_id):
     resp.headers['Content-Type'] = frame[0].imgfile.content_type
     return resp    
     
-@route('/videofeed.mjpeg', methods=['GET'])
-def videofeed():
+@route('/videofeed-width<int:width>.mjpeg', methods=['GET'])
+def videofeed(width=0):    
     params = {
+        'width': width,
         'index': -1,
         'camera': 0,
         }
@@ -95,8 +96,9 @@ def videofeed():
     log.info('Feeding video in greenlet %s', gevent.getcurrent())
     def generate():
         interval = Session().poll_interval
-        if interval < 1:
+        if interval > 1:
             interval = 1
+            
         
         while True:
             img = seer.get_image(**params)
@@ -119,6 +121,10 @@ def videofeed():
             ('Content-Type',
              "multipart/x-mixed-replace; boundary=--BOUNDARYSTRING") ])
 
+@route('/videofeed.mjpeg', methods=['GET'])
+def videofeed_camera_res():
+    return videofeed()
+    
 
 @route('/frame_capture', methods=['GET', 'POST'])
 @util.jsonify
