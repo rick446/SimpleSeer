@@ -22,7 +22,9 @@ class Result(SimpleDoc, mongoengine.Document):
     }
 
     def save(self, *args, **kwargs):
+        # Push notification to OLAP to decide whether to publish this update
         from .OLAP import RealtimeOLAP
         o = RealtimeOLAP()
-        o.realtime()
+        o.realtime(self)
+        
         super(Result, self).save(*args, **kwargs)

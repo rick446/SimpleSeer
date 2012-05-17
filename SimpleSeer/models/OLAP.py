@@ -74,7 +74,6 @@ class RealtimeOLAP:
                 if (previousTime < border):
                     # This does the unnecessary step of creating chart info.  Could optimize this.
                     log.info('Sending descriptive for ' + o.name)
-               
                     o.descInfo['trim'] = 0
                     rset = o.execute(sincetime = border - window)
                     self.sendMessage(o, rset['data'])
@@ -409,7 +408,7 @@ class ResultSet:
             del(query['capturetime__gt'])
             rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['required']])
         
-        outputVals = [[calendar.timegm(r.capturetime.timetuple()), r.numeric, r.inspection, r.frame, r.measurement, r.id] for r in rs[::-1]]
+        outputVals = [[calendar.timegm(r.capturetime.timetuple()) + r.capturetime.time().microsecond / 1000000.0, r.numeric, r.inspection, r.frame, r.measurement, r.id] for r in rs[::-1]]
         
         
         if (len(outputVals) > 0):

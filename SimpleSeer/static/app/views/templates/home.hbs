@@ -1,9 +1,10 @@
 		<div id="messages"></div>
+    <button id="realtimecontrol" class="btn active" data-toggle="button">Realtime</button>
 		<div id="content" class="row">
-		  <div id="frame-container" class="span5">
-
-		  </div>
+		  <div id="frame-container" class="span{{#if chartcount}}5{{else}}12{{/if}}"></div>
+          {{#if chartcount}} 
 		  <div id="chart-container" class="span7">
-
 		  </div>
-		</div>  
+          {{/if}}
+		</div>
+		</div>

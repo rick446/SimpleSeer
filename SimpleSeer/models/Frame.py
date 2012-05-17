@@ -46,7 +46,14 @@ class Frame(SimpleDoc, mongoengine.Document):
                 return self._imgcache
             
             self.imgfile.get().seek(0,0) #hackity hack, make sure the FP is at 0
-            self._imgcache = Image(pil.open(StringIO(self.imgfile.read())))
+            if self.imgfile != None:
+                try:
+                    self._imgcache = Image(pil.open(StringIO(self.imgfile.read())))
+                except IOError, TypeError:
+                    self._imgcache = None
+            else:
+                self._imgcache = None
+            
             
             if self.layerfile:
                 self.layerfile.get().seek(0,0)
@@ -88,7 +95,7 @@ class Frame(SimpleDoc, mongoengine.Document):
                 self.layerfile.delete()
                 self.layerfile.put(pygame.image.tostring(mergedlayer._mSurface, "RGBA"))
                 #TODO, make layerfile a compressed object
-            self._imgcache = ''
+            #self._imgcache = ''
         
         results = self.results
         self.results = []

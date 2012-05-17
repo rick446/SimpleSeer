@@ -62,30 +62,35 @@ class ChannelManager(object):
 class RealtimeNamespace(BaseNamespace):
 
     def initialize(self):
-        self._channel = None
-        self._channel_name = None
-        self._greenlet = None
+        self._channels = {}  # _channels[name] = (socket, greenlet)
         self._channel_manager = ChannelManager()
 
     def disconnect(self, *args, **kwargs):
-        if self._channel: self._unsubscribe()
+        for name in self._channels.keys():
+            self._unsubscribe(name)
         super(RealtimeNamespace, self).disconnect(*args, **kwargs)
 
-    def on_connect(self, name):
-        if self._channel: self._unsubscribe()
+    def on_subscribe(self, name):
         self._subscribe(name)
 
+    def on_unsubscribe(self, name):
+        self._unsubscribe(name)
+
     def _subscribe(self, name):
-        self._channel = self._channel_manager.subscribe(name)
-        self._greenlet = gevent.spawn(self._relay)
+        socket = self._channel_manager.subscribe(name)
+        greenlet = gevent.spawn_link_exception(self._relay, name, socket)
+        self._channels[name] = (socket, greenlet)
 
-    def _unsubscribe(self):
-        self._greenlet.kill()
-        self._channel_manager.unsubscribe(self._channel_name, self._channel)
-        self._channel = self._greenlet = self._channel_name = None
+    def _unsubscribe(self, name):
+        if name not in self._channels: return
+        socket, greenlet = self._channels.pop(name)
+        greenlet.kill()
+        self._channel_manager.unsubscribe(name, socket)
 
-    def _relay(self):
+    def _relay(self, name, socket):
         while True:
-            self._channel.recv() # discard the envelope
-            message = self._channel.recv()
-            self.emit('message', jsondecode(message))
+            channel = socket.recv() # discard the envelope
+            message = socket.recv()
+            self.emit('message:' + name, dict(
+                    channel=channel,
+                    data=jsondecode(message)))

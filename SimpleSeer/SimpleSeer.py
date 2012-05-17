@@ -13,8 +13,11 @@ from .Session import Session
 
 from SimpleCV import Camera, VirtualCamera, Kinect, FrameSource
 from SimpleCV import ImageSet, Image
+from .base import pil
 import numpy as np
 from glob import glob
+from cStringIO import StringIO
+
 
 log = logging.getLogger(__name__)
 
@@ -269,11 +272,21 @@ class SimpleSeer(object):
 
     def get_frame_id(self, index, camera):
         return self.lastframes[index][camera].id
-                
-    def get_image(self, index, camera):
+    
+    def get_image(self, width, index, camera):
         frame = self.lastframes[index][camera]
-        return frame.serialize()
-
+        image = frame.image
+        
+        if (width):
+            image = image.scale(width / float(image.width))
+        
+        s = StringIO()
+        image.save(s, "jpeg", quality=60)
+        
+        return dict(
+                content_type='image/jpeg',
+                data=s.getvalue())
+        
     def get_config(self):
         return Session().get_config()
 

@@ -2,11 +2,11 @@
 <div style="border:1px solid black;">
   <b id="status">Disconnected</b></div>
 <div style="border:1px solid black;">
-  Channel: <span id="channel">none</span>
+  <h2>Subscriptions</h2>
+  Subscribe to: <form style="display:inline"><input id="input" style="width: 35em;"></form>
+  <ul id="subscriptions">
+  </ul>
 </div>
-<form>
-  <input id="input" style="width: 35em;">
-</form>
 <div id="data" style="border:1px solid black;"></div>
 <script type="text/javascript" 
         src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js"></script>
@@ -25,7 +25,8 @@ $ ->
   $form = $ 'form'
   $input = $ '#input'
   $data = $ '#data'
-  $chan = $ '#channel'
+  $subs = $ '#subscriptions'
+
 
   # Info messages
   main_socket.on 'connect', ->
@@ -46,15 +47,36 @@ $ ->
     else
       $data.prepend $("<em>#{u}</em>: #{msg}<br/>")
 
+  # Unsubscribe messages
+  $subs.on 'click', 'a.unsubscribe', (ev) ->
+    $target = $(ev.target)
+    console.log 'unsubscribe from', ev.target
+    ev.preventDefault()
+    ev.stopPropagation()
+    channel = $(ev.target).attr('href')
+    console.log 'unsubscribing from', channel
+    socket.emit 'unsubscribe', channel
+    socket.removeAllListeners "message:#{channel}"
+    console.log 'unsubscribed'
+    $target.closest('li').remove()
+
   $form.bind 'submit', (ev) ->
     ev.preventDefault()
     ev.stopPropagation()
-    val = $input.val()
+    channel = $input.val()
     $input.val ''
-    socket.emit 'connect', val
-    $chan.html val
+    socket.emit 'subscribe', channel
+    sub_li = $("<li>#{channel} <a class=\"unsubscribe\" href=\"#{channel}\">Unsubscribe</a></li>")
+    $subs.append(sub_li);
+    socket.on "message:#{channel}", (msg) ->
+      console.log 'Got message on sub', channel, msg
+      msg_channel = msg.channel
+      msg_data = JSON.stringify msg, null, 4
+      to_prepend = $("<div class=\"message\"><em>#{channel}: #{msg_channel}</em><pre>#{msg_data}</pre>")
+      $data.prepend to_prepend
+      $data.find('.message').slice(10).remove()
 
-  console.log 'All is ready'
+  console.log 'All is ready', socket
 #]]>
 </script>
   
