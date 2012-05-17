@@ -18,14 +18,10 @@ module.exports = class HomeView extends View
     return chartcount : application.charts.length
 
   realtimeControl: =>
-    control = $ "#realtimecontrol"
     
-    if control.hasClass "active"
+    if !application.charts.paused
       application.charts.pause()
-      control.html "Paused"
     else
       application.charts.unpause()
-      control.html "Realtime"
-
     control.toggleClass "active"
-    
+    return

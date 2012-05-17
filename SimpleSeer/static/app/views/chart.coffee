@@ -26,12 +26,12 @@ module.exports = class ChartView extends View
       if !@.chart
         for d in data.data
           x = d[0]*1000
-          dd.push {x: d[0]*1000,y:d[1], marker:{enabled:true}, id:d[3], events: {click: @._callFrame}}
+          dd.push {x: d[0]*1000,y:d[1], marker:{enabled:false}, id:d[3], events: {click: @._callFrame}}
         @.drawChart dd
       else
         series = @.chart.series[0]
         for d in data.data
-          series.addPoint {x: d[0]*1000,y:d[1], marker:{enabled:true}, id:d[2], events: {click: @._callFrame}} , true , true
+          series.addPoint {x: d[0]*1000,y:d[1], marker:{enabled:false}, id:d[2], events: {click: @._callFrame}} , true , true
 
       $('.alert_error').remove();
       return
