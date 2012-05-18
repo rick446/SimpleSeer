@@ -85,6 +85,7 @@ module.exports = class ChartView extends View
       series: [{name: renderData.name,data: data}]
       xAxis: {type: 'datetime',tickPixelInterval: 150}
       yAxis: {title: {text: ''},plotLines: [{value: 0,width: 1,color: '#808080'}],min:0,max:100}
+    $('svg>text>tspan').remove()
     application.socket.on "message:OLAP/#{renderData.name}/", @_update
     application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
     return
