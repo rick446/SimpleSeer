@@ -21,8 +21,3 @@ class Result(SimpleDoc, mongoengine.Document):
         'indexes': ["capturetime", ('camera', '-capturetime'), "frame", "inspection", "measurement"]
     }
 
-    def save(self, *args, **kwargs):
-        from .OLAP import RealtimeOLAP
-        o = RealtimeOLAP()
-        o.realtime()
-        super(Result, self).save(*args, **kwargs)

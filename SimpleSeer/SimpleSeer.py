@@ -17,6 +17,9 @@ from .base import pil
 import numpy as np
 from glob import glob
 from cStringIO import StringIO
+from .models.OLAP import RealtimeOLAP
+import realtime as realtime
+
 
 
 log = logging.getLogger(__name__)
@@ -248,7 +251,8 @@ class SimpleSeer(object):
                     
             for watcher in self.watchers:
                 watcher.check(frame.results)
-                    
+        
+
         return 
 
     def frame(self, index = 0):
@@ -331,12 +335,16 @@ class SimpleSeer(object):
             while not self.halt:
                 timer_start = time.time()
                 self.capture()
+                realtime.ChannelManager().publish('capture.', { "capture": 1})
+
                 self.inspect()
                 self.check()
                 if self.config.record_all:
                     for frame in self.lastframes[-1]:
                         frame.save(safe = False)
-
+                #check any OLAPs
+                o = RealtimeOLAP()
+                o.realtime()
                 
                 timeleft = Session().poll_interval - (time.time() - timer_start)
 

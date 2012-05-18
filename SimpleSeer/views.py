@@ -10,7 +10,7 @@ from flask import request, make_response, Response
 
 from . import models as M
 from . import util
-from .realtime import RealtimeNamespace
+from .realtime import RealtimeNamespace, ChannelManager
 from .service import SeerProxy2
 from .Session import Session
 
@@ -94,13 +94,11 @@ def videofeed(width=0):
     params.update(request.values)
     seer = SeerProxy2()
     log.info('Feeding video in greenlet %s', gevent.getcurrent())
-    def generate():
-        interval = Session().poll_interval
-        if interval > 1:
-            interval = 1
-            
+    def generate():        
+        socket = ChannelManager().subscribe("capture.")
         
         while True:
+            capture_msg = socket.recv() #we actually ignore the message
             img = seer.get_image(**params)
             yield '--BOUNDARYSTRING\r\n'
             yield 'Content-Type: %s\r\n' % img['content_type']
@@ -109,7 +107,7 @@ def videofeed(width=0):
             yield '\r\n'
             yield img['data']
             yield '\r\n'
-            gevent.sleep(interval)
+            gevent.sleep(0.01)
     return Response(
         generate(),
         headers=[
