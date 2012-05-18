@@ -6,7 +6,7 @@ application = require 'application'
 module.exports = class HomeView extends View
   initialize: =>
     super()
-    @addSubview "frame-view", FrameView, '#frame-container'
+    @addSubview "frameview", FrameView, '#frame-container'
     
   
   events:
@@ -16,6 +16,7 @@ module.exports = class HomeView extends View
   template: template
   getRenderData: =>
     return chartcount : application.charts.length
+
 
   realtimeControl: =>
     
