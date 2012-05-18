@@ -241,7 +241,8 @@ class SimpleSeer(object):
                 if inspection.parent:  #root parents only
                     continue
                 
-                if frame.camera != inspection.camera: #this camera only
+                if inspection.camera and frame.camera != inspection.camera:
+                    #this camera, or all cameras if no camera is specified
                     continue
                 
                 results = inspection.execute(frame.image)
