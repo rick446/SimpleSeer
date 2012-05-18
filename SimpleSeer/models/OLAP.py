@@ -101,7 +101,7 @@ class RealtimeOLAP:
         ) for d in data]
         
         # Channel naming: OLAP/olap_name
-        olapName = 'OLAP/' + utf8convert(o.name)
+        olapName = 'OLAP/' + utf8convert(o.name) + '/'
         ChannelManager().publish(olapName, dict(u='data', m=msgdata))
         
 
