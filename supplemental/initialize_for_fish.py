@@ -20,7 +20,7 @@ Measurement.objects.delete()
 OLAP.objects.delete()
 
 
-insp = Inspection( name= "Motion", method="motion", camera = "Default Camera")
+insp = Inspection( name= "Motion", method="motion")
 insp.save()
 
 meas = Measurement( name="movement", label="Movement", method = "movement", parameters = dict(), units = "", featurecriteria = dict( index = 0 ), inspection = insp.id )

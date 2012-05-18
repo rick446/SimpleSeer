@@ -5,11 +5,9 @@ module.exports = class FrameView extends SubView
   id: 'frame-view'
   template: template
 
-  initialize: (args...) =>
-    super(args...)
-    #setInterval @rerender, 5000
-    @rerender()
-
-  rerender: =>
-    img = @$('img')
-    img.attr('src', '/videofeed.mjpeg?' + Date.UTC())
+  setVideoFeed: =>
+    img = @$el.find('img')
+    width = @$el.innerWidth()
+    width = 640 if width > 640
+    img.attr('src', '/videofeed-width'+width+'.mjpeg?' + Date.UTC())
+    img.attr('width', "100%")

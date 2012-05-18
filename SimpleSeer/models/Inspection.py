@@ -18,7 +18,7 @@ class InspectionSchema(fes.Schema):
     parent = V.ObjectId(if_empty=None, if_missing=None)
     name = fev.UnicodeString(not_empty=True)
     method = fev.UnicodeString(not_empty=True)
-    camera = fev.UnicodeString(not_empty=True)
+    camera = fev.UnicodeString(if_empty="")
     parameters = V.JSON(if_empty=dict, if_missing=None)
     filters = V.JSON(if_empty=dict, if_missing=None)
     richattributes = V.JSON(if_empty=dict, if_missing=None)

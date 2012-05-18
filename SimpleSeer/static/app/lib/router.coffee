@@ -9,7 +9,8 @@ module.exports = class Router extends Backbone.Router
   home: ->
     application.charts.fetch
       success: (d1, d2) ->
-        $('#main').html application.homeView.render().el    
+        $('#main').html application.homeView.render().el
+        application.homeView.subviews.frameview.setVideoFeed()
         application.charts.onSuccess(d1, d2)
 
   framelist: ->

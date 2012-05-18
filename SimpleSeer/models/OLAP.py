@@ -51,6 +51,7 @@ class RealtimeOLAP:
                 log.info('Send raw data for OLAP ' + o.name)
                 r = ResultSet()
                 rset = r.resultToResultSet(res)
+                log.info(rset['data'])
                 self.sendMessage(o, rset['data'])
 
             elif o.descInfo['formula'] == 'moving':
@@ -61,6 +62,7 @@ class RealtimeOLAP:
                 
                 o.queryInfo['limit'] = o.descInfo['window']
                 rset = o.execute()
+                log.info(rset['data'])
                 self.sendMessage(o, rset['data'])
                 
             else:
@@ -76,6 +78,7 @@ class RealtimeOLAP:
                     log.info('Sending descriptive for ' + o.name)
                     o.descInfo['trim'] = 0
                     rset = o.execute(sincetime = border - window)
+                    log.info(rset['data'])
                     self.sendMessage(o, rset['data'])
                 else:
                     log.info(o.name + ' declined update')
@@ -316,24 +319,31 @@ class DescriptiveStatistic:
             xvals, yvals, ids = np.hsplit(np.array(b), [1,2])
             if (len(yvals) > 0):
                 means.append(func(yvals)) 
-                objectids.append(ids[-1].tolist())
+                objectids.append(ids[-1].flatten())
             else:
                 means.append(0)
                 objectids.append([])
+
+        log.info(objectids)
+        # Tweak since numpy gets confused by sizes
+        if numBins == 1:
+            objs = np.array(objectids).reshape(numBins, 4)
+        else:
+            objs = np.array(objectids).reshape(numBins, 1)
         
         # Replace the old time (x) values with the bin value    
-        dataSet = np.hstack((np.array(bins).reshape(numBins, 1), np.array(means).reshape(numBins, 1), np.array(objectids).reshape(numBins, 4))).tolist()
+        dataSet = np.hstack((np.array(bins).reshape(numBins, 1), np.array(means).reshape(numBins, 1), objs)).tolist()
         return dataSet
     
     def binData(self, dataSet, groupBy):
         # Note: bins are defined by the maximum value of an item allowed in the bin
         
-        minBinVal = dataSet[0][0] + groupBy
-        maxBinVal = dataSet[-1][0] + groupBy
+        minBinVal = int(dataSet[0][0] + groupBy)
+        maxBinVal = int(dataSet[-1][0] + groupBy)
         
         # Round the time to the nearest groupBy interval
-        minBinVal -= (minBinVal % groupBy)
-        maxBinVal -= (maxBinVal % groupBy)
+        minBinVal -= minBinVal % groupBy
+        maxBinVal -= maxBinVal % groupBy
         
         # Find the number of bins and size per bin
         numBins = (maxBinVal - minBinVal) / groupBy + 1
