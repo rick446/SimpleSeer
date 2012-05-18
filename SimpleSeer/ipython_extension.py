@@ -30,6 +30,12 @@ def load_ipython_extension(ipython):
     ipython.push(
         dict(
             seer=seer,
+            SS = seer,
+            Frame = M.Frame,
+            Result = M.Result,
+            OLAP = M.OLAP,
+            Inspection = M.Inspection,
+            Measurement = M.Measurement,
             M=M,
             cm=ChannelManager(zmq.Context.instance())),
         interactive=True)
