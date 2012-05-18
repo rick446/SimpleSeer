@@ -143,19 +143,4 @@ class Inspection(SimpleDoc, WithPlugins, mongoengine.Document):
         util.get_seer().reloadInspections()
         return ret
     
-    
-    def face(self, image):
-        params = util.utf8convert(self.parameters)
-        
-        faces = image.findHaarFeatures("/usr/local/share/opencv/haarcascades/haarcascade_frontalface_alt.xml")
-        
-        if not faces:
-            return []
-        
-        features = []
-        for f in faces:
-            ff = FrameFeature()
-            ff.setFeature(f)
-            features.append(ff)
-        
-        return features
+
