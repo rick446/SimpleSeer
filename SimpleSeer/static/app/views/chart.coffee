@@ -15,7 +15,7 @@ module.exports = class ChartView extends View
     return false
     
   update: =>
-    url = "/olap/Motion/limit/100"
+    url = "/olap/Motion/limit/500"
     #if @lastupdate
     #  url = url + "/since/" + @lastupdate.toString()
     #else
@@ -79,11 +79,11 @@ module.exports = class ChartView extends View
     renderData = @getRenderData()
     @.chart = new Highcharts.Chart
       #chart: {renderTo: @.anchorId,type: renderData.chartInfo.name.toLowerCase(),className: 'graph'}
-      chart: {renderTo: @.anchorId,type: renderData.chartInfo.name.toLowerCase()}
+      chart: {renderTo: @.anchorId,type: renderData.chartInfo.name.toLowerCase(),animation: false}
       title: {text:null}
       legend: {enabled: false}
-      series: [{name: renderData.name,data: data}]
-      xAxis: {type: 'datetime',tickPixelInterval: 150}
+      series: [{name: renderData.name,data: data,shadow:false}]
+      xAxis: {startOnTick:false}
       yAxis: {title: {text: ''},plotLines: [{value: 0,width: 1,color: '#808080'}],min:0,max:100}
     $('svg>text>tspan').remove()
     application.socket.on "message:OLAP/#{renderData.name}/", @_update
