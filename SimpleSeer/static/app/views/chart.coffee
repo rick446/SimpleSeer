@@ -79,7 +79,7 @@ module.exports = class ChartView extends View
     else
       series = @.chart.series[0]
       for d in data.data
-        series.addPoint {x: d[0]*1000 ,y:d[1], marker:{enabled:false}, id:d[2], events: {click: application.charts.callFrame}} , true , true
+        series.addPoint {x: @x++,y:d[1],z:@_formatDate(d[0]*1000), marker:{enabled:false}, id:d[2], events: {click: application.charts.callFrame}} , true , true
         @.lastupdate = d[0]
         application.charts.lastframe = d[3]
   
@@ -88,7 +88,7 @@ module.exports = class ChartView extends View
     if !@.chart
       for d in data
         x = d[0]*1000
-        dd.push {x: d.data[0]*1000,y: d.data[1], marker:{enabled:false}, id:d.frame_id, events: {click: application.charts.callFrame}}
+        dd.push {x: @x++,y: d.data[1],z:@_formatDate(d.data[0]*1000), marker:{enabled:false}, id:d.frame_id, events: {click: application.charts.callFrame}}
         @.lastupdate = d.data[0]
         application.charts.lastframe = d.frame_id
       @.drawChart dd
