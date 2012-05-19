@@ -145,6 +145,8 @@ class SimpleSeer(object):
                     cls.register_plugin(ep.name, ep.load())
                 except Exception, err:
                     log.error('Failed to load %s plugin %s: %s', ptype, ep.name, err)
+                    
+        return self.plugins
 
     def loadImageSet(self, imgs = None):
         '''

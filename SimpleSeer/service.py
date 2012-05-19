@@ -26,7 +26,7 @@ class SeerProxy2(object):
             for ids in frame_ids ]
         return frames
 
-    def get_frame(self, index, camera):
+    def get_frame(self, index=-1, camera=0):
         id = self.get_frame_id(index, camera)
         if id is None: return None
         objs = M.Frame.objects(id=id)
