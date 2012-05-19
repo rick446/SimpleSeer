@@ -345,9 +345,11 @@ class SimpleSeer(object):
                 if self.config.record_all:
                     for frame in self.lastframes[-1]:
                         frame.save(safe = False)
+                # TODO: I put this back under control of result
+                # Need to talk with Nate
                 #check any OLAPs
-                o = RealtimeOLAP()
-                o.realtime()
+                #o = RealtimeOLAP()
+                #o.realtime()
                 
                 timeleft = Session().poll_interval - (time.time() - timer_start)
 

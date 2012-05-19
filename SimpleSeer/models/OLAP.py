@@ -41,35 +41,74 @@ class ChartInfoSchema(fes.Schema):
 
 class RealtimeOLAP:
 
-    def realtime(self):
+    def realtime(self, res):
         olaps = OLAP.objects
         for o in olaps:
-            o.queryInfo['limit'] = 1
-            rset = o.execute()
             
-            data = rset['data']
-            msgdata = [dict(
-                id = str(o.id),
-                data = d[0:2],
-                inspection_id =  str(d[2]),
-                frame_id = str(d[3]),
-                measurement_id= str(d[4]),
-                result_id= str(d[5])
-            ) for d in data]
-            
-            olapName = 'OLAP/' + utf8convert(o.name) + '/'
-            
-            #log.info(msgdata)
-            ChannelManager().publish(olapName, dict(u='data', m=msgdata))
-            
+            log.info('checking ' + o.name)
+            # First, check for entries that just want the raw data
+            if (o.descInfo is None) or (not o.descInfo.has_key('formula')):
+                log.info('Send raw data for OLAP ' + o.name)
+                r = ResultSet()
+                rset = r.resultToResultSet(res)
+                log.info(rset['data'])
+                self.sendMessage(o, rset['data'])
 
+            elif o.descInfo['formula'] == 'moving':
+                # Special case for the moving average
+                # TODO: This goes through the unnecessary step of putting together chart params.  
+                # Could optimize by just doing data steps
+                log.info('Send moving average for OLAP ' + o.name)
+                
+                o.queryInfo['limit'] = o.descInfo['window']
+                rset = o.execute()
+                log.info(rset['data'])
+                self.sendMessage(o, rset['data'])
+                
+            else:
+                # Trigger a descriptive if the previous record was on the other side of a group by window/interval
+                
+                window = o.descInfo['window']
+                thisTime = calendar.timegm(res.capturetime.timetuple())
+                previousTime = self.lastResult()
+                border = thisTime - (thisTime % window)
+                
+                if (previousTime < border):
+                    # This does the unnecessary step of creating chart info.  Could optimize this.
+                    log.info('Sending descriptive for ' + o.name)
+                    o.descInfo['trim'] = 0
+                    rset = o.execute(sincetime = border - window)
+                    log.info(rset['data'])
+                    self.sendMessage(o, rset['data'])
+                else:
+                    log.info(o.name + ' declined update')
+                    
+                
+    def lastResult(self):
+        # Show the timestamp of the last entry in the result table
+        rs = Result.objects.order_by('-capturetime')
+        return calendar.timegm(rs[0].capturetime.timetuple())
+
+    def sendMessage(self, o, data):
+        log.info(len(data))
+        msgdata = [dict(
+            id = str(o.id),
+            data = d[0:2],
+            inspection_id =  str(d[2]),
+            frame_id = str(d[3]),
+            measurement_id= str(d[4]),
+            result_id= str(d[5])
+        ) for d in data]
+        
+        # Channel naming: OLAP/olap_name
+        olapName = 'OLAP/' + utf8convert(o.name) + '/'
+        ChannelManager().publish(olapName, dict(u='data', m=msgdata))
+        
 
 class OLAP(SimpleDoc, mongoengine.Document):
     # General flow designed for:
     # - One or more Queries to retrieve data from database
     # - Zero or more DescriptiveStatistics, computed from Queries
-    # - One Cube, that merges data from Queries and DescriptiveStats
-    # - Zero or more InferentialStatistics, computed from Cube
     # - One or more Chart, with the resuls from Cube or InferentialStats
     #
     # This class will handle most of the processing rather than 
@@ -97,8 +136,8 @@ class OLAP(SimpleDoc, mongoengine.Document):
         # Get the resultset
         resultSet = r.execute(queryinfo)
         
-        # Check if any descriptive processing
-        if (self.descInfo):
+        # Check if any descriptive processing (and any data to process)
+        if (self.descInfo) and (len(resultSet['data']) > 0):
             d = DescriptiveStatistic()
             resultSet = d.execute(resultSet, self.descInfo)
         
@@ -164,8 +203,12 @@ class Chart:
 
 
 class DescriptiveStatistic:
+
+    _descInfo = {}
     
     def execute(self, resultSet, descInfo):
+        self._descInfo = descInfo
+      
         # Moving Average
         if (descInfo['formula'] == 'moving'):
             resultSet['data'] = self.movingAverage(resultSet['data'], descInfo['window'])
@@ -238,30 +281,33 @@ class DescriptiveStatistic:
     def mode(self, x):
         # A little hack since the related SciPy function returns unnecessary data
         from scipy import stats
-        return stats.mode(x)[0][0].tolist()
+        return stats.mode(x)[0][0][0]
         
     def first(self, x):
-        return x[0]
+        return x[0][0]
         
     def last(self, x):
-        return x[-1]
+        return x[-1][0]
     
     def lq(self, x):
         # The lower quartile/25th percentile
         from scipy import stats
-        return stats.scoreatpercentile(x, 25)
+        return stats.scoreatpercentile(x, 25)[0]
         
     def uq(self, x):
         # The upper quartile/75th percentile
         from scipy import stats
-        return stats.scoreatpercentile(x, 75)
+        return stats.scoreatpercentile(x, 75)[0]
     
     def binStatistic(self, dataSet, groupBy, func):
         # Computed the indicated statistic (func) on each bin of data set
         
-        # First trim the partial time and put into bins
-        trimSet = self.trimData(dataSet, groupBy)
-        [binSet, bins] = self.binData(trimSet, groupBy)
+        # First trim the partial times on each end (unless told not to)
+        if (not self._descInfo.has_key('trim')) or (self._descInfo['trim'] == 1):
+            dataSet = self.trimData(dataSet, groupBy)
+            
+        # Group the data into bins
+        [binSet, bins] = self.binData(dataSet, groupBy)
         
         numBins = len(bins)
         
@@ -273,24 +319,31 @@ class DescriptiveStatistic:
             xvals, yvals, ids = np.hsplit(np.array(b), [1,2])
             if (len(yvals) > 0):
                 means.append(func(yvals)) 
-                objectids.append(ids[-1].tolist())
+                objectids.append(ids[-1].flatten())
             else:
                 means.append(0)
                 objectids.append([])
+
+        log.info(objectids)
+        # Tweak since numpy gets confused by sizes
+        if numBins == 1:
+            objs = np.array(objectids).reshape(numBins, 4)
+        else:
+            objs = np.array(objectids).reshape(numBins, 1)
         
         # Replace the old time (x) values with the bin value    
-        dataSet = np.hstack((np.array(bins).reshape(numBins, 1), np.array(means).reshape(numBins, 1), np.array(objectids).reshape(numBins, len(objectids[0])))).tolist()
+        dataSet = np.hstack((np.array(bins).reshape(numBins, 1), np.array(means).reshape(numBins, 1), objs)).tolist()
         return dataSet
     
     def binData(self, dataSet, groupBy):
         # Note: bins are defined by the maximum value of an item allowed in the bin
         
-        minBinVal = dataSet[0][0] + groupBy
-        maxBinVal = dataSet[-1][0] + groupBy
+        minBinVal = int(dataSet[0][0] + groupBy)
+        maxBinVal = int(dataSet[-1][0] + groupBy)
         
         # Round the time to the nearest groupBy interval
-        minBinVal -= (minBinVal % groupBy)
-        maxBinVal -= (maxBinVal % groupBy)
+        minBinVal -= minBinVal % groupBy
+        maxBinVal -= maxBinVal % groupBy
         
         # Find the number of bins and size per bin
         numBins = (maxBinVal - minBinVal) / groupBy + 1
@@ -320,10 +373,11 @@ class DescriptiveStatistic:
         startTime -= (startTime % groupBy)
         endTime -= (endTime % groupBy)
         
-        # Filter out the beginning and end
+        # Filter out the beginning
         dataArr = np.array(dataSet)
         dataArr = dataArr[dataArr[0:len(dataArr),0:1].flatten() > startTime]
-        dataArr = dataArr[dataArr[0:len(dataArr),0:1].flatten() < endTime]
+        # If anything left, filter out the end
+        if len(dataArr) > 0: dataArr = dataArr[dataArr[0:len(dataArr),0:1].flatten() < endTime]
         
         return dataArr.tolist()
         
@@ -354,11 +408,12 @@ class ResultSet:
         
         if queryInfo.has_key('since'):
             query['capturetime__gt']= datetime.utcfromtimestamp(queryInfo['since'])
-
+            
         rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['limit']])
         
         # When performing some computations, require additional data
         if (len(rs) > 0) and (queryInfo.has_key('required')) and (len(rs) < queryInfo['required']):
+        
             # If not, relax the capture time but only take the num records required
             del(query['capturetime__gt'])
             rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['required']])
@@ -381,4 +436,15 @@ class ResultSet:
                     'data': outputVals}
                     
         return dataset
-	
+    
+    
+    def resultToResultSet(self, res):
+        # Given a Result, format the Result like a one record ResultSet
+        outputVals = [[calendar.timegm(res.capturetime.timetuple()), res.numeric, res.inspection, res.frame, res.measurement, res.id]]
+        dataset = { 'startTime': outputVals[0][0],
+                    'endTime': outputVals[0][0],
+                    'timestamp': gmtime(),
+                    'labels': {'dim0': 'Time', 'dim1': 'Motion', 'dim2': 'InspectionID', 'dim3': 'FrameID', 'dim4':'MeasurementID', 'dim5': 'ResultID'},
+                    'data': outputVals}
+        
+        return dataset 

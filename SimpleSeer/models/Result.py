@@ -21,3 +21,12 @@ class Result(SimpleDoc, mongoengine.Document):
         'indexes': ["capturetime", ('camera', '-capturetime'), "frame", "inspection", "measurement"]
     }
 
+
+    def save(self, *args, **kwargs):
+        # Push notification to OLAP to decide whether to publish this update
+        from .OLAP import RealtimeOLAP
+        o = RealtimeOLAP()
+        o.realtime(self)
+        
+        super(Result, self).save(*args, **kwargs)
+
