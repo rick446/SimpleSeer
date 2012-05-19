@@ -28,6 +28,32 @@ module.exports = class ChartView extends View
      ).error =>
        SimpleSeer.alert('Connection lost','error')
   
+  events:
+    'click .btn-group' : "changeTimeline"
+    
+  changeTimeline: (e)=>
+    @setTimeFrame e.target.value
+    #console.log @anchorId
+    #console.log e.target.value
+    
+
+  setTimeFrame: (offset) =>
+    dt = Math.round((new Date()).getTime() / 1000)
+    url = "/olap/Motion/since/" + (dt - offset)
+    obj = @getRenderData()
+    $.getJSON(url, (data) =>
+      dd = []
+      for d in data.data
+        dd.push {x: @x++,y:d[1],z:@_formatDate(d[0]*1000), marker:{enabled:false}, id:d[3], events: {click: application.charts.callFrame}}
+        #dd.push {x: d[0]*1000,y:d[1], marker:{enabled:false}, id:d[3], events: {click: application.charts.callFrame}}
+        @.lastupdate = d[0]
+        application.charts.lastframe = d[3]
+      @.chart.series[0].setData(dd)
+      #application.socket.emit 'subscribe', 'OLAP/'+obj.name+'/'
+      return
+    ).error =>
+      SimpleSeer.alert('Connection lost','error')  
+  
   catchUp: =>
     url = "/olap/Motion/since/" + parseInt @lastupdate
     obj = @getRenderData()
@@ -107,8 +133,11 @@ module.exports = class ChartView extends View
           ''
         pointFormat:
           '<small>{point.z}</small><br><b>{point.y}% movement</b>'
+      animation:
+        duration:
+          10
       xAxis: {labels:{enabled:false}}
-      yAxis: {title: {text: ''},min:0,max:120}
+      yAxis: {title: {text: ''},min:0,max:100}
 
     application.socket.on "message:OLAP/#{renderData.name}/", @_update
     application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
