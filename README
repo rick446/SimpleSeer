@@ -84,5 +84,8 @@ Mac OS X (Using homebrew)
 > npm install -g brunch
 > npm install -g brunch-less
 > python setup.py develop
+> sudo python
+>>> from IPython.external.mathjax import install_mathjax
+>>> install_mathjax()
 =======
 
