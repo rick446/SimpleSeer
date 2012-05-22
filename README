@@ -7,15 +7,19 @@ Examples of usage:
 To start SimpleSeer in continuous mode:
 
     $ cd SimpleSeer
-    $ simpleseer default.cfg 
+    $ python -mPyro4.naming &
+    $ simpleseer broker & 
+    $ simpleseer core &
+    $ simpleseer web & 
 
 To start an iPython shell:
 
-    $ ipython console --existing seer.json
+    $ simpleseer shell (terminal shell)
+    $ simpleseer notebook (web-based notebook) 
 
 To capture an image, display, and store in the database:
 
-    >>> frames = SimpleSeer().capture()
+    >>> frames = SS.capture()
     >>> frames[0].image.show()
     >>> frames[0].save()
 
