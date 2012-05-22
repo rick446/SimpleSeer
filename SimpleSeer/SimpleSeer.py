@@ -6,8 +6,6 @@ import warnings
 import threading
 from datetime import datetime
 
-import pkg_resources
-
 from . import models as M
 from .Session import Session
 
@@ -46,7 +44,10 @@ class SimpleSeer(object):
     __shared_state = { "initialized": False }
     web_interface = None
     halt = False
-    plugins = {}
+    _plugin_types = dict(
+        inspection=M.Inspection,
+        measurement=M.Measurement,
+        watcher=M.Watcher)
 
     def __init__(self):
         self.__dict__ = self.__shared_state
@@ -133,20 +134,13 @@ class SimpleSeer(object):
         self.measurements = m
         self.watchers = w
 
+    @classmethod
+    def get_plugin_types(cls):
+        return cls._plugin_types
+
     def loadPlugins(self):
-        plugin_types = dict(
-            inspection=M.Inspection,
-            measurement=M.Measurement,
-            watcher=M.Watcher)
-        for ptype, cls in plugin_types.items():
-            for ep in pkg_resources.iter_entry_points('seer.plugins.' + ptype):
-                log.info('Loading %s plugin %s', ptype, ep.name)
-                try:
-                    cls.register_plugin(ep.name, ep.load())
-                except Exception, err:
-                    log.error('Failed to load %s plugin %s: %s', ptype, ep.name, err)
-                    
-        return self.plugins
+        for ptype, cls in self.get_plugin_types().items():
+            cls.register_plugins('seer.plugins.' + ptype)
 
     def loadImageSet(self, imgs = None):
         '''
