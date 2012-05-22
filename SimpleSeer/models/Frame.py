@@ -47,9 +47,9 @@ class Frame(SimpleDoc, mongoengine.Document):
         if self.imgfile != None:
             try:
                 self._imgcache = Image(pil.open(StringIO(self.imgfile.read())))
-            except (IOError, TypeError):
+            except (IOError, TypeError): # pragma no cover
                 self._imgcache = None
-        else:
+        else: # pragma no cover
             self._imgcache = None
 
 
@@ -60,7 +60,7 @@ class Frame(SimpleDoc, mongoengine.Document):
         return self._imgcache
 
     @image.setter
-    def _set_image(self, value):
+    def image(self, value):
         self.width, self.height = value.size()
         self._imgcache = value
        

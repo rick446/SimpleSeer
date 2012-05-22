@@ -19,7 +19,8 @@ class Session():
     (and potentially not the config file).  But it also can shoot you in the
     foot if you misspell property names.  Be careful!    
     """
-    __shared_state = {}
+    __shared_state = dict(
+        _config = {})
     
     def __init__(self, json_config = ''):
         self.__dict__ = self.__shared_state
