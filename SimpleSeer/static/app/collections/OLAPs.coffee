@@ -1,6 +1,6 @@
 Collection = require "./collection"
-OLAP = require "models/OLAP"
-ChartView = require 'views/chart'
+OLAP = require "../models/OLAP"
+ChartView = require '../views/chart'
 application = require 'application'
 
 
