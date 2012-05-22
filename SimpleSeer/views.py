@@ -314,7 +314,7 @@ def olap(olap_name):
 def olap_since(olap_name, timestamp):
     o = M.OLAP.objects.get(name = olap_name)
 
-    return o.execute(sincetime = int(timestamp))
+    return o.execute(sincetime = int(float(timestamp)))
 
 @route('/olap/<olap_name>/since/<timestamp>/limit/<limit>', methods=['GET'])
 @util.jsonify
