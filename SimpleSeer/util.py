@@ -35,24 +35,6 @@ def utf8convert(data):
     else:
         return data
 
-def _memoize(func, *args, **kw):
-    if kw: # frozenset is used to ensure hashability
-        key = args, frozenset(kw.iteritems())
-    else:
-        key = args
-    cache = func.cache # attribute added by memoize
-    try:
-        return cache[key]
-    except KeyError:
-        pass
-    cache[key] = result = func(*args, **kw)
-    return result
-
-def memoize(f):
-    f.cache = {}
-    return decorator(_memoize, f)
-
-@memoize
 def get_seer():
     from SimpleSeer import SimpleSeer
     return SimpleSeer()

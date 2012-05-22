@@ -64,7 +64,7 @@ class Frame(SimpleDoc, mongoengine.Document):
         self.width, self.height = value.size()
         self._imgcache = value
        
-    def __repr__(self):
+    def __repr__(self): # pragma no cover
        return "<SimpleSeer Frame Object %d,%d captured with '%s' at %s>" % (
             self.width, self.height, self.camera, self.capturetime.ctime()) 
         
@@ -104,10 +104,6 @@ class Frame(SimpleDoc, mongoengine.Document):
                 r.frame = self.id
             r.save(*args, **kwargs)  #TODO, check to make sure measurement/inspection are saved
         
-    @classmethod
-    def capture(cls):
-        return util.get_seer().capture()
-
     def serialize(self):
         s = StringIO()
         try:
@@ -115,7 +111,7 @@ class Frame(SimpleDoc, mongoengine.Document):
             return dict(
                 content_type='image/webp',
                 data=s.getvalue())
-        except:
+        except KeyError:
             self.image.save(s, "jpeg", quality = 80)
             return dict(
                 content_type='image/jpeg',

@@ -102,8 +102,8 @@ class SimpleSeer(object):
         
         super(SimpleSeer, self).__init__()
         self.daemon = True
-        
-        M.Frame.capture()
+
+        self.capture()
         #~ Inspection.inspect()
         #self.update()
         if self.config.auto_start:
