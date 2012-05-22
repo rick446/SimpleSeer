@@ -36,8 +36,8 @@ def utf8convert(data):
         return data
 
 def get_seer():
-    from SimpleSeer import SimpleSeer
-    if SimpleSeer is None:
-        from SimpleSeer import service
+    from .SimpleSeer import SimpleSeer as SS
+    from . import service
+    if SS is None:
         return service.SeerProxy2()
-    return SimpleSeer()
+    return SS()
