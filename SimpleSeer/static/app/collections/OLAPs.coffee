@@ -1,7 +1,7 @@
 Collection = require "./collection"
 OLAP = require "../models/OLAP"
 ChartView = require '../views/chart'
-application = require 'application'
+application = require '../application'
 
 
 module.exports = class OLAPs extends Collection

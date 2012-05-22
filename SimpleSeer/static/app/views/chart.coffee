@@ -1,8 +1,9 @@
 #SubView = require './subview'
 View = require './view'
+
 template = require './templates/chart'
-view_helper = require 'lib/view_helper'
-application = require 'application'
+view_helper = require '../lib/view_helper'
+application = require '../application'
 
 module.exports = class ChartView extends View
   template: template
@@ -14,7 +15,7 @@ module.exports = class ChartView extends View
     if retVal
       return retVal.attributes
     return false
-    
+
   update: =>
     url = "/olap/Motion/limit/100"
     #if @lastupdate
@@ -27,15 +28,15 @@ module.exports = class ChartView extends View
       return
      ).error =>
        SimpleSeer.alert('Connection lost','error')
-  
+
   events:
     'click .btn-group' : "changeTimeline"
-    
+
   changeTimeline: (e)=>
     @setTimeFrame e.target.value
     #console.log @anchorId
     #console.log e.target.value
-    
+
 
   setTimeFrame: (offset) =>
     dt = Math.round((new Date()).getTime() / 1000)
@@ -52,8 +53,8 @@ module.exports = class ChartView extends View
       #application.socket.emit 'subscribe', 'OLAP/'+obj.name+'/'
       return
     ).error =>
-      SimpleSeer.alert('Connection lost','error')  
-  
+      SimpleSeer.alert('Connection lost','error')
+
   catchUp: =>
     url = "/olap/Motion/since/" + parseInt @lastupdate
     obj = @getRenderData()
@@ -63,8 +64,8 @@ module.exports = class ChartView extends View
       return
     ).error =>
       SimpleSeer.alert('Connection lost','error')
-      
-  
+
+
   _drawDataLegacy: (data) =>
     if data.data.length == 0
       return
@@ -82,7 +83,7 @@ module.exports = class ChartView extends View
         series.addPoint {x: @x++,y:d[1],z:@_formatDate(d[0]*1000), marker:{enabled:false}, id:d[2], events: {click: application.charts.callFrame}} , true , true
         @.lastupdate = d[0]
         application.charts.lastframe = d[3]
-  
+
   _drawData: (data) =>
     dd = []
     if !@.chart

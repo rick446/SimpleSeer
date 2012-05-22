@@ -16,7 +16,7 @@ TEST_PATHS = [
 ]
 
 TEST_COMMAND="#{__dirname}/node_modules/.bin/mocha"
-TEST_OPTIONS='-r should --growl --reporter spec'
+TEST_OPTIONS='-r should --growl --reporter spec --compilers hbs:handlebars'
 
 task 'test', (options)->
   {EventEmitter} = require 'events'
