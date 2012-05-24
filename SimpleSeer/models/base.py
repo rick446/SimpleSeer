@@ -1,8 +1,13 @@
 import time
+import logging
 from datetime import datetime
 
+import pkg_resources
 import mongoengine
+
 from SimpleCV import Image
+
+log = logging.getLogger(__name__)
 
 class SimpleDoc(object):
     _jsonignore = [None]
@@ -46,14 +51,27 @@ class SimpleEmbeddedDoc(object):
     
 class WithPlugins(object):
 
-    @classmethod
-    def register_plugin(cls, name, value):
-        '''Register a plugin on the class'''
-        if not hasattr(cls, '_plugins'):
-            cls._plugins = {}
-        cls._plugins[name] = value
-
     def get_plugin(self, name):
         '''Get a named plugin and instantiate it with the model instance'''
-        plugins = getattr(self, '_plugins', {})
-        return plugins[name](self)
+        try:
+            PluginClass = self._plugins[name]
+        except AttributeError:
+            cls = self.__class__
+            raise ValueError, ('No plugins registered on %r, maybe you need to'
+                               'call %s.register_plugins(group)?' %
+                               (cls, cls.__name__))
+        except KeyError:
+            raise ValueError, ('Plugin not found: %s. Valid plugins: %r' %
+                               (name, self._plugins.keys()))
+        return PluginClass(self)
+
+    @classmethod
+    def register_plugins(cls, group):
+        if not hasattr(cls, '_plugins'):
+            cls._plugins = {}
+        for ep in pkg_resources.iter_entry_points(group):
+            log.info('Loading %s plugin %s', group, ep.name)
+            try:
+                cls._plugins[ep.name] = ep.load()
+            except Exception, err:
+                log.error('Failed to load %s plugin %s: %s', group, ep.name, err)

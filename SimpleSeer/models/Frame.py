@@ -38,38 +38,33 @@ class Frame(SimpleDoc, mongoengine.Document):
     }
 
 
-    @apply
-    #TODO add thumbs
-    def image():
-        def fget(self):
-            if self._imgcache != '':
-                return self._imgcache
-            
-            self.imgfile.get().seek(0,0) #hackity hack, make sure the FP is at 0
-            if self.imgfile != None:
-                try:
-                    self._imgcache = Image(pil.open(StringIO(self.imgfile.read())))
-                except IOError, TypeError:
-                    self._imgcache = None
-            else:
-                self._imgcache = None
-            
-            
-            if self.layerfile:
-                self.layerfile.get().seek(0,0)
-                self._imgcache.dl()._mSurface = pygame.image.fromstring(self.layerfile.read(), self._imgcache.size(), "RGBA")
-            
+    @property
+    def image(self):
+        if self._imgcache != '':
             return self._imgcache
-            
-          
-        def fset(self, img):
-            self.width, self.height = img.size()
-          
-            self._imgcache = img
-            
-        return property(fget, fset)
+
+        self.imgfile.get().seek(0,0) #hackity hack, make sure the FP is at 0
+        if self.imgfile != None:
+            try:
+                self._imgcache = Image(pil.open(StringIO(self.imgfile.read())))
+            except (IOError, TypeError): # pragma no cover
+                self._imgcache = None
+        else: # pragma no cover
+            self._imgcache = None
+
+
+        if self.layerfile:
+            self.layerfile.get().seek(0,0)
+            self._imgcache.dl()._mSurface = pygame.image.fromstring(self.layerfile.read(), self._imgcache.size(), "RGBA")
+
+        return self._imgcache
+
+    @image.setter
+    def image(self, value):
+        self.width, self.height = value.size()
+        self._imgcache = value
        
-    def __repr__(self):
+    def __repr__(self): # pragma no cover
        return "<SimpleSeer Frame Object %d,%d captured with '%s' at %s>" % (
             self.width, self.height, self.camera, self.capturetime.ctime()) 
         
@@ -109,10 +104,6 @@ class Frame(SimpleDoc, mongoengine.Document):
                 r.frame = self.id
             r.save(*args, **kwargs)  #TODO, check to make sure measurement/inspection are saved
         
-    @classmethod
-    def capture(cls):
-        return util.get_seer().capture()
-
     def serialize(self):
         s = StringIO()
         try:
@@ -120,7 +111,7 @@ class Frame(SimpleDoc, mongoengine.Document):
             return dict(
                 content_type='image/webp',
                 data=s.getvalue())
-        except:
+        except KeyError:
             self.image.save(s, "jpeg", quality = 80)
             return dict(
                 content_type='image/jpeg',

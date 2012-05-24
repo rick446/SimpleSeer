@@ -7,15 +7,19 @@ Examples of usage:
 To start SimpleSeer in continuous mode:
 
     $ cd SimpleSeer
-    $ simpleseer default.cfg 
+    $ python -mPyro4.naming &
+    $ simpleseer broker & 
+    $ simpleseer core &
+    $ simpleseer web & 
 
 To start an iPython shell:
 
-    $ ipython console --existing seer.json
+    $ simpleseer shell (terminal shell)
+    $ simpleseer notebook (web-based notebook) 
 
 To capture an image, display, and store in the database:
 
-    >>> frames = SimpleSeer().capture()
+    >>> frames = SS.capture()
     >>> frames[0].image.show()
     >>> frames[0].save()
 
@@ -47,7 +51,7 @@ Download or git clone the repo:
 
 Run all these commands from WITHIN the SimpleSeer directory:
 
-	sudo apt-get install python-dev python-setuptools python-pip libzmq-dev mongodb nodejs npm build-essential python-gevent libevent-dev supervisor
+	sudo apt-get install python-dev python-setuptools python-pip libzmq-dev mongodb nodejs npm build-essential python-gevent libevent-dev supervisor ipython-notebook
 	sudo npm install -g brunch
 	pip install -r pip.requirements
 	python setup.py develop
@@ -84,5 +88,8 @@ Mac OS X (Using homebrew)
 > npm install -g brunch
 > npm install -g brunch-less
 > python setup.py develop
+> sudo python
+>>> from IPython.external.mathjax import install_mathjax
+>>> install_mathjax()
 =======
 

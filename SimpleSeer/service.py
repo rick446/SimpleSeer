@@ -13,6 +13,7 @@ class SeerProxy2(object):
         if self.initialized: return
         self.initialized = True
         self._proxy = Pyro4.Proxy('PYRONAME:sightmachine.seer')
+        self.register_plugins()
 
     @property
     def lastframes(self):
@@ -26,12 +27,17 @@ class SeerProxy2(object):
             for ids in frame_ids ]
         return frames
 
-    def get_frame(self, index, camera):
+    def get_frame(self, index=-1, camera=0):
         id = self.get_frame_id(index, camera)
         if id is None: return None
         objs = M.Frame.objects(id=id)
         if objs: return objs[0]
         return None
+
+    def register_plugins(self):
+        '''Plugins must be registered 'locally' to work right'''
+        for ptype, cls in self._proxy.get_plugin_types().items():
+            cls.register_plugins('seer.plugins.' + ptype)
 
     def __getattr__(self, name):
         return getattr(self._proxy, name)
