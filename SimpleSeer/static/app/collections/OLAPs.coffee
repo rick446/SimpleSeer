@@ -49,5 +49,3 @@ module.exports = class OLAPs extends Collection
   callFrame: (e) =>
     if e.point.config.id
       @.pause(e.point.config.id)
-
-
