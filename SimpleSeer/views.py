@@ -5,6 +5,7 @@ import logging
 
 import bson
 import gevent
+import coffeescript
 from socketio import socketio_manage
 from flask import request, make_response, Response
 
@@ -43,6 +44,18 @@ def sio(path):
 def index():
     return open(os.path.join(
             os.path.dirname(__file__), 'static/public/index.html')).read()
+
+@route('/plugins.js')
+def plugins():
+    seer = SeerProxy2()
+    result = []
+    for ptype, plugins in seer.plugins.items():
+        for name, plugin in plugins.items():
+            for requirement, cs in plugin.coffeescript():
+                result.append('(function(plugin){')
+                result.append(coffeescript.compile(cs, True))
+                result.append('}).call(require(%r), require("lib/plugin"));\n' % requirement)
+    return '\n'.join(result)
 
 @route('/test', methods=['GET', 'POST'])
 def test():

@@ -6,6 +6,18 @@ from SimpleSeer.plugins import base
 
 class Blob(base.InspectionPlugin):
 
+    @classmethod
+    def coffeescript(cls):
+        yield 'models/inspection', '''
+class Blob
+  constructor: (inspection) ->
+    @inspection = inspection
+  run: () =>
+    console.log 'Running blob on', @inspection
+
+plugin this, blob:Blob
+'''
+
     def __call__(self, image):
         params = util.utf8convert(self.inspection.parameters)
 
