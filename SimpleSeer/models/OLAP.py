@@ -25,6 +25,8 @@ class OLAPSchema(fes.Schema):
     queryInfo = V.JSON(not_empty=True)
     descInfo = V.JSON(if_empty=None, if_missing=None)
     chartInfo = V.JSON(not_empty=True)
+    allow = fev.Int(if_missing=500)
+    aggregate = fev.OneOf(['count', 'median', 'sum'], if_missing='median')
   
 class QueryInfoSchema(fes.Schema):
     name = fev.UnicodeString(not_empty = True)
@@ -33,6 +35,12 @@ class QueryInfoSchema(fes.Schema):
 class DescInfoSchema(fes.Schema):
     formula = fev.OneOf(['moving', 'mean', 'median', 'mode', 'var', 'std', 'max', 'min', 'first', 'last', 'uq', 'lq'], if_missing=None)
     window = fev.Int(if_missing=None)
+    
+class TransformSchema(fes.Schema):
+    norm = fev.Int(if_missing=0)
+    devFromMedian = fev.Int(if_missing=0)
+    devFromBase = fev.Int(if_missing=0)
+    base = fev.Int(if_missing=0)
 
 class ChartInfoSchema(fes.Schema):
     chartType = fev.OneOf(['line', 'bar', 'pie', 'spline', 'area', 'areaspline','column','scatter'])
@@ -47,6 +55,7 @@ class RealtimeOLAP:
             
             log.info('checking ' + o.name)
             # First, check for entries that just want the raw data
+            # (If no descInfo is set or if descInfo lacks a formula field)
             if (o.descInfo is None) or (not o.descInfo.has_key('formula')):
                 log.info('Send raw data for OLAP ' + o.name)
                 r = ResultSet()
@@ -67,7 +76,6 @@ class RealtimeOLAP:
                 
             else:
                 # Trigger a descriptive if the previous record was on the other side of a group by window/interval
-                
                 window = o.descInfo['window']
                 thisTime = calendar.timegm(res.capturetime.timetuple())
                 previousTime = self.lastResult()
@@ -120,18 +128,23 @@ class OLAP(SimpleDoc, mongoengine.Document):
     queryInfo = mongoengine.DictField()
     descInfo = mongoengine.DictField()
     chartInfo = mongoengine.DictField()
-        
+    transInfo = mongoengine.DictField()
+    allow = mongoengine.IntField()
+    aggregate = mongoengine.StringField()
+    
     def __repr__(self):
         return "<OLAP %s>" % self.name
         
-    def execute(self, sincetime = 0, limitresults = None):
+    def execute(self, sincetime = None, limitresults = None):
         r = ResultSet()
-        
         
         # Process configuration parameters
         queryinfo = self.queryInfo.copy()
-        queryinfo['since'] = sincetime
-        queryinfo['limit'] = self.limitResults(limitresults)
+        queryinfo['since'] = self.calcSince(sincetime)
+        queryinfo['limit'] = self.calcLimit(limitresults)
+        if not queryinfo.has_key('allow'): queryinfo['allow'] = 500
+        if not queryinfo.has_key('aggregate'): queryinfo['aggregate'] = 'median'
+        
         
         # Get the resultset
         resultSet = r.execute(queryinfo)
@@ -140,6 +153,12 @@ class OLAP(SimpleDoc, mongoengine.Document):
         if (self.descInfo) and (len(resultSet['data']) > 0):
             d = DescriptiveStatistic()
             resultSet = d.execute(resultSet, self.descInfo)
+            
+        # Also an implicit descriptive that it should not have more than 500 results per chart
+        # If exceeded, aggregate
+        if (len(resultSet['data']) > queryinfo['allow']):
+            resultSet = self.aggregate(resultSet, queryinfo['allow'])
+        
         
         # Create and return the chart
         c = Chart()
@@ -147,21 +166,64 @@ class OLAP(SimpleDoc, mongoengine.Document):
         return chartSpec
         
         
-    def limitResults(self, thelimit):
+        
+    def aggregate(self, resultSet, allow, aggregate):
+        # Find how much to cluster 
+        interval = self.calcInterval(resultSet['data'], allow)
+        
+        # Create a dummy descriptive stat to aggregate
+        d = DescriptiveStatistic()
+        dummyDescInfo = dict()
+        dummyDescInfo['formula'] = aggregate
+        dummyDescInfo['window'] = interval 
+        return d.execute(resultSet, dummyDescInfo)
+        
+        
+    def calcLimit(self, limit):
         # If provided a limit, always use that limit
-        # Else, if not defined in OLAP, use 500
-        # Otherwise, use the one defined in OLAP
-        if thelimit:
-			return thelimit
-        elif not self.queryInfo.has_key('limit'):
+        # Else, if defined in OLAP, use that limit
+        # Otherwise, use a default of 500
+        if limit:
+			return limit
+        elif self.queryInfo.has_key('limit'):
+            return self.queryInfo['limit']
+        else:
 			return 500
         
-        return self.queryInfo['limit']
-		
+    def calcSince(self, since):
+        # If provided a limit, always use that limit
+        # Else, if defined in OLAP, use that since time
+        # Otherwise, use 0
+        if since:
+			return since
+        elif self.queryInfo.has_key('since'):
+            return self.queryInfo['since'] 
+        else:
+            return 0
         
-			
+    def calcInterval(self, dataSet, allow):
+        xvals, rest = np.hsplit(np.array(dataSet), [1])
         
+        # Total number of points
+        numPoints = len(xvals)
+        # How many times more points than we are allowed
+        scalePoints = numPoints / allow       
         
+        # Time range for those points
+        rangePoints = xvals[-1] - xvals[0]
+        # How many seconds need to be combined to meet goal
+        scaleRange = rangePoints / scalePoints
+        
+        # Round that up to the nearest round unit of time
+        #if scaleRange < 60: return 60
+        #elif scaleRange < 3600: return 3600
+        #elif scaleRange < 86400: return 86400
+        #elif scaleRange < 604800: return 604800
+        #else: return scaleRange
+    	
+        return int(scaleRange[0])
+            
+        	
 class Chart:
     # Takes the data and puts it in a format for charting
     
@@ -185,6 +247,7 @@ class Chart:
 			ranges['min'] = 0
 		
 		return ranges
+    
     
     def createChart(self, resultSet, chartInfo):
         # This function will change to handle the different formats
@@ -257,9 +320,6 @@ class DescriptiveStatistic:
         elif (descInfo['formula'] == 'uq'):
             resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], self.uq)
             resultSet['labels']['dim1'] = 'Upper Quartile, group by ' + self.epochToText(descInfo['window'])
-        else:
-            # If no matching function, just return the original result set    
-            log.warn('Descriptive statistic got unknown formula: ' + descInfo['formula'])
         
         return resultSet
 
@@ -284,9 +344,11 @@ class DescriptiveStatistic:
         return stats.mode(x)[0][0][0]
         
     def first(self, x):
+        # First element of the series
         return x[0][0]
         
     def last(self, x):
+        # Last element of the series
         return x[-1][0]
     
     def lq(self, x):
@@ -299,6 +361,7 @@ class DescriptiveStatistic:
         from scipy import stats
         return stats.scoreatpercentile(x, 75)[0]
     
+
     def binStatistic(self, dataSet, groupBy, func):
         # Computed the indicated statistic (func) on each bin of data set
         
@@ -448,3 +511,62 @@ class ResultSet:
                     'data': outputVals}
         
         return dataset 
+
+
+class Transform:
+    
+    _transInfo = dict()
+    
+    def transform(self, transInfo, dataSet):
+        
+        self._transInfo = transInfo
+        
+        xvals, yvals, ids = np.hsplit(np.array(dataSet), [1,2])
+        
+        # Test if needs to be normalized
+        if (transInfo['normalize']):
+            yvals = self.norm(yvals)
+            
+        # Test if reported as deviations from median
+        if (transInfo['devFromMedian']):
+            yvals = self.devFromMed(yvals)
+            
+        # Test if reported as deviations from specified value    
+        if (transInfo['devFromBase']):
+            if transInfo.has_base('base'):
+                base = transInfo['base']
+            else:
+                base = 0
+                
+            yvals = self.devFromBase(yvals, base)
+    
+        dataSet = np.hstack((xvals.reshape(len(xvals), 1), yvals.reshape(len(yvals), 1),  ids.reshape(len(ids), 4))).tolist()
+        return dataSet
+    
+    def norm(self, x):
+        # Normalize the results to [0, 1]
+        
+        # Keep a cache of the bounds
+        # TODO: Don't like this approach to caching and needing to save
+        if not self._transInfo.has_key('lastMin'): self._transInfo['lastMin'] = min(x)[0]
+        if not self._transInfo.has_key('lastMax'): self._transInfo['lastMax'] = max(x)[0]
+        
+        # The actual normalization
+        normed = (x  - self._transInfo['lastMin']) / self._transInfo['lastMax'] 
+            
+        if (min(normed) < 0) or (max(normed) > 1):
+            # When working off cached values for rounds, could create problems
+            # For now, just write a warning to the log
+            log.warn('Normalized date outside [0, 1]')
+            
+        return normed
+            
+        
+    def devFromMed(self, x):
+        # Standard deviations from the median
+        return (x - np.median(x)) / float(np.std(x))
+        
+    def devFromBase(self, x, base):
+        # Standard deviations from a specified base value
+        return (x - base) / float(np.std(x))
+    

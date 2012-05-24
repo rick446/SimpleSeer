@@ -1,8 +1,9 @@
 #SubView = require './subview'
 View = require './view'
+
 template = require './templates/chart'
-view_helper = require 'lib/view_helper'
-application = require 'application'
+view_helper = require '../lib/view_helper'
+application = require '../application'
 
 module.exports = class ChartView extends View
   template: template
@@ -15,7 +16,6 @@ module.exports = class ChartView extends View
       return retVal.attributes
     return false
 
-  # get data from url
   update: =>
     url = "/olap/Motion/limit/100"
     #if @lastupdate
@@ -29,15 +29,14 @@ module.exports = class ChartView extends View
      ).error =>
        SimpleSeer.alert('Connection lost','error')
 
-  catchUp: =>
-    url = "/olap/Motion/since/" + parseInt @lastupdate
-    obj = @getRenderData()
-    $.getJSON(url, (data) =>
-      @._drawDataLegacy data
-      application.socket.emit 'subscribe', 'OLAP/'+obj.name+'/'
-      return
-    ).error =>
-      SimpleSeer.alert('Connection lost','error')
+
+  events:
+    'click .btn-group' : "changeTimeline"
+
+  changeTimeline: (e)=>
+    @setTimeFrame e.target.value
+    #console.log @anchorId
+    #console.log e.target.value
 
   setTimeFrame: (offset) =>
     dt = Math.round((new Date()).getTime() / 1000)
@@ -54,15 +53,18 @@ module.exports = class ChartView extends View
       #application.socket.emit 'subscribe', 'OLAP/'+obj.name+'/'
       return
     ).error =>
-      SimpleSeer.alert('Connection lost','error')  
-  
-  events:
-    'click .btn-group' : "changeTimeline"
-    
-  changeTimeline: (e)=>
-    @setTimeFrame e.target.value
+      SimpleSeer.alert('Connection lost','error')    
 
-  # replace all _drawDataLegacy calls with _drawData when data formats from sockets and REST match 
+  catchUp: =>
+    url = "/olap/Motion/since/" + parseInt @lastupdate
+    obj = @getRenderData()
+    $.getJSON(url, (data) =>
+      @._drawDataLegacy data
+      application.socket.emit 'subscribe', 'OLAP/'+obj.name+'/'
+      return
+    ).error =>
+      SimpleSeer.alert('Connection lost','error')
+
   _drawDataLegacy: (data) =>
     if data.data.length == 0
       return

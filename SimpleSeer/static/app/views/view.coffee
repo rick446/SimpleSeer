@@ -1,4 +1,6 @@
-require 'lib/view_helper'
+require '../lib/view_helper'
+
+Backbone = if describe? then require('backbone') else window.Backbone
 
 # Base class for all views.
 module.exports = class View extends Backbone.View
