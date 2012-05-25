@@ -28,7 +28,13 @@ exports.config =
           'vendor/scripts/backbone-0.9.2.js',
           'vendor/scripts/bootstrap.js',
           #'vendor/scripts/jquery.jqplot.min.js',
-          'vendor/scripts/highcharts.src.js'
+          'vendor/scripts/highcharts.src.js',
+          'vendor/scripts/ui/jquery.ui.core.js',
+          'vendor/scripts/ui/jquery.ui.widget.js',
+          'vendor/scripts/ui/jquery.ui.mouse.js',
+          'vendor/scripts/ui/jquery.effects.core.js',
+          'vendor/scripts/ui/jquery.ui.datepicker.js',
+          'vendor/scripts/jquery-ui-timepicker-addon.js'
         ]
 
     stylesheets:
@@ -36,7 +42,7 @@ exports.config =
       joinTo: 'stylesheets/app.css'
       order:
         before: ['vendor/styles/bootstrap.css']
-        after: [ 'vendor/styles/bootstrap-responsive.css', 'vendor/styles/jquery.jqplot.min.css' ]
+        after: [ 'vendor/styles/bootstrap-responsive.css', 'vendor/styles/jquery.jqplot.min.css', 'vendor/styles/themes/base/jquery.ui.core.css' ]
 
     templates:
       defaultExtension: 'hbs'

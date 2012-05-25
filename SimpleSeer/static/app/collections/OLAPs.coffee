@@ -8,6 +8,7 @@ module.exports = class OLAPs extends Collection
   url: "/api/olap"
   model: OLAP
   paused: false
+  timeframe:60
 
   onSuccess: (d1, d2) =>
     for me in d2
@@ -24,7 +25,6 @@ module.exports = class OLAPs extends Collection
     control = $ "#realtimecontrol"
     control.html "Realtime"
     if !fId
-      #todo: grab latest frame
       fId = @lastframe
     fDom = $('#frame img')
     if !fDom.attr('live')
@@ -32,17 +32,16 @@ module.exports = class OLAPs extends Collection
     fDom.attr('src','/grid/imgfile/'+fId)
     for obj in @.models
       application.socket.emit 'unsubscribe', 'OLAP/'+obj.attributes.name+'/'
-    #application.alert('<a href="#">Paused</a>','error')
+    #application.alert('<a href="#">Pause</a>','error')
 
   unpause: =>
     @.paused = false
     control = $ "#realtimecontrol"
-    control.html "Paused"
-
+    control.html "Pause"
     for obj in @.models
-      obj.view.catchUp()
-      #application.socket.emit 'subscribe', 'OLAP/'+obj.attributes.name+'/'
-    $('.alert_error').remove();
+      obj.view.update parseInt(obj.view.lastupdate)
+      application.socket.emit 'subscribe', 'OLAP/'+obj.attributes.name+'/'
+    $('.alert_error').remove()
     fDom = $('#frame img')
     fDom.attr('src',fDom.attr('live'))
 
