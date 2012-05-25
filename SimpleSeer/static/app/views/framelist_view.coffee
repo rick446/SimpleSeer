@@ -10,7 +10,6 @@ module.exports = class FramelistView extends View
     @pages=1
     @loading=false
     @collection = collection
-    console.info @collection
 
     $(window).scroll @loadMore #have to bind this event here instead of events because it's on window
   
