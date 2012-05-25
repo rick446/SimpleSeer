@@ -10,8 +10,6 @@ Application =
     Frames = require 'collections/frames'
     OLAPs = require 'collections/OLAPs'
 
-    @homeView = new HomeView()
-
     @.socket = io.connect '/rt'
     @.socket.on 'connect', ->
       #alert 'connect'
@@ -29,6 +27,9 @@ Application =
     @measurements.fetch()
 
     @lastframes = new Frames()
+
+    @homeView = new HomeView()
+    @framelistView = new FramelistView(@lastframes)
 
 
     # Instantiate the router

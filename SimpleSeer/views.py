@@ -2,6 +2,7 @@ import os
 import re
 import json
 import logging
+from datetime import datetime
 
 import bson
 import gevent
@@ -83,7 +84,11 @@ def frame():
 @route('/lastframes', methods=['GET'])
 @util.jsonify
 def lastframes():
-    frames = M.Frame.objects().order_by("-createtime").limit(20)
+    params = request.values.to_dict()
+    frames = M.Frame.objects().order_by("-capturetime")
+    if 'before' in params:
+        frames = frames.filter(capturetime__lt=datetime.fromtimestamp(int(params['before'])))
+    frames = frames.skip((int(params.get('page', 1))-1)*20).limit(20)
     return list(frames)
 
 #TODO, abstract this for layers and thumbnails        
