@@ -13,3 +13,4 @@ gevent-websocket
 gevent-socketio
 pyro4
 cython
+coffeescript
