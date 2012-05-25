@@ -60,7 +60,7 @@ class RealtimeOLAP:
                 log.info('Send raw data for OLAP ' + o.name)
                 r = ResultSet()
                 rset = r.resultToResultSet(res)
-                log.info(rset['data'])
+                # log.info(rset['data'])
                 self.sendMessage(o, rset['data'])
 
             elif o.descInfo['formula'] == 'moving':
@@ -71,7 +71,7 @@ class RealtimeOLAP:
                 
                 o.queryInfo['limit'] = o.descInfo['window']
                 rset = o.execute()
-                log.info(rset['data'])
+                # log.info(rset['data'])
                 self.sendMessage(o, rset['data'])
                 
             else:
@@ -86,7 +86,7 @@ class RealtimeOLAP:
                     log.info('Sending descriptive for ' + o.name)
                     o.descInfo['trim'] = 0
                     rset = o.execute(sincetime = border - window)
-                    log.info(rset['data'])
+                    # log.info(rset['data'])
                     self.sendMessage(o, rset['data'])
                 else:
                     log.info(o.name + ' declined update')
@@ -135,14 +135,15 @@ class OLAP(SimpleDoc, mongoengine.Document):
     def __repr__(self):
         return "<OLAP %s>" % self.name
         
-    def execute(self, sincetime = None, limitresults = None):
+    def execute(self, sincetime = None, beforetime = None, limitresults = None):
         r = ResultSet()
         
         # Process configuration parameters
         queryinfo = self.queryInfo.copy()
         queryinfo['since'] = self.calcSince(sincetime)
+        queryinfo['before'] = self.calcBefore(beforetime)
         queryinfo['limit'] = self.calcLimit(limitresults)
-        if not queryinfo.has_key('allow'): queryinfo['allow'] = 500
+        if not queryinfo.has_key('allow'): queryinfo['allow'] = queryinfo['limit']
         if not queryinfo.has_key('aggregate'): queryinfo['aggregate'] = 'median'
         
         
@@ -157,7 +158,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
         # Also an implicit descriptive that it should not have more than 500 results per chart
         # If exceeded, aggregate
         if (len(resultSet['data']) > queryinfo['allow']):
-            resultSet = self.aggregate(resultSet, queryinfo['allow'])
+            resultSet = self.aggregate(resultSet, queryinfo['allow'], queryinfo['aggregate'])
         
         
         # Create and return the chart
@@ -170,6 +171,8 @@ class OLAP(SimpleDoc, mongoengine.Document):
     def aggregate(self, resultSet, allow, aggregate):
         # Find how much to cluster 
         interval = self.calcInterval(resultSet['data'], allow)
+        
+        log.info('Aggregating with ' + aggregate + ' interval ' + str(allow))
         
         # Create a dummy descriptive stat to aggregate
         d = DescriptiveStatistic()
@@ -191,15 +194,28 @@ class OLAP(SimpleDoc, mongoengine.Document):
 			return 500
         
     def calcSince(self, since):
-        # If provided a limit, always use that limit
+        # If provided a time, always use that time
         # Else, if defined in OLAP, use that since time
-        # Otherwise, use 0
+        # Otherwise, use None
         if since:
 			return since
         elif self.queryInfo.has_key('since'):
             return self.queryInfo['since'] 
         else:
-            return 0
+            return None
+
+
+    def calcBefore(self, before):
+        # If provided a time, always use that time
+        # Else, if defined in OLAP, use that since time
+        # Otherwise, use None
+        if before:
+			return before
+        elif self.queryInfo.has_key('before'):
+            return self.queryInfo['before'] 
+        else:
+            return None
+
         
     def calcInterval(self, dataSet, allow):
         xvals, rest = np.hsplit(np.array(dataSet), [1])
@@ -385,14 +401,10 @@ class DescriptiveStatistic:
                 objectids.append(ids[-1].flatten())
             else:
                 means.append(0)
-                objectids.append([])
+                objectids.append([None, None, None, None])
 
         log.info(objectids)
-        # Tweak since numpy gets confused by sizes
-        if numBins == 1:
-            objs = np.array(objectids).reshape(numBins, 4)
-        else:
-            objs = np.array(objectids).reshape(numBins, 1)
+        objs = np.array(objectids).reshape(numBins, 4).tolist()
         
         # Replace the old time (x) values with the bin value    
         dataSet = np.hstack((np.array(bins).reshape(numBins, 1), np.array(means).reshape(numBins, 1), objs)).tolist()
@@ -469,8 +481,11 @@ class ResultSet:
         insp = Inspection.objects.get(name=queryInfo['name'])
         query = dict(inspection = insp.id)
         
-        if queryInfo.has_key('since'):
+        if queryInfo['since']:
             query['capturetime__gt']= datetime.utcfromtimestamp(queryInfo['since'])
+        if queryInfo['before']:
+            query['capturetime__lt']= datetime.utcfromtimestamp(queryInfo['before'])
+        
             
         rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['limit']])
         
