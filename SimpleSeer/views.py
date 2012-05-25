@@ -2,9 +2,11 @@ import os
 import re
 import json
 import logging
+from datetime import datetime
 
 import bson
 import gevent
+import coffeescript
 from socketio import socketio_manage
 from flask import request, make_response, Response
 
@@ -44,6 +46,18 @@ def index():
     return open(os.path.join(
             os.path.dirname(__file__), 'static/public/index.html')).read()
 
+@route('/plugins.js')
+def plugins():
+    seer = SeerProxy2()
+    result = []
+    for ptype, plugins in seer.plugins.items():
+        for name, plugin in plugins.items():
+            for requirement, cs in plugin.coffeescript():
+                result.append('(function(plugin){')
+                result.append(coffeescript.compile(cs, True))
+                result.append('}).call(require(%r), require("lib/plugin"));\n' % requirement)
+    return '\n'.join(result)
+
 @route('/test', methods=['GET', 'POST'])
 def test():
     return 'This is a test of the emergency broadcast system'
@@ -70,7 +84,11 @@ def frame():
 @route('/lastframes', methods=['GET'])
 @util.jsonify
 def lastframes():
-    frames = M.Frame.objects().order_by("-createtime").limit(20)
+    params = request.values.to_dict()
+    frames = M.Frame.objects().order_by("-capturetime")
+    if 'before' in params:
+        frames = frames.filter(capturetime__lt=datetime.fromtimestamp(int(params['before'])))
+    frames = frames.skip((int(params.get('page', 1))-1)*20).limit(20)
     return list(frames)
 
 #TODO, abstract this for layers and thumbnails        

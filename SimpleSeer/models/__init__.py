@@ -7,3 +7,4 @@ from Result import Result
 from Watcher import Watcher
 # from Statistic import Statistic
 
+models = ("Frame", "FrameFeature", "Inspection", "Measurement", "OLAP", "Result", "Watcher")

@@ -1,5 +1,15 @@
 		<div id="messages"></div>
-    <button id="realtimecontrol" class="btn active" data-toggle="button">Realtime</button>
+		<div id="control-bar">
+			<button id="realtimecontrol" class="btn active" data-toggle="button">Pause</button>
+			<div id="control-bar-realtime">
+				<input type="text" id="chart-interval">
+			</div>
+			<div id="control-bar-paused" class="hidden">
+				<input type="text" name="date-from" id="date-from" value="" />
+				<input type="text" name="date-to" id="date-to" value="" />
+			</div>
+			<button id="controlbarchangebtn" class="btn">Change</button>
+		</div>
 		<div id="content" class="row">
 		  <div id="frame-container" class="span{{#if chartcount}}5{{else}}12{{/if}}"></div>
           {{#if chartcount}} 

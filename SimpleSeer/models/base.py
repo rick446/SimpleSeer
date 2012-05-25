@@ -69,9 +69,11 @@ class WithPlugins(object):
     def register_plugins(cls, group):
         if not hasattr(cls, '_plugins'):
             cls._plugins = {}
+        plugins = cls._plugins
         for ep in pkg_resources.iter_entry_points(group):
             log.info('Loading %s plugin %s', group, ep.name)
             try:
-                cls._plugins[ep.name] = ep.load()
+                plugins[ep.name] = ep.load()
             except Exception, err:
                 log.error('Failed to load %s plugin %s: %s', group, ep.name, err)
+        return plugins

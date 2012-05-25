@@ -1,4 +1,3 @@
-#SubView = require './subview'
 View = require './view'
 
 template = require './templates/chart'
@@ -16,88 +15,61 @@ module.exports = class ChartView extends View
       return retVal.attributes
     return false
 
-  update: =>
-    url = "/olap/Motion/limit/100"
-    #if @lastupdate
-    #  url = url + "/since/" + @lastupdate.toString()
-    #else
-    #  url = url + "/limit/20"
+  update: (frm, to, reset=false )=>
+    if frm
+      url = "/olap/Motion/since/" + frm
+    else
+      url = "/olap/Motion/limit/"+application.charts.timeframe
     $.getJSON(url, (data) =>
-      @._drawDataLegacy data
-      $('.alert_error').remove();
+      dd = []
+      if to
+        for d in data.data
+          if (d[0] && to > d[0]) || (d.data && to > d.data[0])
+            dd.push d
+      else
+        dd = data.data
+      @._drawDataLegacy dd,reset
+      $('.alert_error').remove()
       return
      ).error =>
        SimpleSeer.alert('Connection lost','error')
 
-  events:
-    'click .btn-group' : "changeTimeline"
+  _drawDataLegacy: (data, reset) =>
+    if data.length == 0
+      return
+    dd = []
+    for d in data
+      dd.push
+        data: [d[0], d[1]]
+        frame_id: d[3]
+    @_drawData dd, reset
+  
+  _formatChartPoint: (d) =>
+    _point =
+      x: @x++
+      y: d.data[1]
+      z:@_formatDate(d.data[0]*1000)
+      marker:
+        enabled:false
+      id:d.frame_id
+      events:
+        click: application.charts.callFrame
 
-  changeTimeline: (e)=>
-    @setTimeFrame e.target.value
-    #console.log @anchorId
-    #console.log e.target.value
-
-
-  setTimeFrame: (offset) =>
-    dt = Math.round((new Date()).getTime() / 1000)
-    url = "/olap/Motion/since/" + (dt - offset)
-    obj = @getRenderData()
-    $.getJSON(url, (data) =>
-      dd = []
-      for d in data.data
-        dd.push {x: @x++,y:d[1],z:@_formatDate(d[0]*1000), marker:{enabled:false}, id:d[3], events: {click: application.charts.callFrame}}
-        #dd.push {x: d[0]*1000,y:d[1], marker:{enabled:false}, id:d[3], events: {click: application.charts.callFrame}}
-        @.lastupdate = d[0]
-        application.charts.lastframe = d[3]
+  _drawData: (data,reset) =>
+    dd = []
+    if !@.chart
+      @.drawChart()
+      reset = true
+    if reset
+      for d in data
+        dd.push @_formatChartPoint d
+      @.lastupdate = d.data[0]
+      application.charts.lastframe = d.frame_id
       @.chart.series[0].setData(dd)
-      #application.socket.emit 'subscribe', 'OLAP/'+obj.name+'/'
-      return
-    ).error =>
-      SimpleSeer.alert('Connection lost','error')
-
-  catchUp: =>
-    url = "/olap/Motion/since/" + parseInt @lastupdate
-    obj = @getRenderData()
-    $.getJSON(url, (data) =>
-      @._drawDataLegacy data
-      application.socket.emit 'subscribe', 'OLAP/'+obj.name+'/'
-      return
-    ).error =>
-      SimpleSeer.alert('Connection lost','error')
-
-
-  _drawDataLegacy: (data) =>
-    if data.data.length == 0
-      return
-    dd = []
-    if !@.chart
-      for d in data.data
-        dd.push {x: @x++,y:d[1],z:@_formatDate(d[0]*1000), marker:{enabled:false}, id:d[3], events: {click: application.charts.callFrame}}
-        #dd.push {x: d[0]*1000,y:d[1], marker:{enabled:false}, id:d[3], events: {click: application.charts.callFrame}}
-        @.lastupdate = d[0]
-        application.charts.lastframe = d[3]
-      @.drawChart dd
-    else
-      series = @.chart.series[0]
-      for d in data.data
-        series.addPoint {x: @x++,y:d[1],z:@_formatDate(d[0]*1000), marker:{enabled:false}, id:d[2], events: {click: application.charts.callFrame}} , true , true
-        @.lastupdate = d[0]
-        application.charts.lastframe = d[3]
-
-  _drawData: (data) =>
-    dd = []
-    if !@.chart
-      for d in data
-        x = d[0]*1000
-        dd.push {x: @x++,y: d.data[1],z:@_formatDate(d.data[0]*1000), marker:{enabled:false}, id:d.frame_id, events: {click: application.charts.callFrame}}
-        @.lastupdate = d.data[0]
-        application.charts.lastframe = d.frame_id
-      @.drawChart dd
     else
       series = @.chart.series[0]
       for d in data
-        series.addPoint {x: @x++,y: d.data[1],z:@_formatDate(d.data[0]*1000), marker:{enabled:false}, id:d.frame_id, events: {click: application.charts.callFrame}} , true , true
-        #series.addPoint {x: d.data[0]*1000 ,y: d.data[1], marker:{enabled:false}, id:d.frame_id, events: {click: application.charts.callFrame}} , true , true
+        series.addPoint(@_formatChartPoint(d),true,true)
         @.lastupdate = d.data[0]
         application.charts.lastframe = d.frame_id
 
@@ -120,15 +92,22 @@ module.exports = class ChartView extends View
   drawChart: (data) =>
     renderData = @getRenderData()
     @.chart = new Highcharts.Chart
-      #chart: {renderTo: @.anchorId,type: renderData.chartInfo.name.toLowerCase(),className: 'graph'}
-      chart: {renderTo: @.anchorId,type: renderData.chartInfo.name.toLowerCase(), animation: true}
-      title: {text:null}
+      chart:
+        renderTo: @.anchorId
+        type: renderData.chartInfo.name.toLowerCase()
+        animation: false
+      title:
+        text:null
       credits:
         enabled:
           false
-      legend: {enabled: false}
-      plotOptions: { series: { stickyTracking: false, lineWidth:2 } }
-      series: [{name: renderData.name,data: data,shadow:false, color: renderData.chartInfo.color}]
+      legend:
+        enabled: false
+      plotOptions:
+        series:
+          stickyTracking: false
+          lineWidth:2
+      series: [{name: renderData.name,data: [],shadow:false, color: renderData.chartInfo.color}]
       tooltip:
         headerFormat:
           ''
@@ -137,8 +116,14 @@ module.exports = class ChartView extends View
       animation:
         duration:
           10
-      xAxis: {labels:{enabled:false}}
-      yAxis: {title: {text: ''},min:0,max:100}
+      xAxis:
+        labels:
+          enabled:false
+      yAxis:
+        title:
+          text: ''
+        min:0
+        max:100
 
     application.socket.on "message:OLAP/#{renderData.name}/", @_update
     application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
@@ -148,5 +133,4 @@ module.exports = class ChartView extends View
     super()
     $('#chart-container').append @.$el
     @update()
-    #setTimeout @update, 10
     this

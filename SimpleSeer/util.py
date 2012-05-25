@@ -5,6 +5,7 @@ from flask import make_response
 from decorator import decorator
 
 from base import jsonencode
+import mongoengine
 
 def jsonify(f):
     """
@@ -41,3 +42,17 @@ def get_seer():
     if SS is None:
         return service.SeerProxy2()
     return SS()
+
+def initialize_slave():
+	from .Session import Session
+	from . import models as M
+	#if we're in slave mode, rip thru the models and 
+	#run a count() -- this gets over a bug in mongoengine
+	#where the ensure_indexes fault on being against a slavedb
+	if Session().mongo.has_key("is_slave") and Session().mongo["is_slave"]:
+		for m in M.models:
+			try:
+				exec("M."+m+".objects.count()")
+			except:
+				pass
+		mongoengine.connection._dbs["default"].slave_okay = True
