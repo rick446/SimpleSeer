@@ -5,6 +5,7 @@ from flask import make_response
 from decorator import decorator
 
 from base import jsonencode
+import mongoengine
 
 def jsonify(f):
     """
@@ -54,3 +55,4 @@ def initialize_slave():
 				exec("M."+m+".objects.count()")
 			except:
 				pass
+		mongoengine.connection._dbs["default"].slave_okay = True
