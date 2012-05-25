@@ -6,6 +6,7 @@ from socketio.server import SocketIOServer
 
 from . import views
 from . import crud
+from . import util
 from .Session import Session
 
 DEBUG = True
@@ -13,6 +14,7 @@ DEBUG = True
 log = logging.getLogger(__name__)
 
 def make_app():
+    util.initialize_slave()
     app = Flask(__name__)
     views.route.register_routes(app)
     crud.register(app)

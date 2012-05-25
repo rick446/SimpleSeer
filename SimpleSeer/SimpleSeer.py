@@ -8,6 +8,7 @@ from datetime import datetime
 
 from . import models as M
 from .Session import Session
+from . import util
 
 from SimpleCV import Camera, VirtualCamera, Kinect, FrameSource
 from SimpleCV import ImageSet, Image
@@ -85,9 +86,9 @@ class SimpleSeer(object):
                 self.cameras.append(Camera(id, camerainfo))
         #log initialized camera X
         
-        #Session().redis.set("cameras", self.config.cameras)
-        #tell redis what cameras we have
         
+        util.initialize_slave()
+			
         self.reloadInspections() #initialize inspections so they get saved to redis
          
         self.loadPlugins()
