@@ -16,19 +16,14 @@ module.exports = class ChartView extends View
     return false
 
   update: (frm, to, reset=false )=>
-    if frm
+    if frm and to
+      url = "/olap/Motion/since/"+frm+"/before/" + to
+    else if frm
       url = "/olap/Motion/since/" + frm
     else
       url = "/olap/Motion/limit/"+application.charts.timeframe
     $.getJSON(url, (data) =>
-      dd = []
-      if to
-        for d in data.data
-          if (d[0] && to > d[0]) || (d.data && to > d.data[0])
-            dd.push d
-      else
-        dd = data.data
-      @._drawDataLegacy dd,reset
+      @._drawDataLegacy data.data,reset
       $('.alert_error').remove()
       return
      ).error =>
