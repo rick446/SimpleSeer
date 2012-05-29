@@ -9,5 +9,6 @@ module.exports = class FrameView extends SubView
     img = @$el.find('img')
     width = @$el.innerWidth()
     width = 640 if width > 640
-    img.attr('src', '/videofeed-width'+width+'.mjpeg?' + Date.UTC())
+    d = new Date()
+    img.attr('src', '/videofeed-width'+width+'.mjpeg?' + d.getTime())
     img.attr('width', "100%")
