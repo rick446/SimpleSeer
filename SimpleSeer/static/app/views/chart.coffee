@@ -21,7 +21,8 @@ module.exports = class ChartView extends View
     else if frm
       url = "/olap/Motion/since/" + frm
     else
-      url = "/olap/Motion/limit/"+application.charts.timeframe
+      interval = application.settings.poll_interval || 1
+      url = "/olap/Motion/limit/"+application.charts.timeframe / interval
     $.getJSON(url, (data) =>
       @._drawDataLegacy data.data,reset
       $('.alert_error').remove()
