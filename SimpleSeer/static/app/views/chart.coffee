@@ -15,7 +15,7 @@ module.exports = class ChartView extends View
       return retVal.attributes
     return false
 
-  update: (frm, to, reset=false )=>
+  update: (frm, to, reset=true )=>
     if frm and to
       url = "/olap/Motion/since/"+frm+"/before/" + to
     else if frm
@@ -127,5 +127,5 @@ module.exports = class ChartView extends View
   render: =>
     super()
     $('#chart-container').append @.$el
-    @update()
+    @update null,null,true
     this

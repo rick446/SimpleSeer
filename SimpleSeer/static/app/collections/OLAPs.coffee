@@ -39,7 +39,11 @@ module.exports = class OLAPs extends Collection
     control = $ "#realtimecontrol"
     control.html "Pause"
     for obj in @.models
-      obj.view.update parseInt(obj.view.lastupdate)
+      #obj.view.update parseInt(obj.view.lastupdate)
+      #get interval, calculate seconds, suptract from now
+      interval = 2
+      tf = Math.round((new Date()).getTime() / 1000) - application.charts.timeframe / interval
+      obj.view.update parseInt(tf)
       application.socket.emit 'subscribe', 'OLAP/'+obj.attributes.name+'/'
     $('.alert_error').remove()
     fDom = $('#frame img')
