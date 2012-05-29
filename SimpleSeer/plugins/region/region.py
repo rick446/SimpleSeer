@@ -27,6 +27,7 @@ class Region(base.InspectionPlugin):
                 fs = image.findBlobsFromMask(mask)
                 ff = M.FrameFeature()
                 if( fs is not None ):                    
+                    fs.draw()
                     ff.setFeature(RegionFeature(fs[-1])) # a little hacky but I am sure that it works
                     retVal = [ff]
   
@@ -44,7 +45,8 @@ class Region(base.InspectionPlugin):
                 mask = mask.applyLayers()
                 fs = image.findBlobsFromMask(mask)
                 ff = M.FrameFeature()
-                if( fs is not None ):                    
+                if( fs is not None ): 
+                    fs.draw()                   
                     ff.setFeature(RegionFeature(fs[-1]))
                     retVal = [ff]
 
@@ -55,7 +57,8 @@ class Region(base.InspectionPlugin):
                 mask = mask.applyLayers()
                 fs = image.findBlobsFromMask(mask)
                 ff = M.FrameFeature()
-                if( fs is not None ):                    
+                if( fs is not None ): 
+                    fs.draw()                   
                     ff.setFeature(RegionFeature(fs[-1]))
                     retVal = [ff]
 
