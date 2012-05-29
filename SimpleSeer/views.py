@@ -321,6 +321,13 @@ def measurement_results(self, **params):
 def ping():
     text = "pong"
     return {"text": text }
+    
+#todo: move settings to mongo, create model with save
+@route('/settings', methods=['GET', 'POST'])
+@util.jsonify
+def settings():
+    text = Session().get_config()
+    return {"settings": text }
 
 @route('/olap/<olap_name>', methods=['GET'])
 @util.jsonify
