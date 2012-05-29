@@ -54,13 +54,13 @@ class Circle(base.InspectionPlugin):
       canny = params('canny') 
 
     if( params.hasKey('distance') ):
-      gap = params('distance') 
+      distance = params('distance') 
 
     if( params.hasKey('radius') ):
-      angle = params('radius') 
+      radius = params('radius') 
 
     if( params.hasKey('threshold') ):
-      angle = params('threshold') 
+      threshold = params('threshold') 
       
     fs = img.findCircles(canny,threshold,distance)
 
