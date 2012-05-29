@@ -56,7 +56,9 @@ def plugins():
                 result.append('(function(plugin){')
                 result.append(coffeescript.compile(cs, True))
                 result.append('}).call(require(%r), require("lib/plugin"));\n' % requirement)
-    return '\n'.join(result)
+    resp = make_response("\n".join(result), 200)
+    resp.headers['Content-Type'] = "text/javascript"
+    return resp
 
 @route('/test', methods=['GET', 'POST'])
 def test():
