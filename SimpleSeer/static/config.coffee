@@ -50,7 +50,7 @@ exports.config =
 
   # Change this if you're using something other than backbone (e.g. 'ember').
   # Content of files, generated with `brunch generate` depends on the setting.
-  # framework: 'backbone'
+  framework: 'backbone'
 
   # Settings of web server that will run with `brunch watch [--server]`.
   # server:
