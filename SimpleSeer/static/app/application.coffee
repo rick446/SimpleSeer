@@ -3,7 +3,7 @@ Application =
   initialize: ->
     HomeView = require 'views/home_view'
     FramelistView = require 'views/framelist_view'
-    FrameView = require 'views/frame'
+    FrameDetailView = require 'views/framedetail_view'
     Router = require 'lib/router'
     Inspections = require 'collections/inspections'
     Measurements = require 'collections/measurements'
