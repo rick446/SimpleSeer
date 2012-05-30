@@ -116,8 +116,8 @@ module.exports = class ChartView extends View
       yAxis:
         title:
           text: ''
-        min:0
-        max:100
+        min:renderData.chartInfo.min || 0
+        max:renderData.chartInfo.max || 100
 
     application.socket.on "message:OLAP/#{renderData.name}/", @_update
     application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
