@@ -1,6 +1,6 @@
 View = require './view'
 template = require './templates/framelist'
-app = require "application"
+FramelistFrameView = require './framelistframe_view'
 
 module.exports = class FramelistView extends View  
   template: template
@@ -10,22 +10,31 @@ module.exports = class FramelistView extends View
     @pages=1
     @loading=false
     @collection = collection
+    @_frameViews = []
 
-    $(window).scroll @loadMore #have to bind this event here instead of events because it's on window
+    @collection.on('add', @addFrame)
+    @collection.on('reset', @addFrames)
+    $(window).on('scroll', @loadMore)
   
   getRenderData: =>
-    # if this is the first time we're rendering, set the collection up
+    count_viewing: @collection.length
+
+  render: =>
+    super()
     if @pages==1
       @newest = @collection.at(0).get('capturetime')
-    @loading=false
-    frames: @collection.map (frame) ->
-      capturetime: new Date parseInt frame.get('capturetime')+'000'
-      camera: frame.get('camera')
-      imgfile: frame.get('imgfile')
-      id: frame.get('id')
+    _(@_frameViews).each (fv) =>
+      @$el.find('#frame_holder').append(fv.render().el)
+    @$el.find('#loading_message').hide()
+    return this
 
-  loadMore: =>
-    if !@loading && ($(window).scrollTop() > $(document).height() - $(window).height() - 300)
+  loadMore: (evt)=>
+    if !@loading && ($(window).scrollTop() >= $(document).height() - $(window).height())
+      $('body').on('mousewheel', @disableEvent)
+      enable = =>
+        $('body').off('mousewheel', @disableEvent)
+      setTimeout enable, 1000
+      @$el.find('#loading_message').fadeIn('fast')
       @loading=true
       @pages=@pages+1
       @collection.fetch
@@ -33,4 +42,25 @@ module.exports = class FramelistView extends View
         data:
           page: @pages
           before: @newest
-        success: @render #20 add events get fired off this and only needs to render once so don't bind
+
+  addFrame: (frame)=>
+    @loading=false
+    fv = new FramelistFrameView frame
+    @_frameViews.push fv
+    if @$el.html() != ''
+      next_page_size = @collection.total_frames - @collection.length
+
+      if next_page_size <= 0
+        $(window).off('scroll', @loadMore)
+      @$el.find('#frame_holder').append(fv.render().el)
+      @$el.find('#loading_message').fadeOut 1000, =>
+        if next_page_size < 20
+          @$el.find('#next_page_size').html next_page_size
+      @$el.find('#count_viewing').html @collection.length
+
+  addFrames: (frames)=>
+    frames.each @addFrame
+
+  disableEvent: (evt)=>
+    evt.preventDefault()
+    return false
