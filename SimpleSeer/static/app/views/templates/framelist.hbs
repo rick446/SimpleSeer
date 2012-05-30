@@ -1,18 +1,5 @@
-{{#frames}}
-  <hr>
-  <div class="row">
-    <div class="span2">
-      <img src="{{imgfile}}" class="thumbnail">
-        <!-- <span class="label label-success">Pass</span> -->
-    </div>
-    <div class="span7">
-      <ul>
-          <li><b>Camera</b>: {{camera}}</li>
-          <li><b>Time</b>: {{capturetime}}</li>
-      </ul>
-    </div>
-    <div class="span1">
-      <p><a href="#frame/{{id}}" class="btn">Detail</a></p>
-    </div>
-  </div>     
-{{/frames}}
+Viewing <span id="count_viewing">{{count_viewing}}</span> frames.
+<div id="frame_holder"></div>
+<div id="loading_message" class="alert alert-info span11">
+  Loading <span id="next_page_size">20</span> more frames...
+</div>

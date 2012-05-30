@@ -89,9 +89,10 @@ def lastframes():
     params = request.values.to_dict()
     frames = M.Frame.objects().order_by("-capturetime")
     if 'before' in params:
-        frames = frames.filter(capturetime__lt=datetime.fromtimestamp(int(params['before'])))
+        frames = frames.filter(capturetime__lte=datetime.fromtimestamp(int(params['before'])))
+    total_frames = frames.count()
     frames = frames.skip((int(params.get('page', 1))-1)*20).limit(20)
-    return list(frames)
+    return dict(frames=list(frames), total_frames=total_frames)
 
 #TODO, abstract this for layers and thumbnails        
 @route('/grid/imgfile/<frame_id>', methods=['GET'])
