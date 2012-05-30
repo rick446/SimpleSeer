@@ -32,13 +32,14 @@ def register(app):
         ModelHandler(M.Inspection, M.InspectionSchema,
                      'inspection', '/inspection'),
         ModelHandler(M.OLAP, M.OLAPSchema, 'olap', '/olap'),
-        ModelHandler(M.Measurement, M.MeasurementSchema, 'measurement', '/measurement')
+        ModelHandler(M.Measurement, M.MeasurementSchema, 'measurement', '/measurement'),
+        ModelHandler(M.Frame, M.FrameSchema, 'frame', "/frame", ["delete", "get"])
        ]
 
     for h in handlers:
         flask_rest.RESTResource(
             app=bp, name=h.name, route=h.route,
-            actions=["list", "add", "update", "delete", "get"],
+            actions= h.actions,
             handler=h)
 
     app.register_blueprint(bp)
@@ -50,11 +51,12 @@ def register(app):
 
 class ModelHandler(object):
 
-    def __init__(self, cls, schema, name, route):
+    def __init__(self, cls, schema, name, route, actions = ["list", "add", "update", "delete", "get"]):
         self._cls = cls
         self.schema = schema()
         self.name = name
         self.route = route
+        self.actions = actions
 
     def _get_object(self, id):
         try:

@@ -1,4 +1,4 @@
-from Frame import Frame
+from Frame import Frame, FrameSchema
 from FrameFeature import FrameFeature
 from Inspection import Inspection, InspectionSchema
 from Measurement import Measurement, MeasurementSchema

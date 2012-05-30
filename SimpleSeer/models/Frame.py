@@ -5,9 +5,21 @@ import mongoengine
 from SimpleSeer.base import Image, pil, pygame
 from SimpleSeer import util
 
+from formencode import validators as fev
+from formencode import schema as fes
+import formencode as fe
+
 from .base import SimpleDoc
 from .FrameFeature import FrameFeature
 from .. import realtime
+
+
+class FrameSchema(fes.Schema):	
+    camera = fev.UnicodeString(not_empty=True)
+	#TODO, make this feasible as a formencode schema for upload
+
+
+
 
 class Frame(SimpleDoc, mongoengine.Document):
     """
