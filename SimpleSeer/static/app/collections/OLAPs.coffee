@@ -50,3 +50,7 @@ module.exports = class OLAPs extends Collection
   callFrame: (e) =>
     if e.point.config.id
       @.pause(e.point.config.id)
+
+  overPoint: (e) =>
+    for m in application.charts.models
+      m.view.chart.tooltip.refresh m.view.chart.get e.target.id

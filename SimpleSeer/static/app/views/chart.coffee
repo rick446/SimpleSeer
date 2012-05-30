@@ -41,11 +41,12 @@ module.exports = class ChartView extends View
   
   _formatChartPoint: (d) =>
     _point =
-      y: d.data[1]
+      y:d.data[1]
       x:d.data[0]
       id:d.frame_id
       events:
         click: application.charts.callFrame
+        mouseOver: application.charts.overPoint
 
   _drawData: (data,reset) =>
     dd = []
@@ -87,7 +88,7 @@ module.exports = class ChartView extends View
       chart:
         renderTo: @.anchorId
         type: renderData.chartInfo.name.toLowerCase()
-        animation: false
+        #animation: false
       title:
         text:null
       credits:
@@ -102,20 +103,24 @@ module.exports = class ChartView extends View
       series: [
         name: renderData.name
         data: []
+        allowPointSelect: true
         shadow:false
         color: renderData.chartInfo.color
         marker:
           enabled: true
           radius: 1
         ]
+      tooltip:
+        snap:100
+        crosshairs:true
       #tooltip:
       #  headerFormat:
       #    ''
       #  pointFormat:
       #    '<small>{point.z}</small><br><b>{point.y}% movement</b>'
-      animation:
-        duration:
-          10
+      #animation:
+      #  duration:
+      #    1000
       xAxis:
         type:
           'datetime'
