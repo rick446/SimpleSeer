@@ -10,14 +10,17 @@ module.exports = class Router extends Backbone.Router
   home: ->
     application.charts.fetch
       success: (d1, d2) ->
+        $('ul.nav').find(".active").removeClass("active")
+        $('ul.nav').find('li.charts').addClass('active')
         $('#main').slideReplace application.homeView.render().el, 'left'
         application.homeView.subviews.frameview.setVideoFeed()
         application.charts.onSuccess(d1, d2)
         application.homeView.postRender()
-        $('ul.nav').find('li').removeClass('active').end().find('li.charts').addClass('active')
-
+        
   framelist: ->
     application.lastframes.fetch
       success: ->
+        $('ul.nav').find(".active").removeClass("active")
+        $('ul.nav').find('li.frames').addClass('active')
         $('#main').slideReplace application.framelistView.render().el, 'right'
-        $('ul.nav').find('li').removeClass('active').end().find('li.frames').addClass('active')
+
