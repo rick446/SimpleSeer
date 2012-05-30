@@ -40,7 +40,7 @@ module.exports = class OLAPs extends Collection
     control.html "Pause"
     for obj in @.models
       interval = application.settings.poll_interval || 1
-      tf = Math.round((new Date()).getTime() / 1000) - application.charts.timeframe / interval
+      tf = Math.round((new Date()).getTime() / 1000) - Math.ceil(application.charts.timeframe / interval)
       obj.view.update parseInt(tf)
       application.socket.emit 'subscribe', 'OLAP/'+obj.attributes.name+'/'
     $('.alert_error').remove()

@@ -21,7 +21,7 @@ module.exports = class ChartView extends View
       url = "/olap/Motion/since/" + frm
     else
       interval = application.settings.poll_interval || 1
-      url = "/olap/Motion/limit/"+application.charts.timeframe / interval
+      url = "/olap/Motion/limit/"+Math.ceil(application.charts.timeframe / interval)
     $.getJSON(url, (data) =>
       @._drawDataLegacy data.data,reset
       $('.alert_error').remove()
@@ -101,11 +101,11 @@ module.exports = class ChartView extends View
           stickyTracking: false
           lineWidth:2
       series: [
-        name: renderData.name
-        data: []
+        name:renderData.name
+        data:[]
         allowPointSelect: true
         shadow:false
-        color: renderData.chartInfo.color
+        color:renderData.chartInfo.color
         marker:
           enabled: true
           radius: 1
