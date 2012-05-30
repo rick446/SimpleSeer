@@ -1,6 +1,7 @@
 # The application bootstrapper.
 Application =
   initialize: ->
+    ViewHelper = require 'lib/view_helper'
     HomeView = require 'views/home_view'
     FramelistView = require 'views/framelist_view'
     FrameDetailView = require 'views/framedetail_view'
