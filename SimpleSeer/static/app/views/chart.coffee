@@ -8,7 +8,6 @@ module.exports = class ChartView extends View
   template: template
   lastupdate: 0
   lastframe: ''
-  x:0
   getRenderData: =>
     retVal = application.charts._byId[@.anchorId]
     if retVal
@@ -42,9 +41,8 @@ module.exports = class ChartView extends View
   
   _formatChartPoint: (d) =>
     _point =
-      x: @x++
       y: d.data[1]
-      z:@_formatDate(d.data[0]*1000)
+      x:d.data[0]
       marker:
         enabled:false
       id:d.frame_id
@@ -104,17 +102,17 @@ module.exports = class ChartView extends View
           stickyTracking: false
           lineWidth:2
       series: [{name: renderData.name,data: [],shadow:false, color: renderData.chartInfo.color}]
-      tooltip:
-        headerFormat:
-          ''
-        pointFormat:
-          '<small>{point.z}</small><br><b>{point.y}% movement</b>'
+      #tooltip:
+      #  headerFormat:
+      #    ''
+      #  pointFormat:
+      #    '<small>{point.z}</small><br><b>{point.y}% movement</b>'
       animation:
         duration:
           10
       xAxis:
-        labels:
-          enabled:false
+        type:
+          'datetime'
       yAxis:
         title:
           text: ''
