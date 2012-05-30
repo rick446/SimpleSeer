@@ -43,8 +43,6 @@ module.exports = class ChartView extends View
     _point =
       y: d.data[1]
       x:d.data[0]
-      marker:
-        enabled:false
       id:d.frame_id
       events:
         click: application.charts.callFrame
@@ -101,7 +99,15 @@ module.exports = class ChartView extends View
         series:
           stickyTracking: false
           lineWidth:2
-      series: [{name: renderData.name,data: [],shadow:false, color: renderData.chartInfo.color}]
+      series: [
+        name: renderData.name
+        data: []
+        shadow:false
+        color: renderData.chartInfo.color
+        marker:
+          enabled: true
+          radius: 1
+        ]
       #tooltip:
       #  headerFormat:
       #    ''
