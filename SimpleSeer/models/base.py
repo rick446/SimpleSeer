@@ -11,7 +11,7 @@ log = logging.getLogger(__name__)
 
 class SimpleDoc(object):
     _jsonignore = [None]
-    meta=dict(auto_create_index=False)
+    meta=dict(auto_create_index=True)
     
     
     def __getstate__(self):  
@@ -44,6 +44,7 @@ class SimpleDoc(object):
         for k,v in d.items():
             setattr(self, k, v)
         
+import pdb; pdb.set_trace()
 class SimpleEmbeddedDoc(object):
     """
     Any embedded docs (for object trees) should extend SimpleEmbeddedDoc
