@@ -131,7 +131,8 @@ class OLAP(SimpleDoc, mongoengine.Document):
         if (self.descInfo) and (len(resultSet['data']) > 0):
             d = DescriptiveStatistic()
             resultSet = d.execute(resultSet, self.descInfo)
-            
+        
+        
         # Also an implicit descriptive if too many results per chart
         # If exceeded, aggregate
         if (self.allow) and (len(resultSet['data']) > self.allow):
@@ -144,7 +145,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
         
         # Create and return the chart
         c = Chart()
-        chartSpec = c.createChart(resultSet, self.chartInfo)
+        chartSpec = c.createChart(resultSet, self.chartInfo, self.name)
         return chartSpec
         
         
@@ -160,13 +161,13 @@ class OLAP(SimpleDoc, mongoengine.Document):
     def calcLimit(self, queryInfo, limit):
         # If provided a limit, always use that limit
         # Else, if defined in OLAP, use that limit
-        # Otherwise, use a default of 500
+        # Otherwise, use a default of None
         if limit:
 			return limit
         elif queryInfo.has_key('limit'):
             return queryInfo['limit']
         else:
-			return 500
+			return None
         
         
     def calcSince(self, queryInfo, since):
@@ -265,9 +266,9 @@ class OLAPFactory:
                 log.warn('Unknown query type provided to OLAP Factory: ' + queryInfo['queryType'])
         
         # Limit of 1000
-        if not queryInfo.has_key('limit'): queryInfo['limit'] = 1000
+        if not queryInfo.has_key('limit'): queryInfo['limit'] = None
         # Allow 1000 before aggregating
-        if not queryInfo.has_key('allow'): queryInfo['allow'] = 1000
+        if not queryInfo.has_key('allow'): queryInfo['allow'] = 500
         # If aggregation needed, use median
         if not queryInfo.has_key('aggregate'): queryInfo['aggregate'] = 'median'
         
@@ -324,6 +325,8 @@ class OLAPFactory:
         elif scaleRange < 600: return 600 # 10 minutes
         elif scaleRange < 900: return 900 # 15 minutes
         elif scaleRange < 3600: return 3600 # 1 hour
+        elif scaleRange < 7200: return 7200 # 2 hours
+        elif scaleRange < 14400: return 14400 # 4 hours
         elif scaleRange < 21600: return 21600 # 6 hours
         elif scaleRange < 86400: return 86400 # 1 day
         elif scaleRange < 604800: return 604800 # 1 week
@@ -356,7 +359,7 @@ class Chart:
 		return ranges
     
     
-    def createChart(self, resultSet, chartInfo):
+    def createChart(self, resultSet, chartInfo, olapName = ''):
         # This function will change to handle the different formats
         # required for different charts.  For now, just assume nice
         # graphs of (x,y) coordiantes
@@ -367,7 +370,8 @@ class Chart:
                       'chartColor': chartInfo['color'],
                       'labels': resultSet['labels'],
                       'range': chartRange,
-                      'data': resultSet['data'] }
+                      'data': resultSet['data'],
+                      'olap': olapName }
         
         return chartData
 
@@ -630,8 +634,11 @@ class ResultSet:
         # query as a list
         
         
+        # TODO: Select from the right type of object, not all
+        obj = Inspection
+        
         if not queryInfo.has_key('id'):
-            insp = Inspection.objects.get(name=queryInfo['name'])
+            insp = obj.objects.get(name=queryInfo['name'])
             query = dict(inspection = insp.id)
         else:
             query = dict(inspection = queryInfo['id'])
@@ -641,8 +648,13 @@ class ResultSet:
         if queryInfo['before']:
             query['capturetime__lt']= datetime.utcfromtimestamp(queryInfo['before'])
         
+        
+        # Only truncate if a limit was set
+        if (queryInfo['limit']):
+            rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['limit']])
+        else:
+            rs = list(Result.objects(**query).order_by('-capturetime'))
             
-        rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['limit']])
         
         # When performing some computations, require additional data
         if (len(rs) > 0) and (queryInfo.has_key('required')) and (len(rs) < queryInfo['required']):
