@@ -61,7 +61,14 @@ module.exports = class OLAPs extends Collection
     $('.alert_error').remove()
     fDom = $('#frame img')
     fDom.attr('src',fDom.attr('live'))
+    $('#preview').html ''
 
   callFrame: (e) =>
     if e.point.config.id
       @.pause(e.point.config.id)
+      
+  addFrame: (e) =>
+    $('#preview').append '<img style="width:100px" id="image_'+e.target.id+'" src="/grid/imgfile/'+e.target.id+'">'
+  
+  removeFrame: (e) =>
+    $('#image_'+e.target.id).remove()

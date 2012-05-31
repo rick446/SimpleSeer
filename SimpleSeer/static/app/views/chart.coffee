@@ -47,6 +47,8 @@ module.exports = class ChartView extends View
       events:
         click: application.charts.callFrame
         mouseOver: @.overPoint
+        select: application.charts.addFrame
+        unselect: application.charts.removeFrame
 
   overPoint: (e) =>
     for m in application.charts.models
