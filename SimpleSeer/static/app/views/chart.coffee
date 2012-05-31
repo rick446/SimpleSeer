@@ -106,11 +106,12 @@ module.exports = class ChartView extends View
         @.chart._c.addPoint(d)
         @.chart._c.render($('#'+@.anchorId))
 
-    setData: (d) ->
-      if @.lib == 'highchart'
-        @._c.series[0].setData(d)
+    setData: (d) =>
+      if @.chart.lib == 'highchart'
+        @.chart._c.series[0].setData(d)
       else
-        @._c.setData(d)
+        @.chart._c.setData(d)
+        @.chart._c.render($('#'+@.anchorId))
 
     showTooltip: (id,me) =>
       if me.lib == 'highchart'
