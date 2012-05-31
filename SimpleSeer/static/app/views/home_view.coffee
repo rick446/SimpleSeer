@@ -53,8 +53,8 @@ module.exports = class HomeView extends View
         obj.view.update()
       
   toggleControlBar: =>
-    $('#control-bar-realtime').toggleClass 'hidden'
-    $('#control-bar-paused').toggleClass 'hidden'
+    $('#control-bar-realtime').toggleClass 'hide'
+    $('#control-bar-paused').toggleClass 'hide'
     return
 
   toggleTimespanControl: (evt)->

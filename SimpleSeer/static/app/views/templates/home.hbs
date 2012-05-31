@@ -7,10 +7,14 @@
           <a href="#" title="Click to hide timespan controls"><i class="icon-time"></i></a>
         </li>
         <li class="time_controls">
-          <span class="subnav_content">
-            <label>From</label> <input type="text">
-            <label>To</label> <input type="text">
+          <span class="subnav_content hide" id="control-bar-paused">
+            <label>From</label> <input type="text" id="date-from">
+            <label>To</label> <input type="text" id="date-to">
           </span>
+          <span class="subnav_content" id="control-bar-realtime">
+            <label>Interval</label> <input type="text" id="chart-interval">
+          </span>
+          <input type="button" id="controlbarchangebtn" value="Change">
         </li>
         <li class="search_bar">
           <span class="subnav_content">
@@ -21,17 +25,6 @@
       </ul>
     </div>
 		<div id="messages"></div>
-		<div id="control-bar">
-			<!-- <button id="realtimecontrol" class="btn active" data-toggle="button">Pause</button> -->
-			<div id="control-bar-realtime">
-				<input type="text" id="chart-interval">
-			</div>
-			<div id="control-bar-paused" class="hidden">
-				<input type="text" name="date-from" id="date-from" value="" />
-				<input type="text" name="date-to" id="date-to" value="" />
-			</div>
-			<button id="controlbarchangebtn" class="btn">Change</button>
-		</div>
 		<div id="content" class="row">
 		  <div id="frame-container" class="span{{#if chartcount}}5{{else}}12{{/if}}"></div>
           {{#if chartcount}} 
