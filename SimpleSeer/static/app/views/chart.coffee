@@ -88,6 +88,7 @@ module.exports = class ChartView extends View
       chart:
         renderTo: @.anchorId
         type: renderData.chartInfo.name.toLowerCase()
+        height: renderData.chartInfo.height || null
         #animation: false
       title:
         text:null

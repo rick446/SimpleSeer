@@ -53,4 +53,8 @@ module.exports = class OLAPs extends Collection
 
   overPoint: (e) =>
     for m in application.charts.models
-      m.view.chart.tooltip.refresh m.view.chart.get e.target.id
+      point = m.view.chart.get e.target.id
+      if point
+        m.view.chart.tooltip.refresh point
+      else
+        m.view.chart.tooltip.hide()
