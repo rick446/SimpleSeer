@@ -135,7 +135,9 @@ class OLAP(SimpleDoc, mongoengine.Document):
         
         # Also an implicit descriptive if too many results per chart
         # If exceeded, aggregate
-        if (self.allow) and (len(resultSet['data']) > self.allow):
+        # Hard code in a default allow for backward compatibility
+        if not self.allow: self.allow = 900
+        if (len(resultSet['data']) > self.allow):
             of = OLAPFactory()
             o = of.fromBigOLAP(self, resultSet)
             resultSet = o.execute()
@@ -268,7 +270,7 @@ class OLAPFactory:
         # Limit of 1000
         if not queryInfo.has_key('limit'): queryInfo['limit'] = None
         # Allow 1000 before aggregating
-        if not queryInfo.has_key('allow'): queryInfo['allow'] = 500
+        if not queryInfo.has_key('allow'): queryInfo['allow'] = 900
         # If aggregation needed, use median
         if not queryInfo.has_key('aggregate'): queryInfo['aggregate'] = 'median'
         
