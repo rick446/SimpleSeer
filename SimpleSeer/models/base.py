@@ -44,7 +44,6 @@ class SimpleDoc(object):
         for k,v in d.items():
             setattr(self, k, v)
         
-import pdb; pdb.set_trace()
 class SimpleEmbeddedDoc(object):
     """
     Any embedded docs (for object trees) should extend SimpleEmbeddedDoc
