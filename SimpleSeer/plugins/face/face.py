@@ -31,6 +31,8 @@ class FaceFeature
   represent: () =>
     "Face Detected at (" + @feature.get("x") + ", " + @feature.get("y") + ")"
     
+  tableOk: true
+    
   tableHeader: () =>
     ["Horizontal", "Vertical", "Height", "Width", "Color"]
     
