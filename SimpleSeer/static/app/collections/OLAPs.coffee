@@ -23,7 +23,8 @@ module.exports = class OLAPs extends Collection
   pause: (fId) =>
     @.paused = true
     control = $ "#realtimecontrol"
-    control.html "Realtime"
+    control.html "Paused"
+    control.attr "title", "Click to enter live mode"
     if !fId
       fId = @lastframe
     fDom = $('#frame img')
@@ -37,7 +38,8 @@ module.exports = class OLAPs extends Collection
   unpause: =>
     @.paused = false
     control = $ "#realtimecontrol"
-    control.html "Pause"
+    control.html "Live"
+    control.attr "title", "Click to pause"
     for obj in @.models
       interval = application.settings.poll_interval || 1
       tf = Math.round((new Date()).getTime() / 1000) - Math.ceil(application.charts.timeframe / interval)

@@ -1,6 +1,28 @@
+    <div class="subnav" id="search_bar">
+      <ul class="nav nav-pills">
+        <li class="state_toggle">
+          <a href="#" title="Click to pause" id="realtimecontrol">Live</a>
+        </li>
+        <li class="timespan_toggle">
+          <a href="#" title="Click to hide timespan controls"><i class="icon-time"></i></a>
+        </li>
+        <li class="time_controls">
+          <span class="subnav_content">
+            <label>From</label> <input type="text">
+            <label>To</label> <input type="text">
+          </span>
+        </li>
+        <li class="search_bar">
+          <span class="subnav_content">
+            <input type="text" placeholder="Search" class="search" style="width: 435px">
+            <input type="button" value="Go">
+          </span>
+        </li>
+      </ul>
+    </div>
 		<div id="messages"></div>
 		<div id="control-bar">
-			<button id="realtimecontrol" class="btn active" data-toggle="button">Pause</button>
+			<!-- <button id="realtimecontrol" class="btn active" data-toggle="button">Pause</button> -->
 			<div id="control-bar-realtime">
 				<input type="text" id="chart-interval">
 			</div>
