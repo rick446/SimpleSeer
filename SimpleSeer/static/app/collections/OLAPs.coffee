@@ -9,6 +9,19 @@ module.exports = class OLAPs extends Collection
   model: OLAP
   paused: false
   timeframe:60
+  
+  customCharts:
+    text: (d)->
+      color: d.chartInfo.color || 'blue'
+      value:0
+      template: _.template '<h1 style="color:{{ color }}">{{ value }}</h1>'
+      addPoint: (d) ->
+        @.value += d.y
+      setData: (d) ->
+        for o in d
+          @.value += o.y
+      render: (target) ->
+        target.html @.template {value:Math.round(@.value),color:@.color}
 
   onSuccess: (d1, d2) =>
     for me in d2
@@ -52,11 +65,3 @@ module.exports = class OLAPs extends Collection
   callFrame: (e) =>
     if e.point.config.id
       @.pause(e.point.config.id)
-
-  overPoint: (e) =>
-    for m in application.charts.models
-      point = m.view.chart.get e.target.id
-      if point
-        m.view.chart.tooltip.refresh point
-      else
-        m.view.chart.tooltip.hide()
