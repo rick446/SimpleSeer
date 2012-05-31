@@ -46,7 +46,11 @@ module.exports = class ChartView extends View
       id:d.frame_id
       events:
         click: application.charts.callFrame
-        mouseOver: application.charts.overPoint
+        mouseOver: @.overPoint
+
+  overPoint: (e) =>
+    for m in application.charts.models
+      m.view.chart.showTooltip e.target.id, m.view.chart
 
   _drawData: (data,reset) =>
     dd = []
@@ -58,35 +62,75 @@ module.exports = class ChartView extends View
         dd.push @_formatChartPoint d
       @.lastupdate = d.data[0]
       application.charts.lastframe = d.frame_id
-      @.chart.series[0].setData(dd)
+      #@.chart.series[0].setData(dd)
+      @.chart.setData(dd)
     else
-      series = @.chart.series[0]
+      #series = @.chart.series[0]
       for d in data
-        series.addPoint(@_formatChartPoint(d),true,true)
+        @.chart.addPoint(@_formatChartPoint(d),true,true)
+        #series.addPoint(@_formatChartPoint(d),true,true)
         @.lastupdate = d.data[0]
         application.charts.lastframe = d.frame_id
 
   _update: (data) =>
     @_drawData data.data.m
 
-  _formatDate: (dt) =>
-    dt = new Date(dt)
-    s = dt.getSeconds()
-    m = dt.getMinutes()
-    h = dt.getHours()
-    if s < 10
-      s = '0' + String(s)
-    if m < 10
-      m = '0' + String(m)
-    if h < 10
-      h = '0' + String(h)
-    return  h + ':' + m + ':' + s
-
   drawChart: (data) =>
     renderData = @getRenderData()
-    @.chart = new Highcharts.Chart
+    @.chart = @.chartInit renderData
+    application.socket.on "message:OLAP/#{renderData.name}/", @_update
+    application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
+    return
+
+  render: =>
+    super()
+    $('#chart-container').append @.$el
+    @update null,null,true
+    this
+
+  chartInit: (cd) ->
+    if cd.chartInfo.name.toLowerCase() in ['line','pie','spline','areaspline']
+      _l = 'highchart'
+      _c = @_dhc cd
+    else
+      _l = 'custom'
+      _c = @_dcc cd
+    lib:_l
+    _c:_c
+    type:cd.chartInfo.name.toLowerCase()
+    addPoint: (d) =>
+      if @.chart.lib == 'highchart'
+        series = @.chart._c.series[0]
+        series.addPoint(d,true,true)
+      else
+        @.chart._c.addPoint(d)
+        @.chart._c.render($('#'+@.anchorId))
+
+    setData: (d) ->
+      if @.lib == 'highchart'
+        @._c.series[0].setData(d)
+      else
+        @._c.setData(d)
+
+    showTooltip: (id,me) =>
+      if me.lib == 'highchart'
+        point = me._c.get id
+        if point
+          me._c.tooltip.refresh point
+        else
+          me._c.tooltip.hide()
+    hideTooltip:->
+      if me.lib == 'highchart'
+        me._c.tooltip.hide()
+
+  _dcc: (data) =>
+    return new application.charts.customCharts[data.chartInfo.name] data
+
+  _dhc: (data) =>
+    renderData = data
+    chart = new Highcharts.Chart
       chart:
-        renderTo: @.anchorId
+        renderTo: data.id
         type: renderData.chartInfo.name.toLowerCase()
         height: renderData.chartInfo.height || '150'
         #animation: false
@@ -106,7 +150,7 @@ module.exports = class ChartView extends View
         data:[]
         allowPointSelect: true
         shadow:false
-        color:renderData.chartInfo.color
+        color:renderData.chartInfo.color || 'blue'
         marker:
           enabled: true
           radius: 1
@@ -130,13 +174,4 @@ module.exports = class ChartView extends View
           text: ''
         min:renderData.chartInfo.min || 0
         max:renderData.chartInfo.max || 100
-
-    application.socket.on "message:OLAP/#{renderData.name}/", @_update
-    application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
-    return
-
-  render: =>
-    super()
-    $('#chart-container').append @.$el
-    @update null,null,true
-    this
+    return chart
