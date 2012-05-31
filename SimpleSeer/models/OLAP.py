@@ -137,7 +137,10 @@ class OLAP(SimpleDoc, mongoengine.Document):
         if (self.allow) and (len(resultSet['data']) > self.allow):
             of = OLAPFactory()
             o = of.fromBigOLAP(self, resultSet)
+            resultSet = o.execute()
             self = o
+            print self.name
+            
         
         # Create and return the chart
         c = Chart()
@@ -208,7 +211,6 @@ class OLAPFactory:
         # Given a large OLAP object (returning too many records), return one with a descriptive transform to aggregate data
         # Assumes existing resultset provided, use that for computing size of object
         
-        # TODO: What is python to copy object?
         o = olap
         
         if (len(resultSet['data']) > o.allow):
@@ -231,7 +233,7 @@ class OLAPFactory:
             o = self.makeOLAP(o.queryInfo, o.descInfo, o.transInfo, o.chartInfo)
         
             o.save()
-        
+            
         return o
     
     def makeOLAP(self, queryInfo = dict(), descInfo = dict(), transInfo = dict(), chartInfo = dict()):
@@ -242,8 +244,8 @@ class OLAPFactory:
         o.transInfo = self.makeTrans(transInfo)
         o.chartInfo = self.makeChart(chartInfo)
         
-        # TODO: Need to name this more intelligently
-        o.name = 'The Incredible New OLAP ' + str(gmtime())
+        o.name = o.queryInfo['queryType'] + o.descInfo['formula'] + str(o.descInfo['window'])
+        print 'name in makeOLAP: ' + o.name
         
         return o
     
@@ -299,27 +301,35 @@ class OLAPFactory:
     def calcInterval(self, dataSet, allow):
         xvals, rest = np.hsplit(np.array(dataSet), [1])
         
-        # Total number of points
-        numPoints = len(xvals)
-        # How many times more points than we are allowed
-        scalePoints = numPoints / allow       
-        
-        # Time range for those points
+        # Time range for the points
         rangePoints = xvals[-1] - xvals[0]
-        # How many seconds need to be combined to meet goal
-        scaleRange = rangePoints / scalePoints
+        log.info('time range: ' + str(rangePoints))
+        
+        # Find new interval
+        scaleRange = rangePoints / allow
+        log.info('scale: ' + str(scaleRange))
+        
+        scaleRange = round(scaleRange)
+        # TODO: This is better solved by ensuring time interval only covers times with data
+        if (scaleRange < 1): scaleRange = 1
+        
+        scaleRange = int(scaleRange)
         
         # Round that up to the nearest round unit of time
-        #if scaleRange < 60: return 60
-        #elif scaleRange < 3600: return 3600
-        #elif scaleRange < 86400: return 86400
-        #elif scaleRange < 604800: return 604800
-        #else: return scaleRange
+        if scaleRange < 5: return 5
+        elif scaleRange < 10: return 10 # 10 seconds
+        elif scaleRange < 15: return 15 # 15 seconds
+        elif scaleRange < 60: return 60 # 1 minute
+        elif scaleRange < 300: return 300 # 5 minutes
+        elif scaleRange < 600: return 600 # 10 minutes
+        elif scaleRange < 900: return 900 # 15 minutes
+        elif scaleRange < 3600: return 3600 # 1 hour
+        elif scaleRange < 21600: return 21600 # 6 hours
+        elif scaleRange < 86400: return 86400 # 1 day
+        elif scaleRange < 604800: return 604800 # 1 week
+        else: return scaleRange
     	
-        return int(scaleRange[0])
-
-        
-                
+        return scaleRange
         	
 class Chart:
     # Takes the data and puts it in a format for charting
@@ -466,6 +476,10 @@ class DescriptiveStatistic:
         if (not self._descInfo.has_key('trim')) or (self._descInfo['trim'] == 1):
             dataSet = self.trimData(dataSet, groupBy)
             
+        if (len(dataSet) == 0):
+            log.warn('Dataset trimmed to nothing')
+            return dataSet
+            
         # Group the data into bins
         [binSet, bins] = self.binData(dataSet, groupBy)
         
@@ -484,7 +498,7 @@ class DescriptiveStatistic:
                 means.append(0)
                 objectids.append([None, None, None, None])
 
-        log.info(objectids)
+        #log.info(objectids)
         objs = np.array(objectids).reshape(numBins, 4).tolist()
         
         # Replace the old time (x) values with the bin value    
