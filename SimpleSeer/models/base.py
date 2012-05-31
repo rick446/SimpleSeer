@@ -11,6 +11,7 @@ log = logging.getLogger(__name__)
 
 class SimpleDoc(object):
     _jsonignore = [None]
+    meta=dict(auto_create_index=False)
     
     
     def __getstate__(self):  
