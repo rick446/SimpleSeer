@@ -1,5 +1,5 @@
 Model = require "./model"
-Feature = require "./feature"
+Feature = require "models/feature"
 FeatureSet = require "../collections/featureset"
 
 

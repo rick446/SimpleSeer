@@ -31,7 +31,7 @@ class FaceFeature
   represent: () =>
     "Face Detected!"
         
-plugin this, face:FaceFeature
+plugin this, FaceFeature:FaceFeature
 '''
 
   
