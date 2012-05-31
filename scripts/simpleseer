@@ -43,6 +43,9 @@ def main():
 def run_core(session):
     from SimpleSeer.SimpleSeer import SimpleSeer
     import Pyro4
+    from SimpleSeer import models as M
+    if session.mongo.is_slave:
+        M.base.SimpleDoc.meta['auto_create_index'] = False
 
 
     seer = SimpleSeer()
@@ -56,6 +59,9 @@ def run_web(session):
     init_gevent_subprocess()
     disable_inprocess_seer()
     from SimpleSeer.Web import WebServer, make_app
+    from SimpleSeer import models as M
+    if session.mongo.is_slave:
+        M.base.SimpleDoc.meta['auto_create_index'] = False
     web = WebServer(make_app())
     web.run_gevent_server()
 
@@ -63,6 +69,9 @@ def run_broker(session):
     init_gevent_subprocess()
     disable_inprocess_seer()
     from SimpleSeer.broker import PubSubBroker
+    from SimpleSeer import models as M
+    if session.mongo.is_slave:
+        M.base.SimpleDoc.meta['auto_create_index'] = False
     psb = PubSubBroker(session.pub_uri, session.sub_uri)
     psb.start()
     psb.join()
@@ -70,6 +79,8 @@ def run_broker(session):
 def run_scrubber(session):
     disable_inprocess_seer()
     from SimpleSeer import models as M
+    if session.mongo.is_slave:
+        M.base.SimpleDoc.meta['auto_create_index'] = False
     
     log = logging.getLogger(__name__)
     retention = session.retention
@@ -92,6 +103,9 @@ def run_shell(session):
     from IPython.config.loader import Config
     from IPython.frontend.terminal.embed import InteractiveShellEmbed
     from SimpleSeer.service import SeerProxy2
+    from SimpleSeer import models as M
+    if session.mongo.is_slave:
+        M.base.SimpleDoc.meta['auto_create_index'] = False
     banner = '''\nRunning the SimpleSeer interactive shell.\n'''
     exit_msg = '\n... [Exiting the SimpleSeer interactive shell] ...\n'
     shell= InteractiveShellEmbed(
@@ -103,6 +117,9 @@ def run_notebook(session):
     disable_inprocess_seer()
     from IPython.frontend.html.notebook import notebookapp
     from IPython.frontend.html.notebook import kernelmanager
+    from SimpleSeer import models as M
+    if session.mongo.is_slave:
+        M.base.SimpleDoc.meta['auto_create_index'] = False
 
     kernelmanager.MappingKernelManager.first_beat=30.0
     app = notebookapp.NotebookApp.instance()
