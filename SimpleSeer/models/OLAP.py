@@ -16,113 +16,96 @@ from SimpleSeer import validators as V
 from .base import SimpleDoc
 from .Inspection import Inspection
 from .Result import Result
+from .Measurement import Measurement
 
 log = logging.getLogger(__name__)
 
 
+#################################
+# name: Name of the OLAP object
+# queryInfo: configuration used to construct ResultSet
+# descInfo: configuration for the Descriptive statistic processing
+# chartInfo: configuration for the chart to be displayed
+# transInfo: configuration for final data transforms (normalize, etc)
+#################################
+
 class OLAPSchema(fes.Schema):
-    name = fev.UnicodeString(not_empty=True)
-    queryInfo = V.JSON(not_empty=True)
-    descInfo = V.JSON(if_empty=None, if_missing=None)
+    name = fev.UnicodeString(not_empty=True)            
+    queryInfo = V.JSON(not_empty=True)                  
+    descInfo = V.JSON(if_empty=None, if_missing=None)   
     chartInfo = V.JSON(not_empty=True)
-    allow = fev.Int(if_missing=500)
-    aggregate = fev.OneOf(['count', 'median', 'sum'], if_missing='median')
+    transInfo = V.JSON(if_empty=None, if_missing=None)
+    
+    
+#################################
+# queryType: defines the type of objects to be queries (inspections, measurements, results
+# TODO: queryType not implemented
+# name: name of the object to lookup (object type defined by queryType)
+# since: show only results with timestamp strictly greater than this time
+# limit: limit the results returned to this number (by default, these are ordered by capture time)
+# allow: number of records after which triggering automatic aggregation: THIS WILL CHANGE SOON
+# aggregate: the descriptive statistic to use for the automatic aggregation: THIS WILL CHANGE SOON 
+#################################
   
 class QueryInfoSchema(fes.Schema):
+    queryType = fev.OneOf(['inspection', 'measurement'], if_missing='inspection')
     name = fev.UnicodeString(not_empty = True)
     since = V.DateTime(if_empty=0, if_missing=None)
-    
+    limit = fev.Int(if_missing=None)
+    allow = fev.Int(if_missing=None)
+    aggregate = fev.OneOf(['moving', 'mean', 'median', 'mode', 'var', 'std', 'max', 'min', 'first', 'last', 'uq', 'lq'], if_missing=None)
+
+
+#################################
+# formula: the descriptive statistic to apply
+# window: the time interval for grouping for the statistic, expressed in epoch seconds
+# EXCEPTION: window for moving average currently does number of records, not time interval
+# partial: how to handle results from incomplete time intervals (e.g., new data 30 seconds into a one minute interval)
+# TODO: partial not yet implemented.  Currently just drops partial
+#################################
+
 class DescInfoSchema(fes.Schema):
     formula = fev.OneOf(['moving', 'mean', 'median', 'mode', 'var', 'std', 'max', 'min', 'first', 'last', 'uq', 'lq'], if_missing=None)
-    window = fev.Int(if_missing=None)
+    window = fev.Int(if_missing=60)
+    partial = fev.OneOf(['drop', 'raw', 'predict'], if_missing='drop')
     
+    
+#################################
+# norm: Normalize the resulting input to [0, 1], boolean vaue
+# devFromMedian: report results as number of standard deviations from median value, boolean value
+# devFromBase: report results as number of standard deviations frmo a specified value, boolean value
+# base: the base value used with devFromBase, number
+#################################
+
 class TransformSchema(fes.Schema):
     norm = fev.Int(if_missing=0)
     devFromMedian = fev.Int(if_missing=0)
     devFromBase = fev.Int(if_missing=0)
     base = fev.Int(if_missing=0)
 
+
+#################################
+# chartType: the style of chart to draw (e.g., bar, pie, etc)
+# chartColor: the color of the lines in the chart
+# TODO, color should maybe be validated to a hex string or web color
+#################################
+
 class ChartInfoSchema(fes.Schema):
     chartType = fev.OneOf(['line', 'bar', 'pie', 'spline', 'area', 'areaspline','column','scatter'])
     chartColor = fev.UnicodeString(if_empty="")
-    #TODO, this should maybe be validated to a hex string or web color
 
-class RealtimeOLAP:
-
-    def realtime(self, res):
-        olaps = OLAP.objects
-        for o in olaps:
-            
-            log.info('checking ' + o.name)
-            # First, check for entries that just want the raw data
-            # (If no descInfo is set or if descInfo lacks a formula field)
-            if (o.descInfo is None) or (not o.descInfo.has_key('formula')):
-                log.info('Send raw data for OLAP ' + o.name)
-                r = ResultSet()
-                rset = r.resultToResultSet(res)
-                # log.info(rset['data'])
-                self.sendMessage(o, rset['data'])
-
-            elif o.descInfo['formula'] == 'moving':
-                # Special case for the moving average
-                # TODO: This goes through the unnecessary step of putting together chart params.  
-                # Could optimize by just doing data steps
-                log.info('Send moving average for OLAP ' + o.name)
-                
-                o.queryInfo['limit'] = o.descInfo['window']
-                rset = o.execute()
-                # log.info(rset['data'])
-                self.sendMessage(o, rset['data'])
-                
-            else:
-                # Trigger a descriptive if the previous record was on the other side of a group by window/interval
-                window = o.descInfo['window']
-                thisTime = calendar.timegm(res.capturetime.timetuple())
-                previousTime = self.lastResult()
-                border = thisTime - (thisTime % window)
-                
-                if (previousTime < border):
-                    # This does the unnecessary step of creating chart info.  Could optimize this.
-                    log.info('Sending descriptive for ' + o.name)
-                    o.descInfo['trim'] = 0
-                    rset = o.execute(sincetime = border - window)
-                    # log.info(rset['data'])
-                    self.sendMessage(o, rset['data'])
-                else:
-                    log.info(o.name + ' declined update')
-                    
-                
-    def lastResult(self):
-        # Show the timestamp of the last entry in the result table
-        rs = Result.objects.order_by('-capturetime')
-        return calendar.timegm(rs[0].capturetime.timetuple())
-
-    def sendMessage(self, o, data):
-        log.info(len(data))
-        msgdata = [dict(
-            id = str(o.id),
-            data = d[0:2],
-            inspection_id =  str(d[2]),
-            frame_id = str(d[3]),
-            measurement_id= str(d[4]),
-            result_id= str(d[5])
-        ) for d in data]
-        
-        # Channel naming: OLAP/olap_name
-        olapName = 'OLAP/' + utf8convert(o.name) + '/'
-        ChannelManager().publish(olapName, dict(u='data', m=msgdata))
         
 
 class OLAP(SimpleDoc, mongoengine.Document):
-    # General flow designed for:
-    # - One or more Queries to retrieve data from database
-    # - Zero or more DescriptiveStatistics, computed from Queries
-    # - One or more Chart, with the resuls from Cube or InferentialStats
-    #
-    # This class will handle most of the processing rather than 
-    # Stepping through these manually.  Put a query string in one
-    # end and the configuration and data for a chart will pop out 
-    # the other end.
+    # Basic OLAP setup:
+    # - One Query to retrieve data from database
+    # - One DescriptiveStatistic, computed from Queries
+    # - Check if data set too large.  If so, move to different OLAP with aggregation
+    # - Transform/normalize the data if necessary
+    # - One Chart constructed from data provided
+    
+    
+    # TODO: Have some inconsistent use of globals to clean up in here
 
     name = mongoengine.StringField()
     queryInfo = mongoengine.DictField()
@@ -136,109 +119,228 @@ class OLAP(SimpleDoc, mongoengine.Document):
         return "<OLAP %s>" % self.name
         
     def execute(self, sincetime = None, beforetime = None, limitresults = None):
-        r = ResultSet()
-        
-        # Process configuration parameters
-        queryinfo = self.queryInfo.copy()
-        queryinfo['since'] = self.calcSince(sincetime)
-        queryinfo['before'] = self.calcBefore(beforetime)
-        queryinfo['limit'] = self.calcLimit(limitresults)
-        if not queryinfo.has_key('allow'): queryinfo['allow'] = queryinfo['limit']
-        if not queryinfo.has_key('aggregate'): queryinfo['aggregate'] = 'median'
-        
         
         # Get the resultset
+        queryinfo = self.queryInfo.copy()
+        queryinfo = self.checkConfig(queryinfo, sincetime, beforetime, limitresults)
+        
+        r = ResultSet()
         resultSet = r.execute(queryinfo)
         
         # Check if any descriptive processing (and any data to process)
         if (self.descInfo) and (len(resultSet['data']) > 0):
             d = DescriptiveStatistic()
             resultSet = d.execute(resultSet, self.descInfo)
-            
-        # Also an implicit descriptive that it should not have more than 500 results per chart
-        # If exceeded, aggregate
-        if (len(resultSet['data']) > queryinfo['allow']):
-            resultSet = self.aggregate(resultSet, queryinfo['allow'], queryinfo['aggregate'])
         
+        
+        # Also an implicit descriptive if too many results per chart
+        # If exceeded, aggregate
+        # Hard code in a default allow for backward compatibility
+        if not self.allow: self.allow = 900
+        if (len(resultSet['data']) > self.allow):
+            of = OLAPFactory()
+            self = of.fromBigOLAP(self, resultSet)
+            
+            # Redo the descriptive with the new aggregation
+            d = DescriptiveStatistic()
+            resultSet = d.execute(resultSet, self.descInfo)
+            
+        #TODO: Re-integrate transformations here
         
         # Create and return the chart
         c = Chart()
-        chartSpec = c.createChart(resultSet, self.chartInfo)
+        chartSpec = c.createChart(resultSet, self.chartInfo, self.name)
         return chartSpec
         
         
+    def checkConfig(self, queryInfo, sincetime, beforetime, limitresults):
+        queryInfo['since'] = self.calcSince(queryInfo, sincetime)
+        queryInfo['before'] = self.calcBefore(queryInfo, beforetime)
+        queryInfo['limit'] = self.calcLimit(queryInfo, limitresults)
+        if not queryInfo.has_key('allow'): queryInfo['allow'] = queryInfo['limit']
+        if not queryInfo.has_key('aggregate'): queryInfo['aggregate'] = 'median'
+        if not queryInfo.has_key('queryType'): queryInfo['queryType'] = 'inspection'
         
-    def aggregate(self, resultSet, allow, aggregate):
-        # Find how much to cluster 
-        interval = self.calcInterval(resultSet['data'], allow)
+        return queryInfo
         
-        log.info('Aggregating with ' + aggregate + ' interval ' + str(allow))
-        
-        # Create a dummy descriptive stat to aggregate
-        d = DescriptiveStatistic()
-        dummyDescInfo = dict()
-        dummyDescInfo['formula'] = aggregate
-        dummyDescInfo['window'] = interval 
-        return d.execute(resultSet, dummyDescInfo)
-        
-        
-    def calcLimit(self, limit):
+    def calcLimit(self, queryInfo, limit):
         # If provided a limit, always use that limit
         # Else, if defined in OLAP, use that limit
-        # Otherwise, use a default of 500
+        # Otherwise, use a default of None
         if limit:
 			return limit
-        elif self.queryInfo.has_key('limit'):
-            return self.queryInfo['limit']
+        elif queryInfo.has_key('limit'):
+            return queryInfo['limit']
         else:
-			return 500
+			return None
         
-    def calcSince(self, since):
+        
+    def calcSince(self, queryInfo, since):
         # If provided a time, always use that time
         # Else, if defined in OLAP, use that since time
         # Otherwise, use None
         if since:
 			return since
-        elif self.queryInfo.has_key('since'):
-            return self.queryInfo['since'] 
+        elif queryInfo.has_key('since'):
+            return queryInfo['since'] 
         else:
             return None
 
 
-    def calcBefore(self, before):
+    def calcBefore(self, queryInfo, before):
         # If provided a time, always use that time
         # Else, if defined in OLAP, use that since time
         # Otherwise, use None
         if before:
 			return before
-        elif self.queryInfo.has_key('before'):
-            return self.queryInfo['before'] 
+        elif queryInfo.has_key('before'):
+            return queryInfo['before'] 
         else:
             return None
 
         
+        
+class OLAPFactory:
+    # TODO: Not all config parameters set here yet
+    # TODO: Make this more predictive.  Right now I'm just going to hard code a bunch of results
+    
+    def fromObject(self, obj):
+        # Create an OLAP object from another query-able object
+        # TODO: Need to add some more intelligence to this:
+        
+        queryinfo = dict()
+        queryinfo['queryType'] = type(obj).lower()
+        
+        return self.makeOLAP(queryInfo = queryinfo)
+        
+    def fromBigOLAP(self, olap, resultSet):
+        # Given a large OLAP object (returning too many records), return one with a descriptive transform to aggregate data
+        # Assumes existing resultset provided, use that for computing size of object
+        
+        # TODO: this will clobber the aggregation function for moving average
+        
+        o = olap
+        
+        if (len(resultSet['data']) > o.allow):
+            # Find an new appropriate level for aggregation
+            interval = self.calcInterval(resultSet['data'], o.allow)
+            
+            # Define the aggregation function
+            if (o.aggregate):
+                agg = o.aggregate
+            elif (o.descInfo.has_key('formula')):
+                # If we are already using a descriptive, preserve it
+                agg = o.descInfo['formula']
+            else:
+                agg = 'median'
+            
+            o.descInfo['formula'] = agg
+            o.descInfo['window'] = interval
+                
+            # Make sure the rest of the setup is properly initialized
+            o = self.makeOLAP(o.queryInfo, o.descInfo, o.transInfo, o.chartInfo)
+        
+            similar = OLAP.objects.filter(name=o.name)
+            if (len(similar) == 0):
+                log.info('made a new olap for aggregation: ' + o.name)
+                o.save()
+            else:
+                log.info('switching to olap: ' + o.name)
+                o = similar[0]
+            
+        return o
+    
+    def makeOLAP(self, queryInfo = dict(), descInfo = dict(), transInfo = dict(), chartInfo = dict()):
+    
+        # Makes a generic OLAP with default values
+        # If any values are provided as parameters, keeps those and fills in the rest
+    
+        o = OLAP()
+        o.queryInfo = self.makeQuery(queryInfo)
+        o.descInfo = self.makeDesc(descInfo)
+        o.transInfo = self.makeTrans(transInfo)
+        o.chartInfo = self.makeChart(chartInfo)
+        
+        o.name = o.queryInfo['queryType'] + o.descInfo['formula'] + str(o.descInfo['window'])
+        if not o.allow: o.allow = 900
+        if not o.aggregate: o.aggregate = 'median'
+        
+        return o
+    
+    def makeQuery(self, queryInfo):
+        # Hard code default to querying Results
+        if not queryInfo.has_key('queryType'): queryInfo['queryType'] = 'inspection'
+        
+        # Hard code to query the first object of type queryTYpe
+        if not queryInfo.has_key('name'):
+            if queryInfo['queryType'] == 'measurement':
+                queryInfo['id'] = Measurement.objects[0].id
+            elif queryInfo['queryType'] == 'inspection':
+                queryInfo['id'] = Inspection.objects[0].id 
+            else:
+                log.warn('Unknown query type provided to OLAP Factory: ' + queryInfo['queryType'])
+        
+        # Limit of 1000
+        if not queryInfo.has_key('limit'): queryInfo['limit'] = None
+        
+        return queryInfo
+        
+    def makeDesc(self, descInfo):
+        # By default, assume that they want a median, grouped by minute, dropping partials
+        if not descInfo.has_key('formula'): descInfo['formula'] = 'median'
+        if not descInfo.has_key('window'): descInfo['window'] = 60
+        if not descInfo.has_key('partial'): descInfo['partial'] = 'drop'
+        
+        return descInfo
+        
+    def makeTrans(self, transInfo):
+        # Assume no transformations
+        if not transInfo.has_key('norm'): transInfo['norm'] = 0
+        if not transInfo.has_key('devFromMedian'): transInfo['devFromMedian'] = 0
+        if not transInfo.has_key('devFromBase'): transInfo['devFromBase'] = 0
+        if not transInfo.has_key('base'): transInfo['base'] = 0
+        
+        return transInfo
+
+    def makeChart(self, chartInfo):
+        if not chartInfo.has_key('chartcolor'): chartInfo['chartColor'] = ''
+        if not chartInfo.has_key('chartType'): chartInfo['chartType'] = 'line'
+        
+        return chartInfo
+
     def calcInterval(self, dataSet, allow):
         xvals, rest = np.hsplit(np.array(dataSet), [1])
         
-        # Total number of points
-        numPoints = len(xvals)
-        # How many times more points than we are allowed
-        scalePoints = numPoints / allow       
-        
-        # Time range for those points
+        # Time range for the points
         rangePoints = xvals[-1] - xvals[0]
-        # How many seconds need to be combined to meet goal
-        scaleRange = rangePoints / scalePoints
+        log.info('time range: ' + str(rangePoints))
+        
+        # Find new interval
+        scaleRange = rangePoints / allow
+        log.info('scale: ' + str(scaleRange))
+        
+        scaleRange = round(scaleRange)
+        if (scaleRange < 1): scaleRange = 1
+        
+        scaleRange = int(scaleRange)
         
         # Round that up to the nearest round unit of time
-        #if scaleRange < 60: return 60
-        #elif scaleRange < 3600: return 3600
-        #elif scaleRange < 86400: return 86400
-        #elif scaleRange < 604800: return 604800
-        #else: return scaleRange
+        if scaleRange < 5: return 5
+        elif scaleRange < 10: return 10 # 10 seconds
+        elif scaleRange < 15: return 15 # 15 seconds
+        elif scaleRange < 60: return 60 # 1 minute
+        elif scaleRange < 300: return 300 # 5 minutes
+        elif scaleRange < 600: return 600 # 10 minutes
+        elif scaleRange < 900: return 900 # 15 minutes
+        elif scaleRange < 3600: return 3600 # 1 hour
+        elif scaleRange < 7200: return 7200 # 2 hours
+        elif scaleRange < 14400: return 14400 # 4 hours
+        elif scaleRange < 21600: return 21600 # 6 hours
+        elif scaleRange < 86400: return 86400 # 1 day
+        elif scaleRange < 604800: return 604800 # 1 week
+        else: return scaleRange
     	
-        return int(scaleRange[0])
-            
+        return scaleRange
         	
 class Chart:
     # Takes the data and puts it in a format for charting
@@ -265,18 +367,30 @@ class Chart:
 		return ranges
     
     
-    def createChart(self, resultSet, chartInfo):
+    def createChart(self, resultSet, chartInfo, olapName = ''):
         # This function will change to handle the different formats
         # required for different charts.  For now, just assume nice
         # graphs of (x,y) coordiantes
         
         chartRange = self.dataRange(resultSet['data'])
         
+        # This is for backward compatibility
+        if chartInfo.has_key('name'):
+            name = chartInfo['name']
+        else:
+            name = chartInfo['chartType']
+            
+        if chartInfo.has_key('color'):
+            color = chartInfo['color']
+        else:
+            color = chartInfo['chartColor']
+        
         chartData = { 'chartType': chartInfo['name'],
                       'chartColor': chartInfo['color'],
                       'labels': resultSet['labels'],
                       'range': chartRange,
-                      'data': resultSet['data'] }
+                      'data': resultSet['data'],
+                      'olap': olapName }
         
         return chartData
 
@@ -385,6 +499,10 @@ class DescriptiveStatistic:
         if (not self._descInfo.has_key('trim')) or (self._descInfo['trim'] == 1):
             dataSet = self.trimData(dataSet, groupBy)
             
+        if (len(dataSet) == 0):
+            log.warn('Dataset trimmed to nothing')
+            return dataSet
+            
         # Group the data into bins
         [binSet, bins] = self.binData(dataSet, groupBy)
         
@@ -403,7 +521,7 @@ class DescriptiveStatistic:
                 means.append(0)
                 objectids.append([None, None, None, None])
 
-        log.info(objectids)
+        #log.info(objectids)
         objs = np.array(objectids).reshape(numBins, 4).tolist()
         
         # Replace the old time (x) values with the bin value    
@@ -464,6 +582,68 @@ class DescriptiveStatistic:
         elif groupBy < 604800: return str(groupBy / 86400) + ' Day(s)'
         else: return str(groupBy / 604800) + ' Week(s)'
 
+
+
+
+class RealtimeOLAP:
+
+    def realtime(self, res):
+        olaps = OLAP.objects
+        for o in olaps:
+            
+            # First, check for entries that just want the raw data
+            # (If no descInfo is set or if descInfo lacks a formula field)
+            if (o.descInfo is None) or (not o.descInfo.has_key('formula')):
+                r = ResultSet()
+                rset = r.resultToResultSet(res)
+                self.sendMessage(o, rset['data'])
+
+            elif o.descInfo['formula'] == 'moving':
+                # Special case for the moving average
+                # TODO: This goes through the unnecessary step of putting together chart params.  
+                # Could optimize by just doing data steps
+                
+                o.queryInfo['limit'] = o.descInfo['window']
+                rset = o.execute()
+                self.sendMessage(o, rset['data'])
+                
+            else:
+                # Trigger a descriptive if the previous record was on the other side of a group by window/interval
+                window = o.descInfo['window']
+                thisTime = calendar.timegm(res.capturetime.timetuple())
+                previousTime = self.lastResult()
+                border = thisTime - (thisTime % window)
+                
+                if (previousTime < border):
+                    # This does the unnecessary step of creating chart info.  Could optimize this.
+                    # log.info('Sending descriptive for ' + o.name)
+                    o.descInfo['trim'] = 0
+                    rset = o.execute(sincetime = border - window)
+                    self.sendMessage(o, rset['data'])
+                    
+                
+    def lastResult(self):
+        # Show the timestamp of the last entry in the result table
+        rs = Result.objects.order_by('-capturetime')
+        return calendar.timegm(rs[0].capturetime.timetuple())
+
+    def sendMessage(self, o, data):
+        msgdata = [dict(
+            id = str(o.id),
+            data = d[0:2],
+            inspection_id =  str(d[2]),
+            frame_id = str(d[3]),
+            measurement_id= str(d[4]),
+            result_id= str(d[5])
+        ) for d in data]
+        
+        #log.info('pushing new data to ' + utf8convert(o.name) + ' _ ' + str(msgdata))
+        
+        # Channel naming: OLAP/olap_name
+        olapName = 'OLAP/' + utf8convert(o.name) + '/'
+        ChannelManager().publish(olapName, dict(u='data', m=msgdata))
+
+
         
 class ResultSet:    
     # Class to retrieve data from the database and add basic metadata
@@ -472,22 +652,33 @@ class ResultSet:
     def execute(self, queryInfo):
         # Execute the querystring, returning the results of the
         # query as a list
-        #
-        # Entering 'Motion' will do a predefined query to return
-        # inspection objects
-        #
-        # Other query handling deferred for another day.
-
-        insp = Inspection.objects.get(name=queryInfo['name'])
-        query = dict(inspection = insp.id)
         
+        
+        # TODO: Select from the right type of object, not all
+        if (queryInfo['queryType'] == 'inspection'):
+            obj = Inspection
+        elif (queryInfo['queryType'] == 'measurement'):
+            obj = Measurement
+        
+        query = dict()
+        if not queryInfo.has_key('id'):
+            insp = obj.objects.get(name=queryInfo['name'])
+            query[queryInfo['queryType']] = insp.id
+        else:
+            query[queryInfo['queryType']] = queryInfo['id']
+            
         if queryInfo['since']:
             query['capturetime__gt']= datetime.utcfromtimestamp(queryInfo['since'])
         if queryInfo['before']:
             query['capturetime__lt']= datetime.utcfromtimestamp(queryInfo['before'])
         
+        
+        # Only truncate if a limit was set
+        if (queryInfo['limit']):
+            rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['limit']])
+        else:
+            rs = list(Result.objects(**query).order_by('-capturetime'))
             
-        rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['limit']])
         
         # When performing some computations, require additional data
         if (len(rs) > 0) and (queryInfo.has_key('required')) and (len(rs) < queryInfo['required']):
@@ -516,9 +707,9 @@ class ResultSet:
         return dataset
     
     
-    def resultToResultSet(self, res):
+    def resultToResultSet(self, r):
         # Given a Result, format the Result like a one record ResultSet
-        outputVals = [[calendar.timegm(res.capturetime.timetuple()), res.numeric, res.inspection, res.frame, res.measurement, res.id]]
+        outputVals = [[calendar.timegm(r.capturetime.timetuple()) + r.capturetime.time().microsecond / 1000000.0, r.numeric, r.inspection, r.frame, r.measurement, r.id]]
         dataset = { 'startTime': outputVals[0][0],
                     'endTime': outputVals[0][0],
                     'timestamp': gmtime(),
@@ -526,6 +717,7 @@ class ResultSet:
                     'data': outputVals}
         
         return dataset 
+
 
 
 class Transform:

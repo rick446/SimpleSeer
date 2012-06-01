@@ -2,6 +2,10 @@ body {
   padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
 }
 
+.hide {
+  display:none !important;
+}
+
 .navbar-inner {
   padding-top: 2px;
   height: 46px;
@@ -30,6 +34,10 @@ body {
   border-radius: 8px;
 }
 
+#frame img {
+  width: 100%;
+}
+
 .graph {  
   height: 150px;
   background: #eee;
@@ -39,7 +47,6 @@ body {
   background: #333;
 }
 .graph-container {
-  height: 150px;
   margin-bottom: 40px;
 }
 
@@ -49,4 +56,13 @@ body {
 
 .btn .active {
   background: #6C6;
+}
+
+#loading_message{
+  text-align: center;
+  font-size: 1.2em;
+  position: fixed;
+  bottom: 0;
+  margin: 0 0 1em 1em;
+  opacity: .9;
 }

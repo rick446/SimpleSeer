@@ -53,14 +53,16 @@ Run all these commands from WITHIN the SimpleSeer directory:
 
 	sudo apt-get install python-dev python-setuptools python-pip libzmq-dev mongodb nodejs npm build-essential python-gevent libevent-dev supervisor ipython-notebook
 	sudo npm install -g brunch
-	pip install -r pip.requirements
-	python setup.py develop
+	sudo pip install -r pip.requirements
+	sudo easy_install coffeescript
+	sudo python setup.py develop
 	sudo mkdir /etc/simpleseer
 	sudo ln -s `pwd`/SimpleSeer/static/ /etc/simpleseer/static
 	sudo ln -s `pwd`/etc/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
 	sudo ln -s `pwd`/etc/simpleseer.cfg /etc/simpleseer.cfg
 	sudo ln -s `pwd`/etc/simpleseer-logging.cfg /etc/simpleseer-logging.cfg
-	sudo supervisorctl reload
+	sudo killall supervisord
+	sudo supervisord
 	sudo supervisorctl start seer-dev:
 
 

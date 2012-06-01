@@ -3,3 +3,5 @@
 *_log
 default.cfg
 SimpleSeer/static/public/*
+SimpleSeer.egg-info/*
+

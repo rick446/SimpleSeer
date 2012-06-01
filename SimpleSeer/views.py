@@ -56,7 +56,9 @@ def plugins():
                 result.append('(function(plugin){')
                 result.append(coffeescript.compile(cs, True))
                 result.append('}).call(require(%r), require("lib/plugin"));\n' % requirement)
-    return '\n'.join(result)
+    resp = make_response("\n".join(result), 200)
+    resp.headers['Content-Type'] = "text/javascript"
+    return resp
 
 @route('/test', methods=['GET', 'POST'])
 def test():
@@ -87,9 +89,10 @@ def lastframes():
     params = request.values.to_dict()
     frames = M.Frame.objects().order_by("-capturetime")
     if 'before' in params:
-        frames = frames.filter(capturetime__lt=datetime.fromtimestamp(int(params['before'])))
+        frames = frames.filter(capturetime__lte=datetime.fromtimestamp(int(params['before'])))
+    total_frames = frames.count()
     frames = frames.skip((int(params.get('page', 1))-1)*20).limit(20)
-    return list(frames)
+    return dict(frames=list(frames), total_frames=total_frames)
 
 #TODO, abstract this for layers and thumbnails        
 @route('/grid/imgfile/<frame_id>', methods=['GET'])
@@ -321,6 +324,13 @@ def measurement_results(self, **params):
 def ping():
     text = "pong"
     return {"text": text }
+    
+#todo: move settings to mongo, create model with save
+@route('/settings', methods=['GET', 'POST'])
+@util.jsonify
+def settings():
+    text = Session().get_config()
+    return {"settings": text }
 
 @route('/olap/<olap_name>', methods=['GET'])
 @util.jsonify
@@ -358,21 +368,6 @@ def olap_limit(olap_name, limit):
 
     return o.execute(limitresults=int(limit))
 
-@route('/plugin_js', methods=['GET', 'POST'])
-def plugin_js():
-    params = request.values.to_dict()
-
-    js = ''
-    for plugin in util.get_seer().plugins.keys():
-        path = util.get_seer().pluginpath + "/" + plugin
-        js += "//SimpleSeer plugin " + plugin + "\n\n"
-        for f in [file for file in os.listdir(path) if re.search("js$", file)]:
-            js += open(path + "/" + f).read()
-    js += "\n\n\n";
-
-    resp = make_response(js, 200)
-    resp.headers['Content-Type'] = "application/javascript"
-    return resp
 
 @route('/start', methods=['GET', 'POST'])
 def start():

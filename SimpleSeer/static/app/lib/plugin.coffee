@@ -7,6 +7,8 @@ module.exports = (cls, plugins) =>
     cls.getPlugin = (name) ->
       _plugins[name]
     cls.prototype.getPlugin = (name) ->
+      unless _plugins[name]?
+        return undefined
       Plugin = _plugins[name]
       new Plugin(this)
   for name, plugin of plugins

@@ -1,0 +1,19 @@
+<hr>
+<div class="row">
+  <div class="span2">
+    <a href="#frame/{{id}}"><img src="{{imgfile}}" class="thumbnail" width="140" height="105"></a>
+      <!-- <span class="label label-success">Pass</span> -->
+  </div>
+  <div class="span7">
+    <ul>
+        <li><b>Camera</b>: {{camera}}</li>
+        <li><b>Time</b>: {{capturetime}}</li>
+        {{#if features}}
+        <li><b>Features</b>:<ul>{{featuresummary features}}</ul></li>
+        {{/if}}
+    </ul>
+  </div>
+  <div class="span1">
+    <p><a href="#frame/{{id}}" class="btn">Detail</a></p>
+  </div>
+</div>

@@ -59,7 +59,7 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         self.featuretype = data.__class__.__name__
         
         for k in data.__dict__:
-            if self.featuredata_mask.has_key(k) or hasattr(self, k):
+            if self.featuredata_mask.has_key(k) or hasattr(self, k) or k[0] == "_":
                 continue
             value = getattr(data, k)
             #here we need to handle all the cases for odd bits of data, but

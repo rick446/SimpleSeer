@@ -8,20 +8,20 @@ module.exports = class ChartView extends View
   template: template
   lastupdate: 0
   lastframe: ''
-  x:0
   getRenderData: =>
     retVal = application.charts._byId[@.anchorId]
     if retVal
       return retVal.attributes
     return false
 
-  update: (frm, to, reset=false )=>
+  update: (frm, to, reset=true )=>
     if frm and to
       url = "/olap/Motion/since/"+frm+"/before/" + to
     else if frm
       url = "/olap/Motion/since/" + frm
     else
-      url = "/olap/Motion/limit/"+application.charts.timeframe
+      interval = application.settings.poll_interval || 1
+      url = "/olap/Motion/limit/"+Math.ceil(application.charts.timeframe / interval)
     $.getJSON(url, (data) =>
       @._drawDataLegacy data.data,reset
       $('.alert_error').remove()
@@ -41,14 +41,18 @@ module.exports = class ChartView extends View
   
   _formatChartPoint: (d) =>
     _point =
-      x: @x++
-      y: d.data[1]
-      z:@_formatDate(d.data[0]*1000)
-      marker:
-        enabled:false
+      y:d.data[1]
+      x:d.data[0]
       id:d.frame_id
       events:
         click: application.charts.callFrame
+        mouseOver: @.overPoint
+        select: application.charts.addFrame
+        unselect: application.charts.removeFrame
+
+  overPoint: (e) =>
+    for m in application.charts.models
+      m.view.chart.showTooltip e.target.id, m.view.chart
 
   _drawData: (data,reset) =>
     dd = []
@@ -60,37 +64,79 @@ module.exports = class ChartView extends View
         dd.push @_formatChartPoint d
       @.lastupdate = d.data[0]
       application.charts.lastframe = d.frame_id
-      @.chart.series[0].setData(dd)
+      #@.chart.series[0].setData(dd)
+      @.chart.setData(dd)
     else
-      series = @.chart.series[0]
+      #series = @.chart.series[0]
       for d in data
-        series.addPoint(@_formatChartPoint(d),true,true)
+        @.chart.addPoint(@_formatChartPoint(d),true,true)
+        #series.addPoint(@_formatChartPoint(d),true,true)
         @.lastupdate = d.data[0]
         application.charts.lastframe = d.frame_id
 
   _update: (data) =>
     @_drawData data.data.m
 
-  _formatDate: (dt) =>
-    dt = new Date(dt)
-    s = dt.getSeconds()
-    m = dt.getMinutes()
-    h = dt.getHours()
-    if s < 10
-      s = '0' + String(s)
-    if m < 10
-      m = '0' + String(m)
-    if h < 10
-      h = '0' + String(h)
-    return  h + ':' + m + ':' + s
-
   drawChart: (data) =>
     renderData = @getRenderData()
-    @.chart = new Highcharts.Chart
+    @.chart = @.chartInit renderData
+    application.socket.on "message:OLAP/#{renderData.name}/", @_update
+    application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
+    return
+
+  render: =>
+    super()
+    $('#chart-container').append @.$el
+    @update null,null,true
+    this
+
+  chartInit: (cd) ->
+    if cd.chartInfo.name.toLowerCase() in ['line','pie','spline','areaspline']
+      _l = 'highchart'
+      _c = @_dhc cd
+    else
+      _l = 'custom'
+      _c = @_dcc cd
+    lib:_l
+    _c:_c
+    type:cd.chartInfo.name.toLowerCase()
+    addPoint: (d) =>
+      if @.chart.lib == 'highchart'
+        series = @.chart._c.series[0]
+        series.addPoint(d,true,true)
+      else
+        @.chart._c.addPoint(d)
+        @.chart._c.render($('#'+@.anchorId))
+
+    setData: (d) =>
+      if @.chart.lib == 'highchart'
+        @.chart._c.series[0].setData(d)
+      else
+        @.chart._c.setData(d)
+        @.chart._c.render($('#'+@.anchorId))
+
+    showTooltip: (id,me) =>
+      if me.lib == 'highchart'
+        point = me._c.get id
+        if point
+          me._c.tooltip.refresh point
+        else
+          me._c.tooltip.hide()
+    hideTooltip:->
+      if me.lib == 'highchart'
+        me._c.tooltip.hide()
+
+  _dcc: (data) =>
+    return new application.charts.customCharts[data.chartInfo.name] data
+
+  _dhc: (data) =>
+    renderData = data
+    chart = new Highcharts.Chart
       chart:
-        renderTo: @.anchorId
+        renderTo: data.id
         type: renderData.chartInfo.name.toLowerCase()
-        animation: false
+        height: renderData.chartInfo.height || '150'
+        #animation: false
       title:
         text:null
       credits:
@@ -102,30 +148,33 @@ module.exports = class ChartView extends View
         series:
           stickyTracking: false
           lineWidth:2
-      series: [{name: renderData.name,data: [],shadow:false, color: renderData.chartInfo.color}]
+      series: [
+        name:renderData.name
+        data:[]
+        allowPointSelect: true
+        shadow:false
+        color:renderData.chartInfo.color || 'blue'
+        marker:
+          enabled: true
+          radius: 1
+        ]
       tooltip:
-        headerFormat:
-          ''
-        pointFormat:
-          '<small>{point.z}</small><br><b>{point.y}% movement</b>'
-      animation:
-        duration:
-          10
+        snap:100
+        crosshairs:true
+      #tooltip:
+      #  headerFormat:
+      #    ''
+      #  pointFormat:
+      #    '<small>{point.z}</small><br><b>{point.y}% movement</b>'
+      #animation:
+      #  duration:
+      #    1000
       xAxis:
-        labels:
-          enabled:false
+        type:
+          'datetime'
       yAxis:
         title:
           text: ''
-        min:0
-        max:100
-
-    application.socket.on "message:OLAP/#{renderData.name}/", @_update
-    application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
-    return
-
-  render: =>
-    super()
-    $('#chart-container').append @.$el
-    @update()
-    this
+        min:renderData.chartInfo.min || 0
+        max:renderData.chartInfo.max || 100
+    return chart
