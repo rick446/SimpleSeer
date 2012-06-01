@@ -46,7 +46,8 @@ class Lines(base.InspectionPlugin):
     canny = (50,100) #(cannyth1,cannyth2)
     threshold = 80
     gap = 10
-    length = (30,None) # min / max
+    maxL = int(sqrt((image.width*image.width) + (image.height*image.height)))
+    length = (30,maxL) # min / max
     angle = (None,None)
 
     retVal = []
@@ -74,7 +75,7 @@ class Lines(base.InspectionPlugin):
           angle[1] is not None ):
         fs = FeatureSet(f for f in fs if( f.angle()>=angle[0] and f.angle()<=angle[1]) ) # filter on the angles 
       if( length[1] is not None ): # we already know that we are greater than the min length
-        fs = FeatureSet(f for f is fs if( f.length() <= length[1] ) )
+        fs = FeatureSet(f for f in fs if( f.length() <= length[1] ) )
       fs.draw()
       for f in fs: # do the conversion from SCV featureset to SimpleSeer featureset
         ff = M.FrameFeature()

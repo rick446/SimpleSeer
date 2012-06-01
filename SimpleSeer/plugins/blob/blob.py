@@ -3,6 +3,9 @@ import numpy as np
 from SimpleSeer import models as M
 from SimpleSeer import util
 from SimpleSeer.plugins import base
+from SimpleSeer.base import jsonencode
+from SimpleCV.Color import *
+import json
 
 class Blob(base.InspectionPlugin):
 
@@ -11,7 +14,8 @@ class Blob(base.InspectionPlugin):
         yield 'models/inspection', '''
 class Blob
   constructor: (inspection) ->
-    @inspection = inspection
+    @inspection = inspectionb
+
   run: () =>
     console.log 'Running blob on', @inspection
 
@@ -19,7 +23,8 @@ plugin this, blob:Blob
 '''
 
     def __call__(self, image):
-        params = util.utf8convert(self.inspection.parameters)
+        params = util.utf8convert(json.loads(jsonencode(self.inspection.parameters)))
+        #params = self.inspection.parameters
 
         # okay I am going to gut this, so it will break stuff.
         # the new method allows the user to use one of the following methods
@@ -48,7 +53,6 @@ plugin this, blob:Blob
         #
         # If the user provides parameters for multiple of 
         # the above approaches we return None. 
-
         invert = False
         
         hue = None
@@ -58,7 +62,7 @@ plugin this, blob:Blob
         colorLocation = None
         doColor = False
         location = None
-        doFF = True 
+        doFF = False 
         thresh1 = None
         thresh2 = None
         
@@ -70,39 +74,40 @@ plugin this, blob:Blob
         
         #do the parsing for hue distance 
         if( params.has_key("hueLocation")): # I am assuming this is the (x,y) pos of a reference pixel
-            hueLoc = tuple(int(item) for item in params['hueLocation'].strip("()").split(","))
+            hueLoc = tuple(params['hueLocation'])
             del params["hueLocation"]
             hue = image[hueLoc[0],hueLoc[1]]
-            # hue = Color.BGRToHue(hue)
+            hsv = Color.hsv(hue)
+            hue = hsv[0]
             doHue = True
-        elif( params.hasKey("hue")):
+        elif( params.has_key("hue")):
             hue = int(params['hue'])
             del params["hue"]
             doHue = True
 
         if( params.has_key("colorLocation")): # I am assuming this is the (x,y) pos of a reference pixel
-            colorLoc = tuple(int(item) for item in params['colorLocation'].strip("()").split(","))
+            colorLoc = tuple(params['colorLocation'])
             color = image[colorLoc[0],colorLoc[1]]            
             del params["colorLocation"]
             doColor = True
-        elif( params.hasKey("color")):
-            color = params['color'].split(",")
+        elif( params.has_key("color")):
+            color = tuple(params['color'])
             del params["color"]
             doColor = True
 
         if( params.has_key("location")): # I am assuming this is the (x,y) pos of a reference pixel
-            location = tuple(int(item) for item in params['location'].strip("()").split(","))
+            location = tuple(params['location'])
             del params["location"]
             doFF = True
 
         #These are for fine grain control of flood fill
         #We can also use them to pick out colors using the createBinaryMask function. 
         if( params.has_key("thresh1") ):
-            thresh1 = tuple(int(item) for item in params['thresh1'].strip("()").split(","))
+            thresh1 = params['thresh1']
             del params["thresh1"]
 
         if( params.has_key("thresh2") ):
-            thresh1 = tuple(int(item) for item in params['thresh2'].strip("()").split(","))
+            thresh1 = tuple(params['thresh2'])
             del params["thresh2"]
 
 
@@ -132,7 +137,7 @@ plugin this, blob:Blob
             count = count + 1
         if( doColor ):
             count = count + 1
-
+        
         if( count > 1 ): # user gets to specify one operation - if they select two error out
             return []
         
@@ -151,7 +156,7 @@ plugin this, blob:Blob
             else:
                 mask = image.floodFillToMask(location,tolerance=thresh1)
         else: #vanilla binarize
-            mask = img.binarize(thresh=thresh,blocksize=blocksize,p=p)
+            mask = image.binarize(thresh=thresh,maxv=255,blocksize=blocksize,p=p)
         # SUGGEST ALSO USING CREATE BINARY MASK HERE 
         # WE COULD ALSO AUTOGEN MASK USING THE FIND BLOBS FROM PALLETTE IF YOU WANT TO GET FANCY
 
@@ -161,16 +166,22 @@ plugin this, blob:Blob
         # SUGGEST ADDING AN OPTIONAL DILATE / ERODE HERE
         
         blobs = image.findBlobsFromMask(mask,minsize=minsize,maxsize=maxsize)
-
         if not blobs:
             return []
 
         feats = []
+        
         for b in reversed(blobs): #change sort order to big->small
+            b.draw()
             ff = M.FrameFeature()
             b.image = image
             ff.setFeature(b)
             feats.append(ff)
+
+
+
+        if( params.has_key("saveFile") ):
+            image.save(params["saveFile"])
 
         return feats
 

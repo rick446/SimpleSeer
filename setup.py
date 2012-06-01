@@ -27,6 +27,7 @@ setup(name="SimpleSeer",
   motion=SimpleSeer.plugins.motion:Motion
   region=SimpleSeer.plugins.region:Region
   face=SimpleSeer.plugins.face:Face
+  line=SimpleSeer.plugins.lines:Lines 
 
   [seer.plugins.measurement]
   blob_length=SimpleSeer.plugins.blob:BlobLength
