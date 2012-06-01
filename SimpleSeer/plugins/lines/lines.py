@@ -40,7 +40,7 @@ class Lines(base.InspectionPlugin):
   gap = line gap 
   """
   def __call__(self, image):
-    params = util.utf8convert(json.loads(jsonencode(self.inspection.parameters)))    
+    params = util.utf8convert(self.inspection.parameters)    
     # It is just going to be easier to mask over 
     # all of the default params. 
     canny = (50,100) #(cannyth1,cannyth2)

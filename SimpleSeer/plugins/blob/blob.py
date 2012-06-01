@@ -24,7 +24,7 @@ plugin this, blob:Blob
 '''
 
     def __call__(self, image):
-        params = util.utf8convert(json.loads(jsonencode(self.inspection.parameters)))
+        params = util.utf8convert(self.inspection.parameters)
         #params = self.inspection.parameters
 
         # okay I am going to gut this, so it will break stuff.
