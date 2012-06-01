@@ -26,13 +26,14 @@ def jsonify(f):
 
 #cribbed from
 #http://stackoverflow.com/questions/1254454/fastest-way-to-convert-a-dicts-keys-values-from-unicode-to-str
+#note this casts all iterables to lists
 def utf8convert(data):
     if isinstance(data, basestring):
         return data.encode('utf-8')
     elif isinstance(data, collections.Mapping):
         return dict(map(utf8convert, data.iteritems()))
     elif isinstance(data, collections.Iterable):
-        return type(data)(map(utf8convert, data))
+        return list(map(utf8convert, data))
     else:
         return data
 
