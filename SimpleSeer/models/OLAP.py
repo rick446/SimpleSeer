@@ -142,7 +142,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
             self = of.fromBigOLAP(self, resultSet)
             
             # Redo the descriptive with the new aggregation
-            d = DescriptiveStatistic
+            d = DescriptiveStatistic()
             resultSet = d.execute(resultSet, self.descInfo)
             
         #TODO: Re-integrate transformations here
@@ -262,6 +262,8 @@ class OLAPFactory:
         o.chartInfo = self.makeChart(chartInfo)
         
         o.name = o.queryInfo['queryType'] + o.descInfo['formula'] + str(o.descInfo['window'])
+        if not o.allow: o.allow = 900
+        if not o.aggregate: o.aggregate = 'median'
         
         return o
     
@@ -280,10 +282,6 @@ class OLAPFactory:
         
         # Limit of 1000
         if not queryInfo.has_key('limit'): queryInfo['limit'] = None
-        # Allow 1000 before aggregating
-        if not queryInfo.has_key('allow'): queryInfo['allow'] = 900
-        # If aggregation needed, use median
-        if not queryInfo.has_key('aggregate'): queryInfo['aggregate'] = 'median'
         
         return queryInfo
         
