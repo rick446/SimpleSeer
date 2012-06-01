@@ -8,3 +8,9 @@ Handlebars.registerHelper 'epoch', (epoch) ->
     n.toString()
   
   (d.getMonth() + 1) + "/" + zp(d.getDate()) + " " + zp(d.getHours()) + ":" + zp(d.getMinutes()) + ":" + zp(d.getSeconds())
+  
+  
+Handlebars.registerHelper 'featuresummary', (featureset) ->
+  unless featureset?
+    return
+

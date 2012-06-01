@@ -36,6 +36,19 @@ class MotionFeature(SimpleCV.Feature):
     self.y = top + self.height() / 2
 
 class Motion(base.InspectionPlugin):
+  
+  @classmethod
+  def coffeescript(cls):
+    yield "models/feature", '''
+class MotionFeature
+  constructor: (feature) ->
+    @feature = feature
+    
+  represent: () =>
+    "Motion @feature.movement"
+    
+plugin this, MotionFeature:MotionFeature
+'''
 
   def __call__(self, image):
     SS = util.get_seer()

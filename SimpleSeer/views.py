@@ -368,21 +368,6 @@ def olap_limit(olap_name, limit):
 
     return o.execute(limitresults=int(limit))
 
-@route('/plugin_js', methods=['GET', 'POST'])
-def plugin_js():
-    params = request.values.to_dict()
-
-    js = ''
-    for plugin in util.get_seer().plugins.keys():
-        path = util.get_seer().pluginpath + "/" + plugin
-        js += "//SimpleSeer plugin " + plugin + "\n\n"
-        for f in [file for file in os.listdir(path) if re.search("js$", file)]:
-            js += open(path + "/" + f).read()
-    js += "\n\n\n";
-
-    resp = make_response(js, 200)
-    resp.headers['Content-Type'] = "application/javascript"
-    return resp
 
 @route('/start', methods=['GET', 'POST'])
 def start():
