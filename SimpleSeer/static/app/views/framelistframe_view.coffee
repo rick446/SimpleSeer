@@ -9,7 +9,10 @@ module.exports = class FramelistFrameView extends View
     @frame = frame
 
   getRenderData: =>
+    console.log @frame.get('features')
+  
     capturetime: new Date parseInt @frame.get('capturetime')+'000'
     camera: @frame.get('camera')
     imgfile: @frame.get('imgfile')
     id: @frame.get('id')
+    features: @frame.get('features')
