@@ -35,7 +35,8 @@ exports.config =
           'vendor/scripts/ui/jquery.effects.core.js',
           'vendor/scripts/ui/jquery.ui.datepicker.js',
           'vendor/scripts/jquery-ui-timepicker-addon.js',
-          'vendor/scripts/jquery.mousewheel.js']
+          'vendor/scripts/jquery.mousewheel.js',
+          'vendor/scripts/moment.js']
 
     stylesheets:
       defaultExtension: 'less'
