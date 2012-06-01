@@ -42,7 +42,7 @@ module.exports = class ChartView extends View
   _formatChartPoint: (d) =>
     _point =
       y:d.data[1]
-      x:d.data[0]
+      x:new Date(d.data[0]*1000)
       id:d.frame_id
       events:
         click: application.charts.callFrame
@@ -146,7 +146,7 @@ module.exports = class ChartView extends View
         enabled: false
       plotOptions:
         series:
-          stickyTracking: false
+          #stickyTracking: false
           lineWidth:2
       series: [
         name:renderData.name
@@ -161,7 +161,6 @@ module.exports = class ChartView extends View
       tooltip:
         snap:100
         crosshairs:true
-      #tooltip:
       #  headerFormat:
       #    ''
       #  pointFormat:
@@ -172,6 +171,9 @@ module.exports = class ChartView extends View
       xAxis:
         type:
           'datetime'
+        labels:
+          formatter: ->
+            Highcharts.dateFormat('%m/%d<br>%I:%M:%S', this.value);
       yAxis:
         title:
           text: ''
