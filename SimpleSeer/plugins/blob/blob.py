@@ -179,8 +179,6 @@ plugin this, blob:Blob
             ff.setFeature(b)
             feats.append(ff)
 
-
-
         if( params.has_key("saveFile") ):
             image.save(params["saveFile"])
 

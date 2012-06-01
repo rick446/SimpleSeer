@@ -22,38 +22,39 @@ from SimpleCV import *
 
 SimpleSeer()
 result = []
-# a = Inspection(name="derp",method="blob", parameters={"invert":True, "saveFile":"test1.png"}).execute(Image("./testdata/rat1.png"))
-# result.append(a)
+a = Inspection(name="derp",method="blob", parameters={"invert":True, "saveFile":"test1.png"}).execute(Image("./testdata/rat1.png"))
+result.append(a)
 
-# b = Inspection(name="derp",method="blob", parameters={"invert":False,"saveFile":"test2.png"}).execute(Image("./testdata/rat1.png"))
-# result.append(b)
-# #
-# i = Image("./testdata/rat1.png")
-# c = Inspection(name="derp",method="blob", parameters={"invert":True,"hueLocation":[240,180],"saveFile":"test3.png"}).execute(i)
-# result.append(c)
+b = Inspection(name="derp",method="blob", parameters={"invert":False,"saveFile":"test2.png"}).execute(Image("./testdata/rat1.png"))
+result.append(b)
 
-# d = Inspection(name="derp",method="blob", parameters={"invert":False, "hueLocation":[240,180],"saveFile":"test4.png"}).execute(Image("./testdata/rat1.png"))
-# result.append(d)
+i = Image("./testdata/rat1.png")
+c = Inspection(name="derp",method="blob", parameters={"invert":True,"hueLocation":[240,180],"saveFile":"test3.png"}).execute(i)
+result.append(c)
 
-# e  = Inspection(name="derp",method="blob", parameters={"invert":False, "hue":0,"saveFile":"test5.png"}).execute(Image("./testdata/rat1.png"))
-# result.append(e)
+d = Inspection(name="derp",method="blob", parameters={"invert":False, "hueLocation":[240,180],"saveFile":"test4.png"}).execute(Image("./testdata/rat1.png"))
+result.append(d)
 
-# f  = Inspection(name="derp",method="blob", parameters={"invert":True, "color":[255,0,0],"saveFile":"test6.png"}).execute(Image("./testdata/rat1.png"))
-# result.append(f)
+e  = Inspection(name="derp",method="blob", parameters={"invert":False, "hue":0,"saveFile":"test5.png"}).execute(Image("./testdata/rat1.png"))
+result.append(e)
 
-# g  = Inspection(name="derp",method="blob", parameters={"invert":True, "colorLocation":[240,180],"saveFile":"test7.png"}).execute(Image("./testdata/rat1.png"))
-# result.append(g)
+f  = Inspection(name="derp",method="blob", parameters={"invert":True, "color":[255,0,0],"saveFile":"test6.png"}).execute(Image("./testdata/rat1.png"))
+result.append(f)
 
-# h  = Inspection(name="derp",method="blob", parameters={"invert":True, "location":[150,150],"thresh1":10,"saveFile":"test8.png"}).execute(Image("./testdata/rat1.png"))
-# result.append(h)
+g  = Inspection(name="derp",method="blob", parameters={"invert":True, "colorLocation":[240,180],"saveFile":"test7.png"}).execute(Image("./testdata/rat1.png"))
+result.append(g)
+
+h  = Inspection(name="derp",method="blob", parameters={"invert":True, "location":[150,150],"thresh1":10,"saveFile":"test8.png"}).execute(Image("./testdata/rat1.png"))
+result.append(h)
 
 j  = Inspection(name="derp",method="blob", parameters={"invert":True, "hue":0,"saveFile":"test9.png"}).execute(Image("./testdata/rat1.png"))
 result.append(j)
 
-print "doing lines now"
+print "Doing lines now... er finding lines."
+
 k  = Inspection(name="lines",method="lines", parameters={"saveFile":"test10.png"}).execute(Image("./testdata/lines.png"))
 result.append(k)
-print k
+
 l  = Inspection(name="derp",method="lines", parameters={"canny":[1,200],"saveFile":"test11.png"}).execute(Image("./testdata/lines.png"))
 result.append(l)
 
@@ -63,10 +64,19 @@ result.append(m)
 n  = Inspection(name="derp",method="lines", parameters={"length":[10,300],"saveFile":"test13.png"}).execute(Image("./testdata/lines.png"))
 result.append(n)
 
-#for r in result:
-   #print "length "+str(r.feature.length())
-   #print "contour "+str(r.mContour)
+print "Doing circles now..."
 
-print "SAVE"
-Image("./testdata/rat1.png").save("derp.png")
+p  = Inspection(name="derp",method="circles",parameters={"saveFile":"test14.png"}).execute(Image("./testdata/circles.jpg"))
+result.append(p)
+
+q  = Inspection(name="derp",method="circles",parameters={"canny":200,"saveFile":"test15.png"}).execute(Image("./testdata/circles.jpg"))
+result.append(q)
+
+r  = Inspection(name="derp",method="circles",parameters={"saveFile":"test16.png","radius":[0,200]}).execute(Image("./testdata/circles.jpg"))
+result.append(r)
+
+s  = Inspection(name="derp",method="circles",parameters={"threshold":200,"saveFile":"test17.png"}).execute(Image("./testdata/circles.jpg"))
+result.append(s)
+
+print result
 
