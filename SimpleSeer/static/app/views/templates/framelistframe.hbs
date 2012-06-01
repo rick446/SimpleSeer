@@ -8,7 +8,9 @@
     <ul>
         <li><b>Camera</b>: {{camera}}</li>
         <li><b>Time</b>: {{capturetime}}</li>
-        {{featuresummary features}}
+        {{#if features}}
+        <li><b>Features</b>:<ul>{{featuresummary features}}</ul></li>
+        {{/if}}
     </ul>
   </div>
   <div class="span1">

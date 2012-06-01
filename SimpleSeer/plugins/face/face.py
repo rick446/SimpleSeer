@@ -31,13 +31,13 @@ class FaceFeature
   represent: () =>
     "Face Detected at (" + @feature.get("x") + ", " + @feature.get("y") + ")"
     
-  tableOk: true
+  tableOk: => true
     
   tableHeader: () =>
     ["Horizontal", "Vertical", "Height", "Width", "Color"]
     
-  #tableData: () =>
-    #[@feature.get("x"), @feature.get("y"), @feature.get("height"), @feature.get("width"), @feature.get("meancolor")]
+  tableData: () =>
+    [@feature.get("x"), @feature.get("y"), @feature.get("height"), @feature.get("width"), @feature.get("meancolor")]
         
 plugin this, FaceFeature:FaceFeature
 '''

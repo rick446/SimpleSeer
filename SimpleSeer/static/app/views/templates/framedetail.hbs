@@ -1,5 +1,9 @@
 <h2>Image from {{camera}} at {{epoch capturetime}}
 <div id="frame" class="span11"><img src="{{imgfile}}"></div>
+{{#if featuretypes}}
 <div id="features" class="span11">
-	
+  {{#each featuretypes}}
+    {{featuredetail this}}
+  {{/each}}
 </div>
+{{/if}}

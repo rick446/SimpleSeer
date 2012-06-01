@@ -5,5 +5,15 @@ module.exports = class Model extends Backbone.Model
 
   #this will be overloaded by appropriate plugins
   getPlugin: (name) ->
-    console.log("no plugins loaded")
     return
+    
+  getPluginMethod: (name, fn) =>
+    p = @getPlugin(name)
+    unless p?
+      return
+    
+    unless p[fn]?
+      return
+      
+    p[fn]
+      
