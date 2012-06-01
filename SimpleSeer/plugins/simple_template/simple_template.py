@@ -46,18 +46,26 @@ class SimpleTemplate(base.InspectionPlugin):
     threshold = 5
     method = "SQR_DIFF_NORM"
 
-    if( params.hasKey('method') ):
-      method = params('method') 
+    #this is a temporary hack
+    if( not params.has_key('template') ):
+      return [] # required param
+    else:
+      templ=Image(params['template'])
+      templates=[templ]
 
-    if( params.hasKey('threshold') ):
-      threshold = params('threshold') 
+
+    if( params.has_key('method') ):
+      method = params['method'] 
+
+    if( params.has_key('threshold') ):
+      threshold = params['threshold']
       
     # we want to optionally supply a count value, if we don't get count
     # number of hits we iterate through the templates, try to match up the 
     # overlapping ones, and then get a final count. 
       
     for t in templates:
-      fs = img.findTemplate(t,threshold,method)
+      fs = image.findTemplate(t,threshold,method)
       if fs is not None:
         break 
 
@@ -67,6 +75,9 @@ class SimpleTemplate(base.InspectionPlugin):
         ff = M.FrameFeature()
         ff.setFeature(f)
         retVal.append(ff)
+
+    if( params.has_key("saveFile") ):
+      image.save(params["saveFile"])
 
     return retVal 
 

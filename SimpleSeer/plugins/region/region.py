@@ -17,7 +17,7 @@ class Region(base.InspectionPlugin):
         params = util.utf8convert(self.inspection.parameters)
         retVal = []
         mask = Image((image.width,image.height))
-        if( params.hasKey('w') and  params.hasKey('h') and params.hasKey('x') and params.hasKey('y') ): #rectangle
+        if( params.has_key('w') and  params.has_key('h') and params.has_key('x') and params.has_key('y') ): #rectangle
             if( params['x'] + params['w'] < image.width and
                 params['y'] + params['h'] < image.height and
                 params['y'] >= 0 and 
@@ -31,7 +31,7 @@ class Region(base.InspectionPlugin):
                     ff.setFeature(RegionFeature(fs[-1])) # a little hacky but I am sure that it works
                     retVal = [ff]
   
-        elif( params.hasKey('x') and  params.hasKey('y') and params.hasKey('r') ): # circle
+        elif( params.has_key('x') and  params.has_key('y') and params.has_key('r') ): # circle
             if( params['x'] + params['r'] < image.width and
                 params['y'] + params['r'] < image.height and 
                 params['x'] - params['r'] >= 0 and 
@@ -50,8 +50,8 @@ class Region(base.InspectionPlugin):
                     ff.setFeature(RegionFeature(fs[-1]))
                     retVal = [ff]
 
-        elif( params.hasKey('contour') ):
-            contour = params['contour']
+        elif( params.has_key('contour') ):
+            contour = params['contour'] # this may bail out
             if( len(contour) >=  3 ):
                 mask.dl().polygon(contour,filled=True,color=Color.WHITE)
                 mask = mask.applyLayers()
@@ -61,6 +61,8 @@ class Region(base.InspectionPlugin):
                     fs.draw()                   
                     ff.setFeature(RegionFeature(fs[-1]))
                     retVal = [ff]
-
+            
+        if( params.has_key("saveFile") ):
+            image.save(params["saveFile"])
 
         return retVal

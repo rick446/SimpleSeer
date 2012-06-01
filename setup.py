@@ -29,6 +29,10 @@ setup(name="SimpleSeer",
   region=SimpleSeer.plugins.region:Region
   face=SimpleSeer.plugins.face:Face
   circles=SimpleSeer.plugins.circles:Circles
+  keypointtemplate=SimpleSeer.plugins.keypointtemplate:KeypointTemplate
+  simpleTemplate=SimpleSeer.plugins.simpleTemplate:SimpleTemplate
+  edgeWidth=SimpleSeer.plugins.edgeWidth:EdgeWidth
+
 
   [seer.plugins.measurement]
   blob_length=SimpleSeer.plugins.blob:BlobLength

@@ -58,12 +58,11 @@ class EdgeWidth(base.InspectionPlugin):
     else: # required
       return []
 
-    if( params.has_key("canny2")):
-      canny2 = params["canny2"]
+    if( params.has_key("canny")):
+      canny = params["canny"]
+      canny1 = canny[0]
+      canny2 = canny[1]
       
-    if( params.has_key("canny1")):
-      canny1 = params["canny1"]
-
     if( params.has_key("width")):
       width = params["width"]
   
@@ -76,5 +75,15 @@ class EdgeWidth(base.InspectionPlugin):
       ewf = EdgeWidthFeature(image,[pt0,pt1],result)
       ff.setFeature(ewf)
       retVal.append(ff)
+
+    if( params.has_key("saveFile") ):
+      if(result[0] is not None and 
+         result[1] is not None ):
+        image = image.drawCircle( result[0],10,color=Color.RED)
+        image = image.drawCircle( result[1],10,color=Color.RED)
+        image = image.drawLine( pt0, pt1,thickness=width,color=Color.GREEN)
+
+      image.save(params["saveFile"])
+      
       
     return retVal

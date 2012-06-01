@@ -47,21 +47,28 @@ class KeypointTemplate(base.InspectionPlugin):
     minDist = 0.2
     minMatch = 0.4
 
-    if( params.hasKey('quality') ):
-      quality = params('quality') 
+    #this is a temporary hack
+    if( not params.has_key('template') ):
+      return [] # required param
+    else:
+      templ=Image(params['template'])
+      templates=[templ]
 
-    if( params.hasKey('minDist') ):
-      minDist = params('minDist') 
+    if( params.has_key('quality') ):
+      quality = params['quality'] 
 
-    if( params.hasKey('minMatch') ):
-      minMatch = params('minMatch') 
+    if( params.has_key('minDist') ):
+      minDist = params['minDist']
+
+    if( params.has_key('minMatch') ):
+      minMatch = params['minMatch'] 
       
     # we want to optionally supply a count value, if we don't get count
     # number of hits we iterate through the templates, try to match up the 
     # overlapping ones, and then get a final count. 
       
     for t in templates:
-      fs = img.findKeypointMatch(t,quality,minDist,minMatch)
+      fs = image.findKeypointMatch(t,quality,minDist,minMatch)
       if fs is not None:
         break 
 
@@ -71,6 +78,9 @@ class KeypointTemplate(base.InspectionPlugin):
         ff = M.FrameFeature()
         ff.setFeature(f)
         retVal.append(ff)
+
+    if( params.has_key("saveFile") ):
+      image.save(params["saveFile"])
 
     return retVal 
 
