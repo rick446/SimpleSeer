@@ -303,10 +303,8 @@ class OLAPFactory:
         return transInfo
 
     def makeChart(self, chartInfo):
-        if not chartInfo.has_key('chartColor'): chartInfo['chartColor'] = ''
+        if not chartInfo.has_key('chartcolor'): chartInfo['chartColor'] = ''
         if not chartInfo.has_key('chartType'): chartInfo['chartType'] = 'line'
-        # TODO: This is just for reverse compatibility.  It needs to go away
-        if not chartInfo.has_key('name'): chartInfo['name'] = 'line'
         
         return chartInfo
 
@@ -375,6 +373,17 @@ class Chart:
         # graphs of (x,y) coordiantes
         
         chartRange = self.dataRange(resultSet['data'])
+        
+        # This is for backward compatibility
+        if chartInfo.has_key('name'):
+            name = chartInfo['name']
+        else:
+            name = chartInfo['chartType']
+            
+        if chartInfo.has_key('color'):
+            color = chartInfo['color']
+        else:
+            color = chartInfo['chartColor']
         
         chartData = { 'chartType': chartInfo['name'],
                       'chartColor': chartInfo['color'],
