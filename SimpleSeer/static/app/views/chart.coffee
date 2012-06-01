@@ -136,7 +136,7 @@ module.exports = class ChartView extends View
         renderTo: data.id
         type: renderData.chartInfo.name.toLowerCase()
         height: renderData.chartInfo.height || '150'
-        #animation: false
+        animation: false
       title:
         text:null
       credits:
