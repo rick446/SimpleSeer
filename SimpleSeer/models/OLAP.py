@@ -142,7 +142,6 @@ class OLAP(SimpleDoc, mongoengine.Document):
             o = of.fromBigOLAP(self, resultSet)
             resultSet = o.execute()
             self = o
-            print self.name
             
         
         # Create and return the chart
@@ -222,20 +221,25 @@ class OLAPFactory:
             
             if (o.aggregate):
                 agg = o.aggregate
+            elif (o.descInfo.has_key('formula')):
+                # If we are already using a descriptive, preserve it
+                agg = o.descInfo['formula']
             else:
                 agg = 'median'
             
-            # TODO: Need to check for existence of existing descriptive and handle more intelligently
-                
             o.descInfo['formula'] = agg
             o.descInfo['window'] = interval
                 
-            log.info('Aggregating with ' + agg + ' interval ' + str(interval))
-        
             # Make sure the rest of the setup is properly initialized
             o = self.makeOLAP(o.queryInfo, o.descInfo, o.transInfo, o.chartInfo)
         
-            o.save()
+            similar = OLAP.objects.filter(name=o.name)
+            if (len(similar) == 0):
+                log.info('made a new olap for aggregation: ' + o.name)
+                o.save()
+            else:
+                log.info('switching to olap: ' + o.name)
+                o = similar[0]
             
         return o
     
@@ -248,7 +252,6 @@ class OLAPFactory:
         o.chartInfo = self.makeChart(chartInfo)
         
         o.name = o.queryInfo['queryType'] + o.descInfo['formula'] + str(o.descInfo['window'])
-        print 'name in makeOLAP: ' + o.name
         
         return o
     
