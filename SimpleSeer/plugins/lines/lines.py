@@ -3,7 +3,7 @@ import numpy as np
 import SimpleCV
 from SimpleSeer import models as M
 from SimpleSeer import util
-
+from SimpleSeer.base import jsonencode
 from SimpleSeer.plugins import base
 
 """
@@ -39,8 +39,9 @@ class Lines(base.InspectionPlugin):
   gap = line gap 
   """
   def __call__(self, image):
-    params = util.utf8convert(self.inspection.parameters)
-    
+    print "HELLO FROM LINES"
+    params = util.utf8convert(json.loads(jsonencode(self.inspection.parameters)))    
+    print "HELLO FROM LINES"
     # It is just going to be easier to mask over 
     # all of the default params. 
     canny = (50,100) #(cannyth1,cannyth2)
@@ -81,5 +82,9 @@ class Lines(base.InspectionPlugin):
         ff = M.FrameFeature()
         ff.setFeature(f)
         retVal.append(ff)
+
+    if( params.has_key("saveFile") ):
+      image.save(params["saveFile"])
+
 
     return retVal 

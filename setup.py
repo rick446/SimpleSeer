@@ -24,10 +24,11 @@ setup(name="SimpleSeer",
   [seer.plugins.inspection]
   barcode=SimpleSeer.plugins.barcode:Barcode
   blob=SimpleSeer.plugins.blob:Blob
+  lines=SimpleSeer.plugins.lines:Lines  
   motion=SimpleSeer.plugins.motion:Motion
   region=SimpleSeer.plugins.region:Region
   face=SimpleSeer.plugins.face:Face
-  line=SimpleSeer.plugins.lines:Lines 
+ 
 
   [seer.plugins.measurement]
   blob_length=SimpleSeer.plugins.blob:BlobLength
