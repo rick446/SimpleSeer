@@ -3,8 +3,9 @@ import numpy as np
 from SimpleSeer import models as M
 from SimpleSeer import util
 from SimpleSeer.plugins import base
-from SimpleSeer.base import jsonencode
 from SimpleCV.Color import *
+
+from SimpleSeer.base import jsonencode
 import json
 
 class Blob(base.InspectionPlugin):

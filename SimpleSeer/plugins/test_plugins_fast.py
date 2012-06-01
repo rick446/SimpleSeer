@@ -2,7 +2,7 @@
 
 from SimpleSeer.base import *
 from SimpleSeer.Session import Session
-import logging.config
+#import logging.config
 
 
 if (len(sys.argv) > 1):
@@ -11,7 +11,7 @@ else:
    config_file = "../../default.cfg"
 
 Session(config_file)
-logging.config.fileConfig("../../logging.ini")
+#logging.config.fileConfig("../../logging.ini")
 
 from SimpleSeer.models.Inspection import Inspection
 from SimpleSeer.models.Inspection import Measurement 
@@ -21,30 +21,6 @@ from SimpleSeer.SimpleSeer import SimpleSeer
 from SimpleCV import *
 
 SimpleSeer()
-
-from SimpleSeer.base import *
-from SimpleSeer.Session import Session
-import logging.config
-
-
-if (len(sys.argv) > 1):
-   config_file = sys.argv[1] 
-else:
-   config_file = "../../default.cfg"
-
-Session(config_file)
-logging.config.fileConfig("../../logging.ini")
-
-from SimpleSeer.models.Inspection import Inspection
-from SimpleSeer.models.Inspection import Measurement 
-from SimpleSeer.models.OLAP import OLAP 
-from SimpleSeer.SimpleSeer import SimpleSeer
-
-from SimpleCV import *
-
-SimpleSeer()
-
-
 result = []
 # a = Inspection(name="derp",method="blob", parameters={"invert":True, "saveFile":"test1.png"}).execute(Image("./testdata/rat1.png"))
 # result.append(a)
@@ -75,26 +51,21 @@ j  = Inspection(name="derp",method="blob", parameters={"invert":True, "hue":0,"s
 result.append(j)
 
 print "doing lines now"
-k  = Inspection(name="lines",method="lines").execute(Image("./testdata/lines.png"))
+k  = Inspection(name="lines",method="lines", parameters={"saveFile":"test10.png"}).execute(Image("./testdata/lines.png"))
 result.append(k)
 print k
-#l  = Inspection(name="derp",method="lines", parameters={"canny":[1,200],"saveFile":"test11.png"}).execute(Image("./testdata/lines.png"))
-#result.append(l)
+l  = Inspection(name="derp",method="lines", parameters={"canny":[1,200],"saveFile":"test11.png"}).execute(Image("./testdata/lines.png"))
+result.append(l)
 
-#m  = Inspection(name="derp",method="lines", parameters={"angle":[0,90],"saveFile":"test12.png"}).execute(Image("./testdata/lines.png"))
-#result.append(m)
+m  = Inspection(name="derp",method="lines", parameters={"angle":[0,90],"saveFile":"test12.png"}).execute(Image("./testdata/lines.png"))
+result.append(m)
 
-#n  = Inspection(name="derp",method="lines", parameters={"length":[10,300],"saveFile":"test13.png"}).execute(Image("./testdata/lines.png"))
-#result.append(n)
+n  = Inspection(name="derp",method="lines", parameters={"length":[10,300],"saveFile":"test13.png"}).execute(Image("./testdata/lines.png"))
+result.append(n)
 
-
-
-
-print "RESULT"
-print result
-for r in result:
+#for r in result:
    #print "length "+str(r.feature.length())
-   print "contour "+str(r.mContour)
+   #print "contour "+str(r.mContour)
 
 print "SAVE"
 Image("./testdata/rat1.png").save("derp.png")

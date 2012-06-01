@@ -1,10 +1,11 @@
 import numpy as np
-
-import SimpleCV
+from SimpleCV import *
 from SimpleSeer import models as M
 from SimpleSeer import util
-from SimpleSeer.base import jsonencode
 from SimpleSeer.plugins import base
+
+from SimpleSeer.base import jsonencode
+import json
 
 """
 Overly simplified region detection plugin
@@ -39,37 +40,35 @@ class Lines(base.InspectionPlugin):
   gap = line gap 
   """
   def __call__(self, image):
-    print "HELLO FROM LINES"
     params = util.utf8convert(json.loads(jsonencode(self.inspection.parameters)))    
-    print "HELLO FROM LINES"
     # It is just going to be easier to mask over 
     # all of the default params. 
     canny = (50,100) #(cannyth1,cannyth2)
     threshold = 80
     gap = 10
-    maxL = int(sqrt((image.width*image.width) + (image.height*image.height)))
+    maxL = int(np.sqrt((image.width*image.width) + (image.height*image.height)))
     length = (30,maxL) # min / max
     angle = (None,None)
 
     retVal = []
 
     #we assume all of this is validated and correct 
-    if( params.hasKey('canny') ):
-      canny = params('canny') 
+    if( params.has_key('canny') ):
+      canny = params['canny'] 
 
-    if( params.hasKey('length') ):
-      length = params('length') 
+    if( params.has_key('length') ):
+      length = params['length'] 
 
-    if( params.hasKey('gap') ):
-      gap = params('gap') 
+    if( params.has_key('gap') ):
+      gap = params['gap']
 
-    if( params.hasKey('angle') ):
-      angle = params('angle') 
+    if( params.has_key('angle') ):
+      angle = params['angle']
 
-    if( params.hasKey('threshold') ):
-      angle = params('threshold') 
+    if( params.has_key('threshold') ):
+      angle = params['threshold']
       
-    fs = img.findLines(threshold,length[0],gap,canny[0],canny[1])
+    fs = image.findLines(threshold,length[0],gap,canny[0],canny[1])
 
     if fs is not None:
       if( angle[0] is not None and
