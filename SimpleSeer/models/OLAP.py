@@ -48,7 +48,7 @@ class OLAPSchema(fes.Schema):
 #################################
   
 class QueryInfoSchema(fes.Schema):
-    queryType = fev.OneOf(['Inspection', 'Measurement', 'Result'], if_missing='Result')
+    queryType = fev.OneOf(['inspection', 'measurement'], if_missing='inspection')
     name = fev.UnicodeString(not_empty = True)
     since = V.DateTime(if_empty=0, if_missing=None)
     limit = fev.Int(if_missing=None)
@@ -139,10 +139,13 @@ class OLAP(SimpleDoc, mongoengine.Document):
         if not self.allow: self.allow = 900
         if (len(resultSet['data']) > self.allow):
             of = OLAPFactory()
-            o = of.fromBigOLAP(self, resultSet)
-            resultSet = o.execute()
-            self = o
+            self = of.fromBigOLAP(self, resultSet)
             
+            # Redo the descriptive with the new aggregation
+            d = DescriptiveStatistic
+            resultSet = d.execute(resultSet, self.descInfo)
+            
+        #TODO: Re-integrate transformations here
         
         # Create and return the chart
         c = Chart()
@@ -156,6 +159,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
         queryInfo['limit'] = self.calcLimit(queryInfo, limitresults)
         if not queryInfo.has_key('allow'): queryInfo['allow'] = queryInfo['limit']
         if not queryInfo.has_key('aggregate'): queryInfo['aggregate'] = 'median'
+        if not queryInfo.has_key('queryType'): queryInfo['queryType'] = 'inspection'
         
         return queryInfo
         
@@ -205,7 +209,7 @@ class OLAPFactory:
         # TODO: Need to add some more intelligence to this:
         
         queryinfo = dict()
-        queryinfo['queryType'] = type(obj)
+        queryinfo['queryType'] = type(obj).lower()
         
         return self.makeOLAP(queryInfo = queryinfo)
         
@@ -213,12 +217,15 @@ class OLAPFactory:
         # Given a large OLAP object (returning too many records), return one with a descriptive transform to aggregate data
         # Assumes existing resultset provided, use that for computing size of object
         
+        # TODO: this will clobber the aggregation function for moving average
+        
         o = olap
         
         if (len(resultSet['data']) > o.allow):
             # Find an new appropriate level for aggregation
             interval = self.calcInterval(resultSet['data'], o.allow)
             
+            # Define the aggregation function
             if (o.aggregate):
                 agg = o.aggregate
             elif (o.descInfo.has_key('formula')):
@@ -245,6 +252,9 @@ class OLAPFactory:
     
     def makeOLAP(self, queryInfo = dict(), descInfo = dict(), transInfo = dict(), chartInfo = dict()):
     
+        # Makes a generic OLAP with default values
+        # If any values are provided as parameters, keeps those and fills in the rest
+    
         o = OLAP()
         o.queryInfo = self.makeQuery(queryInfo)
         o.descInfo = self.makeDesc(descInfo)
@@ -257,15 +267,13 @@ class OLAPFactory:
     
     def makeQuery(self, queryInfo):
         # Hard code default to querying Results
-        if not queryInfo.has_key('queryType'): queryInfo['queryType'] = 'Result'
+        if not queryInfo.has_key('queryType'): queryInfo['queryType'] = 'inspection'
         
         # Hard code to query the first object of type queryTYpe
         if not queryInfo.has_key('name'):
-            if queryInfo['queryType'] == 'Result':
-                queryInfo['id'] = Result.objects[0].id
-            elif queryInfo['queryType'] == 'Measurement':
+            if queryInfo['queryType'] == 'measurement':
                 queryInfo['id'] = Measurement.objects[0].id
-            elif queryInfo['queryType'] == 'Inspection':
+            elif queryInfo['queryType'] == 'inspection':
                 queryInfo['id'] = Inspection.objects[0].id 
             else:
                 log.warn('Unknown query type provided to OLAP Factory: ' + queryInfo['queryType'])
@@ -316,7 +324,6 @@ class OLAPFactory:
         log.info('scale: ' + str(scaleRange))
         
         scaleRange = round(scaleRange)
-        # TODO: This is better solved by ensuring time interval only covers times with data
         if (scaleRange < 1): scaleRange = 1
         
         scaleRange = int(scaleRange)
@@ -614,7 +621,6 @@ class RealtimeOLAP:
         return calendar.timegm(rs[0].capturetime.timetuple())
 
     def sendMessage(self, o, data):
-        log.info(len(data))
         msgdata = [dict(
             id = str(o.id),
             data = d[0:2],
@@ -623,6 +629,8 @@ class RealtimeOLAP:
             measurement_id= str(d[4]),
             result_id= str(d[5])
         ) for d in data]
+        
+        #log.info('pushing new data to ' + utf8convert(o.name) + ' _ ' + str(msgdata))
         
         # Channel naming: OLAP/olap_name
         olapName = 'OLAP/' + utf8convert(o.name) + '/'
@@ -640,13 +648,17 @@ class ResultSet:
         
         
         # TODO: Select from the right type of object, not all
-        obj = Inspection
+        if (queryInfo['queryType'] == 'inspection'):
+            obj = Inspection
+        elif (queryInfo['queryType'] == 'measurement'):
+            obj = Measurement
         
+        query = dict()
         if not queryInfo.has_key('id'):
             insp = obj.objects.get(name=queryInfo['name'])
-            query = dict(inspection = insp.id)
+            query[queryInfo['queryType']] = insp.id
         else:
-            query = dict(inspection = queryInfo['id'])
+            query[queryInfo['queryType']] = queryInfo['id']
             
         if queryInfo['since']:
             query['capturetime__gt']= datetime.utcfromtimestamp(queryInfo['since'])
@@ -688,9 +700,9 @@ class ResultSet:
         return dataset
     
     
-    def resultToResultSet(self, res):
+    def resultToResultSet(self, r):
         # Given a Result, format the Result like a one record ResultSet
-        outputVals = [[calendar.timegm(res.capturetime.timetuple()), res.numeric, res.inspection, res.frame, res.measurement, res.id]]
+        outputVals = [[calendar.timegm(r.capturetime.timetuple()) + r.capturetime.time().microsecond / 1000000.0, r.numeric, r.inspection, r.frame, r.measurement, r.id]]
         dataset = { 'startTime': outputVals[0][0],
                     'endTime': outputVals[0][0],
                     'timestamp': gmtime(),
