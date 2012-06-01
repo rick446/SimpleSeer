@@ -1,6 +1,6 @@
 import mongoengine
 
-from .base import SimpleDoc, SimpleEmbeddedDocument, WithPlugins
+from .base import SimpleDoc, SimpleEmbeddedDoc, WithPlugins
 from .Measurement import Measurement
 from .Alert import Alert
 
@@ -24,7 +24,9 @@ class Watcher(SimpleDoc, WithPlugins, mongoengine.Document):
     w = Watcher(
         name = "Stress test",
         condition = 'blob_angle > 70',
-        handlers = ["warning"])
+        handlers = [
+            Handler(name='warning',
+                    args=dict(message='Angle too large')) ])
     w.check()
     """
     name = mongoengine.StringField()
