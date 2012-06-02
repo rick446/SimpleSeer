@@ -15,3 +15,7 @@ module.exports = class FrameDetailView extends View
       data[k] = @model.attributes[k]
       
     data
+    
+  
+  afterRender: =>
+    @$(".tablesorter").tablesorter()

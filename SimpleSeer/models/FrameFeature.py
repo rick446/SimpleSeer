@@ -58,7 +58,13 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         self.meancolor = list(data.meanColor())
         self.featuretype = data.__class__.__name__
         
-        for k in data.__dict__:
+        datadict = {}
+        if hasattr(data, "__getstate__"):
+            datadict = data.__getstate__()
+        else:
+            datadict = data.__dict__
+            
+        for k in datadict:
             if self.featuredata_mask.has_key(k) or hasattr(self, k) or k[0] == "_":
                 continue
             value = getattr(data, k)
