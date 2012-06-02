@@ -139,7 +139,7 @@ def init_gevent_subprocess():
 def disable_inprocess_seer():
     # Disable access to the seer object (just in case!)
     from SimpleSeer.SimpleSeer import SimpleSeer as SS
-    SS._SimpleSeer__shared_state["initialized"] = True
+    SS(disable = True)
 
 if __name__ == '__main__':
    main()

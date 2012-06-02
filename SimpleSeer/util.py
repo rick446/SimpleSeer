@@ -52,7 +52,7 @@ def utf8convert(data):
 def get_seer():
     from .SimpleSeer import SimpleSeer as SS
     from . import service
-    if not hasattr(SS(), "config"):  #check to see if we have seer
+    if SS().disabled:  #check to see if we have seer
         return service.SeerProxy2()
     return SS()
 

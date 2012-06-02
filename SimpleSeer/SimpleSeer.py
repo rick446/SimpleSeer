@@ -42,7 +42,7 @@ class SimpleSeer(object):
     The SimpleSeer object 
     
     """
-    __shared_state = { "initialized": False }
+    __shared_state = { "initialized": False, "disabled": False }
     web_interface = None
     halt = False
     _plugin_types = dict(
@@ -50,11 +50,16 @@ class SimpleSeer(object):
         measurement=M.Measurement,
         watcher=M.Watcher)
 
-    def __init__(self):
+    def __init__(self, disable=False):
         self.__dict__ = self.__shared_state
         #ActiveState "Borg" Singleton replacement design
         if self.initialized:
             return  #successive calls to SimpleSeer simply return the borg'd object
+        if disable:
+            self.initialized = True
+            self.disabled = True
+            return
+
 
         #read config file
         self.config = Session()

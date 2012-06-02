@@ -7,6 +7,8 @@ from .service import SeerProxy2
 from .realtime import ChannelManager
 from . import models as M
 from SimpleCV import Display
+from .SimpleSeer import SimpleSeer as SS
+
 
 log = logging.getLogger(__name__)
 
@@ -26,6 +28,8 @@ def load_ipython_extension(ipython):
     log.info('Loading SimpleSeer ipython extension')
     seer = SeerProxy2()
     s = Session()
+    SS(disable = True)
+
     s.configure(seer.get_config())
     ipython.push(
         dict(
