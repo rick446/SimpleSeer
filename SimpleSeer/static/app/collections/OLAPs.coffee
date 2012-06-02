@@ -36,7 +36,7 @@ module.exports = class OLAPs extends Collection
   pause: (fId) =>
     @.paused = true
     control = $ "#realtimecontrol"
-    control.html "Paused"
+    control.html "History"
     control.attr "title", "Click to enter live mode"
     if !fId
       fId = @lastframe
