@@ -11,14 +11,25 @@ module.exports = class OLAPs extends Collection
   timeframe:60
   
   customCharts:
-    text: (d)->
+    total: (d)->
       color: d.chartInfo.color || 'blue'
       value:0
+      values:[]
+      max: d.chartInfo.max || 100
+      min: d.chartInfo.min || 0
       template: _.template '<h1 style="color:{{ color }}">{{ value }}</h1>'
       addPoint: (d) ->
-        @.value += d.y
+        @.values.push(d.y)
+        if !application.charts.paused && @.values.length > application.charts.timeframe / application.settings.poll_interval
+          p = @.values.shift()
+        @.value += (d.y - (p || 0))
       setData: (d) ->
+        @.values=[]
+        @.value=0
+        while !application.charts.paused && d.length > application.charts.timeframe / application.settings.poll_interval
+          d.shift()
         for o in d
+          @.values.push(o.y)
           @.value += o.y
       render: (target) ->
         target.html @.template {value:Math.round(@.value),color:@.color}

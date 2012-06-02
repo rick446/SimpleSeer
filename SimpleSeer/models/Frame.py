@@ -12,6 +12,7 @@ import formencode as fe
 from .base import SimpleDoc
 from .FrameFeature import FrameFeature
 from .. import realtime
+from ..util import LazyProperty
 
 
 class FrameSchema(fes.Schema):	
@@ -42,6 +43,7 @@ class Frame(SimpleDoc, mongoengine.Document):
     width = mongoengine.IntField(default = 0)
     imgfile = mongoengine.FileField()
     layerfile = mongoengine.FileField()
+    thumbnail_file = mongoengine.FileField()
     _imgcache = ''
     results = [] #cache for result objects when frame is unsaved
 
@@ -49,6 +51,18 @@ class Frame(SimpleDoc, mongoengine.Document):
         'indexes': ["capturetime", ('camera', '-capturetime')]
     }
 
+    @LazyProperty
+    def thumbnail(self):
+        if self.thumbnail_file.grid_id is None:
+            img = self.image
+            thumbnail_img = img.scale(140.0 / img.height)
+            img_data = StringIO()
+            thumbnail_img.save(img_data, "jpeg", quality = 25)
+            self.thumbnail_file.put(img_data.getvalue(), content_type='image/jpeg')
+        else:
+            self.thumbnail_file.get().seek(0,0)
+            thumbnail_img = Image(pil.open(StringIO(self.thumbnail_file.read())))
+        return thumbnail_img
 
     @property
     def image(self):
