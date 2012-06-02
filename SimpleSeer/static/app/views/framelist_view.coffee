@@ -18,6 +18,7 @@ module.exports = class FramelistView extends View
   
   getRenderData: =>
     count_viewing: @collection.length
+    count_total: @collection.total_frames
 
   render: =>
     super()
