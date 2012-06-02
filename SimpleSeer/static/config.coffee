@@ -36,14 +36,21 @@ exports.config =
           'vendor/scripts/ui/jquery.ui.datepicker.js',
           'vendor/scripts/jquery-ui-timepicker-addon.js',
           'vendor/scripts/jquery.mousewheel.js',
-          'vendor/scripts/moment.js']
+          'vendor/scripts/moment.js',
+          'vendor/scripts/jquery.tablesorter.js',
+          'vendor/scripts/jquery.tablesorter.pager.js',
+          'vendor/scripts/processing.js']
 
     stylesheets:
       defaultExtension: 'less'
       joinTo: 'stylesheets/app.css'
       order:
         before: ['vendor/styles/bootstrap.css']
-        after: [ 'vendor/styles/bootstrap-responsive.css', 'vendor/styles/jquery.jqplot.min.css', 'vendor/styles/themes/base/jquery.ui.core.css' ]
+        after: [ 'vendor/styles/bootstrap-responsive.css',
+          'vendor/styles/jquery.jqplot.min.css',
+          'vendor/styles/themes/base/jquery.ui.core.css',
+          'vendor/styles/tablesorter-blue.css',
+          'vendor/styles/jquery.tablesorter.pager.css']
 
     templates:
       defaultExtension: 'hbs'
