@@ -20,10 +20,11 @@ meas.save()
 class MotionFeature(SimpleCV.Feature):
   movement = 0.0
 
-  def __init__(self, image, mval, top = 0, left = 0, right = -1, bottom = -1):
+  def __init__(self, image, mval, compared_with=None, top = 0, left = 0, right = -1, bottom = -1):
     #TODO, if parameters are given, crop on both images
     self.image = image
     self.movement = mval
+    self.compared = compared_with
 
     if (right == -1):
       right = image.width
@@ -45,7 +46,7 @@ class MotionFeature
     @feature = feature
     
   represent: () =>
-    "Motion @feature.movement"
+    "Motion " + Math.round(@feature.get("featuredata").movement)
     
 plugin this, MotionFeature:MotionFeature
 '''
@@ -54,12 +55,16 @@ plugin this, MotionFeature:MotionFeature
     SS = util.get_seer()
     if len(SS.lastframes) > 1:
       #TODO, find the index of the named camera
-      lastimage = SS.lastframes[-2][0].image
+      lastframe = SS.lastframes[-2][0]
+      lastimage = lastframe.image
     else:
       return None
 
     diff = (image - lastimage) + (lastimage - image)
 
     ff = M.FrameFeature()
-    ff.setFeature(MotionFeature(image, np.mean(diff.meanColor())))
+    fid = None
+    if hasattr(lastframe, "_id"):
+      fid = lastframe._id
+    ff.setFeature(MotionFeature(image, np.mean(diff.meanColor()), fid))
     return [ff]
