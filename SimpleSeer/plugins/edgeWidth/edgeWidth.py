@@ -1,6 +1,6 @@
 import numpy as np
 
-import SimpleCV
+from SimpleCV import *
 from SimpleSeer import models as M
 from SimpleSeer import util
 
@@ -35,7 +35,7 @@ class EdgeWidthFeature(SimpleCV.Line):
     ymax = np.min([line[0][1],line[1][1]])
     ymin = np.max([line[0][1],line[1][1]])
     points = [(xmin,ymin),(xmin,ymax),(xmax,ymax),(xmax,ymin)]
-    super(Line, self).__init__(i, at_x, at_y,points)
+    super(Line, self).__init__(image, at_x, at_y,points)
     
 class EdgeWidth(base.InspectionPlugin):
 
@@ -79,9 +79,9 @@ class EdgeWidth(base.InspectionPlugin):
     if( params.has_key("saveFile") ):
       if(result[0] is not None and 
          result[1] is not None ):
-        image = image.drawCircle( result[0],10,color=Color.RED)
-        image = image.drawCircle( result[1],10,color=Color.RED)
-        image = image.drawLine( pt0, pt1,thickness=width,color=Color.GREEN)
+        image.drawCircle( result[0],10,color=Color.RED)
+        image.drawCircle( result[1],10,color=Color.RED)
+        image.drawLine( pt0, pt1,thickness=width,color=Color.GREEN)
 
       image.save(params["saveFile"])
       

@@ -78,5 +78,19 @@ result.append(r)
 s  = Inspection(name="derp",method="circles",parameters={"threshold":200,"saveFile":"test17.png"}).execute(Image("./testdata/circles.jpg"))
 result.append(s)
 
+print "Doing edge width feature extractor."
+
+t  = Inspection(name="derp",method="edgeWidth",parameters={"pt0":[0,240],"pt1":[640,240],"saveFile":"test18.png"}).execute(Image("./testdata/rat1.png"))
+result.append(t)
+
+u  = Inspection(name="derp",method="edgeWidth",parameters={"pt0":[320,0],"pt1":[320,480],"canny":[100,300],"saveFile":"test19.png"}).execute(Image("./testdata/rat1.png"))
+result.append(u)
+
+v  = Inspection(name="derp",method="edgeWidth",parameters={"pt0":[0,50],"pt1":[640,390],"width":1,"saveFile":"test20.png"}).execute(Image("./testdata/rat1.png"))
+result.append(v)
+
+
+
+
 print result
 
