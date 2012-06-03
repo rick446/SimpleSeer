@@ -22,6 +22,8 @@ from SimpleCV import *
 
 SimpleSeer()
 result = []
+print "testing blobs"
+
 a = Inspection(name="derp",method="blob", parameters={"invert":True, "saveFile":"test1.png"}).execute(Image("./testdata/rat1.png"))
 result.append(a)
 
