@@ -25,10 +25,10 @@ Handlebars.registerHelper 'featuredetail', (features) ->
   unless features[0].tableOk()?
     return new Handlebars.SafeString features[0].represent()
     
-  ret = "<table><tr>"
+  ret = "<table class=\"tablesorter\"><thead><tr>"
   for th in features[0].tableHeader()
     ret += "<th>" + th + "</th>"
-  ret += "</tr>\n"
+  ret += "</tr></thead><tbody>\n"
 
   for tr in features
      ret += "<tr>"
@@ -36,5 +36,5 @@ Handlebars.registerHelper 'featuredetail', (features) ->
        ret += "<td>" + td + "</td>"
      ret += "</tr>"
   
-  ret += "</table>"
+  ret += "</tbody></table>"
   new Handlebars.SafeString(ret)

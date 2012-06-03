@@ -58,7 +58,13 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         self.meancolor = list(data.meanColor())
         self.featuretype = data.__class__.__name__
         
-        for k in data.__dict__:
+        datadict = {}
+        if hasattr(data, "__getstate__"):
+            datadict = data.__getstate__()
+        else:
+            datadict = data.__dict__
+            
+        for k in datadict:
             if self.featuredata_mask.has_key(k) or hasattr(self, k) or k[0] == "_":
                 continue
             value = getattr(data, k)
@@ -69,7 +75,7 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
                 #TODO do we need this here?  I'm not sure
                 #self.featuredata[k] = Image(value)
             else:
-                self.featuredata[k] = str(value)
+                self.featuredata[k] = value
     @property
     def feature(self):
         if not self._featurebuffer:
@@ -80,7 +86,7 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
     def __getstate__(self):
         ret = {}
         
-        skipfields = ["featurepickle", "featuredata", "children"]
+        skipfields = ["featurepickle", "children"]
         
         #handle all the normal fields
         for k in self._data.keys():
@@ -92,19 +98,6 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
                 ret[k] = str(v)
             else:
                 ret[k] = v
-        
-        #handle all the simpleCV featuredata
-        ret["featuredata"] = {}
-        for k in self.featuredata.keys():
-            v = getattr(self.feature, k)
-            if k in self.featuredata_mask:
-                continue
-            elif isinstance(v, SimpleCV.Image):
-                ret["featuredata"][k] = v.applyLayers().getBitmap().tostring().encode("base64")
-            elif isinstance(v, cv.iplimage):
-                ret["featuredata"][k] = v.tostring().encode("base64")
-            else:
-                ret["featuredata"][k] = v
         
         #handle all children
         ret["children"] = [c.__getstate__() for c in self.children]

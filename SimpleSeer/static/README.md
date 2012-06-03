@@ -17,7 +17,7 @@ See more info on the [official site](http://brunch.io)
     /app/
       /assets/
         index.html
-        images/
+        img/
       /lib/
       models/
       styles/

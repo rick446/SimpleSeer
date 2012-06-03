@@ -97,11 +97,16 @@ def lastframes():
 #TODO, abstract this for layers and thumbnails        
 @route('/grid/imgfile/<frame_id>', methods=['GET'])
 def imgfile(frame_id):
+    params = request.values.to_dict()
     frame = M.Frame.objects(id = bson.ObjectId(frame_id))
     if not frame or not frame[0].imgfile:
         return "Image not found", 404
-    resp = make_response(frame[0].imgfile.read(), 200)
-    resp.headers['Content-Type'] = frame[0].imgfile.content_type
+    frame = frame[0]
+    resp = make_response(frame.imgfile.read(), 200)
+    resp.headers['Content-Type'] = frame.imgfile.content_type
+    if 'download' in params:
+        resp.headers['Content-disposition'] = 'attachment; filename="%s-%s.jpg"' % \
+            (frame.camera.replace(' ','_'), frame.capturetime.strftime("%Y-%m-%d_%H_%M_%S"))
     return resp    
     
 @route('/videofeed-width<int:width>.mjpeg', methods=['GET'])
@@ -169,7 +174,7 @@ def frame_inspect():
 def histogram():
     params = dict(bins = 50, channel = '', focus = "",
                   camera = 0, index = -1, frameid = '')
-    params.update(request.values.to_dict())			
+    params.update(request.values.to_dict())
     
     frame = (util.get_seer().lastframes
              [params['index']]

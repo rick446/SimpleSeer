@@ -1,6 +1,8 @@
 *.pyc
 *.log
 *_log
+*.box
+Vagrant*
 default.cfg
 SimpleSeer/static/public/*
 SimpleSeer.egg-info/*

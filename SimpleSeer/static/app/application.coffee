@@ -1,6 +1,9 @@
 # The application bootstrapper.
 Application =
   initialize: ->
+    if @settings.mongo.is_slave
+      $(".notebook").hide()
+      
     ViewHelper = require 'lib/view_helper'
     HomeView = require 'views/home_view'
     FramelistView = require 'views/framelist_view'
