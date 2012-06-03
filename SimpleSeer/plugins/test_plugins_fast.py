@@ -103,6 +103,13 @@ y  = Inspection(name="derp",method="simpleTemplate",parameters={"threshold":1.3,
 
 result.append(y)
 
+print "Doing keypoint template feature extractor."
+
+z  = Inspection(name="derp",method="keypointTemplate",parameters={"template":"./testdata/pangolin_template.jpg","saveFile":"test25.png","quality":100,"minDist":1 }).execute(Image("./testdata/pangolin.jpg"))
+result.append(z)
+
+
+
 
 print result
 

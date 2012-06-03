@@ -1,6 +1,6 @@
 import numpy as np
 
-import SimpleCV
+from SimpleCV import *
 from SimpleSeer import models as M
 from SimpleSeer import util
 
@@ -49,10 +49,13 @@ class KeypointTemplate(base.InspectionPlugin):
 
     #this is a temporary hack
     if( not params.has_key('template') ):
+      print "Bailing due to lack of template."
       return [] # required param
     else:
       templ=Image(params['template'])
       templates=[templ]
+
+
 
     if( params.has_key('quality') ):
       quality = params['quality'] 

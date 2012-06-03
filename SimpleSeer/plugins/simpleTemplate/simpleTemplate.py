@@ -38,7 +38,7 @@ class SimpleTemplate(base.InspectionPlugin):
 
     #this is a temporary hack
     if( not params.has_key('template') ):
-      print "Bailing due to lack of template."
+      print "Bailing due to lack of template"
       return [] # required param
     else:
       templ=Image(params['template'])
