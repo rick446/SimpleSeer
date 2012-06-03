@@ -27,6 +27,9 @@ class EdgeWidthFeature(SimpleCV.Line):
     self.image = image
     self.end_points = intersections
     self.sourceLinePts = srcPts 
+    dx = intersections[0][0] - intersections[1][0]
+    dy = intersections[0][1] - intersections[1][1]
+    self.distance = np.sqrt( (dx*dx)+(dy*dy) )
     line = intersections 
     at_x = (line[0][0] + line[1][0]) / 2
     at_y = (line[0][1] + line[1][1]) / 2

@@ -89,7 +89,19 @@ result.append(u)
 v  = Inspection(name="derp",method="edgeWidth",parameters={"pt0":[0,50],"pt1":[640,390],"width":1,"saveFile":"test20.png"}).execute(Image("./testdata/rat1.png"))
 result.append(v)
 
+print "Doing simple template feature extractor."
 
+w  = Inspection(name="derp",method="simpleTemplate",parameters={"template":"./testdata/template.jpg","saveFile":"test21.png"}).execute(Image("./testdata/blister.jpg"))
+
+result.append(w)
+
+x  = Inspection(name="derp",method="simpleTemplate",parameters={"method":"CCOEFF_NORM","template":"./testdata/template.jpg","saveFile":"test22.png"}).execute(Image("./testdata/blister.jpg"))
+
+result.append(x)
+
+y  = Inspection(name="derp",method="simpleTemplate",parameters={"threshold":1.3,"template":"./testdata/template.jpg","saveFile":"test23.png"}).execute(Image("./testdata/blister.jpg"))
+
+result.append(y)
 
 
 print result

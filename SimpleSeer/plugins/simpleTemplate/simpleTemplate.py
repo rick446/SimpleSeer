@@ -1,6 +1,6 @@
 import numpy as np
 
-import SimpleCV
+from SimpleCV import *
 from SimpleSeer import models as M
 from SimpleSeer import util
 
@@ -13,16 +13,6 @@ insp = Inspection( name= "SimpleTemplate",
                    camera = "Default Camera")
 insp.save()
 
-
-meas = Measurement( name="center", 
-                    label="position", #Human readable name 
-                    method = "center", #the method to call on a regionFeature
-                    parameters = dict(), #not needed - store parameters here
-                    units = "pixels", # 
-                    featurecriteria = dict( index = 0 ), #not used
-                    inspection = insp.id #point back to the original inspection)
-
-meas.save()
 
 
 """
@@ -43,11 +33,12 @@ class SimpleTemplate(base.InspectionPlugin):
     retVal = []
     #we assume all of this is validated and correct 
     templates = [] # get templates from GridFS  
-    threshold = 5
+    threshold = 3
     method = "SQR_DIFF_NORM"
 
     #this is a temporary hack
     if( not params.has_key('template') ):
+      print "Bailing due to lack of template."
       return [] # required param
     else:
       templ=Image(params['template'])
