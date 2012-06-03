@@ -105,8 +105,20 @@ result.append(y)
 
 print "Doing keypoint template feature extractor."
 
-z  = Inspection(name="derp",method="keypointTemplate",parameters={"template":"./testdata/pangolin_template.jpg","saveFile":"test25.png","quality":100,"minDist":1 }).execute(Image("./testdata/pangolin.jpg"))
+z  = Inspection(name="derp",method="keypointTemplate",parameters={"template":"./testdata/pangolin_template.jpg","saveFile":"test24.png","quality":100,"minDist":1 }).execute(Image("./testdata/pangolin.jpg"))
 result.append(z)
+
+
+print "Doing region inspection"
+
+a  = Inspection(name="derp",method="region",parameters={"x":10,"y":10,"w":200,"h":200,"saveFile":"test25.png" }).execute(Image("./testdata/pangolin.jpg"))
+result.append(a)
+
+a  = Inspection(name="derp",method="region",parameters={"x":200,"y":200,"r":50,"saveFile":"test26.png" }).execute(Image("./testdata/pangolin.jpg"))
+result.append(a)
+
+a  = Inspection(name="derp",method="region",parameters={"contour":[[10,10],[50,50],[200,10],[300,100],[10,300]],"saveFile":"test27.png" }).execute(Image("./testdata/pangolin.jpg"))
+result.append(a)
 
 
 
