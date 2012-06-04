@@ -122,6 +122,9 @@ result.append(a)
 a  = Inspection(name="derp",method="region",parameters={"contour":[[10,10],[50,50],[200,10],[300,100],[10,300]],"saveFile":"test27.png" }).execute(Image("./testdata/pangolin.jpg"))
 result.append(a)
 
+print "Doing OCR inspection"
+
+a  = Inspection(name="derp",method="ocr",parameters={"saveFile":"test28.png" }).execute(Image("./testdata/ocr.jpg"))
 
 
 

@@ -32,7 +32,7 @@ setup(name="SimpleSeer",
   edgeWidth=SimpleSeer.plugins.edgeWidth:EdgeWidth
   simpleTemplate=SimpleSeer.plugins.simpleTemplate:SimpleTemplate
   keypointTemplate=SimpleSeer.plugins.keypointTemplate:KeypointTemplate
-
+  ocr=SimpleSeer.plugins.ocr:OCR
   [seer.plugins.measurement]
   blob_length=SimpleSeer.plugins.blob:BlobLength
   blob_count=SimpleSeer.plugins.blob:BlobCount
