@@ -24,9 +24,11 @@ module.exports = class HomeView extends View
   postRender: =>
     $('#date-from').datetimepicker {timeFormat: 'hh:mm:ss', onClose: (=> @changeTime())}
     $('#date-to').datetimepicker {timeFormat: 'hh:mm:ss', onClose: (=> @changeTime())}
+    $('#chart-interval').selectmenu()
     #$('#chart-interval').attr('value',application.charts.timeframe)
     @_makeNow()
     $('#date-to').attr 'disabled', 'disabled'
+
 
   _makeNow: =>
     if !application.charts.paused
