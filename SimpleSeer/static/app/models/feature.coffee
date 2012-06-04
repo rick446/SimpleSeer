@@ -28,5 +28,8 @@ module.exports = class Feature extends Model
     plugin = @getPluginMethod(@.get("featuretype"), 'render')
     if plugin?
       return plugin(pjs)
-      
+    pjs.stroke 0, 180, 180
+    pjs.strokeWeight 3
+    pjs.noFill()
+    pjs.rect @.get('x')-@.get('width')/2,@.get('y')-@.get('height')/2,@.get('width'),@.get('height')
     

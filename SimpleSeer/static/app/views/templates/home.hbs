@@ -9,12 +9,19 @@
         <li class="time_controls">
           <span class="subnav_content hide" id="control-bar-paused">
             <label>From</label> <input type="text" id="date-from">
-            <label>To</label> <input type="text" id="date-to">
           </span>
           <span class="subnav_content" id="control-bar-realtime">
-            <label>Interval</label> <input type="text" id="chart-interval">
+            <label>Interval</label>
+            <select id="chart-interval">
+              <option value="60">1 Minute</option>
+              <option value="300">5 Minute</option>
+              <option value="900">15 Minute</option>
+              <option value="1800">30 Minutes</option>
+            </select>
           </span>
-          <input type="button" id="controlbarchangebtn" value="Change">
+          <span>
+            <label>To</label> <input type="text" id="date-to">
+          </span>
         </li>
         <li class="search_bar">
           <span class="subnav_content">

@@ -47,7 +47,9 @@ class MotionFeature
     
   represent: () =>
     "Motion " + Math.round(@feature.get("featuredata").movement)
-    
+  
+  render: (pjs) =>
+    return
 plugin this, MotionFeature:MotionFeature
 '''
 

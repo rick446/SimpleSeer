@@ -65,8 +65,7 @@ module.exports = class OLAPs extends Collection
     control.html "Live"
     control.attr "title", "Click to pause"
     for obj in @.models
-      interval = application.settings.poll_interval || 1
-      tf = Math.round((new Date()).getTime() / 1000) - Math.ceil(application.charts.timeframe / interval)
+      tf = Math.round((new Date()).getTime() / 1000) - application.charts.timeframe
       obj.view.update parseInt(tf)
       application.socket.emit 'subscribe', 'OLAP/'+obj.attributes.name+'/'
     $('.alert_error').remove()
@@ -75,8 +74,9 @@ module.exports = class OLAPs extends Collection
     $('#preview').html ''
 
   callFrame: (e) =>
-    if e.point.config.id
-      @.pause(e.point.config.id)
+    if !@.paused
+      application.homeView.realtimeControl()
+      #@.pause(e.point.config.id)
       
   addFrame: (e) =>
     $('#preview').append '<img style="width:100px" id="image_'+e.target.id+'" src="/grid/imgfile/'+e.target.id+'">'
