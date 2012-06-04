@@ -125,7 +125,12 @@ result.append(a)
 print "Doing OCR inspection"
 
 a  = Inspection(name="derp",method="ocr",parameters={"saveFile":"test28.png" }).execute(Image("./testdata/ocr.jpg"))
+result.append(a)
 
+print "Doing Barcode inspection"
+
+a  = Inspection(name="derp",method="barcode",parameters={"saveFile":"test29.png" }).execute(Image("./testdata/barcode.jpg"))
+result.append(a)
 
 
 print result

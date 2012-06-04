@@ -44,6 +44,8 @@ class OCR(base.InspectionPlugin):
     retVal = []
 
     myWords = image.readText()
+    if(len(myWords)==0):
+      return []
 
     ff = M.FrameFeature()
     ff.setFeature(OCRFeature(image,myWords))
