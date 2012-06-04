@@ -42,7 +42,7 @@ module.exports = class ChartView extends View
   _formatChartPoint: (d) =>
     _point =
       y:Math.round(d.data[1])
-      x:new Date(d.data[0]*1000)
+      x:moment(d.data[0]*1000)
       id:d.frame_id
       events:
         click: application.charts.callFrame

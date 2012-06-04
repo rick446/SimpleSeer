@@ -9,6 +9,9 @@ module.exports = class HomeView extends View
     $.datepicker.setDefaults $.datepicker.regional['']
     @addSubview "frameview", FrameView, '#frame-container'
     $(window).on('scroll', @scrollSearchbar)
+    Highcharts.setOptions
+      global:
+        useUTC: false
   
   events:
     "click #realtimecontrol": "realtimeControl"
