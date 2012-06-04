@@ -6,13 +6,15 @@ application = require 'application'
 module.exports = class HomeView extends View
   initialize: =>
     super()
+    $.datepicker.setDefaults $.datepicker.regional['']
     @addSubview "frameview", FrameView, '#frame-container'
     $(window).on('scroll', @scrollSearchbar)
   
   events:
     "click #realtimecontrol": "realtimeControl"
-    "click #controlbarchangebtn": "changeTime"
+    #"click #controlbarchangebtn": "changeTime"
     "click li.timespan_toggle": "toggleTimespanControl"
+    "change #chart-interval": "changeInterval"
     
   id: 'home-view'
   template: template
@@ -20,21 +22,57 @@ module.exports = class HomeView extends View
     return chartcount : application.charts.length
 
   postRender: =>
-    $('#date-from').datetimepicker $.datepicker.regional[""]
-    $('#date-to').datetimepicker $.datepicker.regional[""]
-    $('#chart-interval').attr('value',application.charts.timeframe)
+    $('#date-from').datetimepicker {timeFormat: 'hh:mm:ss', onClose: (=> @changeTime())}
+    $('#date-to').datetimepicker {timeFormat: 'hh:mm:ss', onClose: (=> @changeTime())}
+    #$('#chart-interval').attr('value',application.charts.timeframe)
+    @_makeNow()
+    $('#date-to').attr 'disabled', 'disabled'
+
+  _makeNow: =>
+    if !application.charts.paused
+      if @_now
+        clearInterval @_now
+      $('#date-to').datetimepicker('setDate',new Date())
+      @_now = setInterval(->
+        interval = application.charts.timeframe * 1000
+        dt = new Date()
+        $('#date-to').datetimepicker('setDate',dt)
+        dtt = new Date(Math.round(dt.getTime() - interval))
+        $('#date-from').datetimepicker('setDate',dtt)
+      , 1000)
+    else
+      if @_now
+        clearInterval @_now      
+
+  changeInterval: (e)=>
+    application.charts.timeframe = e.target.value
+    @changeTime()
 
   realtimeControl: (evt)=>
-    evt.preventDefault()
+    if evt
+      evt.preventDefault()
     @toggleControlBar()
     if application.charts.paused
       application.charts.unpause()
+      $('#date-to').attr 'disabled', 'disabled'
     else
       application.charts.pause()
+      $('#date-to').removeAttr "disabled"      
+    @_makeNow()
     return
-  
+        
   changeTime: =>
     if application.charts.paused
+      f = $('#date-from')
+      t = $('#date-to')
+      #dt = moment()
+      dt = new Date
+      if !f.datetimepicker('getDate')
+        f.datetimepicker('setDate', dt)
+    
+      if !t.datetimepicker('getDate')
+        t.datetimepicker('setDate', dt.subtract('minutes',1))
+    
       _dtf = $('#date-from').datetimepicker('getDate')
       _dtt = $('#date-to').datetimepicker('getDate')
       if !_dtf
@@ -51,7 +89,6 @@ module.exports = class HomeView extends View
       application.charts.timeframe = $('#chart-interval').attr('value')
       for obj in application.charts.models
         obj.view.update()
-      
   toggleControlBar: =>
     $('#control-bar-realtime').toggleClass 'hide'
     $('#control-bar-paused').toggleClass 'hide'
