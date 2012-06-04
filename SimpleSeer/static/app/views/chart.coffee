@@ -41,7 +41,7 @@ module.exports = class ChartView extends View
   
   _formatChartPoint: (d) =>
     _point =
-      y:d.data[1]
+      y:Math.round(d.data[1])
       x:new Date(d.data[0]*1000)
       id:d.frame_id
       events:

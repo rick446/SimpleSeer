@@ -8,7 +8,7 @@ module.exports = class OLAPs extends Collection
   url: "/api/olap"
   model: OLAP
   paused: false
-  timeframe:60
+  timeframe:300
   
   customCharts:
     total: (d)->
