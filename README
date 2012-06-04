@@ -68,8 +68,6 @@ Run all these commands from WITHIN the SimpleSeer directory:
 
 *NOTE: Don't install python-pymongo from the repos as it is much too far out of date and requires 2+
 
-
-
 Mac OS X (Using homebrew)
 --------------------------------------
 
@@ -95,3 +93,22 @@ Mac OS X (Using homebrew)
 >>> install_mathjax()
 =======
 
+Optional Libraries
+============
+ZBAR
+This is a simplecv optional library that performs barcode reading.
+
+See:
+	http://pypi.python.org/pypi/zbar	
+Or:
+	sudo easy_install zbar 
+============
+TESSERACT
+This is a simplecv optional library that performs optical character recogntion (OCR). 
+Make sure to install the tesseract libraries and required python bindings
+
+See:
+http://code.google.com/p/python-tesseract/wiki/HowToCompilePythonTesseract
+
+	
+	
