@@ -33,6 +33,7 @@ module.exports = class Router extends Backbone.Router
     frame_view = (f) ->
       fdv = new FrameDetailView({model: f})
       $('#main').slideReplace fdv.render().el, 'right'
+      fdv.postRender()
        
     f = application.lastframes.get(id)
     if f
