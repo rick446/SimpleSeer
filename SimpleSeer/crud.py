@@ -33,7 +33,8 @@ def register(app):
                      'inspection', '/inspection'),
         ModelHandler(M.OLAP, M.OLAPSchema, 'olap', '/olap'),
         ModelHandler(M.Measurement, M.MeasurementSchema, 'measurement', '/measurement'),
-        ModelHandler(M.Frame, M.FrameSchema, 'frame', "/frame", ["delete", "get"])
+        ModelHandler(M.Frame, M.FrameSchema, 'frame', "/frame", ["delete", "get"]),
+        ModelHandler(M.FrameSet, M.FrameSetSchema, 'frameset', '/frameset')        
        ]
 
     for h in handlers:

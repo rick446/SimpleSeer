@@ -38,6 +38,7 @@ def load_ipython_extension(ipython):
             Frame = M.Frame,
             Result = M.Result,
             OLAP = M.OLAP,
+            FrameSet = M.FrameSet,
             Inspection = M.Inspection,
             Measurement = M.Measurement,
             M=M,
