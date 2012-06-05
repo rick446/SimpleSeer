@@ -1,14 +1,50 @@
-<h2>Image from {{camera}} at {{epoch capturetime}}
-<div id="frame" class="span9">
-  <div id="display"><img src="{{imgfile}}"><canvas id="displaycanvas"></canvas></div>
-  <p class="frame_icons">
-    <a href="{{imgfile}}?download=True"><i class="icon-download"></i> Download</a>
-  </p>
+
+<div class="row" style="margin-top: 21px; margin-bottom: 20px;">
+        <div id="frame" class="span9">
+                <div id="display"><img src="{{imgfile}}"><canvas id="displaycanvas"></canvas></div>
+                <p class="frame_icons">
+                        <a href="{{imgfile}}?download=True"><i class="icon-download"></i> Download</a>
+                </p>
+        </div>
+        <div id="properties" class="span3">
+                <table border="1" cellpadding="7">
+                        <thead>
+                                <th>Property</th>
+                                <th>Value</th>
+                        </thead>
+                        <tbody>
+                                <tr>
+                                        <td>Camera</td>
+                                        <td>{{camera}}</td>
+                                </tr>
+                                <tr>
+                                        <td>Capture Time</td>
+                                        <td>{{epoch capturetime}} <span>pm</span></td>
+                                </tr>
+                                <tr>
+                                        <td>Capture Date</td>
+                                        <td>{{epoch capturetime}}</td>
+                                </tr>
+                                <tr>
+                                        <td>Width</td>
+                                        <td>{{width}} <span>pixels</span></td>
+                                </tr>
+                                <tr>
+                                        <td>Height</td>
+                                        <td>{{height}} <span>pixels</span></td>
+                                </tr>
+                        </tbody>
+                </table>
+        </div>
 </div>
-{{#if featuretypes}}
-<div id="features" class="span11">
-  {{#each featuretypes}}
-    {{featuredetail this}}
-  {{/each}}
+
+
+<div class="row" style="margin-bottom: 30px;">
+  <div id="features" class="span9">
+    {{#each featuretypes}}
+      <div class="set">{{featuredetail this}}</div>
+    {{/each}}
+  </div>
 </div>
-{{/if}}
+
+
