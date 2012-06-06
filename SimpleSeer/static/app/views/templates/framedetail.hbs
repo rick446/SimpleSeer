@@ -41,7 +41,8 @@
 <div class="row" style="margin-bottom: 30px;">
   <div id="features" class="span12">
     {{#each featuretypes}}
-        <h3>{{this.length}} {{this.[0].plural}} Detected</h3>
+       
+        <h3>{{#if this.[0].icon}}<img class="featureicon" src="{{this.[0].icon}}">{{/if}}{{this.[0].name}} Detections</h3>
       <div class="set">{{featuredetail this}}</div>
     {{/each}}
   </div>
