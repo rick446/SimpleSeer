@@ -112,9 +112,9 @@ class SimpleSeer(object):
         self.capture()
         #~ Inspection.inspect()
         #self.update()
+        self.connection_file = None
         if self.config.auto_start:
             self.start()
-        self.connection_file = None
 
     #i don't really like this too much -- it should really update on
     #an Inspection load/save
@@ -197,7 +197,6 @@ class SimpleSeer(object):
       
         
     def capture(self):
-        gc.collect()
         count = 0
         currentframes = []
         self.framecount = self.framecount + 1
@@ -333,10 +332,13 @@ class SimpleSeer(object):
         return ret
     
     def run(self):
+        iteration = 0
         while True:
             time.sleep(0)
             while not self.halt:
                 timer_start = time.time()
+                if iteration % 1000 == 0: gc.collect()
+                iteration += 1
                 self.capture()
                 realtime.ChannelManager().publish('capture.', { "capture": 1})
 
@@ -352,7 +354,6 @@ class SimpleSeer(object):
                 #o.realtime()
                 
                 timeleft = Session().poll_interval - (time.time() - timer_start)
-
                 if timeleft > 0:
                     time.sleep(timeleft)
                 else:
