@@ -46,7 +46,9 @@ class MotionFeature
     @feature = feature
     
   represent: () =>
-    "Motion " + Math.round(@feature.get("featuredata").movement)
+    Math.round(@feature.get("featuredata").movement) + "%" + " Motion Detected"
+  
+  icon: => "/img/motion.png"
   
   render: (pjs) =>
     return
