@@ -13,6 +13,7 @@ Application =
     Measurements = require 'collections/measurements'
     Frames = require 'collections/frames'
     OLAPs = require 'collections/OLAPs'
+    FrameSets = require 'collections/framesets'
 
     @.socket = io.connect '/rt'
     @.socket.on 'connect', ->
@@ -23,12 +24,15 @@ Application =
       #alert 'disconnect'
     #@.socket.on 'message', (msg) ->
     #  console.log 'Got message', msg
-    
+
     @inspections = new Inspections()
     @inspections.fetch()
     @charts = new OLAPs()
     @measurements = new Measurements()
     @measurements.fetch()
+    @frames = new Frames()
+    @framesets = new FrameSets()
+    @framesets.fetch()
 
     @lastframes = new Frames()
 

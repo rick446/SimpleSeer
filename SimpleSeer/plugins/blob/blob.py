@@ -173,7 +173,7 @@ plugin this, blob:Blob
         feats = []
         
         for b in reversed(blobs): #change sort order to big->small
-            b.draw()
+            #b.draw()
             ff = M.FrameFeature()
             b.image = image
             ff.setFeature(b)
