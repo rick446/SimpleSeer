@@ -1,4 +1,53 @@
 # Put your handlebars.js helpers here.
+
+
+
+#logical functions, thanks to
+#https://github.com/danharper/Handlebars-Helpers and js2coffee.org
+Handlebars.registerHelper "if_eq", (context, options) ->
+  return options.fn(context)  if context is options.hash.compare
+  options.inverse context
+
+Handlebars.registerHelper "unless_eq", (context, options) ->
+  return options.unless(context)  if context is options.hash.compare
+  options.fn context
+
+Handlebars.registerHelper "if_gt", (context, options) ->
+  return options.fn(context)  if context > options.hash.compare
+  options.inverse context
+
+Handlebars.registerHelper "unless_gt", (context, options) ->
+  return options.unless(context)  if context > options.hash.compare
+  options.fn context
+
+Handlebars.registerHelper "if_lt", (context, options) ->
+  return options.fn(context)  if context < options.hash.compare
+  options.inverse context
+
+Handlebars.registerHelper "unless_lt", (context, options) ->
+  return options.unless(context)  if context < options.hash.compare
+  options.fn context
+
+Handlebars.registerHelper "if_gteq", (context, options) ->
+  return options.fn(context)  if context >= options.hash.compare
+  options.inverse context
+
+Handlebars.registerHelper "unless_gteq", (context, options) ->
+  return options.unless(context)  if context >= options.hash.compare
+  options.fn context
+
+Handlebars.registerHelper "if_lteq", (context, options) ->
+  return options.fn(context)  if context <= options.hash.compare
+  options.inverse context
+
+Handlebars.registerHelper "unless_lteq", (context, options) ->
+  return options.unless(context)  if context <= options.hash.compare
+  options.fn context
+
+Handlebars.registerHelper "nl2br", (text) ->
+  nl2br = (text + "").replace(/([^>\r\n]?)(\r\n|\n\r|\r|\n)/g, "$1" + "<br>" + "$2")
+  new Handlebars.SafeString(nl2br)
+
 Handlebars.registerHelper 'epoch', (epoch) ->
   d = new Date parseInt epoch * 1000
   
@@ -8,7 +57,26 @@ Handlebars.registerHelper 'epoch', (epoch) ->
     n.toString()
   
   (d.getMonth() + 1) + "/" + zp(d.getDate()) + " " + zp(d.getHours()) + ":" + zp(d.getMinutes()) + ":" + zp(d.getSeconds())
+
+Handlebars.registerHelper 'epochtime', (epoch) ->
+  d = new Date parseInt epoch * 1000
   
+  zp = (n) ->
+    if n < 10
+      n = "0" + n
+    n.toString()
+  
+  zp(d.getHours()) + ":" + zp(d.getMinutes()) + ":" + zp(d.getSeconds())
+
+Handlebars.registerHelper 'epochdate', (epoch) ->
+  d = new Date parseInt epoch * 1000
+  
+  zp = (n) ->
+    if n < 10
+      n = "0" + n
+    n.toString()
+  
+  (d.getMonth() + 1) + "/" + zp(d.getDate()) + "/" + d.getYear()
   
 Handlebars.registerHelper 'featuresummary', (featureset) ->
   unless featureset?
