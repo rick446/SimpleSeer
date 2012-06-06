@@ -28,15 +28,45 @@ meas.save()
 """
 
 class Circles(base.InspectionPlugin):
-  """
-  line parameters 
+  @classmethod
+  def coffeescript(cls):
+    yield 'models/inspection', '''
+class Circles
+  constructor: (inspection) ->
+    @inspection = inspection
+  represent: () =>
+    "Circle Detection"
+    #
+plugin this, circles:Circles
+'''
+
+    yield 'models/feature', '''
+class CircleFeature
+  constructor: (feature) ->
+    @feature = feature
+   
   
-  extraction parameters:
-  length = (minlength,maxlength)
-  angle = (minangle,maxangle)
-  canny = (lower,upper,threshold) 
-  gap = line gap 
-  """
+  icon: () => "/img/circle.png" 
+    
+  represent: () =>
+    "Circle Detected at (" + @feature.get("x") + ", " + @feature.get("y") + ") with radius " + @feature.get("featuredata").r
+    
+  tableOk: => true
+    
+  tableHeader: () =>
+    ["X Positon", "Y Position", "Radius", "Color"]
+    
+  tableData: () =>
+    [@feature.get("x"), @feature.get("y"), @feature.get("featuredata").r, @feature.get("meancolor")]
+    
+  render: (pjs) =>
+    pjs.stroke 0, 180, 180
+    pjs.strokeWeight 3
+    pjs.noFill()
+    pjs.ellipse( @feature.get('x'), @feature.get('y'), @feature.get('featuredata').r*2, @feature.get('featuredata').r*2 )
+        # map our python class to this CircleFeatureClass for purposes of getting data
+plugin this, Circle:CircleFeature
+'''
   def __call__(self, image):
     params = util.utf8convert(self.inspection.parameters)
     
