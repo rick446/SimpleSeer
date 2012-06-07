@@ -23,6 +23,24 @@ module.exports = class Feature extends Model
     plugin = @getPluginMethod(@.get("featuretype"), 'tableData')
     if plugin?
       return plugin()
+      
+  name: =>
+    plugin = @getPluginMethod(@.get("featuretype"), 'name')
+    if plugin?
+      return plugin()
+    return @.get("featuretype").replace("Feature","")
+    
+  plural: =>
+    plugin = @getPluginMethod(@.get("featuretype"), 'plural')
+    if plugin?
+      return plugin()
+    return @name() + "s"
+  
+  icon: =>
+    plugin = @getPluginMethod(@.get("featuretype"), 'icon')
+    if plugin?
+      return plugin()
+    return ""
   
   render: (pjs) =>
     plugin = @getPluginMethod(@.get("featuretype"), 'render')

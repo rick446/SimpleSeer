@@ -27,6 +27,9 @@ plugin this, face:Face
 class FaceFeature
   constructor: (feature) ->
     @feature = feature
+   
+  
+  icon: () => "/img/face.png" 
     
   represent: () =>
     "Face Detected at (" + @feature.get("x") + ", " + @feature.get("y") + ")"

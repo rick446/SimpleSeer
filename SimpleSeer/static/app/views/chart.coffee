@@ -45,14 +45,30 @@ module.exports = class ChartView extends View
       x:moment(d.data[0]*1000)
       id:d.frame_id
       events:
-        click: application.charts.callFrame
+        #click: application.charts.callFrame
         mouseOver: @.overPoint
-        select: application.charts.addFrame
-        unselect: application.charts.removeFrame
+        click: @.clickPoint #application.charts.addFrame
+        #unselect: @.unselectPoint #application.charts.removeFrame
 
   overPoint: (e) =>
+    if application.charts._imageLoader
+      clearInterval application.charts._imageLoader
+    application.charts._imageLoader = setTimeout (->
+      application.charts.previewImage e.target.id
+    ), 500
     for m in application.charts.models
       m.view.chart.showTooltip e.target.id, m.view.chart
+
+  clickPoint: (e) =>
+    application.charts.addFrame e.point.id
+    for m in application.charts.models
+      #if point.series.chart.container.parentElement.id != m.id
+      p = m.view.chart._c.get e.point.id
+      if p.marker && p.marker.radius > 2
+        #p.update({ marker: {}},true)
+      else
+        p.update({ marker: { color: '#BF0B23', radius: 5}},true)
+    return false
 
   _drawData: (data,reset) =>
     dd = []
@@ -161,6 +177,7 @@ module.exports = class ChartView extends View
       tooltip:
         snap:100
         crosshairs:true
+        #enabled:false
       #  headerFormat:
       #    ''
       #  pointFormat:

@@ -8,6 +8,7 @@ Application =
     HomeView = require 'views/home_view'
     FramelistView = require 'views/framelist_view'
     FrameDetailView = require 'views/framedetail_view'
+    #FrameSetView = require 'views/frameset_view'
     Router = require 'lib/router'
     Inspections = require 'collections/inspections'
     Measurements = require 'collections/measurements'
@@ -32,7 +33,6 @@ Application =
     @measurements.fetch()
     @frames = new Frames()
     @framesets = new FrameSets()
-    @framesets.fetch()
 
     @lastframes = new Frames()
 

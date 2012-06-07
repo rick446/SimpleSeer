@@ -1,6 +1,6 @@
 
-<div class="row" style="margin-top: 21px; margin-bottom: 20px;">
-        <div id="frame" class="span9">
+<div class="row framedetailrow">
+        <div id="frame" class="span8">
                 <div id="display"><img src="{{imgfile}}"><canvas id="displaycanvas"></canvas></div>
                 <p class="frame_icons">
                         <a href="{{imgfile}}?download=True"><i class="icon-download"></i> Download</a>
@@ -9,21 +9,20 @@
         <div id="properties" class="span3">
                 <table border="1" cellpadding="7">
                         <thead>
-                                <th>Property</th>
-                                <th>Value</th>
+
                         </thead>
                         <tbody>
                                 <tr>
                                         <td>Camera</td>
-                                        <td>{{camera}}</td>
+                                        <td><b>{{camera}}</b></td>
                                 </tr>
                                 <tr>
                                         <td>Capture Time</td>
-                                        <td>{{epoch capturetime}} <span>pm</span></td>
+                                        <td>{{epochtime capturetime}}</td>
                                 </tr>
                                 <tr>
                                         <td>Capture Date</td>
-                                        <td>{{epoch capturetime}}</td>
+                                        <td>{{epochdate capturetime}}</td>
                                 </tr>
                                 <tr>
                                         <td>Width</td>
@@ -40,8 +39,10 @@
 
 
 <div class="row" style="margin-bottom: 30px;">
-  <div id="features" class="span9">
+  <div id="features" class="span12">
     {{#each featuretypes}}
+       
+        <h3>{{#if this.[0].icon}}<img class="featureicon" src="{{this.[0].icon}}">{{/if}}{{this.[0].name}} Detections</h3>
       <div class="set">{{featuredetail this}}</div>
     {{/each}}
   </div>

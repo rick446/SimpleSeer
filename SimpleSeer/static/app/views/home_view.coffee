@@ -31,6 +31,8 @@ module.exports = class HomeView extends View
     #$('#chart-interval').attr('value',application.charts.timeframe)
     @_makeNow()
     $('#date-to').attr 'disabled', 'disabled'
+    application.framesets.fetch()
+
 
 
   _makeNow: =>
