@@ -119,6 +119,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
     transInfo = mongoengine.DictField()
     allow = mongoengine.IntField()
     aggregate = mongoengine.StringField()
+    realtime = mongoengine.IntField()
     
     def __repr__(self):
         return "<OLAP %s>" % self.name
@@ -153,7 +154,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
         
         # Create and return the chart
         c = Chart()
-        chartSpec = c.createChart(resultSet, self.chartInfo, self.name)
+        chartSpec = c.createChart(resultSet, self.chartInfo, self.name, self.realtime)
         return chartSpec
         
         
@@ -244,13 +245,15 @@ class OLAPFactory:
             # Make sure the rest of the setup is properly initialized
             o = self.makeOLAP(o.queryInfo, o.descInfo, o.transInfo, o.chartInfo)
         
-            similar = OLAP.objects.filter(name=o.name)
-            if (len(similar) == 0):
-                log.info('made a new olap for aggregation: ' + o.name)
-                o.save()
-            else:
-                log.info('switching to olap: ' + o.name)
-                o = similar[0]
+            o.realtime = 0
+        
+            #similar = OLAP.objects.filter(name=o.name)
+            #if (len(similar) == 0):
+            #    log.info('made a new olap for aggregation: ' + o.name)
+            #    o.save()
+            #else:
+            #    log.info('switching to olap: ' + o.name)
+            #    o = similar[0]
             
         return o
     
@@ -326,6 +329,7 @@ class OLAPFactory:
         if not chartInfo.has_key('name'): chartInfo['name'] = 'line'
         if not chartInfo.has_key('minval'): chartInfo['minval'] = None
         if not chartInfo.has_key('maxval'): chartInfo['maxval'] = None
+        if not chartInfo.has_key('xtype'): chartInfo['xtype'] = 'datetime'
         
         return chartInfo
 
@@ -388,7 +392,7 @@ class Chart:
 		return ranges
     
     
-    def createChart(self, resultSet, chartInfo, olapName = ''):
+    def createChart(self, resultSet, chartInfo, olapName = '', realtime = 1):
         # This function will change to handle the different formats
         # required for different charts.  For now, just assume nice
         # graphs of (x,y) coordiantes
@@ -406,7 +410,8 @@ class Chart:
                       'labels': resultSet['labels'],
                       'range': chartRange,
                       'data': resultSet['data'],
-                      'olap': olapName }
+                      'olap': olapName,
+                      'realtime': realtime }
         
         return chartData
 
@@ -885,3 +890,21 @@ class Transform:
         # Standard deviations from a specified base value
         return (x - base) / float(np.std(x))
     
+    
+class Inferential:
+    
+    def recentEventStats(resultSet, thresh):
+        endTime = self.recentEventEnd(resultSet, thresh)
+        startTime = self.recentEventStart(resultSet, endTime, thresh)
+        mag = self.recentEventMagnitue(resultToResultSet, startTime, endTime)
+        
+        return [startTime, endTime, mag]
+    
+    def recentEventEnd(resultSet, thresh):
+        return 0
+        
+    def recentEvenStart(resultSet, end, thresh):
+        return 0
+        
+    def recentEventMagnitue(resultSet, start, end):
+        return 0
