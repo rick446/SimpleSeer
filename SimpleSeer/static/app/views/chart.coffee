@@ -15,13 +15,14 @@ module.exports = class ChartView extends View
     return false
 
   update: (frm, to, reset=true )=>
+    name = application.charts._byId[@.anchorId].attributes.name
     if frm and to
-      url = "/olap/Motion/since/"+frm+"/before/" + to
+      url = "/olap/"+name+"/since/"+frm+"/before/" + to
     else if frm
-      url = "/olap/Motion/since/" + frm
+      url = "/olap/"+name+"/since/" + frm
     else
       interval = application.settings.poll_interval || 1
-      url = "/olap/Motion/limit/"+Math.ceil(application.charts.timeframe / interval)
+      url = "/olap/"+name+"/limit/"+Math.ceil(application.charts.timeframe / interval)
     $.getJSON(url, (data) =>
       @._drawDataLegacy data.data,reset
       $('.alert_error').remove()
@@ -45,14 +46,30 @@ module.exports = class ChartView extends View
       x:moment(d.data[0]*1000)
       id:d.frame_id
       events:
-        click: application.charts.callFrame
+        #click: application.charts.callFrame
         mouseOver: @.overPoint
-        select: application.charts.addFrame
-        unselect: application.charts.removeFrame
+        click: @.clickPoint #application.charts.addFrame
+        #unselect: @.unselectPoint #application.charts.removeFrame
 
   overPoint: (e) =>
+    if application.charts._imageLoader
+      clearInterval application.charts._imageLoader
+    application.charts._imageLoader = setTimeout (->
+      application.charts.previewImage e.target.id
+    ), 500
     for m in application.charts.models
       m.view.chart.showTooltip e.target.id, m.view.chart
+
+  clickPoint: (e) =>
+    application.charts.addFrame e.point.id
+    for m in application.charts.models
+      #if point.series.chart.container.parentElement.id != m.id
+      p = m.view.chart._c.get e.point.id
+      if p.marker && p.marker.radius > 2
+        #p.update({ marker: {}},true)
+      else
+        p.update({ marker: { color: '#BF0B23', radius: 5}},true)
+    return false
 
   _drawData: (data,reset) =>
     dd = []
@@ -91,7 +108,7 @@ module.exports = class ChartView extends View
     this
 
   chartInit: (cd) ->
-    if cd.chartInfo.name.toLowerCase() in ['line','pie','spline','areaspline']
+    if cd.chartInfo.name.toLowerCase() in ['line', 'bar', 'pie', 'spline', 'area', 'areaspline','column','scatter']
       _l = 'highchart'
       _c = @_dhc cd
     else
@@ -161,6 +178,7 @@ module.exports = class ChartView extends View
       tooltip:
         snap:100
         crosshairs:true
+        #enabled:false
       #  headerFormat:
       #    ''
       #  pointFormat:

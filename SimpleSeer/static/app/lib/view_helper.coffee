@@ -84,7 +84,10 @@ Handlebars.registerHelper 'featuresummary', (featureset) ->
   #TODO, group by featuretype  
   ret = ''
   for f in featureset.models
-    ret += "<li>" + f.represent() + "</li>"
+    icon = ""
+    if f.icon()
+      icon = "<img src=\"" + f.icon() + "\">"
+    ret += "<li class=feature>" + icon + f.represent() + "</li>"
     
   new Handlebars.SafeString(ret)
   

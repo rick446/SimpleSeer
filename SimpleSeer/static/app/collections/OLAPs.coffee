@@ -44,6 +44,23 @@ module.exports = class OLAPs extends Collection
         mod.view.render()
     return
 
+  previewImage: (fId) =>
+    if application.charts.paused
+      @.changeFrameImage fId
+
+  unclickPoint: (fId) =>
+    for m in @.models
+      p = m.view.chart._c.get fId
+      if p && p.marker && p.marker.radius > 2
+        p.update({ marker: {}},true)
+    return false
+
+  changeFrameImage: (fId) =>
+    fDom = $('#frame img')
+    if !fDom.attr('live')
+      fDom.attr('live',fDom.attr('src'))
+    fDom.attr('src','/grid/imgfile/'+fId)
+
   pause: (fId) =>
     @.paused = true
     control = $ "#realtimecontrol"
@@ -51,10 +68,7 @@ module.exports = class OLAPs extends Collection
     control.attr "title", "Click to enter live mode"
     if !fId
       fId = @lastframe
-    fDom = $('#frame img')
-    if !fDom.attr('live')
-      fDom.attr('live',fDom.attr('src'))
-    fDom.attr('src','/grid/imgfile/'+fId)
+    @.changeFrameImage fId
     for obj in @.models
       application.socket.emit 'unsubscribe', 'OLAP/'+obj.attributes.name+'/'
     #application.alert('<a href="#">Pause</a>','error')
@@ -78,8 +92,11 @@ module.exports = class OLAPs extends Collection
       application.homeView.realtimeControl()
       #@.pause(e.point.config.id)
       
-  addFrame: (e) =>
-    $('#preview').append '<img style="width:100px" id="image_'+e.target.id+'" src="/grid/imgfile/'+e.target.id+'">'
+  addFrame: (id) =>
+    @.pause id
+    if application.framesets.models[0]
+      application.framesets.models[0].addFrame(id)
+    #$('#preview').append '<img style="width:100px" id="image_'+e.target.id+'" src="/grid/imgfile/'+e.target.id+'">'
   
-  removeFrame: (e) =>
-    $('#image_'+e.target.id).remove()
+  removeFrame: (id) =>
+    $('#image_'+id).remove()

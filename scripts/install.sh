@@ -1,8 +1,6 @@
 #!/bin/sh
 #This is an install script for Seer.  It is intended to run on Ubuntu 12.04
 #it is meant to run from where you want to run SimpleSeer from
-wget https://github.com/ingenuitas/SimpleSeer/zipball/master -O SimpleSeer.zip; unzip SimpleSeer.zip; mv ingenuitas-* SimpleSeer;
-cd SimpleSeer
 sudo apt-get install python-dev python-setuptools python-pip libzmq-dev mongodb nodejs npm build-essential python-gevent libevent-dev supervisor ipython-notebook
 sudo npm install -g brunch
 sudo pip install -r pip.requirements

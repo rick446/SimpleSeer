@@ -9,6 +9,8 @@ def main():
     subparsers = parser.add_subparsers(
         title='subcommands',
         description='valid subcommands')
+    perftest = subparsers.add_parser(
+        'perftest', description='Run the core performance test')
     core = subparsers.add_parser(
         'core', description='Run the core server')
     broker = subparsers.add_parser(
@@ -27,6 +29,7 @@ def main():
     parser.add_argument(
         '-c', '--config', dest='config', default='default.cfg')
     core.set_defaults(func=run_core)
+    perftest.set_defaults(func=run_perftest)
     broker.set_defaults(func=run_broker)
     web.set_defaults(func=run_web)
     scrub.set_defaults(func=run_scrubber)
@@ -54,6 +57,18 @@ def run_core(session):
             seer: "sightmachine.seer"
             },
         ns=True)
+
+def run_perftest(session):
+    from SimpleSeer.SimpleSeer import SimpleSeer
+    from SimpleSeer import models as M
+    if session.mongo.has_key("is_slave") and session.mongo["is_slave"]:
+        M.base.SimpleDoc.meta['auto_create_index'] = False
+
+    session.auto_start = False
+    session.poll_interval = 0
+    seer = SimpleSeer()
+    seer.run()
+
 
 def run_web(session):
     init_gevent_subprocess()

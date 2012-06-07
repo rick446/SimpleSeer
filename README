@@ -44,12 +44,13 @@ TODO: update these to include a virtualenv
 
 Ubuntu Linux 12.04
 -----------------------------------
-Download or git clone the repo:
+To run the installer:
 
 	wget https://github.com/ingenuitas/SimpleSeer/zipball/master -O SimpleSeer.zip; unzip SimpleSeer.zip; mv ingenuitas-* SimpleSeer;
 	cd SimpleSeer
+	sh scripts/install.sh
 
-Run all these commands from WITHIN the SimpleSeer directory:
+or manually install with these commands from WITHIN the SimpleSeer directory:
 
 	sudo apt-get install python-dev python-setuptools python-pip libzmq-dev mongodb nodejs npm build-essential python-gevent libevent-dev supervisor ipython-notebook
 	sudo npm install -g brunch
