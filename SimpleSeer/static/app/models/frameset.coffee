@@ -1,6 +1,6 @@
 Model = require "./model"
 FrameSetView = require '../views/frameset_view'
-
+application = require '../application'
 
 module.exports = class FrameSet extends Model
   urlRoot: -> "/api/frameset"
@@ -16,6 +16,7 @@ module.exports = class FrameSet extends Model
         return false
       return true
     )
+    application.charts.unclickPoint fId
     @.save()
   parse: (response)=>
     @view = new FrameSetView(response)
