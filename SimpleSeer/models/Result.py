@@ -1,4 +1,5 @@
 import mongoengine
+import calendar
 
 from .base import SimpleDoc
 from .. import realtime
@@ -21,6 +22,12 @@ class Result(SimpleDoc, mongoengine.Document):
         'indexes': ["capturetime", ('camera', '-capturetime'), "frame", "inspection", "measurement"]
     }
 
+    
+    def capEpochMS(self):
+        # Shortcut to return the capture time in epoch microseconds
+        return calendar.timegm(self.capturetime.timetuple()) + self.capturetime.time().microsecond / 1000000.0
+
+    capturetimeEpochMS = property(capEpochMS)
 
     def save(self, *args, **kwargs):
         # Push notification to OLAP to decide whether to publish this update
