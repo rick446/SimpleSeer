@@ -142,3 +142,39 @@ class Frame(SimpleDoc, mongoengine.Document):
             return dict(
                 content_type='image/jpeg',
                 data=s.getvalue())
+
+    @classmethod
+    def search(cls, filters, sorts, skip, limit):
+        db = cls._get_db()
+        # Use the agg fmwk to generate frame ids
+        pipeline = [
+            # initial match to reduce number of frames to search
+            {'$match': filters },
+            # unwind features and results so we can do complex queries
+            # against a *single* filter/result
+            {'$unwind': '$features'},
+            {'$unwind': '$results' },
+            # Re-run the queries
+            {'$match': filters },
+            {'$sort': sorts },
+            {'$project': {'_id': 1} }]
+        cmd = db.command('aggregate', 'frame', pipeline=pipeline)
+        seen = set()
+        ids = []
+        # We have to do skip/limit in Python so we can skip over duplicate frames
+        for doc in cmd['result']:
+            id = doc['_id']
+            if id in seen: continue
+            seen.add(id)
+            if skip > 0:
+                skip -= 1
+                continue
+            ids.append(id)
+            if len(ids) >= limit: break
+        frames = cls.objects.filter(id__in=ids)
+        frame_index = dict(
+            (f.id, f) for f in frames)
+        for id in ids:
+            frame = frame_index.get(id)
+            if frame is None: continue
+            yield frame

@@ -100,8 +100,11 @@ def frames():
     params = request.values.to_dict()
     f_params = json.loads(params.get('filter', '[]'))
     s_params = json.loads(params.get('sort', '[]'))
-    result = M.Frame.search(f_params, s_params)
-    return result
+    skip = int(params.get('skip', 0))
+    limit = int(params.get('limit', 20))
+    frames = M.Frame.search(f_params, s_params, skip, limit)
+    frames = list(frames)
+    return frames
 
 #TODO, abstract this for layers and thumbnails        
 @route('/grid/imgfile/<frame_id>', methods=['GET'])

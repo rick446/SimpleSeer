@@ -1,4 +1,5 @@
 import cPickle as pickle
+from binascii import b2a_base64, a2b_base64
 from copy import deepcopy
 
 import cv
@@ -12,7 +13,9 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
    
     featuretype = mongoengine.StringField()
     featuredata = mongoengine.DictField()  #this holds any type-specific feature data
-    featurepickle = mongoengine.BinaryField() #a pickle of the feature, for rendering out
+    # featurepickle = mongoengine.BinaryField() #a pickle of the feature, for
+    # rendering out
+    featurepickle_b64 = mongoengine.StringField() #a pickle of the feature, for rendering out
     _featurebuffer = ''
     #this is incredibly sloppy, really -- but we're going to get away with it
     #because features are essentially immutable
@@ -38,6 +41,14 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
     featuredata_mask = {
         "image": False
     }
+
+    @property
+    def featurepickle(self):
+        return a2b_base64(self.featurepickle_b64)
+    
+    @featurepickle.setter
+    def featurepickle(self, value):
+        self.featurepickle_b64 = b2a_base64(value)
     
     #this converts a SimpleCV Feature object into a FrameFeature
     #clean this up a bit
