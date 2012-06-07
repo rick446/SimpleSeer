@@ -45,14 +45,34 @@ module.exports = class ChartView extends View
       x:moment(d.data[0]*1000)
       id:d.frame_id
       events:
-        click: application.charts.callFrame
+        #click: application.charts.callFrame
         mouseOver: @.overPoint
-        select: application.charts.addFrame
-        unselect: application.charts.removeFrame
+        click: @.selectPoint #application.charts.addFrame
+        unselect: @.unselectPoint #application.charts.removeFrame
 
   overPoint: (e) =>
     for m in application.charts.models
       m.view.chart.showTooltip e.target.id, m.view.chart
+
+  selectPoint: (e) =>
+    application.charts.addFrame e.point.id
+    #console.log e
+    for m in application.charts.models
+      #if point.series.chart.container.parentElement.id != m.id
+      p = m.view.chart._c.get e.point.id
+      if p.select
+        #p.applyOptions({selected:true})
+        p.select()
+        #p.applyOptions({selected:true})
+    return false
+
+  unselectPoint: (e) =>
+    application.charts.removeFrame e.target.id
+    for m in application.charts.models
+      p = m.view.chart._c.get e.target.id
+      if p.selected
+        p.applyOptions({selected:false})
+    return true
 
   _drawData: (data,reset) =>
     dd = []

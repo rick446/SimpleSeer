@@ -71,6 +71,10 @@ class ModelHandler(object):
 
     def _get_body(self, body):
         try:
+            try:
+                del body['id']
+            except KeyError:
+                pass
             values = self.schema.to_python(body, None)
         except fe.Invalid, inv:
             raise exceptions.BadRequest(inv.unpack_errors())
@@ -82,7 +86,7 @@ class ModelHandler(object):
         obj.save()
         return 201, obj
 
-    def update(self, *kwargs):
+    def update(self, **kwargs):
         id = kwargs.values()[0]
         obj = self._get_object(id)
         values = self._get_body(flask.request.json)
@@ -90,7 +94,7 @@ class ModelHandler(object):
         obj.save()
         return 200, obj
 
-    def delete(self, *kwargs):
+    def delete(self, **kwargs):
         id = kwargs.values()[0]
 
 

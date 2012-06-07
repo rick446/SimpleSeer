@@ -78,8 +78,9 @@ module.exports = class OLAPs extends Collection
       application.homeView.realtimeControl()
       #@.pause(e.point.config.id)
       
-  addFrame: (e) =>
-    $('#preview').append '<img style="width:100px" id="image_'+e.target.id+'" src="/grid/imgfile/'+e.target.id+'">'
+  addFrame: (id) =>
+    application.framesets.models[0].addFrame(id)
+    #$('#preview').append '<img style="width:100px" id="image_'+e.target.id+'" src="/grid/imgfile/'+e.target.id+'">'
   
-  removeFrame: (e) =>
-    $('#image_'+e.target.id).remove()
+  removeFrame: (id) =>
+    $('#image_'+id).remove()
