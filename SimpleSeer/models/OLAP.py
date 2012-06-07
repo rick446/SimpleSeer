@@ -27,6 +27,8 @@ log = logging.getLogger(__name__)
 # descInfo: configuration for the Descriptive statistic processing
 # chartInfo: configuration for the chart to be displayed
 # transInfo: configuration for final data transforms (normalize, etc)
+# allow: number of records after which triggering automatic aggregation: THIS WILL CHANGE SOON
+# aggregate: the descriptive statistic to use for the automatic aggregation: THIS WILL CHANGE SOON 
 #################################
 
 class OLAPSchema(fes.Schema):
@@ -35,26 +37,27 @@ class OLAPSchema(fes.Schema):
     descInfo = V.JSON(if_empty=None, if_missing=None)   
     chartInfo = V.JSON(not_empty=True)
     transInfo = V.JSON(if_empty=None, if_missing=None)
-    
-    
-#################################
-# queryType: defines the type of objects to be queries (inspections, measurements, results
-# TODO: queryType not implemented
-# name: name of the object to lookup (object type defined by queryType)
-# since: show only results with timestamp strictly greater than this time
-# limit: limit the results returned to this number (by default, these are ordered by capture time)
-# allow: number of records after which triggering automatic aggregation: THIS WILL CHANGE SOON
-# aggregate: the descriptive statistic to use for the automatic aggregation: THIS WILL CHANGE SOON 
-#################################
-  
-class QueryInfoSchema(fes.Schema):
-    queryType = fev.OneOf(['inspection', 'measurement'], if_missing='inspection')
-    name = fev.UnicodeString(not_empty = True)
-    since = V.DateTime(if_empty=0, if_missing=None)
-    limit = fev.Int(if_missing=None)
     allow = fev.Int(if_missing=None)
     aggregate = fev.OneOf(['moving', 'mean', 'median', 'mode', 'var', 'std', 'max', 'min', 'first', 'last', 'uq', 'lq'], if_missing=None)
 
+    
+#################################
+# queryType: defines the type of objects to be queries (inspections, measurements, results
+# name: name of the object to lookup (object type defined by queryType)
+# since: show only results with timestamp strictly greater than this time
+# limit: limit the results returned to this number (by default, these are ordered by capture time)
+#################################
+  
+class QueryInfoSchema(fes.Schema):
+    objType = fev.OneOf(['inspection', 'measurement'], if_missing='inspection')
+    objName = fev.UnicodeString(not_empty = True)
+    objId = fev.UnicodeString(if_empty=None, if_missing=None)
+    objFields = fev.Set(if_empty=None, if_missing=None)
+    since = V.DateTime(if_empty=0, if_missing=None)
+    before = V.DateTime(if_empty=0, if_missing=None)
+    required = fev.Int(if_missing=None)
+    limit = fev.Int(if_missing=None)
+    
 
 #################################
 # formula: the descriptive statistic to apply
@@ -65,7 +68,7 @@ class QueryInfoSchema(fes.Schema):
 #################################
 
 class DescInfoSchema(fes.Schema):
-    formula = fev.OneOf(['moving', 'mean', 'median', 'mode', 'var', 'std', 'max', 'min', 'first', 'last', 'uq', 'lq'], if_missing=None)
+    formula = fev.OneOf(['moving', 'mean', 'median', 'mode', 'var', 'std', 'max', 'min', 'first', 'last', 'uq', 'lq', 'count'], if_missing=None)
     window = fev.Int(if_missing=60)
     partial = fev.OneOf(['drop', 'raw', 'predict'], if_missing='drop')
     
@@ -85,14 +88,16 @@ class TransformSchema(fes.Schema):
 
 
 #################################
-# chartType: the style of chart to draw (e.g., bar, pie, etc)
-# chartColor: the color of the lines in the chart
+# name: the style of chart to draw (e.g., bar, pie, etc)
+# color: the color of the lines in the chart
 # TODO, color should maybe be validated to a hex string or web color
 #################################
 
 class ChartInfoSchema(fes.Schema):
-    chartType = fev.OneOf(['line', 'bar', 'pie', 'spline', 'area', 'areaspline','column','scatter'])
-    chartColor = fev.UnicodeString(if_empty="")
+    name = fev.OneOf(['line', 'bar', 'pie', 'spline', 'area', 'areaspline','column','scatter'])
+    color = fev.UnicodeString(if_empty="")
+    minval = fev.Int(if_missing=None, if_empty=None)
+    maxval = fev.Int(if_missing=None, if_empty=None)
 
         
 
@@ -135,8 +140,6 @@ class OLAP(SimpleDoc, mongoengine.Document):
         
         # Also an implicit descriptive if too many results per chart
         # If exceeded, aggregate
-        # Hard code in a default allow for backward compatibility
-        if not self.allow: self.allow = 900
         if (len(resultSet['data']) > self.allow):
             of = OLAPFactory()
             self = of.fromBigOLAP(self, resultSet)
@@ -144,6 +147,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
             # Redo the descriptive with the new aggregation
             d = DescriptiveStatistic()
             resultSet = d.execute(resultSet, self.descInfo)
+        
             
         #TODO: Re-integrate transformations here
         
@@ -217,7 +221,7 @@ class OLAPFactory:
         # Given a large OLAP object (returning too many records), return one with a descriptive transform to aggregate data
         # Assumes existing resultset provided, use that for computing size of object
         
-        # TODO: this will clobber the aggregation function for moving average
+        # NOTE: this will clobber the aggregation function for moving average
         
         o = olap
         
@@ -261,36 +265,51 @@ class OLAPFactory:
         o.transInfo = self.makeTrans(transInfo)
         o.chartInfo = self.makeChart(chartInfo)
         
-        o.name = o.queryInfo['queryType'] + o.descInfo['formula'] + str(o.descInfo['window'])
         if not o.allow: o.allow = 900
         if not o.aggregate: o.aggregate = 'median'
+        if o.descInfo:
+            o.name = o.queryInfo['objType'] + o.descInfo['formula'] + str(o.descInfo['window'])
+        else:
+            o.name = o.queryInfo['objType'] + str(o.queryInfo['objName']) + str(o.queryInfo['objId'])
         
         return o
     
     def makeQuery(self, queryInfo):
         # Hard code default to querying Results
-        if not queryInfo.has_key('queryType'): queryInfo['queryType'] = 'inspection'
+        if not queryInfo.has_key('objType'): queryInfo['queryType'] = 'inspection'
         
         # Hard code to query the first object of type queryTYpe
-        if not queryInfo.has_key('name'):
-            if queryInfo['queryType'] == 'measurement':
-                queryInfo['id'] = Measurement.objects[0].id
-            elif queryInfo['queryType'] == 'inspection':
-                queryInfo['id'] = Inspection.objects[0].id 
+        if not queryInfo.has_key('objName'):
+            queryInfo['objName'] = None
+            if queryInfo['objType'] == 'measurement':
+                queryInfo['objId'] = Measurement.objects[0].id
+            elif queryInfo['objType'] == 'inspection':
+                queryInfo['objId'] = Inspection.objects[0].id 
             else:
-                log.warn('Unknown query type provided to OLAP Factory: ' + queryInfo['queryType'])
+                log.warn('Unknown query type provided to OLAP Factory: ' + queryInfo['objType'])
+        else:
+            queryInfo['objId'] = None
+            
+        if not queryInfo.has_key('objFields'): queryInfo['objFields'] = ['capturetimeEpochMS', 'numeric', 'inspection', 'frame', 'measurement', 'id']
         
         # Limit of 1000
         if not queryInfo.has_key('limit'): queryInfo['limit'] = None
+        if not queryInfo.has_key('required'): queryInfo['required'] = None
+        if not queryInfo.has_key('before'): queryInfo['before'] = None
+        if not queryInfo.has_key('since'): queryInfo['since'] = None
         
         return queryInfo
         
     def makeDesc(self, descInfo):
+        # Don't create if was passed None
         # By default, assume that they want a median, grouped by minute, dropping partials
-        if not descInfo.has_key('formula'): descInfo['formula'] = 'median'
-        if not descInfo.has_key('window'): descInfo['window'] = 60
-        if not descInfo.has_key('partial'): descInfo['partial'] = 'drop'
-        
+        if not descInfo == None:
+            if not descInfo.has_key('formula'): descInfo['formula'] = 'median'
+            if not descInfo.has_key('window'): descInfo['window'] = 60
+            if not descInfo.has_key('partial'): descInfo['partial'] = 'drop'
+            if not descInfo.has_key('trim'): descInfo['trim'] = True
+            if not descInfo.has_key('params'): descInfo['params'] = ['capturetimeEpochMS', 'numeric']
+            
         return descInfo
         
     def makeTrans(self, transInfo):
@@ -303,8 +322,10 @@ class OLAPFactory:
         return transInfo
 
     def makeChart(self, chartInfo):
-        if not chartInfo.has_key('chartcolor'): chartInfo['chartColor'] = ''
-        if not chartInfo.has_key('chartType'): chartInfo['chartType'] = 'line'
+        if not chartInfo.has_key('color'): chartInfo['color'] = 'blue'
+        if not chartInfo.has_key('name'): chartInfo['name'] = 'line'
+        if not chartInfo.has_key('minval'): chartInfo['minval'] = None
+        if not chartInfo.has_key('maxval'): chartInfo['maxval'] = None
         
         return chartInfo
 
@@ -372,21 +393,16 @@ class Chart:
         # required for different charts.  For now, just assume nice
         # graphs of (x,y) coordiantes
         
-        chartRange = self.dataRange(resultSet['data'])
-        
-        # This is for backward compatibility
-        if chartInfo.has_key('name'):
-            name = chartInfo['name']
-        else:
-            name = chartInfo['chartType']
+        # If missing either/both of the predefined chart range values
+        if not chartInfo['minval'] or not chartInfo['maxval']:
+            chartRange = self.dataRange(resultSet['data'])
             
-        if chartInfo.has_key('color'):
-            color = chartInfo['color']
-        else:
-            color = chartInfo['chartColor']
+        # Override comptued values if they were defined
+        if chartInfo['minval']: chartRange['min'] = chartInfo['minval']
+        if chartInfo['maxval']: chartRange['max'] = chartInfo['maxval']
         
-        chartData = { 'chartType': chartInfo['name'],
-                      'chartColor': chartInfo['color'],
+        chartData = { 'name': chartInfo['name'],
+                      'color': chartInfo['color'],
                       'labels': resultSet['labels'],
                       'range': chartRange,
                       'data': resultSet['data'],
@@ -401,178 +417,220 @@ class DescriptiveStatistic:
     
     def execute(self, resultSet, descInfo):
         self._descInfo = descInfo
+
+        
+        data = resultSet['data']
+        
+        # Right now I'm still hard coding to two parameters (group, series)
+        binIdx = resultSet['labels'].index(descInfo['params'][0])
+        valIdx = resultSet['labels'].index(descInfo['params'][1])
       
+        data.sort(key=lambda x: x[binIdx])
+      
+        dataArr = np.array(data)
+        parts = np.hsplit(dataArr, len(dataArr[0]))
+        
+        group = parts[binIdx].flatten().tolist()
+        series = parts[valIdx].flatten().tolist()
+        
+        # Remove the two main data points and track the rest of the meta data
+        meta = parts
+        del(meta[binIdx])
+        
+        # Adjust the index to delete based on the previous deletion
+        delValIdx = valIdx
+        if binIdx < valIdx: delValIdx -= 1
+        del(meta[delValIdx])
+        
+        # Fix meta so each list element consists of a list of all the non-used entries per result
+        meta = np.hstack((m for m in meta)).tolist()
+        
+        
         # Moving Average
         if (descInfo['formula'] == 'moving'):
-            resultSet['data'] = self.movingAverage(resultSet['data'], descInfo['window'])
-            resultSet['labels']['dim1'] = str(descInfo['window']) + ' Measurement Moving Average'
+            resultSet['data'] = self.assemble(self.movingAverage(group, series, meta, descInfo['window']))
+            resultSet['labels'][valIdx] = str(descInfo['window']) + ' Measurement Moving Average'
         # Mean
         elif (descInfo['formula'] == 'mean'):
-            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.mean)
-            resultSet['labels']['dim1'] = 'Mean, group by ' + self.epochToText(descInfo['window'])
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], np.mean))
+            resultSet['labels'][valIdx] = 'Mean, group by ' + self.epochToText(descInfo['window'])
         # Median
         elif (descInfo['formula'] == 'median'):
-            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.median)
-            resultSet['labels']['dim1'] = 'Median, group by ' + self.epochToText(descInfo['window'])
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], np.median))
+            resultSet['labels'][valIdx] = 'Median, group by ' + self.epochToText(descInfo['window'])
         # Mode
         elif (descInfo['formula'] == 'mode'):
-            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], self.mode)
-            resultSet['labels']['dim1'] = 'Mode, group by ' + self.epochToText(descInfo['window'])
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], self.mode))
+            resultSet['labels'][valIdx] = 'Mode, group by ' + self.epochToText(descInfo['window'])
         # Variance
         elif (descInfo['formula'] == 'var'):
-            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.var)
-            resultSet['labels']['dim1'] = 'Variance, group by ' + self.epochToText(descInfo['window'])
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], np.var))
+            resultSet['labels'][valIdx] = 'Variance, group by ' + self.epochToText(descInfo['window'])
         # Standard Deviation
         elif (descInfo['formula'] == 'std'):
-            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.std)
-            resultSet['labels']['dim1'] = 'Standard Deviation, group by ' + self.epochToText(descInfo['window'])
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], np.std))
+            resultSet['labels'][valIdx] = 'Standard Deviation, group by ' + self.epochToText(descInfo['window'])
         # Max
         elif (descInfo['formula'] == 'max'):
-            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.max)
-            resultSet['labels']['dim1'] = 'Maximum, group by ' + self.epochToText(descInfo['window'])
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], np.max))
+            resultSet['labels'][valIdx] = 'Maximum, group by ' + self.epochToText(descInfo['window'])
         # Min
         elif (descInfo['formula'] == 'min'):
-            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], np.min)
-            resultSet['labels']['dim1'] = 'Minimum, group by ' + self.epochToText(descInfo['window'])
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], np.min))
+            resultSet['labels'][valIdx] = 'Minimum, group by ' + self.epochToText(descInfo['window'])
         # First
         elif (descInfo['formula'] == 'first'):
-            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], self.first)
-            resultSet['labels']['dim1'] = 'First, group by ' + self.epochToText(descInfo['window'])
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], self.first))
+            resultSet['labels'][valIdx] = 'First, group by ' + self.epochToText(descInfo['window'])
         # Last
         elif (descInfo['formula'] == 'last'):
-            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], self.last)
-            resultSet['labels']['dim1'] = 'Last, group by ' + self.epochToText(descInfo['window'])
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], self.last))
+            resultSet['labels'][valIdx] = 'Last, group by ' + self.epochToText(descInfo['window'])
         # Lower Quartile
         elif (descInfo['formula'] == 'lq'):
-            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], self.lq)
-            resultSet['labels']['dim1'] = 'Lower Quartile, group by ' + self.epochToText(descInfo['window'])
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], self.lq))
+            resultSet['labels'][valIdx] = 'Lower Quartile, group by ' + self.epochToText(descInfo['window'])
         # Upper Quartile
         elif (descInfo['formula'] == 'uq'):
-            resultSet['data'] = self.binStatistic(resultSet['data'], descInfo['window'], self.uq)
-            resultSet['labels']['dim1'] = 'Upper Quartile, group by ' + self.epochToText(descInfo['window'])
-        
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], self.uq))
+            resultSet['labels'][valIdx] = 'Upper Quartile, group by ' + self.epochToText(descInfo['window'])
+        elif (descInfo['formula'] == 'count'):
+            resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], self.count))
+            resultSet['labels'][valIdx] = 'Count, group by ' + str(descInfo['window'])
+            
         return resultSet
 
-    def movingAverage(self, dataSet, window):
-        # Just return the raw data if window too big
-        if (len(dataSet) < window):
-            return dataSet
+    def movingAverage(self, group, series, meta, window):
+        # Just return the raw data if window too big/data series too small
+        if (len(group) < window):
+            return [group, series, meta]
             
         # Right now, hard code to do the average on the second dimension (y vals)
-        xvals, yvals, ids = np.hsplit(np.array(dataSet), [1,2])
         weights = np.repeat(1.0, window) / window
-        yvals = np.convolve(yvals.flatten(), weights)[window-1:-(window-1)]
-        xvals = xvals[window-1:]
-        ids = ids[window-1:]
-
-        dataSet = np.hstack((xvals, yvals.reshape(len(xvals),1), ids)).tolist()
-        return dataSet
+        series = np.convolve(series, weights)[window-1:-(window-1)]
+        group = group[window-1:]
+        meta = meta[window-1:]
+        
+        # Can't pickle numpy.float64 objects, so convert them back to floats
+        # TODO: Check if there is a better/faster way
+        
+        series = [ float(x) for x in series ]
+        
+        return [group, series, meta]
 
     def mode(self, x):
         # A little hack since the related SciPy function returns unnecessary data
+        print x
         from scipy import stats
-        return stats.mode(x)[0][0][0]
+        return stats.mode(x)[0][0]
         
     def first(self, x):
         # First element of the series
-        return x[0][0]
+        return x[0]
         
     def last(self, x):
         # Last element of the series
-        return x[-1][0]
+        return x[-1]
     
     def lq(self, x):
         # The lower quartile/25th percentile
         from scipy import stats
-        return stats.scoreatpercentile(x, 25)[0]
+        return stats.scoreatpercentile(x, 25)
         
     def uq(self, x):
         # The upper quartile/75th percentile
         from scipy import stats
-        return stats.scoreatpercentile(x, 75)[0]
+        return stats.scoreatpercentile(x, 75)
+        
+    def count(self, x):
+        return len(x)
     
 
-    def binStatistic(self, dataSet, groupBy, func):
+    def binStatistic(self, group, series, meta, window, func):
         # Computed the indicated statistic (func) on each bin of data set
         
         # First trim the partial times on each end (unless told not to)
-        if (not self._descInfo.has_key('trim')) or (self._descInfo['trim'] == 1):
-            dataSet = self.trimData(dataSet, groupBy)
+        if self._descInfo['trim']:
+            [group, series, meta] = self.trimData(group, series, meta, window)
             
-        if (len(dataSet) == 0):
+        if (group == 0):
             log.warn('Dataset trimmed to nothing')
             return dataSet
             
         # Group the data into bins
-        [binSet, bins] = self.binData(dataSet, groupBy)
+        [binSet, bins] = self.binData(group, series, meta, window)
         
         numBins = len(bins)
         
-        means = []
-        objectids = []
+        newSeries = []
+        newMeta = []
         
-        # Compute the means for each set of bins
+        # Compute the stats for each set of bins
         for b in binSet:
-            xvals, yvals, ids = np.hsplit(np.array(b), [1,2])
-            if (len(yvals) > 0):
-                means.append(func(yvals)) 
-                objectids.append(ids[-1].flatten())
+            g, s, m = b
+            if (len(g) > 0):
+                newSeries.append(float(func(s))) 
+                newMeta.append(m[-1])
             else:
-                means.append(0)
-                objectids.append([None, None, None, None])
+                newSeries.append(0)
+                newMeta.append([None, None, None, None])
 
-        #log.info(objectids)
-        objs = np.array(objectids).reshape(numBins, 4).tolist()
-        
-        # Replace the old time (x) values with the bin value    
-        dataSet = np.hstack((np.array(bins).reshape(numBins, 1), np.array(means).reshape(numBins, 1), objs)).tolist()
-        return dataSet
+        return [bins, newSeries, newMeta]
     
-    def binData(self, dataSet, groupBy):
+    def binData(self, group, series, meta, window):
         # Note: bins are defined by the maximum value of an item allowed in the bin
         
-        minBinVal = int(dataSet[0][0] + groupBy)
-        maxBinVal = int(dataSet[-1][0] + groupBy)
+        minBinVal = int(group[0] + window)
+        maxBinVal = int(group[-1] + window)
         
         # Round the time to the nearest groupBy interval
-        minBinVal -= minBinVal % groupBy
-        maxBinVal -= maxBinVal % groupBy
+        minBinVal -= minBinVal % window
+        maxBinVal -= maxBinVal % window
         
         # Find the number of bins and size per bin
-        numBins = (maxBinVal - minBinVal) / groupBy + 1
-        bins = range(minBinVal, maxBinVal + 1, groupBy)
+        numBins = (maxBinVal - minBinVal) / window + 1
+        bins = range(minBinVal, maxBinVal + 1, window)
         
         # Identify which x values should appear in each bin
-        xvals, rest = np.hsplit(np.array(dataSet), [1])
-        # Hack to change xvals from type object to int
-        xvals = np.array(xvals.flatten().tolist())
-        inds = np.digitize(xvals, bins)
+        # Note: use tolist() to convert to a numeric type instead of object
+        group = np.array(group)
+        idxs = np.digitize(group, bins)
 
         # Put each data element i nits appropriate bin
-        binified = [ [] for x in bins ]        
-        for binNum, val in zip(inds, dataSet):
-            binified[binNum].append(val)
+        # Need a list element for each bin.  Each of those lists needs three more lists for group, series, meta
+        binified = [ [ [], [], [] ] for x in bins ]        
+        for idx, g, s, m in zip(idxs, group, series, meta):
+            binified[idx][0].append(g)
+            binified[idx][1].append(s)
+            binified[idx][2].append(m)
         
         # Return the bin-ified original data and the bin labels (values)    
         return [binified, bins]
         
-    def trimData(self, dataSet, groupBy):
+    def trimData(self, group, series, meta, window):
         # Remove the fractional (minute, hour, day) from the beginning and end of the dataset
         
-        startTime = dataSet[0][0] + groupBy
-        endTime = dataSet[-1][0]
+        startTime = group[0] + window
+        endTime = group[-1]
         
         # Round the time to the nearest groupBy interval
-        startTime -= (startTime % groupBy)
-        endTime -= (endTime % groupBy)
+        startTime -= (startTime % window)
+        endTime -= (endTime % window)
         
-        # Filter out the beginning
-        dataArr = np.array(dataSet)
-        dataArr = dataArr[dataArr[0:len(dataArr),0:1].flatten() > startTime]
-        # If anything left, filter out the end
-        if len(dataArr) > 0: dataArr = dataArr[dataArr[0:len(dataArr),0:1].flatten() < endTime]
         
-        return dataArr.tolist()
+        # Filter out the beginning and end
+        
+        groupFilt = []
+        seriesFilt = []
+        metaFilt = []
+        
+        for g, s, m in zip(group, series, meta):
+            if g >= startTime and g <= endTime:
+                groupFilt.append(g)
+                seriesFilt.append(s)
+                metaFilt.append(m)
+        
+        return [groupFilt, seriesFilt, metaFilt]
         
         
     def epochToText(self, groupBy):
@@ -582,6 +640,10 @@ class DescriptiveStatistic:
         elif groupBy < 604800: return str(groupBy / 86400) + ' Day(s)'
         else: return str(groupBy / 604800) + ' Week(s)'
 
+    def assemble(self, parts):
+        g, s, m = parts
+        combined = [ [a, b] + c for a, b, c in zip(g, s, m) ]
+        return combined
 
 
 
@@ -595,7 +657,7 @@ class RealtimeOLAP:
             # (If no descInfo is set or if descInfo lacks a formula field)
             if (o.descInfo is None) or (not o.descInfo.has_key('formula')):
                 r = ResultSet()
-                rset = r.resultToResultSet(res)
+                rset = r.resultToResultSet(o.queryInfo, res)
                 self.sendMessage(o, rset['data'])
 
             elif o.descInfo['formula'] == 'moving':
@@ -648,31 +710,53 @@ class RealtimeOLAP:
 class ResultSet:    
     # Class to retrieve data from the database and add basic metadata
     
-    
     def execute(self, queryInfo):
-        # Execute the querystring, returning the results of the
-        # query as a list
+        # Execute the query, returning the results of the as a list
         
-        
-        # TODO: Select from the right type of object, not all
-        if (queryInfo['queryType'] == 'inspection'):
-            obj = Inspection
-        elif (queryInfo['queryType'] == 'measurement'):
-            obj = Measurement
-        
-        query = dict()
-        if not queryInfo.has_key('id'):
-            insp = obj.objects.get(name=queryInfo['name'])
-            query[queryInfo['queryType']] = insp.id
+        # Get the object type that will be queried
+        if (queryInfo['objType'] == 'inspection'):
+            Obj = Inspection
+        elif (queryInfo['objType'] == 'measurement'):
+            Obj = Measurement
         else:
-            query[queryInfo['queryType']] = queryInfo['id']
+            log.warn('Incorrect objType defined.  Defaulting to inspection.')
+            queryInfo['objType'] = 'inspection'
+            Obj = Inspection
             
+            
+        # Setup the query parameters
+        query = dict()
+        
+        # First, find the ID of the type of object to be queried for
+        # If the name was provided instead of the ID, lookup the ID
+        if not queryInfo['objId'] and queryInfo['objName']:
+            objs = Obj.objects.filter(name=queryInfo['objName'])
+        else:
+            objs = Obj.objects.filter(id = queryInfo['objId'])
+        
+        # Make sure working with only a unique object
+        if (len(objs) == 1):
+            thisObj = objs[0]
+            query[queryInfo['objType']] = thisObj.id
+        elif (len(objs) > 1):
+            log.warn('Too many objects returned on ' + queryInfo['objType'] + '/' + queryInfo['objName'] + '/' + queryInfo['objId'])
+            log.warn('Using just the first result')
+            thisObj = objs[0]
+            query[queryInfo['objType']] = thisObj.id
+        else:
+            log.warn('No objects returned found on ' + queryInfo['objType'] + '/' + queryInfo['objName'] + '/' + queryInfo['objId'])
+            return []
+            
+        # Restrict to only results after 'since' timestamp    
         if queryInfo['since']:
             query['capturetime__gt']= datetime.utcfromtimestamp(queryInfo['since'])
+        
+        # Restrict to only results preceding 'before' timestamp
         if queryInfo['before']:
             query['capturetime__lt']= datetime.utcfromtimestamp(queryInfo['before'])
         
         
+        # Get the results
         # Only truncate if a limit was set
         if (queryInfo['limit']):
             rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['limit']])
@@ -681,39 +765,63 @@ class ResultSet:
             
         
         # When performing some computations, require additional data
+        # E.g., moving averages may require a series of earlier points
         if (len(rs) > 0) and (queryInfo.has_key('required')) and (len(rs) < queryInfo['required']):
-        
             # If not, relax the capture time but only take the num records required
             del(query['capturetime__gt'])
             rs = list(Result.objects(**query).order_by('-capturetime')[:queryInfo['required']])
         
-        outputVals = [[calendar.timegm(r.capturetime.timetuple()) + r.capturetime.time().microsecond / 1000000.0, r.numeric, r.inspection, r.frame, r.measurement, r.id] for r in rs[::-1]]
         
+        # Setup the list of fields to retrieve
+        params = queryInfo['objFields']
         
+        # We need a timestamp for other calculations, so make sure it is always present in requested parameters
+        if not 'capturetimeEpochMS' in params:
+            params.append('capturetimeEpochMS')
+        
+        # A little hack to make the 
+        
+        # Get the list of result values
+        outputVals = [[r.__getattribute__(p) for p in params] for r in rs[::-1]]
+        # outputVals = [[calendar.timegm(r.capturetime.timetuple()) + r.capturetime.time().microsecond / 1000000.0, r.numeric, r.inspection, r.frame, r.measurement, r.id] for r in rs[::-1]]
+        
+        # Track the start and end time of the resultset
+        idx = params.index('capturetimeEpochMS')
         if (len(outputVals) > 0):
-            startTime = outputVals[0][0]
-            endTime = outputVals[-1][0]
+            startTime = outputVals[0][idx]
+            endTime = outputVals[-1][idx]
         else:
             startTime = 0
             endTime = 0
         
-        #our timestamps are already in UTC, so we need to use a localtime conversion
+        # Construct the final resultset data
         dataset = { 'startTime': startTime,
                     'endTime': endTime,
-                    'timestamp': gmtime(),
-                    'labels': {'dim0': 'Time', 'dim1': 'Motion', 'dim2': 'InspectionID', 'dim3': 'FrameID', 'dim4':'MeasurementID', 'dim5': 'ResultID'},
+                    'labels': params,
                     'data': outputVals}
                     
         return dataset
     
     
-    def resultToResultSet(self, r):
+    def resultToResultSet(self, queryInfo, r):
         # Given a Result, format the Result like a one record ResultSet
-        outputVals = [[calendar.timegm(r.capturetime.timetuple()) + r.capturetime.time().microsecond / 1000000.0, r.numeric, r.inspection, r.frame, r.measurement, r.id]]
-        dataset = { 'startTime': outputVals[0][0],
-                    'endTime': outputVals[0][0],
+        
+        # Setup the list of fields to retrieve
+        params = queryInfo['objFields']
+        
+        # We need a timestamp for other calculations, so make sure it is always present in requested parameters
+        if not 'capturetimeEpochMS' in params:
+            params.append('capturetimeEpochMS')
+        
+        # Construct the list from params the the provided result 
+        
+        outputVals = [[r.__getattribute__(p) for p in params]]
+
+        idx = params.index('capturetimeEpochMS')        
+        dataset = { 'startTime': outputVals[0][idx],
+                    'endTime': outputVals[0][idx],
                     'timestamp': gmtime(),
-                    'labels': {'dim0': 'Time', 'dim1': 'Motion', 'dim2': 'InspectionID', 'dim3': 'FrameID', 'dim4':'MeasurementID', 'dim5': 'ResultID'},
+                    'fields': params,
                     'data': outputVals}
         
         return dataset 
