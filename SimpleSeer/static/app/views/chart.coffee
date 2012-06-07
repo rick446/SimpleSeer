@@ -15,13 +15,14 @@ module.exports = class ChartView extends View
     return false
 
   update: (frm, to, reset=true )=>
+    name = application.charts._byId[@.anchorId].attributes.name
     if frm and to
-      url = "/olap/Motion/since/"+frm+"/before/" + to
+      url = "/olap/"+name+"/since/"+frm+"/before/" + to
     else if frm
-      url = "/olap/Motion/since/" + frm
+      url = "/olap/"+name+"/since/" + frm
     else
       interval = application.settings.poll_interval || 1
-      url = "/olap/Motion/limit/"+Math.ceil(application.charts.timeframe / interval)
+      url = "/olap/"+name+"/limit/"+Math.ceil(application.charts.timeframe / interval)
     $.getJSON(url, (data) =>
       @._drawDataLegacy data.data,reset
       $('.alert_error').remove()
@@ -107,7 +108,7 @@ module.exports = class ChartView extends View
     this
 
   chartInit: (cd) ->
-    if cd.chartInfo.name.toLowerCase() in ['line','pie','spline','areaspline']
+    if cd.chartInfo.name.toLowerCase() in ['line', 'bar', 'pie', 'spline', 'area', 'areaspline','column','scatter']
       _l = 'highchart'
       _c = @_dhc cd
     else
