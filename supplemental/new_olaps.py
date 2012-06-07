@@ -18,8 +18,8 @@ of = OLAPFactory()
 
 qi = {'objType':'inspection', 'objName':'Motion', 'objFields':['capturetimeEpochMS', 'numeric', 'inspection', 'frame', 'measurement', 'id'], 'since':None, 'before':None, 'limit':1000, 'required':None}
 dimoving = {'formula':'moving', 'params':['capturetimeEpochMS', 'numeric'], 'window':5, 'trim':True, 'partial':'drop'}
-dihist = {'formula':'count', 'params':['numeric', 'capturetimeEpochMS'], 'window':10}
-cihist = {'name':'column', 'color':'blue', 'minval':0, 'maxval':100, 'xtype':'linear'} 
+dihist = {'formula':'count', 'params':['numeric', 'capturetimeEpochMS'], 'window':10, 'minWindow':10, 'maxWindow':100}
+cihist = {'name':'column', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10} 
 
 
 omove = of.makeOLAP(queryInfo = qi, descInfo = dimoving)

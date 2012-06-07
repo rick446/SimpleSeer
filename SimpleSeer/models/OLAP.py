@@ -312,6 +312,8 @@ class OLAPFactory:
             if not descInfo.has_key('partial'): descInfo['partial'] = 'drop'
             if not descInfo.has_key('trim'): descInfo['trim'] = True
             if not descInfo.has_key('params'): descInfo['params'] = ['capturetimeEpochMS', 'numeric']
+            if not descInfo.has_key('minWindow'): descInfo['minWindow'] = None
+            if not descInfo.has_key('maxWindow'): descInfo['maxWindow'] = None
             
         return descInfo
         
@@ -330,6 +332,7 @@ class OLAPFactory:
         if not chartInfo.has_key('minval'): chartInfo['minval'] = None
         if not chartInfo.has_key('maxval'): chartInfo['maxval'] = None
         if not chartInfo.has_key('xtype'): chartInfo['xtype'] = 'datetime'
+        if not chartInfo.has_key('ticker'): chartInfo['ticker'] = None
         
         return chartInfo
 
@@ -402,8 +405,8 @@ class Chart:
             chartRange = self.dataRange(resultSet['data'])
             
         # Override comptued values if they were defined
-        if chartInfo['minval']: chartRange['min'] = chartInfo['minval']
-        if chartInfo['maxval']: chartRange['max'] = chartInfo['maxval']
+        if chartInfo['minval'] is not None: chartRange['min'] = chartInfo['minval']
+        if chartInfo['maxval'] is not None: chartRange['max'] = chartInfo['maxval']
         
         chartData = { 'name': chartInfo['name'],
                       'color': chartInfo['color'],
@@ -412,7 +415,8 @@ class Chart:
                       'data': resultSet['data'],
                       'olap': olapName,
                       'realtime': realtime,
-                      'xtype': chartInfo['xtype'] }
+                      'xtype': chartInfo['xtype'],
+                      'ticker': chartInfo['ticker'] }
         
         return chartData
 
@@ -586,8 +590,15 @@ class DescriptiveStatistic:
     def binData(self, group, series, meta, window):
         # Note: bins are defined by the maximum value of an item allowed in the bin
         
-        minBinVal = int(group[0] + window)
-        maxBinVal = int(group[-1] + window)
+        if self._descInfo['minWindow']:
+            minBinVal = self._descInfo['minWindow']
+        else:
+            minBinVal = int(group[0] + window)
+        
+        if self._descInfo['maxWindow']:
+            maxBinVal = self._descInfo['maxWindow']
+        else:
+            maxBinVal = int(group[-1] + window)
         
         # Round the time to the nearest groupBy interval
         minBinVal -= minBinVal % window
