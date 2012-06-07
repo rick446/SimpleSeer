@@ -411,7 +411,8 @@ class Chart:
                       'range': chartRange,
                       'data': resultSet['data'],
                       'olap': olapName,
-                      'realtime': realtime }
+                      'realtime': realtime,
+                      'xtype': chartInfo['xtype'] }
         
         return chartData
 
