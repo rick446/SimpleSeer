@@ -1,7 +1,8 @@
+import bson
 import mongoengine
 
 from .base import SimpleDoc, WithPlugins
-from .Result import Result
+from .Result import ResultEmbed
 
 from formencode import validators as fev
 from formencode import schema as fes
@@ -94,6 +95,7 @@ class Measurement(SimpleDoc, WithPlugins, mongoengine.Document):
         return fs
         
     def toResults(self, frame, values):
+        from .Inspection import Inspection
         if not values or not len(values):
             return []
         
@@ -106,14 +108,19 @@ class Measurement(SimpleDoc, WithPlugins, mongoengine.Document):
                 except:
                     return None
 
-        return [ Result(
-            numeric = numeric(v),
-            string = str(v),
-            capturetime = frame.capturetime,
-            camera = frame.camera,
-            inspection = self.inspection,
-            measurement = self.id,
-            frame = frame.id) for v in values ]
+        inspection = Inspection.objects.get(id=self.inspection)
+        results = [
+            ResultEmbed(
+                result_id=bson.ObjectId(),
+                numeric=numeric(v),
+                string=str(v),
+                inspection_id=self.inspection,
+                inspection_name=inspection.name,
+                measurement_id=self.id,
+                measurement_name=self.name)
+            for v in values ]
+        frame.results.extend(results)
+        return results
     
     def __repr__(self):
         return "<Measurement: " + str(self.inspection) + " " + self.method + " " + str(self.featurecriteria) + ">"
