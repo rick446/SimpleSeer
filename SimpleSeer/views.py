@@ -94,6 +94,15 @@ def lastframes():
     frames = frames.skip((int(params.get('page', 1))-1)*20).limit(20)
     return dict(frames=list(frames), total_frames=total_frames)
 
+@route('/frames', methods=['GET'])
+@util.jsonify
+def frames():
+    params = request.values.to_dict()
+    f_params = json.loads(params.get('filter', '[]'))
+    s_params = json.loads(params.get('sort', '[]'))
+    result = M.Frame.search(f_params, s_params)
+    return result
+
 #TODO, abstract this for layers and thumbnails        
 @route('/grid/imgfile/<frame_id>', methods=['GET'])
 def imgfile(frame_id):
