@@ -54,17 +54,16 @@ class CircleFeature
   tableOk: => true
     
   tableHeader: () =>
-    ["X Positon", "Y Position", "Radius", "Color"]
+    ["X Positon", "Y Position", "Radius"]
     
   tableData: () =>
-    [@feature.get("x"), @feature.get("y"), @feature.get("featuredata").r, @feature.get("meancolor")]
+    [@feature.get("x"), @feature.get("y"), @feature.get("featuredata").r]
     
   render: (pjs) =>
     pjs.stroke 0, 180, 180
     pjs.strokeWeight 3
     pjs.noFill()
     pjs.ellipse( @feature.get('x'), @feature.get('y'), @feature.get('featuredata').r*2, @feature.get('featuredata').r*2 )
-        # map our python class to this CircleFeatureClass for purposes of getting data
 plugin this, Circle:CircleFeature
 '''
   def __call__(self, image):
@@ -106,6 +105,7 @@ plugin this, Circle:CircleFeature
         retVal.append(ff)
 
     if( params.has_key("saveFile") ):
+      image.save("derp.png")
       image.save(params["saveFile"])
 
     return retVal 

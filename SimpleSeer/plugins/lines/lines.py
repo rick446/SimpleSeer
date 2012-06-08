@@ -14,21 +14,7 @@ insp = Inspection( name= "Lines",
                    method="lines", 
                    camera = "Default Camera")
 insp.save()
-
-
-meas = Measurement( name="length", 
-                    label="length", #Human readable name 
-                    method = "length", #the method to call on a regionFeature
-                    parameters = dict(), #not needed - store parameters here
-                    units = "pixels", # 
-                    featurecriteria = dict( index = 0 ), #not used
-                    inspection = insp.id #point back to the original inspection)
-
-meas.save()
-
-
 """
-
 class Lines(base.InspectionPlugin):
   """
   line parameters 
@@ -39,6 +25,53 @@ class Lines(base.InspectionPlugin):
   canny = (lower,upper,threshold) 
   gap = line gap 
   """
+
+
+#   @classmethod
+#   def coffeescript(cls):
+#     yield 'models/inspection', '''
+# class Lines
+#   constructor: (inspection) ->
+#     @inspection = inspection
+#   represent: () =>
+#     "Lines Detection"
+#     #
+# plugin this, lines:Lines
+# '''
+
+#     yield 'models/feature', '''
+# class LineFeature
+#   constructor: (feature) ->
+#     @feature = feature
+   
+  
+#   icon: () => "/img/line.png" 
+    
+#   represent: () => " DERP"
+#     "asdfasdfasdF"
+#  #   "Line Detected at (" + @feature.get("x") + ", " + @feature.get("y") + ") with angle " + @feature.get("featuredata").line_angle + " and length " @feature.get("featuredata").line_length + "."
+    
+#   tableOk: => true
+    
+#   tableHeader: () =>
+#     ["X Positon", "Y Position", "Angle", "Length", "Color"]
+    
+#   tableData: () =>
+#     [] 
+#     #[@feature.get("x"), @feature.get("y"), @feature.get("featuredata").line_angle, @feature.get("featuredata").line_length] #, @feature.get("meancolor")]
+    
+#   render: (pjs) =>
+#     pjs.stroke 0, 180, 180
+#     pjs.strokeWeight 3
+#     pjs.noFill()
+#     pjs.line( @feature.get('featuredata').end_points[0][0],
+#               @feature.get('featuredata').end_points[0][1],
+#               @feature.get('featuredata').end_points[1][0],
+#               @feature.get('featuredata').end_points[1][1] )
+
+# plugin this, Line:LineFeature
+# '''
+
   def __call__(self, image):
     params = util.utf8convert(self.inspection.parameters)    
     # It is just going to be easier to mask over 
@@ -77,6 +110,10 @@ class Lines(base.InspectionPlugin):
       if( length[1] is not None ): # we already know that we are greater than the min length
         fs = FeatureSet(f for f in fs if( f.length() <= length[1] ) )
       fs.draw()
+      type(fs)
+      len(fs)
+      for f in fs:
+        print (f.x,f.y)
       for f in fs: # do the conversion from SCV featureset to SimpleSeer featureset
         ff = M.FrameFeature()
         ff.setFeature(f)
