@@ -203,6 +203,6 @@ module.exports = class ChartView extends View
       yAxis:
         title:
           text: ''
-        min:renderData.chartInfo.min || null
-        max:renderData.chartInfo.max || null
+        min:renderData.chartInfo.minval
+        max:renderData.chartInfo.maxval
     return chart

@@ -3,7 +3,9 @@
 {{#each frames}}
   <div class="thumbnail">
     <span id="{{this}}" class="close-button">X</span>
-    <img src="/grid/imgfile/{{this}}">
+    <a href="/#frame/{{this}}">
+      <img src="/grid/imgfile/{{this}}">
+    </a>
   </div>
 {{/each}}
 <div style = "clear:both"></div>

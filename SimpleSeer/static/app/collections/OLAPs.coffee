@@ -118,6 +118,8 @@ module.exports = class OLAPs extends Collection
       #@.pause(e.point.config.id)
       
   addFrame: (id) =>
+    if !@.paused
+      application.homeView.realtimeControl()
     @.pause id
     if application.framesets.models[0]
       application.framesets.models[0].addFrame(id)
