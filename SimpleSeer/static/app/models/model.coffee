@@ -16,4 +16,3 @@ module.exports = class Model extends Backbone.Model
       return
       
     p[fn]
-      
