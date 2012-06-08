@@ -5,6 +5,7 @@ import threading
 import json
 import pickle
 import pygame.image
+import numpy
 from multiprocessing import Process, Queue, Pipe
 import threading
 import logging
@@ -82,11 +83,17 @@ class MongoEngineBaseDictHandler(jsonpickle.handlers.BaseHandler):
         data.update(obj)
         return data
     
+class NumpyIntHandler(jsonpickle.handlers.BaseHandler):
+    def flatten(self, obj, data):
+        return int(obj)
+    
+    
     
 jsonpickle.handlers.Registry().register(bson.objectid.ObjectId, BSONObjectIDHandler)   
 jsonpickle.handlers.Registry().register(mongoengine.base.BaseList, MongoEngineBaseListHandler)
 jsonpickle.handlers.Registry().register(mongoengine.base.BaseDict, MongoEngineBaseDictHandler)
 jsonpickle.handlers.Registry().register(mongoengine.fields.GridFSProxy, MongoEngineFileFieldHandler)
+jsonpickle.handlers.Registry().register(numpy.int64, NumpyIntHandler)
 
 
 
