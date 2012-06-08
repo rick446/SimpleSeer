@@ -98,6 +98,7 @@ class ChartInfoSchema(fes.Schema):
     color = fev.UnicodeString(if_empty="")
     minval = fev.Int(if_missing=None, if_empty=None)
     maxval = fev.Int(if_missing=None, if_empty=None)
+    maxval = fev.Int(if_missing=None, if_empty=None)
 
         
 
@@ -620,8 +621,8 @@ class DescriptiveStatistic:
         binLen = len(bins)
         if (maxIdx > (binLen - 1)):
             log.warn('Error in computing bin length')
-            log.warn('Min bin ' + str(minbinVal))
-            log.warn('Max bin ' + str(maxbinVal))
+            log.warn('Min bin ' + str(minBinVal))
+            log.warn('Max bin ' + str(maxBinVal))
             log.warn('Min Window ' + str(descInfo['minWindow']))
             log.warn('Max Window ' + str(descInfo['maxWindow']))
             log.warn('Window size ' + str(window))
