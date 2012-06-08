@@ -275,6 +275,8 @@ class OLAPFactory:
         else:
             o.name = o.queryInfo['objType'] + str(o.queryInfo['objName']) + str(o.queryInfo['objId'])
         
+        
+        
         return o
     
     def makeQuery(self, queryInfo):
@@ -563,9 +565,9 @@ class DescriptiveStatistic:
         if self._descInfo['trim']:
             [group, series, meta] = self.trimData(group, series, meta, window)
             
-        if (group == 0):
+        if (len(group) == 0):
             log.warn('Dataset trimmed to nothing')
-            return dataSet
+            return [], [], []
             
         # Group the data into bins
         [binSet, bins] = self.binData(group, series, meta, window)
@@ -612,6 +614,24 @@ class DescriptiveStatistic:
         # Note: use tolist() to convert to a numeric type instead of object
         group = np.array(group)
         idxs = np.digitize(group, bins)
+
+        # This is a temporary check.  Should be removed when bug fixed
+        maxIdx = max(idxs)
+        binLen = len(bins)
+        if (maxIdx > (binLen - 1)):
+            log.warn('Error in computing bin length')
+            log.warn('Min bin ' + str(minbinVal))
+            log.warn('Max bin ' + str(maxbinVal))
+            log.warn('Min Window ' + str(descInfo['minWindow']))
+            log.warn('Max Window ' + str(descInfo['maxWindow']))
+            log.warn('Window size ' + str(window))
+            log.warn('Max Index ' + str(maxIdx))
+            log.warn('Number of bins ' + str(binLen))
+            
+            # Quick hack to fix
+            binLen += 1
+            
+            
 
         # Put each data element i nits appropriate bin
         # Need a list element for each bin.  Each of those lists needs three more lists for group, series, meta
