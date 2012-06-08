@@ -30,7 +30,7 @@ module.exports = class FramelistView extends View
     return this
 
   loadMore: (evt)=>
-    if !@loading && ($(window).scrollTop() >= $(document).height() - $(window).height())
+    if !@loading && $('#loading_message').length && ($(window).scrollTop() >= $(document).height() - $(window).height())
       $('body').on('mousewheel', @disableEvent)
       enable = =>
         $('body').off('mousewheel', @disableEvent)
@@ -43,6 +43,8 @@ module.exports = class FramelistView extends View
         data:
           page: @pages
           before: @newest
+        error: =>
+          @$el.find('#loading_message').hide()
 
   addFrame: (frame)=>
     @loading=false

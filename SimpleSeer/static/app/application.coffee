@@ -39,6 +39,13 @@ Application =
     @homeView = new HomeView()
     @framelistView = new FramelistView(@lastframes)
 
+    # set up the timeout message dialog
+    $('#lost_connection').dialog
+      autoOpen: false
+      modal: true
+      buttons:
+        Ok: ->
+          $( this ).dialog( "close" )
 
     # Instantiate the router
     @router = new Router()
