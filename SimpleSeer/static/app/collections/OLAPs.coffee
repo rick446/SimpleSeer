@@ -33,6 +33,30 @@ module.exports = class OLAPs extends Collection
           @.value += o.y
       render: (target) ->
         target.html @.template {value:Math.round(@.value),color:@.color}
+    sumbucket: (d)->
+      value:0
+      values:{'red':0,'green':0,'blue':0}
+      stack:[]
+      max: d.chartInfo.max || 100
+      min: d.chartInfo.min || 0
+      template: _.template '<ul><li style="color:red">{{ values.red }}</li><li style="color:green">{{ values.green }}</li><li style="color:blue">{{ values.blue }}</li></ul>'
+      addPoint: (d) ->
+        if d.y <= 10
+          @.values.red++
+          val = 'red'
+        if d.y > 10 && d.y<= 30
+          @.values.green++
+          val = 'green'
+        if d.y > 30
+          @.values.blue++
+          val = 'blue'
+        @.stack.push(val)
+      setData: (d) ->
+        for o in d
+          @.addPoint o
+      render: (target) ->
+        target.html @.template {values:@.values}
+    
 
   onSuccess: (d1, d2) =>
     for me in d2
@@ -50,9 +74,10 @@ module.exports = class OLAPs extends Collection
 
   unclickPoint: (fId) =>
     for m in @.models
-      p = m.view.chart._c.get fId
-      if p && p.marker && p.marker.radius > 2
-        p.update({ marker: {}},true)
+      if m.view.chart._c.get
+        p = m.view.chart._c.get fId
+        if p && p.marker && p.marker.radius > 2
+          p.update({ marker: {}},true)
     return false
 
   changeFrameImage: (fId) =>

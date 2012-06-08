@@ -64,11 +64,13 @@ module.exports = class ChartView extends View
     application.charts.addFrame e.point.id
     for m in application.charts.models
       #if point.series.chart.container.parentElement.id != m.id
-      p = m.view.chart._c.get e.point.id
-      if p.marker && p.marker.radius > 2
-        #p.update({ marker: {}},true)
-      else
-        p.update({ marker: { color: '#BF0B23', radius: 5}},true)
+      if m.view.chart._c.get
+        p = m.view.chart._c.get e.point.id
+        if p && p.update
+          if p.marker && p.marker.radius > 2
+            #p.update({ marker: {}},true)
+          else
+            p.update({ marker: { color: '#BF0B23', radius: 5}},true)
     return false
 
   _drawData: (data,reset) =>
@@ -97,8 +99,9 @@ module.exports = class ChartView extends View
   drawChart: (data) =>
     renderData = @getRenderData()
     @.chart = @.chartInit renderData
-    application.socket.on "message:OLAP/#{renderData.name}/", @_update
-    application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
+    if @.chart.realtime
+      application.socket.on "message:OLAP/#{renderData.name}/", @_update
+      application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
     return
 
   render: =>
@@ -116,6 +119,7 @@ module.exports = class ChartView extends View
       _c = @_dcc cd
     lib:_l
     _c:_c
+    realtime: cd.realtime || false
     type:cd.chartInfo.name.toLowerCase()
     addPoint: (d) =>
       if @.chart.lib == 'highchart'
@@ -187,14 +191,18 @@ module.exports = class ChartView extends View
       #  duration:
       #    1000
       xAxis:
+        tickInterval: renderData.chartInfo.tickerinterval * 1000 || null
         type:
-          'datetime'
+          renderData.chartInfo.xtype || 'datetime'
         labels:
-          formatter: ->
-            Highcharts.dateFormat('%m/%d<br>%I:%M:%S', this.value);
+          formatter: -> 
+            if this.axis.options.type == 'datetime'
+              Highcharts.dateFormat('%m/%d<br>%I:%M:%S', this.value)
+            else
+              this.value /1000
       yAxis:
         title:
           text: ''
-        min:renderData.chartInfo.min || 0
-        max:renderData.chartInfo.max || 100
+        min:renderData.chartInfo.min || null
+        max:renderData.chartInfo.max || null
     return chart
