@@ -43,6 +43,8 @@ module.exports = class FramelistView extends View
         data:
           page: @pages
           before: @newest
+        error: =>
+          @$el.find('#loading_message').hide()
 
   addFrame: (frame)=>
     @loading=false
