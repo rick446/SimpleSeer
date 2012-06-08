@@ -55,7 +55,7 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         self.width = data.width()
         self.height = data.height()
         self.angle = data.angle()
-        self.meancolor = list(data.meanColor())
+        #self.meancolor = list(data.meanColor())
         self.featuretype = data.__class__.__name__
         
         datadict = {}

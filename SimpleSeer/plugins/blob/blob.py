@@ -9,20 +9,57 @@ from SimpleSeer.base import jsonencode
 import json
 
 class Blob(base.InspectionPlugin):
-
     @classmethod
     def coffeescript(cls):
         yield 'models/inspection', '''
 class Blob
   constructor: (inspection) ->
-    @inspection = inspectionb
-
-  run: () =>
-    console.log 'Running blob on', @inspection
-
+    @inspection = inspection
+  represent: () =>
+    "Blob Detection!"
+    #
 plugin this, blob:Blob
 '''
+        yield 'models/feature', '''
+class BlobFeature
+  constructor: (feature) ->
+    @feature = feature
+   
+  
+  icon: () => "/img/object.png" 
+    
+  represent: () =>
+    "Blob at (" +    @feature.get("x") + "," + @feature.get("y") + 
+    ") with area " + 
+    @feature.get("featuredata").mArea + " and size (" +
+    @feature.get("width") + "," +
+    @feature.get("height") + ") and mean color " +
+    @feature.get("avgColor")
 
+  tableOk: => true
+    
+  tableHeader: () =>
+    ["X", "Y", "Area", "Width", "Height"]
+    
+  tableData: () =>
+    [@feature.get("x"),
+     @feature.get("y"),
+     @feature.get("featuredata").mArea
+     @feature.get("width"),
+     @feature.get("height")]
+    
+  render: (pjs) =>
+    pjs.stroke 0, 180, 180
+    pjs.strokeWeight 2
+    pjs.noFill()
+    contour = @feature.get('featuredata').mContourAppx
+    last = contour[contour.length-1]
+    for current in contour
+        pjs.line( last[0],last[1],current[0],current[1] )
+        last = current
+
+plugin this, Blob:BlobFeature
+'''
     def __call__(self, image):
         params = util.utf8convert(self.inspection.parameters)
         #params = self.inspection.parameters
@@ -67,6 +104,9 @@ plugin this, blob:Blob
         thresh1 = None
         thresh2 = None
         
+
+        # KAT NEED MINSIZE / MAXSIZE 
+
         parse_error = False
 
         if params.has_key("invert"):
@@ -128,6 +168,13 @@ plugin this, blob:Blob
             p = params["p"]
             del params["p"]
 
+        if params.has_key("minSize"):
+            minsize = params["minSize"]
+            del params["minSize"]
+        if params.has_key("maxSize"):
+            p = params["maxSize"]
+            del params["maxSize"]
+
                 
         count = 0
         if( doFF ):
@@ -169,6 +216,14 @@ plugin this, blob:Blob
         blobs = image.findBlobsFromMask(mask,minsize=minsize,maxsize=maxsize)
         if not blobs:
             return []
+
+        if params.has_key("top"):
+            top = params["top"]
+            if(top < len(blobs) ):
+                blobs = blobs[(-1*top):]
+        
+
+        
 
         feats = []
         
