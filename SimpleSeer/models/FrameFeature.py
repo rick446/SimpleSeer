@@ -3,6 +3,7 @@ from copy import deepcopy
 
 import cv
 import mongoengine
+import mongoengine.base
 
 import SimpleCV
 
@@ -96,6 +97,8 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
             v = self._data[k]
             if k == "inspection":
                 ret[k] = str(v)
+            elif type(v) == mongoengine.base.BaseDict:
+                ret[k] = dict(v)
             else:
                 ret[k] = v
         
