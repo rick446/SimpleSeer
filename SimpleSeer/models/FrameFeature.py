@@ -2,12 +2,14 @@ import cPickle as pickle
 from copy import deepcopy
 
 import cv
+import numpy
 import mongoengine
 import mongoengine.base
 
 import SimpleCV
 
 from .base import SimpleEmbeddedDoc
+from SimpleSeer.base import mebasedict_handle, mebaselist_handle
 
 class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
    
@@ -86,7 +88,6 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
 
     def __getstate__(self):
         ret = {}
-        
         skipfields = ["featurepickle", "children"]
         
         #handle all the normal fields
@@ -97,14 +98,9 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
             v = self._data[k]
             if k == "inspection":
                 ret[k] = str(v)
-            elif type(v) == mongoengine.base.BaseDict:
-                ret[k] = dict(v)
-            else:
-                ret[k] = v
         
         #handle all children
         ret["children"] = [c.__getstate__() for c in self.children]
-
         return ret
 
     #cribbed from http://www.ariel.com.au/a/python-point-int-poly.html
