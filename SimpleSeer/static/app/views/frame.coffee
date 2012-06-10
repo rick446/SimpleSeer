@@ -11,9 +11,12 @@ module.exports = class FrameView extends SubView
     
   setVideoFeed: =>
     #TODO this should be refactored when we support multiple cameras
-    img = @$el.find('img')
     width = @$el.innerWidth()
     width = 640 if width > 640
     d = new Date()
-    img.attr('src', '/videofeed-width'+width+'.mjpeg?' + d.getTime())
-    img.attr('width', "100%")
+    img = @$el.find('img')
+    camera = 0
+    for i in img
+      $(i).attr('src', '/videofeed-width'+width+'-camera'+camera+'.mjpeg?' + d.getTime())
+      $(i).attr('width', "100%")
+      camera = camera + 1

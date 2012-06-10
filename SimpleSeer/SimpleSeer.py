@@ -68,7 +68,6 @@ class SimpleSeer(object):
        
         for camera in self.config.cameras:
             camerainfo = camera.copy()
-
             if camerainfo.has_key('virtual'):
                 self.cameras.append(VirtualCamera(camerainfo['source'], camerainfo['virtual']))
             elif camerainfo.has_key('directory'):
