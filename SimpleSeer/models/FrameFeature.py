@@ -81,7 +81,7 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         self.width = scv_cleanse(data.width())
         self.height = scv_cleanse(data.height())
         self.angle = scv_cleanse(data.angle())
-        self.meancolor = scv_cleanse(data.meanColor())
+        #self.meancolor = scv_cleanse(data.meanColor())
         self.featuretype = data.__class__.__name__
         
         datadict = {}
@@ -114,9 +114,9 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
             if k in skipfields:
                 continue
             
-            v = self._data[k]
+            ret[k] = self._data[k]
             if k == "inspection":
-                ret[k] = str(v)
+                ret[k] = str(self._data[k])
         
         #handle all children
         ret["children"] = [c.__getstate__() for c in self.children]
