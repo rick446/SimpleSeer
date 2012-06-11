@@ -33,7 +33,7 @@ ohist = of.makeOLAP(queryInfo = qihist, descInfo = None, chartInfo = cihist)
 ohist.name = 'MotionHistogram'
 ohist.allow = 1000
 ohist.aggregate = 'mean'
-ohist.realtime = 0
+ohist.realtime = 1
 ohist.save()
 
 oraw = of.makeOLAP(queryInfo = qi, descInfo = None)
