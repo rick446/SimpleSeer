@@ -1,10 +1,52 @@
+import os as os
+
 class InspectionPlugin(object):
 
     def __init__(self, inspection):
         self.inspection = inspection
 
     @classmethod
-    def coffeescript(cls): return ''
+    def coffeescript(cls):
+        ext = ".coffee"
+        #Get the subclass name and location
+        stem = cls.__name__.split('.')[-1]
+        path = __import__(cls.__module__).__file__
+        # slice it up, and set it to the coffeescript path
+        s = path.split('/')
+        path = path[0:len(path)-len(s[-1])] #pull of the filename
+        path = path + "plugins/"+stem+"/cs/"+stem #add the plugin name
+        
+        # yield the inspection coffeescript file 
+        mpath = path+"Inspection"+ext
+        #print("Inspection+++++++++++++++++++++++")
+        #print(mpath)
+        #print("+++++++++++++++++++++++++++++++++")
+        if( os.path.exists(mpath) ):
+            f = open( mpath, 'r' )
+            yval = f.read()
+            print("Inspection+++++++++++++++++++++++")
+            print(yval)
+            print("+++++++++++++++++++++++++++++++++")
+
+            yield 'models/inspection', yval 
+        else:
+            yield 'models/inspection', '' 
+        #yield the feature coffeescript file 
+        mpath = path+"Feature"+ext
+        #print("Feature++++++++++++++++++++++++++")
+        #print(mpath)
+        #print("+++++++++++++++++++++++++++++++++")
+        if( os.path.exists(mpath) ):
+            f = open( mpath, 'r' )
+            yval = f.read()
+            print("Feature++++++++++++++++++++++++++")
+            print(yval)
+            print("+++++++++++++++++++++++++++++++++")
+            yield 'models/feature', yval 
+        else:
+            yield 'models/feature', '' 
+
+
 
     def __call__(self, image):
         raise NotImplementedError, '__call__'
