@@ -17,7 +17,7 @@ Frame.objects.delete()
 Inspection.objects.delete()
 Measurement.objects.delete()
 OLAP.objects.delete()
-
+Result.objects.delete()
 
 insp = Inspection( name= "Region", 
   method="region", 
