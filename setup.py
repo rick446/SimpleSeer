@@ -33,10 +33,12 @@ setup(name="SimpleSeer",
   simpleTemplate=SimpleSeer.plugins.simpleTemplate:SimpleTemplate
   keypointTemplate=SimpleSeer.plugins.keypointTemplate:KeypointTemplate
   ocr=SimpleSeer.plugins.ocr:OCR
+  
   [seer.plugins.measurement]
   blob_length=SimpleSeer.plugins.blob:BlobLength
   blob_count=SimpleSeer.plugins.blob:BlobCount
   closestcolor=SimpleSeer.plugins.closestcolor:ClosestColorMeasurement
+  timebetween=SimpleSeer.plugins.timebetween:TimeBetweenMeasurement
 
   [seer.plugins.watcher]
   smsalert=SimpleSeer.plugins.smsalert:SMSAlert
