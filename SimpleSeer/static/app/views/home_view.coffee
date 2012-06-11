@@ -33,8 +33,6 @@ module.exports = class HomeView extends View
     $('#date-to').attr 'disabled', 'disabled'
     application.framesets.fetch()
 
-
-
   _makeNow: =>
     if !application.charts.paused
       if @_now

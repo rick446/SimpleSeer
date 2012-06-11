@@ -35,25 +35,22 @@ module.exports = class OLAPs extends Collection
         target.html @.template {value:Math.round(@.value),color:@.color}
     sumbucket: (d)->
       value:0
+      _map:['red','green','blue']
       values:{'red':0,'green':0,'blue':0}
       stack:[]
       max: d.chartInfo.max || 100
       min: d.chartInfo.min || 0
       template: _.template '<ul><li style="color:red">{{ values.red }}</li><li style="color:green">{{ values.green }}</li><li style="color:blue">{{ values.blue }}</li></ul>'
-      addPoint: (d) ->
-        if d.y <= 10
-          @.values.red++
-          val = 'red'
-        if d.y > 10 && d.y<= 30
-          @.values.green++
-          val = 'green'
-        if d.y > 30
-          @.values.blue++
-          val = 'blue'
-        @.stack.push(val)
+      addPoint: (d,shift=true) ->
+        x = Math.floor(((d.x / 1000) % 60) / 20)
+        if shift
+          p = @.stack.shift()
+          @values[@._map[p.x]] -= p.y
+        @.stack.push({x:x,y:d.y})
+        @values[@._map[x]] += d.y
       setData: (d) ->
         for o in d
-          @.addPoint o
+          @.addPoint o, false
       render: (target) ->
         target.html @.template {values:@.values}
     
@@ -63,8 +60,15 @@ module.exports = class OLAPs extends Collection
       #d1.buildChart d1.get me.id
       mod = d1.get me.id
       if !mod.view
-        mod.view = new ChartView()
-        mod.view.anchorId = me.id
+        cn = ''
+        if inHalf
+          cn = 'graph-half-size'
+          inHalf = false
+        else if me.chartInfo.halfsize
+          cn = 'graph-half-size'
+          inHalf = true
+        mod.view = new ChartView({id:me.id,model:me,className:cn})
+        #mod.view.anchorId = me.id
         mod.view.render()
     return
 
