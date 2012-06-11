@@ -63,8 +63,15 @@ module.exports = class OLAPs extends Collection
       #d1.buildChart d1.get me.id
       mod = d1.get me.id
       if !mod.view
-        mod.view = new ChartView()
-        mod.view.anchorId = me.id
+        cn = ''
+        if inHalf
+          cn = 'graph-half-size'
+          inHalf = false
+        else if me.chartInfo.halfsize
+          cn = 'graph-half-size'
+          inHalf = true
+        mod.view = new ChartView({id:me.id,model:me,className:cn})
+        #mod.view.anchorId = me.id
         mod.view.render()
     return
 

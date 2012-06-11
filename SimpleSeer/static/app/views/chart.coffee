@@ -8,14 +8,21 @@ module.exports = class ChartView extends View
   template: template
   lastupdate: 0
   lastframe: ''
+  
+  initialize: =>
+    @anchorId = @model.id
+
+  
   getRenderData: =>
-    retVal = application.charts._byId[@.anchorId]
+    retVal = application.charts.get(@.anchorId)
     if retVal
       return retVal.attributes
     return false
 
   update: (frm, to, reset=true )=>
-    name = application.charts._byId[@.anchorId].attributes.name
+    #name = application.charts._byId[@.anchorId].attributes.name
+    m = application.charts.get(@.anchorId)
+    name = m.attributes.name
     if frm and to
       url = "/olap/"+name+"/since/"+frm+"/before/" + to
     else if frm
@@ -150,11 +157,11 @@ module.exports = class ChartView extends View
   _dcc: (data) =>
     return new application.charts.customCharts[data.chartInfo.name] data
 
-  _dhc: (data) =>
-    renderData = data
+  _dhc: (renderData) =>
+    _target = $('#'+renderData.id+' .graph-container')
     chart = new Highcharts.Chart
       chart:
-        renderTo: data.id
+        renderTo: _target[0]
         type: renderData.chartInfo.name.toLowerCase()
         height: renderData.chartInfo.height || '150'
         animation: false
