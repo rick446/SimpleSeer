@@ -25,7 +25,7 @@ insp = Inspection( name= "Region",
    camera='Color Check')
 insp.save()
 
-meas = Measurement( name="Gumball Color", label="Color", method = "closestcolor", parameters = dict(), units = "", featurecriteria = dict( index = 0 ), inspection = insp.id )
+meas = Measurement( name="Gumball Color", label="Color", method = "closestcolor", inspection = insp.id )
 meas.save()
 
 #insp2 = Inspection( name= "Delivery Confirmation",
