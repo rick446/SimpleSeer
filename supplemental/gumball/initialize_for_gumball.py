@@ -28,14 +28,14 @@ insp.save()
 meas = Measurement( name="Gumball Color", label="Color", method = "closestcolor", inspection = insp.id )
 meas.save()
 
-#insp2 = Inspection( name= "Delivery Confirmation",
-#  method="blob",
-#  parameters = { "thresh": 10 },
-#  camera = "Delivery Check")
-#insp2.save()
+insp2 = Inspection( name= "Delivery Confirmation",
+  method="blob",
+  parameters = { "thresh": 10, "limit": 1 },
+  camera = "Delivery Check")
+insp2.save()
 
-#meas2 = Measurement( name="Delivery Color", label="Color", method = "closestcolor", parameters = dict(), units = "", featurecriteria = dict( index = 0 ), inspection = insp2.id )
-#meas.save()
+meas2 = Measurement( name="Delivery Color", label="Color", method = "closestcolor", parameters = dict(), units = "", featurecriteria = dict( index = 0 ), inspection = insp2.id )
+meas.save()
 
 #meas3 = Measurement( name="Delivery Time", label="seconds", method = "timesincelastmeasurement", parameters = dict( measurement = meas.id))
 #meas3.save()

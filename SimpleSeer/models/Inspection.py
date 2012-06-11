@@ -97,6 +97,9 @@ class Inspection(SimpleDoc, WithPlugins, mongoengine.Document):
         
         if not featureset:
             return []
+    
+        if "skip" in self.parameters or "limit" in self.parameters:
+            featureset = featureset[self.parameters.get("skip",None):self.parameters.get("limit",None)]
         
         #we're executing an unsaved inspection, which can have no children
         if not self.id:

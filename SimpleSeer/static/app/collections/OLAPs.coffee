@@ -42,13 +42,15 @@ module.exports = class OLAPs extends Collection
       min: d.chartInfo.min || 0
       template: _.template '<ul><li style="color:red">{{ values.red }}</li><li style="color:green">{{ values.green }}</li><li style="color:blue">{{ values.blue }}</li></ul>'
       addPoint: (d,shift=true) ->
-        x = Math.floor(((d.x / 1000) % 60) / 20)
+        #x = Math.floor(((d.x / 1000) % 60) / 20)
+        x = d.x
         if shift
           p = @.stack.shift()
           @values[@._map[p.x]] -= p.y
         @.stack.push({x:x,y:d.y})
         @values[@._map[x]] += d.y
       setData: (d) ->
+        @stack = []
         for o in d
           @.addPoint o, false
       render: (target) ->
