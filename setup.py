@@ -22,21 +22,21 @@ setup(name="SimpleSeer",
   data_files=[ ('/etc/',['etc/simpleseer.cfg']) ],
   entry_points='''
   [seer.plugins.inspection]
-  barcode=SimpleSeer.plugins.barcode:Barcode
-  blob=SimpleSeer.plugins.blob:Blob
-  lines=SimpleSeer.plugins.lines:Lines  
-  motion=SimpleSeer.plugins.motion:Motion
-  region=SimpleSeer.plugins.region:Region
-  face=SimpleSeer.plugins.face:Face
-  circles=SimpleSeer.plugins.circles:Circles
-  edgeWidth=SimpleSeer.plugins.edgeWidth:EdgeWidth
-  simpleTemplate=SimpleSeer.plugins.simpleTemplate:SimpleTemplate
-  keypointTemplate=SimpleSeer.plugins.keypointTemplate:KeypointTemplate
-  ocr=SimpleSeer.plugins.ocr:OCR
-  
+  barcode=SimpleSeer.plugins.Barcode:Barcode
+  blob=SimpleSeer.plugins.Blob:Blob
+  lines=SimpleSeer.plugins.Lines:Lines  
+  motion=SimpleSeer.plugins.Motion:Motion
+  region=SimpleSeer.plugins.Region:Region
+  face=SimpleSeer.plugins.Face:Face
+  circles=SimpleSeer.plugins.Circles:Circles
+  edgeWidth=SimpleSeer.plugins.EdgeWidth:EdgeWidth
+  simpleTemplate=SimpleSeer.plugins.SimpleTemplate:SimpleTemplate
+  keypointTemplate=SimpleSeer.plugins.KeypointTemplate:KeypointTemplate
+  ocr=SimpleSeer.plugins.OCR:OCR
+
   [seer.plugins.measurement]
-  blob_length=SimpleSeer.plugins.blob:BlobLength
-  blob_count=SimpleSeer.plugins.blob:BlobCount
+  blob_length=SimpleSeer.plugins.Blob:BlobLength
+  blob_count=SimpleSeer.plugins.Blob:BlobCount
   closestcolor=SimpleSeer.plugins.closestcolor:ClosestColorMeasurement
   timebetween=SimpleSeer.plugins.timebetween:TimeBetweenMeasurement
 
