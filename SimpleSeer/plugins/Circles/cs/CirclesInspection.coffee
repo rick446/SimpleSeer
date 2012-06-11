@@ -1,6 +1,6 @@
-class Blob
+class Circles
   constructor: (inspection) ->
     @inspection = inspection
   represent: () =>
-    "Blob Detected Derp!"
-plugin this, blob:Blob
+    "Circle Detection"
+plugin this, circles:Circles
