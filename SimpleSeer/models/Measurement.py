@@ -48,7 +48,6 @@ class Measurement(SimpleDoc, WithPlugins, mongoengine.Document):
     featurecriteria = mongoengine.DictField()
 
     def execute(self, frame, features):
-        
         featureset = self.findFeatureset(features)
         #this will catch nested features
 
@@ -63,21 +62,27 @@ class Measurement(SimpleDoc, WithPlugins, mongoengine.Document):
             else:
                 return []
         #TODO more advanced filtering options here
-        
-        if hasattr(self, self.method):
-            function_ref = self.get_plugin(self.method)
-            values = function_ref(frame, featureset)
 
-            return self.toResults(frame, values)
-        
+        values = []
+        if hasattr(featureset[0], self.method):
+            values = [getattr(f, self.method) for f in featureset] 
+        elif featureset[0].featuredata.has_key(self.method):
+            values = [f.featuredata[self.method] for f in featureset]
+        else:        
+            function_ref = ""
+            try:
+                function_ref = self.get_plugin(self.method)
+            except ValueError:
+                print "Can't fetch measurement plugin " + self.method
+                return []
+            
+            values = function_ref(frame, featureset)
+        return self.toResults(frame, values)
+            
         
         values = []
         
-        if hasattr(featureset[0], self.method):
-            values = [getattr(f, self.method) for f in featureset] 
         
-        if featureset[0].featuredata.has_key(self.method):
-            values = [f.featuredata[self.method] for f in featureset]
         
         return self.toResults(frame, values)
         
@@ -100,7 +105,7 @@ class Measurement(SimpleDoc, WithPlugins, mongoengine.Document):
         def numeric(val):
             try:
                 return float(val)
-            except TypeError:
+            except:
                 try:
                     return float(val[0] + val[1] + val[2]) / 3
                 except:

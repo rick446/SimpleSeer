@@ -109,14 +109,16 @@ def imgfile(frame_id):
             (frame.camera.replace(' ','_'), frame.capturetime.strftime("%Y-%m-%d_%H_%M_%S"))
     return resp    
     
-@route('/videofeed-width<int:width>.mjpeg', methods=['GET'])
-def videofeed(width=0):    
+@route('/videofeed-width<int:width>-camera<int:camera>.mjpeg', methods=['GET'])
+def videofeed(width=0, camera=0):    
     params = {
         'width': width,
         'index': -1,
-        'camera': 0,
+        'camera': camera,
         }
     params.update(request.values)
+    
+
     seer = SeerProxy2()
     log.info('Feeding video in greenlet %s', gevent.getcurrent())
     def generate():        
@@ -143,6 +145,15 @@ def videofeed(width=0):
             ('Pragma', 'no-cache'),
             ('Content-Type',
              "multipart/x-mixed-replace; boundary=--BOUNDARYSTRING") ])
+
+
+@route('/videofeed-width<int:width>.mjpeg', methods=['GET'])
+def videofeed_width_only(width=0):
+	return videofeed(width)
+
+@route('/videofeed-camera<int:camera>.mjpeg', methods=['GET'])
+def videofeed_camera_only(camera=0):
+    return videofeed(0,camera)
 
 @route('/videofeed.mjpeg', methods=['GET'])
 def videofeed_camera_res():

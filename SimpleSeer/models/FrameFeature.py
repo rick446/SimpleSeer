@@ -2,11 +2,37 @@ import cPickle as pickle
 from copy import deepcopy
 
 import cv
+import numpy as np
 import mongoengine
+import mongoengine.base
 
 import SimpleCV
 
 from .base import SimpleEmbeddedDoc
+from SimpleSeer.base import mebasedict_handle, mebaselist_handle
+
+
+
+#helper function to get difficult to encode types out of SimpleCV native types
+def scv_cleanse(value):
+    if type(value) == cv.iplimage or isinstance(value, SimpleCV.Image):
+        return
+    if type(value) == list or type(value) == tuple:
+        return [scv_cleanse(v) for v in value]
+    if type(value) == dict:
+        d = {}
+        for k in value.keys():
+            d[k] = scv_cleanse(value[k])
+        return d
+    if issubclass(type(value), np.integer):
+        return int(value)
+    if issubclass(type(value), np.float):
+        return float(value)
+    else:
+        return value
+
+
+
 
 class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
    
@@ -48,14 +74,14 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         self.featurepickle = pickle.dumps(data)
         data.image = imgref
 
-        self.x = data.x
-        self.y = data.y
-        self.points = deepcopy(data.points)
-        self.area = data.area()
-        self.width = data.width()
-        self.height = data.height()
-        self.angle = data.angle()
-        self.meancolor = list(data.meanColor())
+        self.x = int(data.x)
+        self.y = int(data.y)
+        self.points = scv_cleanse(deepcopy(data.points))
+        self.area = scv_cleanse(data.area())
+        self.width = scv_cleanse(data.width())
+        self.height = scv_cleanse(data.height())
+        self.angle = scv_cleanse(data.angle())
+        self.meancolor = scv_cleanse(data.meanColor())
         self.featuretype = data.__class__.__name__
         
         datadict = {}
@@ -70,12 +96,8 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
             value = getattr(data, k)
             #here we need to handle all the cases for odd bits of data, but
             #for now we'll just toss them
-            if type(value) == cv.iplimage or isinstance(value, SimpleCV.Image):
-                continue
-                #TODO do we need this here?  I'm not sure
-                #self.featuredata[k] = Image(value)
-            else:
-                self.featuredata[k] = value
+            self.featuredata[k] = scv_cleanse(value)
+            
     @property
     def feature(self):
         if not self._featurebuffer:
@@ -85,7 +107,6 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
 
     def __getstate__(self):
         ret = {}
-        
         skipfields = ["featurepickle", "children"]
         
         #handle all the normal fields
@@ -93,15 +114,12 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
             if k in skipfields:
                 continue
             
-            v = self._data[k]
+            ret[k] = self._data[k]
             if k == "inspection":
-                ret[k] = str(v)
-            else:
-                ret[k] = v
+                ret[k] = str(self._data[k])
         
         #handle all children
         ret["children"] = [c.__getstate__() for c in self.children]
-
         return ret
 
     #cribbed from http://www.ariel.com.au/a/python-point-int-poly.html

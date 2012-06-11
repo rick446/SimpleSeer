@@ -38,29 +38,70 @@ class EdgeWidthFeature(SimpleCV.Line):
     ymax = np.min([line[0][1],line[1][1]])
     ymin = np.max([line[0][1],line[1][1]])
     points = [(xmin,ymin),(xmin,ymax),(xmax,ymax),(xmax,ymin)]
-    super(Line, self).__init__(image, at_x, at_y,points)
+    super(EdgeWidthFeature, self).__init__(image,points)
     
 class EdgeWidth(base.InspectionPlugin):
+  
+  @classmethod
+  def coffeescript(cls):
+    yield 'models/feature', '''
+class EdgeWidthCSFeature
+  constructor: (feature) ->
+    @feature = feature
+   
+  
+  icon: () => "/img/edgeWidth.png" 
+    
+  represent: () =>
+    "Edge Width mesasured from (" +
+    @feature.get("featuredata").edge_points[0][0] + " , " +
+    @feature.get("featuredata").edge_points[0][1] + ") to ( " + 
+    @feature.get("featuredata").edge_points[1][0] + " , " +
+    @feature.get("featuredata").edge_points[1][1] + ") length is"  +
+    @feature.get("featuredata").line_length + "."
 
+  tableOk: => true
+    
+  tableHeader: () =>
+    ["X Start", "Y Start", "X End", "Y End" ,"Length"]
+    
+  tableData: () =>
+    [@feature.get("featuredata").end_points[0][0],
+     @feature.get("featuredata").end_points[0][1],
+     @feature.get("featuredata").end_points[1][0],
+     @feature.get("featuredata").end_points[1][1],
+     @feature.get("featuredata").line_length]
+    
+  render: (pjs) =>
+    pjs.stroke 0, 180, 180
+    pjs.strokeWeight 3
+    pjs.noFill()
+    pjs.line( @feature.get('featuredata').end_points[0][0],
+              @feature.get('featuredata').end_points[0][1],
+              @feature.get('featuredata').end_points[1][0],
+              @feature.get('featuredata').end_points[1][1] )
+
+plugin this, EdgeWidthFeature:EdgeWidthCSFeature
+'''
   def __call__(self, image):
     pt0 = None
     pt1 = None 
     canny1 = 0
     canny2 = 100 
     width = 3
-
+    
     params = util.utf8convert(self.inspection.parameters)    
 
     if( params.has_key("pt0")):
       pt0 = params["pt0"]
     else: # required
       return []
-
+    
     if( params.has_key("pt1")):
       pt1 = params["pt1"]
     else: # required
       return []
-
+      
     if( params.has_key("canny")):
       canny = params["canny"]
       canny1 = canny[0]
@@ -68,9 +109,9 @@ class EdgeWidth(base.InspectionPlugin):
       
     if( params.has_key("width")):
       width = params["width"]
-  
+      
     result = image.edgeIntersections(pt0,pt1,width,canny1,canny2)
-    
+        
     retVal = []
     if(result[0] is not None and
        result[1] is not None ):
@@ -78,15 +119,13 @@ class EdgeWidth(base.InspectionPlugin):
       ewf = EdgeWidthFeature(image,[pt0,pt1],result)
       ff.setFeature(ewf)
       retVal.append(ff)
-
+    
     if( params.has_key("saveFile") ):
       if(result[0] is not None and 
          result[1] is not None ):
         image.drawCircle( result[0],10,color=Color.RED)
         image.drawCircle( result[1],10,color=Color.RED)
         image.drawLine( pt0, pt1,thickness=width,color=Color.GREEN)
+        image.save(params["saveFile"])  
 
-      image.save(params["saveFile"])
-      
-      
     return retVal

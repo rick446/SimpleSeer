@@ -33,14 +33,42 @@ module.exports = class OLAPs extends Collection
           @.value += o.y
       render: (target) ->
         target.html @.template {value:Math.round(@.value),color:@.color}
+    sumbucket: (d)->
+      value:0
+      _map:['red','green','blue']
+      values:{'red':0,'green':0,'blue':0}
+      stack:[]
+      max: d.chartInfo.max || 100
+      min: d.chartInfo.min || 0
+      template: _.template '<ul><li style="color:red">{{ values.red }}</li><li style="color:green">{{ values.green }}</li><li style="color:blue">{{ values.blue }}</li></ul>'
+      addPoint: (d,shift=true) ->
+        x = Math.floor(((d.x / 1000) % 60) / 20)
+        if shift
+          p = @.stack.shift()
+          @values[@._map[p.x]] -= p.y
+        @.stack.push({x:x,y:d.y})
+        @values[@._map[x]] += d.y
+      setData: (d) ->
+        for o in d
+          @.addPoint o, false
+      render: (target) ->
+        target.html @.template {values:@.values}
+    
 
   onSuccess: (d1, d2) =>
     for me in d2
       #d1.buildChart d1.get me.id
       mod = d1.get me.id
       if !mod.view
-        mod.view = new ChartView()
-        mod.view.anchorId = me.id
+        cn = ''
+        if inHalf
+          cn = 'graph-half-size'
+          inHalf = false
+        else if me.chartInfo.halfsize
+          cn = 'graph-half-size'
+          inHalf = true
+        mod.view = new ChartView({id:me.id,model:me,className:cn})
+        #mod.view.anchorId = me.id
         mod.view.render()
     return
 
@@ -50,9 +78,10 @@ module.exports = class OLAPs extends Collection
 
   unclickPoint: (fId) =>
     for m in @.models
-      p = m.view.chart._c.get fId
-      if p && p.marker && p.marker.radius > 2
-        p.update({ marker: {}},true)
+      if m.view.chart._c.get
+        p = m.view.chart._c.get fId
+        if p && p.marker && p.marker.radius > 2
+          p.update({ marker: {}},true)
     return false
 
   changeFrameImage: (fId) =>
@@ -93,6 +122,8 @@ module.exports = class OLAPs extends Collection
       #@.pause(e.point.config.id)
       
   addFrame: (id) =>
+    if !@.paused
+      application.homeView.realtimeControl()
     @.pause id
     if application.framesets.models[0]
       application.framesets.models[0].addFrame(id)

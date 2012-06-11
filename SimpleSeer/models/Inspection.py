@@ -132,10 +132,5 @@ class Inspection(SimpleDoc, WithPlugins, mongoengine.Document):
     def measurements(self):
         return Measurement.objects(inspection = self.id)
         
-    #overload the save function so that all inspections are reloaded if one is updated
-    def save(self):
-        ret = super(Inspection, self).save()
-        util.get_seer().reloadInspections()
-        return ret
     
 

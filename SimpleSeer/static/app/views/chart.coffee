@@ -8,14 +8,21 @@ module.exports = class ChartView extends View
   template: template
   lastupdate: 0
   lastframe: ''
+  
+  initialize: =>
+    @anchorId = @model.id
+
+  
   getRenderData: =>
-    retVal = application.charts._byId[@.anchorId]
+    retVal = application.charts.get(@.anchorId)
     if retVal
       return retVal.attributes
     return false
 
   update: (frm, to, reset=true )=>
-    name = application.charts._byId[@.anchorId].attributes.name
+    #name = application.charts._byId[@.anchorId].attributes.name
+    m = application.charts.get(@.anchorId)
+    name = m.attributes.name
     if frm and to
       url = "/olap/"+name+"/since/"+frm+"/before/" + to
     else if frm
@@ -64,11 +71,13 @@ module.exports = class ChartView extends View
     application.charts.addFrame e.point.id
     for m in application.charts.models
       #if point.series.chart.container.parentElement.id != m.id
-      p = m.view.chart._c.get e.point.id
-      if p.marker && p.marker.radius > 2
-        #p.update({ marker: {}},true)
-      else
-        p.update({ marker: { color: '#BF0B23', radius: 5}},true)
+      if m.view.chart._c.get
+        p = m.view.chart._c.get e.point.id
+        if p && p.update
+          if p.marker && p.marker.radius > 2
+            #p.update({ marker: {}},true)
+          else
+            p.update({ marker: { color: '#BF0B23', radius: 5}},true)
     return false
 
   _drawData: (data,reset) =>
@@ -97,8 +106,9 @@ module.exports = class ChartView extends View
   drawChart: (data) =>
     renderData = @getRenderData()
     @.chart = @.chartInit renderData
-    application.socket.on "message:OLAP/#{renderData.name}/", @_update
-    application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
+    if @.chart.realtime
+      application.socket.on "message:OLAP/#{renderData.name}/", @_update
+      application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
     return
 
   render: =>
@@ -116,6 +126,7 @@ module.exports = class ChartView extends View
       _c = @_dcc cd
     lib:_l
     _c:_c
+    realtime: cd.realtime || false
     type:cd.chartInfo.name.toLowerCase()
     addPoint: (d) =>
       if @.chart.lib == 'highchart'
@@ -146,11 +157,11 @@ module.exports = class ChartView extends View
   _dcc: (data) =>
     return new application.charts.customCharts[data.chartInfo.name] data
 
-  _dhc: (data) =>
-    renderData = data
+  _dhc: (renderData) =>
+    _target = $('#'+renderData.id+' .graph-container')
     chart = new Highcharts.Chart
       chart:
-        renderTo: data.id
+        renderTo: _target[0]
         type: renderData.chartInfo.name.toLowerCase()
         height: renderData.chartInfo.height || '150'
         animation: false
@@ -187,14 +198,18 @@ module.exports = class ChartView extends View
       #  duration:
       #    1000
       xAxis:
+        tickInterval: renderData.chartInfo.tickerinterval * 1000 || null
         type:
-          'datetime'
+          renderData.chartInfo.xtype || 'datetime'
         labels:
-          formatter: ->
-            Highcharts.dateFormat('%m/%d<br>%I:%M:%S', this.value);
+          formatter: -> 
+            if this.axis.options.type == 'datetime'
+              Highcharts.dateFormat('%m/%d<br>%I:%M:%S', this.value)
+            else
+              this.value /1000
       yAxis:
         title:
           text: ''
-        min:renderData.chartInfo.min || 0
-        max:renderData.chartInfo.max || 100
+        min:renderData.chartInfo.minval
+        max:renderData.chartInfo.maxval
     return chart
