@@ -58,6 +58,7 @@ or manually install with these commands from WITHIN the SimpleSeer directory:
 	sudo easy_install coffeescript
 	sudo python setup.py develop
 	sudo mkdir /etc/simpleseer
+	sudo cp `pwd`/etc/mongodb.conf /etc/
 	sudo ln -s `pwd`/SimpleSeer/static/ /etc/simpleseer/static
 	sudo ln -s `pwd`/etc/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
 	sudo ln -s `pwd`/etc/simpleseer.cfg /etc/simpleseer.cfg
@@ -93,6 +94,21 @@ Mac OS X (Using homebrew)
 >>> from IPython.external.mathjax import install_mathjax
 >>> install_mathjax()
 =======
+
+Install Mongo 2.1
+=================
+Since features are used from mongo 2.1 and not included in the repos, the following
+explains how to manually install it.
+
+	wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.1.1.tgz
+	tar zxvf mongodb-linux-x86_64-2.1.1.tgz
+	cd mongodb-linux-x86_64-2.1.1
+	cd bin
+	sudo cp * /usr/local/bin
+	sudo mkdir -p /var/lib/mongodb
+	sudo mkdir -p /var/log/mongodb
+
+
 
 Optional Libraries
 ============
