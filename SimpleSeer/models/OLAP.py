@@ -859,6 +859,12 @@ class ResultSet:
         # Construct the list from params the the provided result 
         
         outputVals = [[r.__getattribute__(p) for p in params]]
+        
+        rounds = queryInfo['round']
+        for i in range(len(params)):
+            if rounds[i] is not None:
+                for o in outputVals:
+                    o[i] = o[i] - o[i] % rounds[i]
 
         idx = params.index('capturetimeEpochMS')        
         dataset = { 'startTime': outputVals[0][idx],
