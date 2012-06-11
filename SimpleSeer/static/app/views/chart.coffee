@@ -48,9 +48,11 @@ module.exports = class ChartView extends View
     @_drawData dd, reset
   
   _formatChartPoint: (d) =>
+    if @.model.chartInfo.xtype == 'datetime'
+      d.data[0] = moment(d.data[0]*1000)
     _point =
-      y:Math.round(d.data[1])
-      x:moment(d.data[0]*1000)
+      y:d.data[1]
+      x:d.data[0]
       id:d.frame_id
       events:
         #click: application.charts.callFrame
