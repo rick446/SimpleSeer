@@ -4,7 +4,7 @@ import json
 import logging
 from datetime import datetime
 
-import bson
+import bson.json_util
 import gevent
 import coffeescript
 from socketio import socketio_manage
@@ -98,8 +98,12 @@ def lastframes():
 @util.jsonify
 def frames():
     params = request.values.to_dict()
-    f_params = json.loads(params.get('filter', '[]'))
-    s_params = json.loads(params.get('sort', '[]'))
+    f_params = json.loads(
+        params.get('filter', '[]'),
+        object_hook=bson.json_util.object_hook)
+    s_params = json.loads(
+        params.get('sort', '[]'),
+        object_hook=bson.json_util.object_hook)
     skip = int(params.get('skip', 0))
     limit = int(params.get('limit', 20))
     frames = M.Frame.search(f_params, s_params, skip, limit)
