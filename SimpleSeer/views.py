@@ -106,9 +106,8 @@ def frames():
         object_hook=bson.json_util.object_hook)
     skip = int(params.get('skip', 0))
     limit = int(params.get('limit', 20))
-    frames = M.Frame.search(f_params, s_params, skip, limit)
-    frames = list(frames)
-    return frames
+    total_frames, frames = M.Frame.search(f_params, s_params, skip, limit)
+    return dict(frames=frames, total_frames=total_frames)
 
 #TODO, abstract this for layers and thumbnails        
 @route('/grid/imgfile/<frame_id>', methods=['GET'])
