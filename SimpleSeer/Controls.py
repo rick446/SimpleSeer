@@ -1,74 +1,102 @@
-from base import *
+
+import threading
+import time
+import util
+
+import models as M
+
 
 class ControlObject:
-    """
-	An abstract class for all objects -- controls Arduino pin assignment 
-	and previous state
+   """
+    An abstract class for all objects -- controls Arduino pin assignment 
+    and previous state
 
-	This needs to be fleshed out
+    This needs to be fleshed out
 
-    """
+   """
    pin = '' 
    state = 0
-   statechange = False 
-   handlers = set() 
+   statechange = False
+   controller = ''
+   handlers = []
 
-   def __init__(self, board, config):
-       board.digital[pin_added].enable_reporting()
-       self.pin = board.get_pin('d:%d:i' % config['pin'])
-       handers = set() 
-       for handler in config['handlers'] {
-           handlers.add(getattr(self, handler))
-       }
+   def __init__(self, pin, C, handlers = []):
+       self.controller = C
+       self.pin = C.board.get_pin('d:%d:i' % pin)
+       self.pin.enable_reporting()
+       self.state = False
+       self.handlers = handlers
 
    def read(self): 
          newstate = self.pin.read()
-         if newstate != self.state: #need to add some "smoothing" here probably
+         if newstate != None and newstate != self.state: #need to add some "smoothing" here probably
              self.state = newstate
              self.fire(newstate) 
 
-   def fire(self, *args, **kargs):
-       for function_ref in handlers:
-          function_ref(self, *args, **kargs)   
+   def fire(self, state):
+       for function_ref in self.handlers:
+          function_ref(state)   
            
-class Button(ControlObject):
-     pass
 
-class Knob(ControlObject):
-     pass
+class ControlWatcher(threading.Thread):
+    def run(self):
+        while True:   
+            for co in self.control.controlobjects:
+                co.read()
+            
+            
+            
+            
+            time.sleep(0.1)
 
-class Controls():
+  
+     
+class Controls(object):
     iterator = ''
     board = ''
+    state = ''
+    
+    def fire_color(self, state, color):
+        if state == True and self.state == 'init':
+            print color, " button pressed"
+            self.state == "inspect"
+            self.matchcolor = color
+            self.statetime = time.time() 
+    
+    def fire_green(self, state):
+        self.firecolor(state, "green")
 
-    buttons = []
-    knobs = []
-    lights = [] 
-    pins = {} 
+    def fire_yellow(self, state):
+        self.firecolor(state, "yellow")
+    
+    def fire_orange(self, state):
+        self.firecolor(state, "orange")
+ 
+    def fire_red(self, state):
+        self.firecolor(state, "red")
 
-    def __init__(self, config):
-       buttons = []
-       knobs = []
-       lights = []
-       pins = {} 
 
-       #
-       board = Arduino(config['board'])
-       it = util.Iterator(board)
-       it.start()
-       config['board']
 
-       for control in sorted(config.keys()):
-           pin_added = ''
-           if control.find('button'):
-               buttons.append(Button(config[control])) 
-               pin_added = config['control'][pin] 
-           elif control.find('knob'):
-               knobs.append(Knob(config[control]))
-               pin_added = config['control'][pin] 
-               board.analog[pin_added].enable_reporting()
-           elif control.find('light'):
-               lights.append(Light(config[control]))     
-               pin_added = config['control'][pin] 
-                
 
+    def __init__(self, config, SS):
+       from pyfirmata import Arduino, util
+
+       self.board = Arduino(config['board'])
+       self.iterator = util.Iterator(self.board)
+       self.iterator.daemon = True
+       self.iterator.start()
+       
+       self.state = 'init'
+       
+       self.controlobjects = [
+          ControlObject(7, self, [self.fire_green]),
+          ControlObject(8, self, [self.fire_yellow]),
+          ControlObject(12, self, [self.fire_orange]),
+          ControlObject(13, self, [self.fire_red])
+       ]
+       
+       self.SS = SS
+       self.cw = ControlWatcher()
+       self.cw.control = self
+       self.cw.daemon = True
+       self.cw.start()
