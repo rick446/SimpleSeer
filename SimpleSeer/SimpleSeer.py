@@ -7,6 +7,7 @@ import threading
 from datetime import datetime
 
 from . import models as M
+from .Controls import Controls as Controls
 from .Session import Session
 from . import util
 
@@ -100,10 +101,10 @@ class SimpleSeer(object):
         self.framecount = 0
         
         #log display started
-
-        #self.controls = Controls(self.config['arduino'])
-        
         self.initialized = True
+
+        self.controls = Controls(self.config.arduino, self)
+        
         
         super(SimpleSeer, self).__init__()
         self.daemon = True
@@ -336,8 +337,10 @@ class SimpleSeer(object):
             time.sleep(0)
             while not self.halt:
                 timer_start = time.time()
-                if iteration % 1000 == 0: gc.collect()
+                
+                if iteration % 100 == 0: gc.collect()
                 iteration += 1
+                
                 self.capture()
                 realtime.ChannelManager().publish('capture.', { "capture": 1})
 

@@ -45,8 +45,6 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
     
     inspection = mongoengine.ObjectIdField()
     children = mongoengine.ListField(mongoengine.GenericEmbeddedDocumentField())
-
-
     
     #feature attributes need to be in this list to be queryable
     #note that plugins can inject into this
@@ -62,40 +60,51 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
     #these are feature properties which are not saved
     #note that plugins can inject into this
     featuredata_mask = {
-        "image": False
+        "image": True
+    }
+    
+    cleanse_mask = {
+        "mContour": True, "mContourAppx": True, "mConvexHull": True, "mHoleContour": True, 'mVertEdgeHist': True
     }
     
     #this converts a SimpleCV Feature object into a FrameFeature
     #clean this up a bit
     def setFeature(self, data):
         self._featurecache = data
-        imgref = data.image
-        data.image = ''  #remove image ref for pickling
-        self.featurepickle = pickle.dumps(data)
-        data.image = imgref
-
         self.x = int(data.x)
         self.y = int(data.y)
         self.points = scv_cleanse(deepcopy(data.points))
+
         self.area = scv_cleanse(data.area())
         self.width = scv_cleanse(data.width())
         self.height = scv_cleanse(data.height())
         self.angle = scv_cleanse(data.angle())
+
+
         self.meancolor = scv_cleanse(data.meanColor())
         self.featuretype = data.__class__.__name__
         
+        data.image = ''
+        self.featurepickle = pickle.dumps(data)
+
+        
+
         datadict = {}
         if hasattr(data, "__getstate__"):
             datadict = data.__getstate__()
         else:
             datadict = data.__dict__
-            
+        
         for k in datadict:
             if self.featuredata_mask.has_key(k) or hasattr(self, k) or k[0] == "_":
                 continue
+                            
             value = getattr(data, k)
-            #here we need to handle all the cases for odd bits of data, but
-            #for now we'll just toss them
+            if self.cleanse_mask.has_key(k):
+                self.featuredata[k] = value
+                continue
+            
+            #here we need to handle all the cases for odd bits of data
             self.featuredata[k] = scv_cleanse(value)
             
     @property

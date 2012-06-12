@@ -16,6 +16,7 @@ insp = Inspection( name= "Region",
 insp.save()
 
 meas = Measurement( name= "Color", method="closestcolor",
+  inspection = insp.id,
   parameters = { 
     "pallette" : {
       "red" : (255, 0, 0),

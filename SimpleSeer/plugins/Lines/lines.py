@@ -112,8 +112,7 @@ class Lines(base.InspectionPlugin):
       fs.draw()
       type(fs)
       len(fs)
-      for f in fs:
-        print (f.x,f.y)
+  
       for f in fs: # do the conversion from SCV featureset to SimpleSeer featureset
         ff = M.FrameFeature()
         ff.setFeature(f)
