@@ -85,7 +85,8 @@ mongo_install () {
 
 mongo_uninstall () {
   echo "[Removing Mongo]"
-  sudo apt-get -f -y --force-yes remove mongodb
+  sudo killall mongod
+  sudo apt-get -f -y --force-yes remove mongodb mongodb-server
   sudo rm -f /usr/local/bin/bsondump
   sudo rm -f /usr/local/bin/mongod
   sudo rm -f /usr/local/bin/mongoexport
