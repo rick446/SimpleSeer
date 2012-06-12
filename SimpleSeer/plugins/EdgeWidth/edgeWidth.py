@@ -15,6 +15,21 @@ meas = Measurement( name="movement", label="Movement", method = "movement", para
 meas.save()
 
 
+
+Inspection(name="derp",method="edgeWidth",parameters={'pt0':(0,60),'pt1':(640,60),'canny':(120,150)}).save()
+Inspection(name="derp",method="edgeWidth",parameters={'pt0':(0,120),'pt1':(640,120)},'canny':(120,150)).save()
+Inspection(name="derp",method="edgeWidth",parameters={'pt0':(0,180),'pt1':(640,180)},'canny':(120,150)).save()
+Inspection(name="derp",method="edgeWidth",parameters={'pt0':(0,240),'pt1':(640,240)},'canny':(120,150)).save()
+Inspection(name="derp",method="edgeWidth",parameters={'pt0':(0,300),'pt1':(640,300)},'canny':(120,150)).save()
+Inspection(name="derp",method="edgeWidth",parameters={'pt0':(0,360),'pt1':(640,360)},'canny':(120,150)).save()
+Inspection(name="derp",method="edgeWidth",parameters={'pt0':(0,420),'pt1':(640,420),'canny':(120,150)}).save()
+
+
+
+
+
+
+
 """
 
 class EdgeWidthFeature(SimpleCV.Line):
@@ -29,7 +44,7 @@ class EdgeWidthFeature(SimpleCV.Line):
     self.sourceLinePts = srcPts 
     dx = intersections[0][0] - intersections[1][0]
     dy = intersections[0][1] - intersections[1][1]
-    self.distance = np.sqrt( (dx*dx)+(dy*dy) )
+    self.lineLength = float(np.sqrt( (dx*dx)+(dy*dy) ))
     line = intersections 
     at_x = (line[0][0] + line[1][0]) / 2
     at_y = (line[0][1] + line[1][1]) / 2
@@ -38,51 +53,10 @@ class EdgeWidthFeature(SimpleCV.Line):
     ymax = np.min([line[0][1],line[1][1]])
     ymin = np.max([line[0][1],line[1][1]])
     points = [(xmin,ymin),(xmin,ymax),(xmax,ymax),(xmax,ymin)]
-    super(EdgeWidthFeature, self).__init__(image,points)
+    super(SimpleCV.Line, self).__init__(image,at_x,at_y,points)
     
 class EdgeWidth(base.InspectionPlugin):
   
-  @classmethod
-  def coffeescript(cls):
-    yield 'models/feature', '''
-class EdgeWidthCSFeature
-  constructor: (feature) ->
-    @feature = feature
-   
-  
-  icon: () => "/img/edgeWidth.png" 
-    
-  represent: () =>
-    "Edge Width mesasured from (" +
-    @feature.get("featuredata").edge_points[0][0] + " , " +
-    @feature.get("featuredata").edge_points[0][1] + ") to ( " + 
-    @feature.get("featuredata").edge_points[1][0] + " , " +
-    @feature.get("featuredata").edge_points[1][1] + ") length is"  +
-    @feature.get("featuredata").line_length + "."
-
-  tableOk: => true
-    
-  tableHeader: () =>
-    ["X Start", "Y Start", "X End", "Y End" ,"Length"]
-    
-  tableData: () =>
-    [@feature.get("featuredata").end_points[0][0],
-     @feature.get("featuredata").end_points[0][1],
-     @feature.get("featuredata").end_points[1][0],
-     @feature.get("featuredata").end_points[1][1],
-     @feature.get("featuredata").line_length]
-    
-  render: (pjs) =>
-    pjs.stroke 0, 180, 180
-    pjs.strokeWeight 3
-    pjs.noFill()
-    pjs.line( @feature.get('featuredata').end_points[0][0],
-              @feature.get('featuredata').end_points[0][1],
-              @feature.get('featuredata').end_points[1][0],
-              @feature.get('featuredata').end_points[1][1] )
-
-plugin this, EdgeWidthFeature:EdgeWidthCSFeature
-'''
   def __call__(self, image):
     pt0 = None
     pt1 = None 
@@ -116,6 +90,7 @@ plugin this, EdgeWidthFeature:EdgeWidthCSFeature
     if(result[0] is not None and
        result[1] is not None ):
       ff = M.FrameFeature()
+      
       ewf = EdgeWidthFeature(image,[pt0,pt1],result)
       ff.setFeature(ewf)
       retVal.append(ff)
