@@ -338,6 +338,7 @@ class SimpleSeer(object):
                 timer_start = time.time()
                 if iteration % 1000 == 0: gc.collect()
                 iteration += 1
+                
                 self.capture()
                 realtime.ChannelManager().publish('capture.', { "capture": 1})
 
