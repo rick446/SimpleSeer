@@ -67,9 +67,7 @@ class Lines(base.InspectionPlugin):
       fs.draw()
   
       for f in fs: # do the conversion from SCV featureset to SimpleSeer featureset
-        f.line_length = f.length()
-        f.line_angle = f.angle()
-        #f.meanColor = (255,255,255)
+        f.lineLength= int(f.length())
         ff = M.FrameFeature()
     
         ff.setFeature(f)
