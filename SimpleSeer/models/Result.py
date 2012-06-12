@@ -25,7 +25,11 @@ class Result(SimpleDoc, mongoengine.Document):
     
     def capEpochMS(self):
         # Shortcut to return the capture time in epoch microseconds
-        return calendar.timegm(self.capturetime.timetuple()) + self.capturetime.time().microsecond / 1000000.0
+        
+        epochTime = calendar.timegm(self.capturetime.timetuple()) + self.capturetime.time().microsecond / 1000000.0
+        # Quick hack for jim: may change this:
+        # epochTime *= 1000
+        return epochTime
 
     capturetimeEpochMS = property(capEpochMS)
 

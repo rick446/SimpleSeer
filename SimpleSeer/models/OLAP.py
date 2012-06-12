@@ -98,6 +98,7 @@ class ChartInfoSchema(fes.Schema):
     color = fev.UnicodeString(if_empty="")
     minval = fev.Int(if_missing=None, if_empty=None)
     maxval = fev.Int(if_missing=None, if_empty=None)
+    maxval = fev.Int(if_missing=None, if_empty=None)
 
         
 
@@ -369,8 +370,7 @@ class OLAPFactory:
         elif scaleRange < 86400: return 86400 # 1 day
         elif scaleRange < 604800: return 604800 # 1 week
         else: return scaleRange
-    	
-        return scaleRange
+        
         	
 class Chart:
     # Takes the data and puts it in a format for charting
@@ -532,7 +532,6 @@ class DescriptiveStatistic:
 
     def mode(self, x):
         # A little hack since the related SciPy function returns unnecessary data
-        print x
         from scipy import stats
         return stats.mode(x)[0][0]
         
@@ -564,7 +563,7 @@ class DescriptiveStatistic:
         # First trim the partial times on each end (unless told not to)
         if self._descInfo['trim']:
             [group, series, meta] = self.trimData(group, series, meta, window)
-            
+        
         if (len(group) == 0):
             log.warn('Dataset trimmed to nothing')
             return [], [], []
@@ -601,7 +600,7 @@ class DescriptiveStatistic:
             maxBinVal = self._descInfo['maxWindow']
         else:
             maxBinVal = int(group[-1] + window)
-        
+    
         # Round the time to the nearest groupBy interval
         minBinVal -= minBinVal % window
         maxBinVal -= maxBinVal % window
@@ -620,8 +619,8 @@ class DescriptiveStatistic:
         binLen = len(bins)
         if (maxIdx > (binLen - 1)):
             log.warn('Error in computing bin length')
-            log.warn('Min bin ' + str(minbinVal))
-            log.warn('Max bin ' + str(maxbinVal))
+            log.warn('Min bin ' + str(minBinVal))
+            log.warn('Max bin ' + str(maxBinVal))
             log.warn('Min Window ' + str(descInfo['minWindow']))
             log.warn('Max Window ' + str(descInfo['maxWindow']))
             log.warn('Window size ' + str(window))
@@ -654,7 +653,6 @@ class DescriptiveStatistic:
         startTime -= (startTime % window)
         endTime -= (endTime % window)
         
-        
         # Filter out the beginning and end
         
         groupFilt = []
@@ -666,7 +664,7 @@ class DescriptiveStatistic:
                 groupFilt.append(g)
                 seriesFilt.append(s)
                 metaFilt.append(m)
-        
+    
         return [groupFilt, seriesFilt, metaFilt]
         
         
@@ -724,7 +722,10 @@ class RealtimeOLAP:
     def lastResult(self):
         # Show the timestamp of the last entry in the result table
         rs = Result.objects.order_by('-capturetime')
-        return calendar.timegm(rs[0].capturetime.timetuple())
+        if len(rs) > 0: 
+            return calendar.timegm(rs[0].capturetime.timetuple())
+        else:
+            return 0
 
     def sendMessage(self, o, data):
         msgdata = [dict(
@@ -816,11 +817,16 @@ class ResultSet:
         if not 'capturetimeEpochMS' in params:
             params.append('capturetimeEpochMS')
         
-        # A little hack to make the 
         
         # Get the list of result values
         outputVals = [[r.__getattribute__(p) for p in params] for r in rs[::-1]]
-        # outputVals = [[calendar.timegm(r.capturetime.timetuple()) + r.capturetime.time().microsecond / 1000000.0, r.numeric, r.inspection, r.frame, r.measurement, r.id] for r in rs[::-1]]
+        
+        rounds = queryInfo['round']
+        for i in range(len(params)):
+            if rounds[i] is not None:
+                for o in outputVals:
+                    o[i] = o[i] - o[i] % rounds[i]  
+            
         
         # Track the start and end time of the resultset
         idx = params.index('capturetimeEpochMS')
@@ -853,6 +859,12 @@ class ResultSet:
         # Construct the list from params the the provided result 
         
         outputVals = [[r.__getattribute__(p) for p in params]]
+        
+        rounds = queryInfo['round']
+        for i in range(len(params)):
+            if rounds[i] is not None:
+                for o in outputVals:
+                    o[i] = o[i] - o[i] % rounds[i]
 
         idx = params.index('capturetimeEpochMS')        
         dataset = { 'startTime': outputVals[0][idx],

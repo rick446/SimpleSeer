@@ -36,6 +36,7 @@ setup(name="SimpleSeer",
   [seer.plugins.measurement]
   blob_length=SimpleSeer.plugins.blob:BlobLength
   blob_count=SimpleSeer.plugins.blob:BlobCount
+  closestcolor=SimpleSeer.plugins.closestcolor:ClosestColorMeasurement
 
   [seer.plugins.watcher]
   smsalert=SimpleSeer.plugins.smsalert:SMSAlert

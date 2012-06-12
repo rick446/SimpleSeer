@@ -81,7 +81,7 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         self.width = scv_cleanse(data.width())
         self.height = scv_cleanse(data.height())
         self.angle = scv_cleanse(data.angle())
-        #self.meancolor = scv_cleanse(data.meanColor())
+        self.meancolor = scv_cleanse(data.meanColor())
         self.featuretype = data.__class__.__name__
         
         datadict = {}
