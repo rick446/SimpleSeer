@@ -6,23 +6,27 @@ class BarcodesFeature
   icon: () => "/img/barcode.png" 
     
   represent: () =>
-    "Barcode detected in image at : (" + @feature("x") + "," + @feature("y") "), with data <" + @feature.get("featuredata").data + ">."
+        "Barcode detected in image at : (" +
+        @feature.get("x") +
+        "," +
+        @feature.get("y") +
+        "), with data <" +
+        @feature.get("featuredata").data +
+        ">."
     
   tableOk: => true
     
   tableHeader: () =>
-    ["X Positon", "Y Position","Width", "Height", "Data"]
+   [ "X Positon", "Y Position","Width", "Height", "Data"]
     
   tableData: () =>
-    [@feature.get("x"),
-     @feature.get("y"),
-     @feature.get("width"),
-     @feature.get("height"),
-     @feature.get("featuredata").data]
+    [@feature.get("x"), @feature.get("y"), @feature.get("width"), @feature.get("height"),  @feature.get("featuredata").data]
     
   render: (pjs) =>
-    pjs.stroke 153,0,76
+    pjs.stroke 76,0,153
     pjs.strokeWeight 3
     pjs.noFill()
-    pjs.rect(@feature.get('x'),@feature.get('y'), @feature.get('width'), @feature.get('height') )
+    x0 = @feature.get('x')-(@feature.get('width')/2)
+    y0 = @feature.get('y')-(@feature.get('height')/2)
+    pjs.rect(x0,y0, @feature.get('width'), @feature.get('height') )
 plugin this, Barcode:BarcodesFeature
