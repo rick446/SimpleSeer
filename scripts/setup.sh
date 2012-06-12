@@ -1,5 +1,11 @@
 #!/bin/sh
 #This is a setup tool to help automate the installation of SimpleSeer
+#Please run this from the top level seer directory
+#so for instance if you are running in /tmp/SimpleSeer than
+# cd /tmp/SimpleSeer
+# source scripts/setup.sh
+#
+#
 
 seer_install () {
   echo "[Installing Seer]"
