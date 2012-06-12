@@ -29,7 +29,27 @@ seer_install () {
   echo "starting supervisord"
   sudo supervisord
   echo "starting all SimpleSeer services"
-  sudo supervisorctl start seer-dev:
+  sudo supervisorctl start seer-dev:mongodb
+  echo "starting mongo..."
+  sleep 5
+  echo "starting pyro..."
+  sudo supervisorctl start seer-dev:simpleseer-pyro4
+  sleep 1
+  echo "starting broker..."
+  sudo supervisorctl start seer-dev:simpleseer-broker
+  sleep 1
+  echo "starting core..."
+  sudo supervisorctl start seer-dev:simpleseer-core
+  sleep 1
+  echo "starting scrub..."
+  sudo supervisorctl start seer-dev:simpleseer-scrub
+  sleep 1
+  echo "starting web..."
+  sudo supervisorctl start seer-dev:simpleseer-web
+  sleep 1
+  echo "Supervisor Status:"
+  sudo supervisorctl status
+  echo 
   echo ""
   echo ""
   echo "Everything should now be installed and working, test at:"
