@@ -71,8 +71,11 @@ mongo_install () {
   echo ""
   echo "setting up directories"
   mkdir -p /tmp/mongo
-  echo "downloading..."
-  wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.1.1.tgz -O /tmp/mongodb-linux-x86_64-2.1.1.tgz
+  if [ ! -f /tmp/mongodb-linux-x86_64-2.1.1.tgz ];
+  then
+    echo "downloading..."
+    wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.1.1.tgz -O /tmp/mongodb-linux-x86_64-2.1.1.tgz
+  fi  
   sudo tar zxvf /tmp/mongodb-linux-x86_64-2.1.1.tgz -C /tmp/mongo
   echo "copying files...."
   sudo cp /tmp/mongo/mongodb-linux-x86_64-2.1.1/bin/* /usr/local/bin/
