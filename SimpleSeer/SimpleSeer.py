@@ -336,6 +336,7 @@ class SimpleSeer(object):
             time.sleep(0)
             while not self.halt:
                 timer_start = time.time()
+                
                 if iteration % 1000 == 0: gc.collect()
                 iteration += 1
                 
