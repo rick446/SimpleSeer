@@ -65,14 +65,15 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         "image": False
     }
     
+    cleanse_mask = {
+        "mContour", "mContourAppx", "mConvexHull"
+    }
+    
     #this converts a SimpleCV Feature object into a FrameFeature
     #clean this up a bit
     def setFeature(self, data):
         self._featurecache = data
-        imgref = data.image
-        data.image = ''  #remove image ref for pickling
-        self.featurepickle = pickle.dumps(data)
-        data.image = imgref
+        #import pdb; pdb.set_trace()
 
         self.x = int(data.x)
         self.y = int(data.y)
@@ -84,16 +85,24 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         self.meancolor = scv_cleanse(data.meanColor())
         self.featuretype = data.__class__.__name__
         
+        data.image = ''
+        self.featurepickle = pickle.dumps(data)
+        
         datadict = {}
         if hasattr(data, "__getstate__"):
             datadict = data.__getstate__()
         else:
             datadict = data.__dict__
-            
+        
         for k in datadict:
-            if self.featuredata_mask.has_key(k) or hasattr(self, k) or k[0] == "_":
+            if self.featuredata_mask.has_key(k) or hasattr(self, k) or k[0] == "_" or type:
                 continue
+                            
             value = getattr(data, k)
+            if self.cleanse_mask.has_key(k):
+                self.featuredata[k] = value
+                continue
+            
             #here we need to handle all the cases for odd bits of data, but
             #for now we'll just toss them
             self.featuredata[k] = scv_cleanse(value)

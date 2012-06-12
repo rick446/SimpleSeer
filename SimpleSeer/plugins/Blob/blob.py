@@ -4,9 +4,13 @@ from SimpleSeer import models as M
 from SimpleSeer import util
 from SimpleSeer.plugins import base
 from SimpleCV.Color import *
+import SimpleCV
 
 from SimpleSeer.base import jsonencode
 import json
+
+class BlobFeature(SimpleCV.Blob):
+    pass
 
 class Blob(base.InspectionPlugin):
     def __call__(self, image):
@@ -174,6 +178,7 @@ class Blob(base.InspectionPlugin):
         
         for b in reversed(blobs): #change sort order to big->small
             #b.draw()
+            b.__class__ = BlobFeature
             ff = M.FrameFeature()
             b.image = image
             ff.setFeature(b)
