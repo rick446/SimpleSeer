@@ -37,4 +37,7 @@ constructor: (feature) ->
                 pjs.line( last[0],last[1],current[0],current[1] )
                 last = current
         #plugin mount point to the class to what you defined
-        plugin this, BlobFeature:BlobFeature
+        # LHS - The name of the python class that is the feature
+        # by the inspection
+        # RHS - The name of this coffee script feature class. 
+        plugin this, Blob:BlobFeature
