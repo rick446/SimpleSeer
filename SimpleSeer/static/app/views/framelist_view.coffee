@@ -80,7 +80,10 @@ module.exports = class FramelistView extends View
       evt.preventDefault()
       _($('#filter_form').serializeArray()).each (input)=>
         if input.value != ''
-          @filter[input.name] = input.value
+          if input.name == 'time_from' || input.name == 'time_to'
+            @filter[input.name] = Math.floor($('input[name='+input.name+']').datepicker( "getDate" ).getTime())
+          else
+            @filter[input.name] = input.value
     @$el.find('#frame_holder').html 'Loading...'
     @$el.find('#frame_counts').hide()
     @fetchFiltered()
