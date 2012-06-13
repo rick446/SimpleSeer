@@ -8,9 +8,13 @@ import mongoengine.base
 
 import SimpleCV
 
-from .base import SimpleEmbeddedDoc
+from .base import SimpleEmbeddedDoc, SONScrub
 from SimpleSeer.base import mebasedict_handle, mebaselist_handle
 
+SONScrub.scrub_type(cv.iplimage)
+SONScrub.scrub_type(SimpleCV.Image)
+SONScrub.register_bsonifier(np.integer, lambda v,c: int(v))
+SONScrub.register_bsonifier(np.float, lambda v,c: float(v))
 
 
 #helper function to get difficult to encode types out of SimpleCV native types
