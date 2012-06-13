@@ -86,8 +86,10 @@ class SimpleSeer(object):
             else:
                 id = camerainfo['id']
                 del camerainfo['id']
+                del camerainfo['name']
                 if camerainfo.has_key('crop'):
                     del camerainfo['crop']
+                import pdb; pdb.set_trace()
                 self.cameras.append(Camera(id, camerainfo))
         #log initialized camera X
         
