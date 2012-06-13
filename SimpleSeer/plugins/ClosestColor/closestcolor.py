@@ -37,7 +37,6 @@ class ClosestColorMeasurement(base.MeasurementPlugin):
         
         results = []
         params = self.measurement.parameters
-        
         pallette = {}
         if "pallette" in params:
             pallette = params["pallette"]

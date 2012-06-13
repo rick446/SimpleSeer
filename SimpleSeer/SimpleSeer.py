@@ -103,12 +103,12 @@ class SimpleSeer(object):
         #log display started
         self.initialized = True
 
-        self.controls = Controls(self.config.arduino, self)
+        if self.config.arduino:
+          self.controls = Controls(self.config.arduino, self)
         
         
         super(SimpleSeer, self).__init__()
         self.daemon = True
-
         self.capture()
         #~ Inspection.inspect()
         #self.update()
@@ -168,7 +168,7 @@ class SimpleSeer(object):
         
         for i in imgs:
             img = i
-            frame = M.Frame(capturetime = datetime.now(), 
+            frame = M.Frame(capturetime = datetime.utcnow(), 
                 camera = self.cameras[-1])
             frame.image = img            
              
