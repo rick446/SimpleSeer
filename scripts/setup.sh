@@ -29,7 +29,27 @@ seer_install () {
   echo "starting supervisord"
   sudo supervisord
   echo "starting all SimpleSeer services"
-  sudo supervisorctl start seer-dev:
+  sudo supervisorctl start seer-dev:mongodb
+  echo "starting mongo..."
+  sleep 5
+  echo "starting pyro..."
+  sudo supervisorctl start seer-dev:simpleseer-pyro4
+  sleep 1
+  echo "starting broker..."
+  sudo supervisorctl start seer-dev:simpleseer-broker
+  sleep 1
+  echo "starting core..."
+  sudo supervisorctl start seer-dev:simpleseer-core
+  sleep 1
+  echo "starting scrub..."
+  sudo supervisorctl start seer-dev:simpleseer-scrub
+  sleep 1
+  echo "starting web..."
+  sudo supervisorctl start seer-dev:simpleseer-web
+  sleep 1
+  echo "Supervisor Status:"
+  sudo supervisorctl status
+  echo 
   echo ""
   echo ""
   echo "Everything should now be installed and working, test at:"
@@ -45,14 +65,14 @@ seer_delete () {
   echo "stopping supervisord"
   sudo supervisorctl stop all
   sudo killall supervisord
-  echo "cleaning up old files"
+  echo "cleaning up old files..."
   sudo rm -f /usr/local/bin/simpleseer
   sudo rm -rf /usr/local/lib/python2.7/dist-packages/SimpleSeer.egg-link
   sudo rm -rf /etc/simpleseer
   sudo rm -f /etc/supervisor/conf.d/supervisor.conf
   sudo rm -f /etc/simpleseer.cfg
   sudo rm -f /etc/simpleseer-logging.cfg
-  echo "....done deleting seer"
+  echo "...done deleting seer"
   echo ""
 }
 
@@ -61,7 +81,7 @@ seer_reload () {
   echo "Reloading Seer"
   echo "--------------"
   seer_delete
-  echo "Please wait while sockets are closed...."
+  echo "Please wait while sockets are closed..."
   sleep 15
   seer_install
 }
@@ -71,20 +91,25 @@ mongo_install () {
   echo ""
   echo "setting up directories"
   mkdir -p /tmp/mongo
-  echo "downloading..."
-  wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.1.1.tgz -O /tmp/mongodb-linux-x86_64-2.1.1.tgz
+  if [ ! -f /tmp/mongodb-linux-x86_64-2.1.1.tgz ];
+  then
+    echo "downloading..."
+    wget http://fastdl.mongodb.org/linux/mongodb-linux-x86_64-2.1.1.tgz -O /tmp/mongodb-linux-x86_64-2.1.1.tgz
+  fi  
   sudo tar zxvf /tmp/mongodb-linux-x86_64-2.1.1.tgz -C /tmp/mongo
   echo "copying files...."
   sudo cp /tmp/mongo/mongodb-linux-x86_64-2.1.1/bin/* /usr/local/bin/
   sudo mkdir -p /var/lib/mongodb
   sudo mkdir -p /var/log/mongodb
   sudo cp `pwd`/etc/mongodb.conf /etc/
-  echo ".....done installing mongo"
+  echo "...done installing mongo"
   echo ""
 }
 
 mongo_uninstall () {
   echo "[Removing Mongo]"
+  sudo killall mongod
+  sudo apt-get -f -y --force-yes remove mongodb mongodb-server
   sudo rm -f /usr/local/bin/bsondump
   sudo rm -f /usr/local/bin/mongod
   sudo rm -f /usr/local/bin/mongoexport
@@ -101,7 +126,7 @@ mongo_uninstall () {
   sudo rm -f /usr/local/bin/perftest
   sudo rm -rf /var/lib/mongodb
   sudo rm -rf /var/log/mongodb
-  echo ".....done removing mongo"
+  echo "...done removing mongo"
   echo ""
 }
 
@@ -121,11 +146,11 @@ while true; do
     read -p "[i]nstall, [r]eload, [d]elete, [m]ongo install, [k]ill mongo, or e[x]it this program?" choice
     case $choice in
         [i]* ) seer_install; break;;
-        [r]* ) seer_reload;;
+        [r]* ) seer_reload; break;;
         [d]* ) seer_delete;;
         [m]* ) mongo_install;;
         [k]* ) mongo_uninstall;;
-        [x]* ) exit;;
+        [x]* ) echo "exiting...";break;;
         * ) echo "Please answer yes or no.";;
     esac
 done

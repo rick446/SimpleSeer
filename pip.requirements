@@ -13,4 +13,5 @@ gevent-websocket
 gevent-socketio
 pyro4
 cython
-#coffeescript
+coffeescript
+#-e git+git://github.com/doloopwhile/Python-CoffeeScript.git#egg=CoffeeScript
