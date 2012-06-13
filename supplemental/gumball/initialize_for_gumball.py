@@ -10,7 +10,8 @@ else:
 
 Session(config_file)
 
-from SimpleSeer.models import Inspection, Measurement, Frame, OLAP 
+from SimpleSeer.models import Result, Inspection, Measurement, Frame
+from SimpleSeer.models.OLAP import OLAP, OLAPFactory
  
 
 Frame.objects.delete()
@@ -44,5 +45,13 @@ meas3.save()
 meas4 = Measurement( name="Delivery Radius", label="radius", method = "radius")
 meas4.save()
 
-#oraw = OLAP(name='Motion', queryInfo = dict( name = 'Motion' ), descInfo = None, chartInfo = dict ( name='line', color = 'blue', min = 0, max = 100))
-#oraw.save()
+
+of = OLAPFactory()
+
+qi = {'objType':'inspection', 'objId':insp2.id, 'objFields':['string', 'capturetimeEpochMS', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
+cihist = {'name':'sumbucket', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10}
+oraw = of.makeOLAP(queryInfo = qi, descInfo = None, chartInfo = cihist)
+oraw.allow = 1000
+oraw.name = 'ColorDelivery'
+oraw.realtime = 1
+oraw.save()
