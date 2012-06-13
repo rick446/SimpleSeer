@@ -10,6 +10,9 @@ module.exports = class ChartView extends View
   
   initialize: =>
     @anchorId = @model.id
+    if @model.chartInfo.chartid
+      @.template = ()->
+        return ''
 
   getRenderData: =>
     retVal = application.charts.get(@.anchorId)
@@ -25,8 +28,9 @@ module.exports = class ChartView extends View
     else if frm
       url = "/olap/"+name+"/since/" + frm
     else
-      interval = application.settings.poll_interval || 1
-      url = "/olap/"+name+"/limit/"+Math.ceil(application.charts.timeframe / interval)
+      console.error 'frm and or to required'
+      #interval = application.settings.poll_interval || 1
+      #url = "/olap/"+name+"/limit/"+Math.ceil(application.charts.timeframe / interval)
     $.getJSON(url, (data) =>
       @._drawDataLegacy data.data,reset
       $('.alert_error').remove()
@@ -123,14 +127,29 @@ module.exports = class ChartView extends View
   render: =>
     super()
     $('#chart-container').append @.$el
-    @update null,null,true
+    tf = Math.round((new Date()).getTime() / 1000) - application.charts.timeframe
+    @update tf,null,true
     this
+
+  createSeries: (cd) =>
+    id:cd.id
+    name:cd.name
+    shadow:false
+    color:cd.chartInfo.color || 'blue'
+    marker:
+      enabled: true
+      radius: 1
 
   chartInit: (cd) ->
     _m = application.charts.get @.model.id 
     if cd.chartInfo.name.toLowerCase() in ['line', 'bar', 'pie', 'spline', 'area', 'areaspline','column','scatter']
       _l = 'highchart'
-      _c = @_dhc cd
+      if cd.chartInfo.chartid
+        m = application.charts.get cd.chartInfo.chartid
+        m.view.chart._c.addSeries @createSeries cd
+        _c = m.view.chart._c
+      else
+        _c = @_dhc cd
     else
       _l = 'custom'
       _c = @_dcc cd
@@ -159,7 +178,8 @@ module.exports = class ChartView extends View
         else
           d.y = 1
           #@.chart.addPoint d
-          @.chart._c.series[0].addPoint d
+          series = @.chart._c.get @.id
+          series.addPoint d
           p = d
       else
         @.chart._c.incPoint(d)
@@ -169,7 +189,7 @@ module.exports = class ChartView extends View
       if @.chart.stack
         @.chart.stack.add d
       if @.chart.lib == 'highchart'
-        series = @.chart._c.series[0]
+        series = @.chart._c.get @.id
         series.addPoint(d,true,true)
       else
         @.chart._c.addPoint(d)
@@ -187,7 +207,8 @@ module.exports = class ChartView extends View
 
     setData: (d) =>
       if @.chart.lib == 'highchart'
-        @.chart._c.series[0].setData(d)
+        series = @.chart._c.get @.id
+        series.setData(d)
       else
         @.chart._c.setData(d)
         @.chart._c.render($('#'+@.anchorId))
@@ -228,16 +249,7 @@ module.exports = class ChartView extends View
         series:
           #stickyTracking: false
           lineWidth:2
-      series: [
-        name:renderData.name
-        data:[]
-        allowPointSelect: true
-        shadow:false
-        color:renderData.chartInfo.color || 'blue'
-        marker:
-          enabled: true
-          radius: 1
-        ]
+      series: [ @createSeries renderData ]
       tooltip:
         snap:100
         crosshairs:true

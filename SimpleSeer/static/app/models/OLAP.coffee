@@ -86,4 +86,6 @@ module.exports = class OLAP extends Model
           _dd.push i
       @.view.chart.stack.set _stk
       return _dd
+  
+
 
