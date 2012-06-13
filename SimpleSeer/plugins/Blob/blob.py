@@ -212,5 +212,5 @@ class BlobCount(base.MeasurementPlugin):
 class BlobRadius(base.MeasurementPlugin):
     
     def __call__(self, frame, featureset):
-        return [f.radius() for f in featureset]
+        return [f.feature.radius() for f in featureset]
 
