@@ -57,11 +57,12 @@ class ControlWatcher(threading.Thread):
 
           elif self.control.state == "inspect":
             self.control.servo_inspection()
+            self.control.inspecttime = datetime.datetime.utcnow()
             self.control.state = "waitforinspectresults"
 
           elif self.control.state == "waitforinspectresults":
             r = M.Result.objects(
-              capturetime__gte = self.control.starttime,
+              capturetime__gte = self.control.inspecttime,
               measurement = self.control.colormatch_measurement.id).order_by("-capturetime").limit(1)
 
             if len(r):
@@ -75,6 +76,14 @@ class ControlWatcher(threading.Thread):
               else:
                 self.control.state = 'notgood'
                 self.control.servo_notgood()
+
+            else:
+                since = (datetime.datetime.utcnow() - self.control.inspecttime).seconds
+                if since > 2:
+                   self.control.state = 'notgood'
+                   self.control.servo_bad()
+                
+              
             
           elif self.control.state == "notgood":
               self.control.state = 'getmarble'
@@ -99,7 +108,7 @@ class Controls(object):
 
     #servo setup
     fwheel = None
-    fwheel_pos1 = 175
+    fwheel_pos1 = 170
     fwheel_pos2 = 115
     fwheel_pos3 = 51
     fwheel_pos4 = 25
@@ -199,10 +208,12 @@ class Controls(object):
 
        self.colormatch_measurement = M.Measurement.objects(method="closestcolor")[0]
        self.SS = SS
-       self.cw = ControlWatcher()
-       self.cw.control = self
-       self.cw.daemon = True
-       self.cw.start()
+
+       if not "debug" in config:
+         self.cw = ControlWatcher()
+         self.cw.control = self
+         self.cw.daemon = True
+         self.cw.start()
 
 
 
