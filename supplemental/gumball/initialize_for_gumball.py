@@ -87,8 +87,8 @@ o4.save()
 
 ## Delivery time, moving average
 of5 = OLAPFactory()
-qi5 = {'objType':'measurement', 'objName':'Delivery Time', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None, 'fixdate':1}
-di5 = {'formula':'moving', 'params':['capturetimeEpochMS', 'string'], 'window':5, 'trim':True, 'partial':'drop'}
+qi5 = {'objType':'measurement', 'objName':'Delivery Time', 'objFields':['capturetimeEpochMS', 'numeric', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
+di5 = {'formula':'moving', 'params':['capturetimeEpochMS', 'numeric'], 'window':5, 'trim':True, 'partial':'drop'}
 o5 = of5.makeOLAP(queryInfo = qi5, descInfo = di5)
 o5.name = 'DeliveryTimeMovingAverage'
 o5.allow = 1000
@@ -98,7 +98,7 @@ o5.save()
 
 ## Yellow gumball delivered
 of6 = OLAPFactory()
-qi6 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'yellow'}, 'since':None, 'before':None, 'limit':1000, 'required':None}
+qi6 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'yellow'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1}
 ci6 = {'minval':0, 'maxval':0}
 o6 = of6.makeOLAP(queryInfo = qi6, descInfo = None, chartInfo=ci6)
 o6.allow = 1000
@@ -108,7 +108,7 @@ o6.save()
 
 ## Green gumball delivered
 of7 = OLAPFactory()
-qi7 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'green'}, 'since':None, 'before':None, 'limit':1000, 'required':None}
+qi7 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'green'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1}
 ci7 = {'minval':0, 'maxval':0}
 o7 = of7.makeOLAP(queryInfo = qi7, descInfo = None, chartInfo=ci7)
 o7.allow = 1000
@@ -118,7 +118,7 @@ o7.save()
 
 ## Blue gumball delivered
 of8 = OLAPFactory()
-qi8 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'blue'}, 'since':None, 'before':None, 'limit':1000, 'required':None}
+qi8 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'blue'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1}
 ci8 = {'minval':0, 'maxval':0}
 o8 = of8.makeOLAP(queryInfo = qi8, descInfo = None, chartInfo=ci8)
 o8.allow = 1000
@@ -128,7 +128,7 @@ o8.save()
 
 ## Red gumball delivered
 of9 = OLAPFactory()
-qi9 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'red'}, 'since':None, 'before':None, 'limit':1000, 'required':None}
+qi9 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'red'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1}
 ci9 = {'minval':0, 'maxval':0}
 o9 = of9.makeOLAP(queryInfo = qi9, descInfo = None, chartInfo=ci9)
 o9.allow = 1000
