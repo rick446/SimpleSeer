@@ -92,8 +92,9 @@ module.exports = class HomeView extends View
         obj.view.update _dtf,_dtt
     else
       application.charts.timeframe = $('#chart-interval').attr('value')
+      tf = Math.round((new Date()).getTime() / 1000) - application.charts.timeframe
       for obj in application.charts.models
-        obj.view.update()
+        obj.view.update tf
   toggleControlBar: =>
     $('#control-bar-realtime').toggleClass 'hide'
     $('#control-bar-paused').toggleClass 'hide'

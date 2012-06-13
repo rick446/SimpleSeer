@@ -728,20 +728,21 @@ class RealtimeOLAP:
             return 0
 
     def sendMessage(self, o, data):
-        msgdata = [dict(
-            id = str(o.id),
-            data = d[0:2],
-            inspection_id =  str(d[2]),
-            frame_id = str(d[3]),
-            measurement_id= str(d[4]),
-            result_id= str(d[5])
-        ) for d in data]
-        
-        #log.info('pushing new data to ' + utf8convert(o.name) + ' _ ' + str(msgdata))
-        
-        # Channel naming: OLAP/olap_name
-        olapName = 'OLAP/' + utf8convert(o.name) + '/'
-        ChannelManager().publish(olapName, dict(u='data', m=msgdata))
+        if (len(data) > 0):
+            msgdata = [dict(
+                id = str(o.id),
+                data = d[0:2],
+                inspection_id =  str(d[2]),
+                frame_id = str(d[3]),
+                measurement_id= str(d[4]),
+                result_id= str(d[5])
+            ) for d in data]
+            
+            #log.info('pushing new data to ' + utf8convert(o.name) + ' _ ' + str(msgdata))
+            
+            # Channel naming: OLAP/olap_name
+            olapName = 'OLAP/' + utf8convert(o.name) + '/'
+            ChannelManager().publish(olapName, dict(u='data', m=msgdata))
 
 
         
@@ -793,6 +794,12 @@ class ResultSet:
         if queryInfo['before']:
             query['capturetime__lt']= datetime.utcfromtimestamp(queryInfo['before'])
         
+        # If a custom filter was defined
+        if queryInfo.has_key('filter'):
+            filt = queryInfo['filter']
+            query[filt['field']] = filt['val']
+        
+        print query
         
         # Get the results
         # Only truncate if a limit was set
@@ -864,7 +871,8 @@ class ResultSet:
         for i in range(len(params)):
             if rounds[i] is not None:
                 for o in outputVals:
-                    o[i] = o[i] - o[i] % rounds[i]
+                    if o[i] is not None:
+                        o[i] = o[i] - o[i] % rounds[i]
 
         idx = params.index('capturetimeEpochMS')        
         dataset = { 'startTime': outputVals[0][idx],
