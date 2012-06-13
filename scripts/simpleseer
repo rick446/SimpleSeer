@@ -3,7 +3,11 @@ import sys
 import time
 import argparse
 import cProfile
+import threading
 import logging.config
+
+import guppy
+import gevent
 
 def main():
     parser = argparse.ArgumentParser()
@@ -30,7 +34,7 @@ def main():
     parser.add_argument(
         '-c', '--config', dest='config', default='default.cfg')
     parser.add_argument('-p', '--profile', action='store_true')
-    parser.add_argument('--profile-heap', type=bool)
+    parser.add_argument('--profile-heap', action='store_true')
     core.set_defaults(command='core', func=run_core)
     perftest.set_defaults(command='perftest', func=run_perftest)
     broker.set_defaults(command='broker', func=run_broker)
@@ -44,6 +48,7 @@ def main():
     from SimpleSeer.Session import Session
     
     session = Session(args.config)
+    session.profile_heap = args.profile_heap
     if args.profile:
         log = logging.getLogger(__name__)
         fn = args.command + '.profile'
@@ -55,12 +60,10 @@ def main():
     args.func(session)
 
 def run_core(session):
+    _setup_command(session, use_gevent=False, remote_seer=False)
     from SimpleSeer.SimpleSeer import SimpleSeer
     import Pyro4
     from SimpleSeer import models as M
-    if session.mongo.has_key("is_slave") and session.mongo["is_slave"]:
-        M.base.SimpleDoc.meta['auto_create_index'] = False
-
 
     seer = SimpleSeer()
     Pyro4.Daemon.serveSimple(
@@ -70,10 +73,9 @@ def run_core(session):
         ns=True)
 
 def run_perftest(session):
+    _setup_command(session, use_gevent=False, remote_seer=False)
     from SimpleSeer.SimpleSeer import SimpleSeer
     from SimpleSeer import models as M
-    if session.mongo.has_key("is_slave") and session.mongo["is_slave"]:
-        M.base.SimpleDoc.meta['auto_create_index'] = False
 
     session.auto_start = False
     session.poll_interval = 0
@@ -82,32 +84,23 @@ def run_perftest(session):
 
 
 def run_web(session):
-    init_gevent_subprocess()
-    disable_inprocess_seer()
+    _setup_command(session, use_gevent=True, remote_seer=True)
     from SimpleSeer.Web import WebServer, make_app
     from SimpleSeer import models as M
-    if session.mongo.has_key("is_slave") and session.mongo["is_slave"]:
-        M.base.SimpleDoc.meta['auto_create_index'] = False
     web = WebServer(make_app())
     web.run_gevent_server()
 
 def run_broker(session):
-    init_gevent_subprocess()
-    disable_inprocess_seer()
+    _setup_command(session, use_gevent=True, remote_seer=True)
     from SimpleSeer.broker import PubSubBroker
     from SimpleSeer import models as M
-    if session.mongo.has_key("is_slave") and session.mongo["is_slave"]:
-        M.base.SimpleDoc.meta['auto_create_index'] = False
     psb = PubSubBroker(session.pub_uri, session.sub_uri)
     psb.start()
     psb.join()
 
 def run_scrubber(session):
-    disable_inprocess_seer()
+    _setup_command(session, use_gevent=False, remote_seer=True)
     from SimpleSeer import models as M
-    if session.mongo.has_key("is_slave") and session.mongo["is_slave"]:
-        M.base.SimpleDoc.meta['auto_create_index'] = False
-    
     log = logging.getLogger(__name__)
     retention = session.retention
     if not retention:
@@ -125,13 +118,12 @@ def run_scrubber(session):
         time.sleep(retention["interval"])
 
 def run_shell(session):
-    disable_inprocess_seer()
+    _setup_command(session, use_gevent=False, remote_seer=True)
     from IPython.config.loader import Config
     from IPython.frontend.terminal.embed import InteractiveShellEmbed
     from SimpleSeer.service import SeerProxy2
     from SimpleSeer import models as M
-    if session.mongo.has_key("is_slave") and session.mongo["is_slave"]:
-        M.base.SimpleDoc.meta['auto_create_index'] = False
+
     banner = '''\nRunning the SimpleSeer interactive shell.\n'''
     exit_msg = '\n... [Exiting the SimpleSeer interactive shell] ...\n'
     shell= InteractiveShellEmbed(
@@ -140,12 +132,10 @@ def run_shell(session):
     shell()
 
 def run_notebook(session):
-    disable_inprocess_seer()
+    _setup_command(session, use_gevent=False, remote_seer=True)
     from IPython.frontend.html.notebook import notebookapp
     from IPython.frontend.html.notebook import kernelmanager
     from SimpleSeer import models as M
-    if session.mongo.has_key("is_slave") and session.mongo["is_slave"]:
-        M.base.SimpleDoc.meta['auto_create_index'] = False
 
     kernelmanager.MappingKernelManager.first_beat=30.0
     app = notebookapp.NotebookApp.instance()
@@ -155,17 +145,37 @@ def run_notebook(session):
             '--ext', 'SimpleSeer.ipython_extension'])
     app.start()
 
-def init_gevent_subprocess():
-    # Monkey patch socket routines
-    from gevent import monkey
-    monkey.patch_all()
-    import gevent_zeromq
-    gevent_zeromq.monkey_patch()
+def _setup_command(session, use_gevent, remote_seer):
+    if use_gevent:
+        # Monkey patch socket routines
+        from gevent import monkey
+        monkey.patch_all()
+        import gevent_zeromq
+        gevent_zeromq.monkey_patch()
+    if remote_seer:
+        from SimpleSeer.SimpleSeer import SimpleSeer as SS
+        SS(disable = True)
+    if session.mongo.has_key("is_slave") and session.mongo["is_slave"]:
+        M.base.SimpleDoc.meta['auto_create_index'] = False
+    if getattr(session, 'profile_heap', None):
+        if use_gevent:
+            gevent.spawn(_profile_heap_greenlet)
+        else:
+            t = threading.Thread(target=_profile_heap_thread)
+            t.daemon = True
+            t.start()
 
-def disable_inprocess_seer():
-    # Disable access to the seer object (just in case!)
-    from SimpleSeer.SimpleSeer import SimpleSeer as SS
-    SS(disable = True)
+def _profile_heap_thread():
+    while True:
+        h = guppy.hpy()
+        print h.heap()
+        time.sleep(5)
+
+def _profile_heap_greenlet():
+    while True:
+        h = guppy.hpy()
+        print h.heap()
+        gevent.sleep(5)
 
 if __name__ == '__main__':
    main()

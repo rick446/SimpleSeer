@@ -15,3 +15,4 @@ pyro4
 cython
 coffeescript
 #-e git+git://github.com/doloopwhile/Python-CoffeeScript.git#egg=CoffeeScript
+-e svn+https://guppy-pe.svn.sourceforge.net/svnroot/guppy-pe/trunk/guppy@90#egg=guppy-dev_r90
