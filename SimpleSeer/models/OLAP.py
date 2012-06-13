@@ -402,8 +402,9 @@ class Chart:
         # required for different charts.  For now, just assume nice
         # graphs of (x,y) coordiantes
         
+        chartRange = {'max':0, 'min':0}
         # If missing either/both of the predefined chart range values
-        if not chartInfo['minval'] or not chartInfo['maxval']:
+        if not chartInfo.has_key('minval') or not chartInfo.has_key('maxval'):
             chartRange = self.dataRange(resultSet['data'])
             
         # Override comptued values if they were defined
@@ -430,7 +431,6 @@ class DescriptiveStatistic:
     def execute(self, resultSet, descInfo):
         self._descInfo = descInfo
 
-        
         data = resultSet['data']
         
         # Right now I'm still hard coding to two parameters (group, series)
@@ -509,7 +509,8 @@ class DescriptiveStatistic:
         elif (descInfo['formula'] == 'count'):
             resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], self.count))
             resultSet['labels'][valIdx] = 'Count, group by ' + str(descInfo['window'])
-            
+        
+        
         return resultSet
 
     def movingAverage(self, group, series, meta, window):
@@ -799,8 +800,6 @@ class ResultSet:
             filt = queryInfo['filter']
             query[filt['field']] = filt['val']
         
-        print query
-        
         # Get the results
         # Only truncate if a limit was set
         if (queryInfo['limit']):
@@ -833,7 +832,22 @@ class ResultSet:
             if rounds[i] is not None:
                 for o in outputVals:
                     o[i] = o[i] - o[i] % rounds[i]  
-            
+
+        # The purple pass/fail test
+        if queryInfo.has_key('passfail'):
+            for o in outputVals:
+                if (o[1] == 'purple'):
+                    o[1] = 0
+                else:
+                    o[1] = 1
+        
+        # Some results may be in string of tupletime.  Convert to epoch
+        if queryInfo.has_key('fixdate'):
+            for o in outputVals:
+                if (type(o[1]) == unicode):
+                    tup = o[1].split(':')
+                    o[1] = float(tup[0]) * 3600 + float(tup[1]) * 60 + float(tup[2])
+                        
         
         # Track the start and end time of the resultset
         idx = params.index('capturetimeEpochMS')
