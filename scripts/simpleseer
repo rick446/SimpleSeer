@@ -2,6 +2,7 @@
 import sys
 import time
 import argparse
+import cProfile
 import logging.config
 
 def main():
@@ -28,19 +29,29 @@ def main():
         '-l', '--logging', dest='logging', default='logging.ini')
     parser.add_argument(
         '-c', '--config', dest='config', default='default.cfg')
-    core.set_defaults(func=run_core)
-    perftest.set_defaults(func=run_perftest)
-    broker.set_defaults(func=run_broker)
-    web.set_defaults(func=run_web)
-    scrub.set_defaults(func=run_scrubber)
-    shell.set_defaults(func=run_shell)
-    notebook.set_defaults(func=run_notebook)
+    parser.add_argument('-p', '--profile', action='store_true')
+    parser.add_argument('--profile-heap', type=bool)
+    core.set_defaults(command='core', func=run_core)
+    perftest.set_defaults(command='perftest', func=run_perftest)
+    broker.set_defaults(command='broker', func=run_broker)
+    web.set_defaults(command='web', func=run_web)
+    scrub.set_defaults(command='scrubber', func=run_scrubber)
+    shell.set_defaults(command='shell', func=run_shell)
+    notebook.set_defaults(command='notebook', func=run_notebook)
 
     args = parser.parse_args()
     logging.config.fileConfig(args.logging)
     from SimpleSeer.Session import Session
     
     session = Session(args.config)
+    if args.profile:
+        log = logging.getLogger(__name__)
+        fn = args.command + '.profile'
+        log.info('Running under profiler. Stats saved to %s', fn)
+        cProfile.runctx('args.func(session)',
+                        globals=globals(),
+                        locals=locals(),
+                        filename=fn)
     args.func(session)
 
 def run_core(session):
