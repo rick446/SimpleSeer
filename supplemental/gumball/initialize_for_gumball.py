@@ -34,14 +34,15 @@ insp2 = Inspection( name= "Delivery Confirmation",
   camera = "Delivery Check")
 insp2.save()
 
-meas2 = Measurement( name="Delivery Color", label="Color", method = "closestcolor", parameters = dict(), units = "", featurecriteria = dict( index = 0 ), inspection = insp2.id )
+meas2 = Measurement( name="Delivery Color", label="Color", method = "closestcolor", inspection = insp2.id )
 meas.save()
 
-#meas3 = Measurement( name="Delivery Time", label="seconds", method = "timesincelastmeasurement", parameters = dict( measurement = meas.id))
-#meas3.save()
+meas3 = Measurement( name="Delivery Time", label="Seconds", method = "timebetween", inspection = insp2.id, 
+  parameters = dict( inspection = insp.id ))
+meas3.save()
 
-#meas4 = Measurement( name="Delivery Diameter", label="diameter", method = "radius")
-
+meas4 = Measurement( name="Delivery Radius", label="radius", method = "radius")
+meas4.save()
 
 #oraw = OLAP(name='Motion', queryInfo = dict( name = 'Motion' ), descInfo = None, chartInfo = dict ( name='line', color = 'blue', min = 0, max = 100))
 #oraw.save()

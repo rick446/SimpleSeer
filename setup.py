@@ -20,24 +20,4 @@ setup(name="SimpleSeer",
   package_data  = { },
   scripts=['scripts/simpleseer'],
   data_files=[ ('/etc/',['etc/simpleseer.cfg']) ],
-  entry_points='''
-  [seer.plugins.inspection]
-  barcode=SimpleSeer.plugins.barcode:Barcode
-  blob=SimpleSeer.plugins.blob:Blob
-  lines=SimpleSeer.plugins.lines:Lines  
-  motion=SimpleSeer.plugins.motion:Motion
-  region=SimpleSeer.plugins.region:Region
-  face=SimpleSeer.plugins.face:Face
-  circles=SimpleSeer.plugins.circles:Circles
-  edgeWidth=SimpleSeer.plugins.edgeWidth:EdgeWidth
-  simpleTemplate=SimpleSeer.plugins.simpleTemplate:SimpleTemplate
-  keypointTemplate=SimpleSeer.plugins.keypointTemplate:KeypointTemplate
-  ocr=SimpleSeer.plugins.ocr:OCR
-  [seer.plugins.measurement]
-  blob_length=SimpleSeer.plugins.blob:BlobLength
-  blob_count=SimpleSeer.plugins.blob:BlobCount
-  closestcolor=SimpleSeer.plugins.closestcolor:ClosestColorMeasurement
-
-  [seer.plugins.watcher]
-  smsalert=SimpleSeer.plugins.smsalert:SMSAlert
-  ''')
+  entry_points=open("./SimpleSeer/plugins/plugins.ini").read())

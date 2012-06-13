@@ -4,62 +4,15 @@ from SimpleSeer import models as M
 from SimpleSeer import util
 from SimpleSeer.plugins import base
 from SimpleCV.Color import *
+import SimpleCV
 
 from SimpleSeer.base import jsonencode
 import json
 
+class BlobFeature(SimpleCV.Blob):
+    pass
+
 class Blob(base.InspectionPlugin):
-    @classmethod
-    def coffeescript(cls):
-        yield 'models/inspection', '''
-class Blob
-  constructor: (inspection) ->
-    @inspection = inspection
-  represent: () =>
-    "Blob Detection!"
-    #
-plugin this, blob:Blob
-'''
-        yield 'models/feature', '''
-class BlobFeature
-  constructor: (feature) ->
-    @feature = feature
-   
-  
-  icon: () => "/img/object.png" 
-    
-  represent: () =>
-    "Blob at (" +    @feature.get("x") + "," + @feature.get("y") + 
-    ") with area " + 
-    @feature.get("featuredata").mArea + " and size (" +
-    @feature.get("width") + "," +
-    @feature.get("height") + ") and mean color " +
-    @feature.get("avgColor")
-
-  tableOk: => true
-    
-  tableHeader: () =>
-    ["X", "Y", "Area", "Width", "Height"]
-    
-  tableData: () =>
-    [@feature.get("x"),
-     @feature.get("y"),
-     @feature.get("featuredata").mArea
-     @feature.get("width"),
-     @feature.get("height")]
-    
-  render: (pjs) =>
-    pjs.stroke 0, 180, 180
-    pjs.strokeWeight 2
-    pjs.noFill()
-    contour = @feature.get('featuredata').mContourAppx
-    last = contour[contour.length-1]
-    for current in contour
-        pjs.line( last[0],last[1],current[0],current[1] )
-        last = current
-
-plugin this, Blob:BlobFeature
-'''
     def __call__(self, image):
         params = util.utf8convert(self.inspection.parameters)
         #params = self.inspection.parameters
@@ -221,14 +174,11 @@ plugin this, Blob:BlobFeature
             top = params["top"]
             if(top < len(blobs) ):
                 blobs = blobs[(-1*top):]
-        
-
-        
-
         feats = []
         
         for b in reversed(blobs): #change sort order to big->small
             #b.draw()
+            b.__class__ = BlobFeature
             ff = M.FrameFeature()
             b.image = image
             ff.setFeature(b)
