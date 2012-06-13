@@ -10,7 +10,8 @@ else:
 
 Session(config_file)
 
-from SimpleSeer.models import Inspection, Measurement, Frame, OLAP 
+from SimpleSeer.models import Result, Inspection, Measurement, Frame
+from SimpleSeer.models.OLAP import OLAP, OLAPFactory
  
 
 Frame.objects.delete()
@@ -34,14 +35,23 @@ insp2 = Inspection( name= "Delivery Confirmation",
   camera = "Delivery Check")
 insp2.save()
 
-meas2 = Measurement( name="Delivery Color", label="Color", method = "closestcolor", parameters = dict(), units = "", featurecriteria = dict( index = 0 ), inspection = insp2.id )
+meas2 = Measurement( name="Delivery Color", label="Color", method = "closestcolor", inspection = insp2.id )
 meas.save()
 
-#meas3 = Measurement( name="Delivery Time", label="seconds", method = "timesincelastmeasurement", parameters = dict( measurement = meas.id))
-#meas3.save()
+meas3 = Measurement( name="Delivery Time", label="Seconds", method = "timebetween", inspection = insp2.id, 
+  parameters = dict( inspection = insp.id ))
+meas3.save()
 
-#meas4 = Measurement( name="Delivery Diameter", label="diameter", method = "radius")
+meas4 = Measurement( name="Delivery Radius", label="radius", method = "radius")
+meas4.save()
 
 
-#oraw = OLAP(name='Motion', queryInfo = dict( name = 'Motion' ), descInfo = None, chartInfo = dict ( name='line', color = 'blue', min = 0, max = 100))
-#oraw.save()
+of = OLAPFactory()
+
+qi = {'objType':'inspection', 'objId':insp2.id, 'objFields':['string', 'capturetimeEpochMS', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
+cihist = {'name':'sumbucket', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10}
+oraw = of.makeOLAP(queryInfo = qi, descInfo = None, chartInfo = cihist)
+oraw.allow = 1000
+oraw.name = 'ColorDelivery'
+oraw.realtime = 1
+oraw.save()

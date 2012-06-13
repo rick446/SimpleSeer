@@ -9,53 +9,6 @@ module.exports = class OLAPs extends Collection
   model: OLAP
   paused: false
   timeframe:300
-  
-  customCharts:
-    total: (d)->
-      color: d.chartInfo.color || 'blue'
-      value:0
-      values:[]
-      max: d.chartInfo.max || 100
-      min: d.chartInfo.min || 0
-      template: _.template '<h1 style="color:{{ color }}">{{ value }}</h1>'
-      addPoint: (d) ->
-        @.values.push(d.y)
-        if !application.charts.paused && @.values.length > application.charts.timeframe / application.settings.poll_interval
-          p = @.values.shift()
-        @.value += (d.y - (p || 0))
-      setData: (d) ->
-        @.values=[]
-        @.value=0
-        while !application.charts.paused && d.length > application.charts.timeframe / application.settings.poll_interval
-          d.shift()
-        for o in d
-          @.values.push(o.y)
-          @.value += o.y
-      render: (target) ->
-        target.html @.template {value:Math.round(@.value),color:@.color}
-    sumbucket: (d)->
-      value:0
-      _map:['red','green','blue']
-      values:{'red':0,'green':0,'blue':0}
-      stack:[]
-      max: d.chartInfo.max || 100
-      min: d.chartInfo.min || 0
-      template: _.template '<ul><li style="color:red">{{ values.red }}</li><li style="color:green">{{ values.green }}</li><li style="color:blue">{{ values.blue }}</li></ul>'
-      addPoint: (d,shift=true) ->
-        #x = Math.floor(((d.x / 1000) % 60) / 20)
-        x = d.x
-        if shift
-          p = @.stack.shift()
-          @values[@._map[p.x]] -= p.y
-        @.stack.push({x:x,y:d.y})
-        @values[@._map[x]] += d.y
-      setData: (d) ->
-        @stack = []
-        for o in d
-          @.addPoint o, false
-      render: (target) ->
-        target.html @.template {values:@.values}
-    
 
   onSuccess: (d1, d2) =>
     for me in d2
