@@ -842,6 +842,7 @@ class ResultSet:
                     o[1] = 1
         
         # Some results may be in string of tupletime.  Convert to epoch
+        # Nate is working on better fix
         if queryInfo.has_key('fixdate'):
             for o in outputVals:
                 if (type(o[1]) == unicode):

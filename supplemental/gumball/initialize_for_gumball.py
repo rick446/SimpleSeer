@@ -56,7 +56,6 @@ o1.name = 'ColorEvaled'
 o1.realtime = 1
 o1.save()
 
-
 ## Histogram of color of gumballs delivered
 #of2 = OLAPFactory()
 #qi2 = {'objType':'measurement', 'objName':'Delivery Color', 'objFields':['string', 'capturetimeEpochMS', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
