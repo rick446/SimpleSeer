@@ -28,7 +28,6 @@ module.exports = class OLAP extends Model
       render: (target) ->
         target.html @.template {value:Math.round(@.value),color:@.color}
     sumbucket: (d)->
-      value:0
       _map:['red','green','blue']
       values:{'red':0,'green':0,'blue':0}
       stack:[]
@@ -49,6 +48,46 @@ module.exports = class OLAP extends Model
           @.addPoint o, false
       render: (target) ->
         target.html @.template {values:@.values}
+    marbleoverview: (d)->
+      stack:[]
+      data:
+        served:0
+        meantime:0
+        failed:0
+      max: d.chartInfo.max || 100
+      min: d.chartInfo.min || 0
+      template: _.template '
+      <div id="stats-container" class="span2">
+        <div id="stats" style="text-align: center; width: 100%; margin-top: 35px; background: #eee; border-radius: 7px; padding: 15px; box-sizing: border-box;">
+          <h1>Gumballs</h1><hr>
+          <h2>Served:</h2>
+          <h3>{{data.served}}%</h3><hr>
+          <h2>Mean Time:</h2>
+          <h3>{{ data.meantime }}</h3><hr>
+          <h2>Fails:</h2>
+          <h3>{{ data.failed }}</h3><hr>
+        </div>
+      </div>'
+      addPoint: (d,shift=true) ->
+        x = d.x
+        if shift
+          p = @.stack.shift()
+          @values[@._map[p.x]] -= p.y
+        @.stack.push({x:x,y:d.y})
+        @values[@._map[x]] += d.y
+      setData: (d) ->
+        @stack = []
+        for o in d
+          @.addPoint o, false
+      render: (target) ->
+        _counts = [0,0,0]
+        for i in @stack
+          _counts[i.x]++
+          _time += i.y
+        @data.meantime = _time / @stack.length
+        @data.served = _counts[1]
+        @data.failed = _counts[0]
+        target.html @.template {data:@.data}
 
   pointStack: () ->
     stack : []
@@ -68,6 +107,8 @@ module.exports = class OLAP extends Model
       if @.attributes.chartInfo.map
         for i of @.attributes.chartInfo.map
           dd[i] = {x:i,id:i,y:0}
+          if @.attributes.chartInfo.colormap && @.attributes.chartInfo.colormap[i]
+            dd[i].color = @.attributes.chartInfo.colormap[i]
       _stk = []
       for d in data
         if !d.x

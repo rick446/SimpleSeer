@@ -1,6 +1,6 @@
 View = require './view'
 FrameView = require './frame'
-template = require './templates/marbles'
+template = require './templates/home'
 application = require 'application'
 
 module.exports = class HomeView extends View
