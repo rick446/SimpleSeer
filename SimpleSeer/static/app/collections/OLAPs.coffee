@@ -12,7 +12,7 @@ module.exports = class OLAPs extends Collection
 
   onSuccess: (d1, d2) =>
     d2.sort (a,b) ->
-      a.chartInfo.renderorder || 1 - b.chartInfo.renderorder || 1
+      (a.chartInfo.renderorder || 100) - (b.chartInfo.renderorder || 101)
     for me in d2
       #d1.buildChart d1.get me.id
       mod = d1.get me.id
