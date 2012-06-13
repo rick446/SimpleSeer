@@ -4,6 +4,8 @@ import datetime
 import time
 
 import models as M
+import gc
+import realtime as realtime
 
 
 class ControlObject:
@@ -61,9 +63,15 @@ class ControlWatcher(threading.Thread):
             self.control.state = "waitforinspectresults"
 
           elif self.control.state == "waitforinspectresults":
-            r = M.Result.objects(
-              capturetime__gte = self.control.inspecttime,
-              measurement = self.control.colormatch_measurement.id).order_by("-capturetime").limit(1)
+            gc.collect()
+            ss = self.control.SS    
+            ss.capture()
+            realtime.ChannelManager().publish('capture.', { "capture": 1})
+
+            ss.inspect()
+            ss.check()
+
+            r = ss.results[-1][0] #NEED TO CHANGE THIS
 
             if len(r):
               
@@ -82,6 +90,7 @@ class ControlWatcher(threading.Thread):
                 if since > 2:
                    self.control.state = 'notgood'
                    self.control.servo_bad()
+                   self.control.servo_mix()
                 
               
             
@@ -125,7 +134,7 @@ class Controls(object):
 
     SLEEPTIME = 1
     aggtime = 15
-    ROTATE_TIME = 3
+    ROTATE_TIME = 1
 
     
     def firecolor(self, state, color):
@@ -154,6 +163,8 @@ class Controls(object):
         time.sleep(self.SLEEPTIME)
 
     def servo_inspection(self):
+        self.fwheel.write(self.fwheel_pos3 - 10)
+        time.sleep(0.2)
         self.fwheel.write(self.fwheel_pos1)
         self.rwheel.write(self.rwheel_pos3)
         time.sleep(self.SLEEPTIME)
@@ -185,6 +196,7 @@ class Controls(object):
 
     def __init__(self, config, SS):
        from pyfirmata import Arduino, util, SERVO
+       self.SS = SS
        self.board = Arduino(config['board'])
        self.iterator = util.Iterator(self.board)
        self.iterator.daemon = True
@@ -200,10 +212,10 @@ class Controls(object):
        self.state = 'start'
        
        self.controlobjects = [
-          ControlObject(7, self, [self.fire_green]),
-          ControlObject(8, self, [self.fire_yellow]),
-          ControlObject(12, self, [self.fire_orange]),
-          ControlObject(13, self, [self.fire_red])
+          ControlObject(9, self, [self.fire_red]),
+          ControlObject(8, self, [self.fire_orange]),
+          ControlObject(12, self, [self.fire_yellow]),
+          ControlObject(13, self, [self.fire_green])
        ]
 
        self.colormatch_measurement = M.Measurement.objects(method="closestcolor")[0]
