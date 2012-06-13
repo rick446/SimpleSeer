@@ -1,8 +1,8 @@
-class Blob
+class Blobs
   constructor: (inspection) ->
     @inspection = inspection
   represent: () =>
-    "Blob Detected Derp!"
+    "Binary Large Object (BLOB) Detected"
 # LHS - The setup ini file inspection name
 # RHS - The name of this coffee script class
-plugin this, blob:Blob
+plugin this, blobs:Blobs
