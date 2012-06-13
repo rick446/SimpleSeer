@@ -10,7 +10,7 @@ else:
 
 Session(config_file)
 
-from SimpleSeer.models import Inspection, Measurement, Frame, OLAP 
+from SimpleSeer.models import Inspection, Measurement, Frame, OLAP, Result
  
 
 Frame.objects.delete()
@@ -30,7 +30,7 @@ meas.save()
 
 insp2 = Inspection( name= "Delivery Confirmation",
   method="blob",
-  parameters = { "thresh": 10, "limit": 1 },
+  parameters = { "thresh": 120, "limit": 1 },
   camera = "Delivery Check")
 insp2.save()
 
@@ -41,7 +41,7 @@ meas3 = Measurement( name="Delivery Time", label="Seconds", method = "timebetwee
   parameters = dict( inspection = insp.id ))
 meas3.save()
 
-meas4 = Measurement( name="Delivery Radius", label="radius", method = "radius")
+meas4 = Measurement( name="Delivery Radius", label="radius", method = "blob_radius", inspection = insp2.id)
 meas4.save()
 
 #oraw = OLAP(name='Motion', queryInfo = dict( name = 'Motion' ), descInfo = None, chartInfo = dict ( name='line', color = 'blue', min = 0, max = 100))
