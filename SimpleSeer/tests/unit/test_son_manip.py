@@ -1,7 +1,11 @@
+from cPickle import dumps
 import unittest
-from datetime import datetime
 
 from SimpleSeer.models.base import SONScrub
+
+class _Custom(object): pass
+class _Custom1(_Custom): pass
+
 
 class TestSonScrub(unittest.TestCase):
 
@@ -18,61 +22,84 @@ class TestSonScrub(unittest.TestCase):
         self.assertEqual(d, obj)
 
     def test_scrub(self):
-        class Custom(object): pass
-        self.scrubber.scrub_type(Custom)
-        d = self.scrubber.transform_incoming(dict(a=Custom()), None)
+        self.scrubber.scrub_type(_Custom)
+        d = self.scrubber.transform_incoming(dict(a=_Custom()), None)
         self.assertEqual(d, {})
 
     def test_scrub_subobj(self):
-        class Custom(object): pass
-        self.scrubber.scrub_type(Custom)
+        self.scrubber.scrub_type(_Custom)
         d = self.scrubber.transform_incoming(
-            dict(a=dict(a=Custom())), None)
+            dict(a=dict(a=_Custom())), None)
         self.assertEqual(d, {'a':{}})
 
     def test_scrub_array(self):
-        class Custom(object): pass
-        self.scrubber.scrub_type(Custom)
+        self.scrubber.scrub_type(_Custom)
         d = self.scrubber.transform_incoming(
-            dict(a=[Custom()]), None)
+            dict(a=[_Custom()]), None)
         self.assertEqual(d, {'a':[]})
 
     def test_scrub_subclass(self):
-        class Custom(object): pass
-        class Custom1(Custom): pass
-        self.scrubber.scrub_type(Custom)
+        self.scrubber.scrub_type(_Custom)
         d = self.scrubber.transform_incoming(
-            dict(a=Custom1()), None)
+            dict(a=_Custom1()), None)
         self.assertEqual(d, {})
 
     def test_bsonify(self):
-        class Custom(object): pass
-        self.scrubber.register_bsonifier(Custom, lambda v,c: 42)
-        d = self.scrubber.transform_incoming(dict(a=Custom()), None)
+        self.scrubber.register_bsonifier(_Custom, lambda v,c: 42)
+        d = self.scrubber.transform_incoming(dict(a=_Custom()), None)
         self.assertEqual(d, {'a': 42})
 
     def test_bintype(self):
-        class Custom(object): pass
         self.scrubber.register_bintype(
-            Custom,
+            _Custom,
             lambda v,c: '42',
-            lambda v,c: Custom())
-        d = self.scrubber.transform_incoming(dict(a=Custom()), None)
+            lambda v,c: _Custom())
+        d = self.scrubber.transform_incoming(dict(a=_Custom()), None)
         d = self.scrubber.transform_outgoing(d, None)
-        self.assert_(isinstance(d['a'], Custom))
+        self.assert_(isinstance(d['a'], _Custom))
+
+    def test_bintype_ambiguous(self):
+        self.scrubber.register_bintype(
+            _Custom,
+            lambda v,c: '42',
+            lambda v,c: _Custom())
+        self.assertRaises(
+            ValueError, self.scrubber.register_bintype,
+            _Custom, lambda v,c: '42', lambda v,c: _Custom())
 
     def test_bintype_array(self):
-        class Custom(object): pass
         self.scrubber.register_bintype(
-            Custom,
+            _Custom,
             lambda v,c: '42',
-            lambda v,c: Custom())
-        d = self.scrubber.transform_incoming(dict(a=[Custom()]), None)
+            lambda v,c: _Custom())
+        d = self.scrubber.transform_incoming(dict(a=[_Custom()]), None)
         d = self.scrubber.transform_outgoing(d, None)
-        self.assert_(isinstance(d['a'][0], Custom))
+        self.assert_(isinstance(d['a'][0], _Custom))
 
-    def test_no_serializer(self):
-        class Custom(object): pass
-        obj = dict(a=Custom())
+    def test_pickle(self):
+        obj = dict(a=_Custom())
         d = self.scrubber.transform_incoming(obj, None)
-        self.assertEqual(d, obj)
+        d1 = self.scrubber.transform_outgoing(d, None)
+        self.assertEqual(str(d['a']), dumps(_Custom(), protocol=2))
+        self.assert_(isinstance(d1['a'], _Custom))
+
+    def test_too_many_bintypes(self):
+        def gen_type():
+            class Custom(object): pass
+            return Custom
+        for x in xrange(127):
+            self.scrubber.register_bintype(
+                gen_type(), lambda v,c:None, lambda v,c:None)
+        self.assertRaises(ValueError, self.scrubber.register_bintype,
+                          gen_type(), lambda v,c:None, lambda v,c:None)
+
+    def test_typeid_conflict(self):
+        class Custom1(object): pass
+        class Custom2(object): pass
+        self.scrubber.register_bintype(
+            Custom1, lambda v,c:None, lambda v,c:None,
+            type_id=129)
+        self.assertRaises(
+            ValueError, self.scrubber.register_bintype,
+            Custom2, lambda v,c:None, lambda v,c:None,
+            type_id=129)

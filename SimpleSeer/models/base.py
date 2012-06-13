@@ -1,5 +1,6 @@
 import time
 import logging
+from cPickle import dumps, loads
 from datetime import datetime
 
 import bson
@@ -86,7 +87,7 @@ class SONScrub(SONManipulator):
         int, float, basestring, datetime,
         type(None) )
     _serializers = {}
-    _deserializers = {}
+    _deserializers = {0x80: lambda v,c: loads(v)}
 
     class Missing(object): pass
 
@@ -94,7 +95,7 @@ class SONScrub(SONManipulator):
     def clear_registry(cls):
         result = cls._serializers, cls._deserializers
         cls._serializers = {}
-        cls._deserializers = {}
+        cls._deserializers = {0x80: lambda v,c: loads(v)}
         return result
 
     @classmethod
@@ -110,10 +111,23 @@ class SONScrub(SONManipulator):
         cls._serializers[type] = (serialize, None)
 
     @classmethod
-    def register_bintype(cls, type, serialize, deserialize):
-        type_id = len(cls._serializers) + 0x80
+    def register_bintype(cls, type, serialize, deserialize, type_id=None):
+        # 0x80 is reserved (by me!) for pickling
+        if type_id is None:
+            type_id = 0x81
+            while type_id in cls._deserializers:
+                type_id += 1
+            if type_id > 0xff:
+                raise ValueError, 'All custom type_ids are already taken'
+        if type_id in cls._deserializers:
+            raise ValueError, 'type_id %d is already taken' % type_id
+        existing = cls._find_serializer(type)
+        if existing[0]:
+            raise ValueError, 'Ambiguous registration of type %r' % (
+                type)
         cls._serializers[type] = (serialize, type_id)
         cls._deserializers[type_id] = deserialize
+        return type_id
 
     def transform_incoming(self, son, collection):
         if isinstance(son, self._bson_primitive_types):
@@ -128,7 +142,9 @@ class SONScrub(SONManipulator):
             son = dict((k,v) for k,v in son if v is not self.Missing)
         else:
             (serializer, type_id) = self._find_serializer(type(son))
-            if serializer is not None:
+            if serializer is None:
+                son = bson.Binary(dumps(son, protocol=2), 128)
+            else:
                 son = serializer(son, collection)
                 if type_id is not None:
                     son = bson.Binary(son, type_id)
