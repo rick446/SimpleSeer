@@ -689,36 +689,50 @@ class RealtimeOLAP:
         olaps = OLAP.objects
         for o in olaps:
             
-            # First, check for entries that just want the raw data
-            # (If no descInfo is set or if descInfo lacks a formula field)
-            if (o.descInfo is None) or (not o.descInfo.has_key('formula')):
-                r = ResultSet()
-                rset = r.resultToResultSet(o.queryInfo, res)
-                self.sendMessage(o, rset['data'])
-
-            elif o.descInfo['formula'] == 'moving':
-                # Special case for the moving average
-                # TODO: This goes through the unnecessary step of putting together chart params.  
-                # Could optimize by just doing data steps
-                
-                o.queryInfo['limit'] = o.descInfo['window']
-                rset = o.execute()
-                self.sendMessage(o, rset['data'])
-                
+            # First test if this result is related to the OLAP
+            # Can match on measurements or inspection
+            match = False
+            if (o.queryInfo['objType'] == 'measurement'):
+                m = Measurement.objects(name=o.queryInfo['objName'])
+                if m[0].id == res.measurement:
+                    match = True
             else:
-                # Trigger a descriptive if the previous record was on the other side of a group by window/interval
-                window = o.descInfo['window']
-                thisTime = calendar.timegm(res.capturetime.timetuple())
-                previousTime = self.lastResult()
-                border = thisTime - (thisTime % window)
+                i = Inspection.objects(name=o.queryInfo['objName'])
+                if i[0].id == res.inspection:
+                    match = True
                 
-                if (previousTime < border):
-                    # This does the unnecessary step of creating chart info.  Could optimize this.
-                    # log.info('Sending descriptive for ' + o.name)
-                    o.descInfo['trim'] = 0
-                    rset = o.execute(sincetime = border - window)
+            
+            if match:
+                # First, check for entries that just want the raw data
+                # (If no descInfo is set or if descInfo lacks a formula field)
+                if (o.descInfo is None) or (not o.descInfo.has_key('formula')):
+                    r = ResultSet()
+                    rset = r.resultToResultSet(o.queryInfo, res)
+                    self.sendMessage(o, rset['data'])
+
+                elif o.descInfo['formula'] == 'moving':
+                    # Special case for the moving average
+                    # TODO: This goes through the unnecessary step of putting together chart params.  
+                    # Could optimize by just doing data steps
+                    
+                    o.queryInfo['limit'] = o.descInfo['window']
+                    rset = o.execute()
                     self.sendMessage(o, rset['data'])
                     
+                else:
+                    # Trigger a descriptive if the previous record was on the other side of a group by window/interval
+                    window = o.descInfo['window']
+                    thisTime = calendar.timegm(res.capturetime.timetuple())
+                    previousTime = self.lastResult()
+                    border = thisTime - (thisTime % window)
+                    
+                    if (previousTime < border):
+                        # This does the unnecessary step of creating chart info.  Could optimize this.
+                        # log.info('Sending descriptive for ' + o.name)
+                        o.descInfo['trim'] = 0
+                        rset = o.execute(sincetime = border - window)
+                        self.sendMessage(o, rset['data'])
+                        
                 
     def lastResult(self):
         # Show the timestamp of the last entry in the result table
@@ -833,7 +847,7 @@ class ResultSet:
                 for o in outputVals:
                     o[i] = o[i] - o[i] % rounds[i]  
 
-        # The purple pass/fail test
+        # The purple pass/fail test.  Specific to gumball demo.
         if queryInfo.has_key('passfail'):
             for o in outputVals:
                 if (o[1] == 'purple'):
@@ -841,30 +855,24 @@ class ResultSet:
                 else:
                     o[1] = 1
                     
+        # Temporary hack for gumball machines.  Need to convert color string to number codes for Jim.
         if queryInfo.has_key('cton'):
             for o in outputVals:
                 if o[1] == 'red':
                     o[1] = '0'
                 elif o[1] == 'green':
                     o[1] = '1'
-                if o[1] == 'yellow':
+                elif o[1] == 'yellow':
                     o[1] = '2'
-                if o[1] == 'orange':
+                elif o[1] == 'orange':
                     o[1] = '3'
-                if o[1] == 'purple':
+                elif o[1] == 'purple':
                     o[1] = '4'
-                if o[1] == 'blue':
+                elif o[1] == 'blue':
+                    o[1] = '5'
+                else:
                     o[1] = '5'
                     
-        
-        # Some results may be in string of tupletime.  Convert to epoch
-        # Nate is working on better fix
-        if queryInfo.has_key('fixdate'):
-            for o in outputVals:
-                if (type(o[1]) == unicode):
-                    tup = o[1].split(':')
-                    o[1] = float(tup[0]) * 3600 + float(tup[1]) * 60 + float(tup[2])
-                        
         
         # Track the start and end time of the resultset
         idx = params.index('capturetimeEpochMS')
@@ -903,8 +911,34 @@ class ResultSet:
             if rounds[i] is not None:
                 for o in outputVals:
                     if o[i] is not None:
-                        o[i] = o[i] - o[i] % rounds[i]
+                        o[i] = o[i] - o[i] % rounds[i]  
 
+        # The purple pass/fail test.  Specific to gumball demo.
+        if queryInfo.has_key('passfail'):
+            for o in outputVals:
+                if (o[1] == 'purple'):
+                    o[1] = 0
+                else:
+                    o[1] = 1
+                    
+        # Temporary hack for gumball machines.  Need to convert color string to number codes for Jim.
+        if queryInfo.has_key('cton'):
+            for o in outputVals:
+                if o[1] == 'red':
+                    o[1] = '0'
+                elif o[1] == 'green':
+                    o[1] = '1'
+                elif o[1] == 'yellow':
+                    o[1] = '2'
+                elif o[1] == 'orange':
+                    o[1] = '3'
+                elif o[1] == 'purple':
+                    o[1] = '4'
+                elif o[1] == 'blue':
+                    o[1] = '5'
+                else:
+                    o[1] = None
+        
         idx = params.index('capturetimeEpochMS')        
         dataset = { 'startTime': outputVals[0][idx],
                     'endTime': outputVals[0][idx],
