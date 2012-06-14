@@ -40,5 +40,3 @@ class DateTime(fev.FancyValidator):
 
     def _from_python(self, value, state):
         return value.strftime('%Y-%m-%dT%H:%M:%S.%fZ')
-            
-            

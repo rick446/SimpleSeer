@@ -11,6 +11,7 @@ import formencode as fe
 
 from .base import SimpleDoc
 from .FrameFeature import FrameFeature
+from .Result import Result, ResultEmbed
 from .. import realtime
 from ..util import LazyProperty
 
@@ -37,6 +38,7 @@ class Frame(SimpleDoc, mongoengine.Document):
     capturetime = mongoengine.DateTimeField()
     camera = mongoengine.StringField()
     features = mongoengine.ListField(mongoengine.EmbeddedDocumentField(FrameFeature))
+    results = mongoengine.ListField(mongoengine.EmbeddedDocumentField(ResultEmbed))
     #features     
     
     height = mongoengine.IntField(default = 0)
@@ -45,7 +47,6 @@ class Frame(SimpleDoc, mongoengine.Document):
     layerfile = mongoengine.FileField()
     thumbnail_file = mongoengine.FileField()
     _imgcache = ''
-    results = [] #cache for result objects when frame is unsaved
 
     meta = {
         'indexes': ["capturetime", ('camera', '-capturetime')]
@@ -117,18 +118,17 @@ class Frame(SimpleDoc, mongoengine.Document):
                 self.layerfile.put(pygame.image.tostring(mergedlayer._mSurface, "RGBA"))
                 #TODO, make layerfile a compressed object
             #self._imgcache = ''
-        
-        results = self.results
-        self.results = []
 
         super(Frame, self).save(*args, **kwargs)
         
         #TODO, this is sloppy -- we should handle this with cascading saves
         #or some other mechanism
-        for r in results:
-            if not r.frame:  
-                r.frame = self.id
-            r.save(*args, **kwargs)  #TODO, check to make sure measurement/inspection are saved
+        for r in self.results:
+            result,created = Result.objects.get_or_create(auto_save=False, id=r.result_id)
+            result.capturetime = self.capturetime
+            result.camera = self.camera
+            result.frame = self.id
+            result.save(*args, **kwargs)
         
     def serialize(self):
         s = StringIO()
@@ -142,3 +142,42 @@ class Frame(SimpleDoc, mongoengine.Document):
             return dict(
                 content_type='image/jpeg',
                 data=s.getvalue())
+
+    @classmethod
+    def search(cls, filters, sorts, skip, limit):
+        db = cls._get_db()
+        # Use the agg fmwk to generate frame ids
+        pipeline = [
+            # initial match to reduce number of frames to search
+            {'$match': filters },
+            # unwind features and results so we can do complex queries
+            # against a *single* filter/result
+            {'$unwind': '$features'},
+            {'$unwind': '$results' },
+            # Re-run the queries
+            {'$match': filters },
+            {'$sort': sorts },
+            {'$project': {'_id': 1} }]
+        cmd = db.command('aggregate', 'frame', pipeline=pipeline)
+        total_frames = len(cmd['result'])
+        seen = set()
+        ids = []
+        # We have to do skip/limit in Python so we can skip over duplicate frames
+        for doc in cmd['result']:
+            id = doc['_id']
+            if id in seen: continue
+            seen.add(id)
+            if skip > 0:
+                skip -= 1
+                continue
+            ids.append(id)
+            if len(ids) >= limit: break
+        frames = cls.objects.filter(id__in=ids)
+        frame_index = dict(
+            (f.id, f) for f in frames)
+        chosen_frames = []
+        for id in ids:
+            frame = frame_index.get(id)
+            if frame is None: continue
+            chosen_frames.append(frame)
+        return total_frames, chosen_frames
