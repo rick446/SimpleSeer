@@ -128,6 +128,10 @@ class Frame(SimpleDoc, mongoengine.Document):
             result.capturetime = self.capturetime
             result.camera = self.camera
             result.frame = self.id
+            result.inspection = r.inspection_id
+            result.measurement = r.measurement_id
+            result.string = r.string
+            result.numeric = r.numeric
             result.save(*args, **kwargs)
         
     def serialize(self):
