@@ -402,8 +402,9 @@ class Chart:
         # required for different charts.  For now, just assume nice
         # graphs of (x,y) coordiantes
         
+        chartRange = {'max':0, 'min':0}
         # If missing either/both of the predefined chart range values
-        if not chartInfo['minval'] or not chartInfo['maxval']:
+        if not chartInfo.has_key('minval') or not chartInfo.has_key('maxval'):
             chartRange = self.dataRange(resultSet['data'])
             
         # Override comptued values if they were defined
@@ -430,7 +431,6 @@ class DescriptiveStatistic:
     def execute(self, resultSet, descInfo):
         self._descInfo = descInfo
 
-        
         data = resultSet['data']
         
         # Right now I'm still hard coding to two parameters (group, series)
@@ -509,7 +509,8 @@ class DescriptiveStatistic:
         elif (descInfo['formula'] == 'count'):
             resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], self.count))
             resultSet['labels'][valIdx] = 'Count, group by ' + str(descInfo['window'])
-            
+        
+        
         return resultSet
 
     def movingAverage(self, group, series, meta, window):
@@ -728,20 +729,21 @@ class RealtimeOLAP:
             return 0
 
     def sendMessage(self, o, data):
-        msgdata = [dict(
-            id = str(o.id),
-            data = d[0:2],
-            inspection_id =  str(d[2]),
-            frame_id = str(d[3]),
-            measurement_id= str(d[4]),
-            result_id= str(d[5])
-        ) for d in data]
-        
-        #log.info('pushing new data to ' + utf8convert(o.name) + ' _ ' + str(msgdata))
-        
-        # Channel naming: OLAP/olap_name
-        olapName = 'OLAP/' + utf8convert(o.name) + '/'
-        ChannelManager().publish(olapName, dict(u='data', m=msgdata))
+        if (len(data) > 0):
+            msgdata = [dict(
+                id = str(o.id),
+                data = d[0:2],
+                inspection_id =  str(d[2]),
+                frame_id = str(d[3]),
+                measurement_id= str(d[4]),
+                result_id= str(d[5])
+            ) for d in data]
+            
+            #log.info('pushing new data to ' + utf8convert(o.name) + ' _ ' + str(msgdata))
+            
+            # Channel naming: OLAP/olap_name
+            olapName = 'OLAP/' + utf8convert(o.name) + '/'
+            ChannelManager().publish(olapName, dict(u='data', m=msgdata))
 
 
         
@@ -793,6 +795,10 @@ class ResultSet:
         if queryInfo['before']:
             query['capturetime__lt']= datetime.utcfromtimestamp(queryInfo['before'])
         
+        # If a custom filter was defined
+        if queryInfo.has_key('filter'):
+            filt = queryInfo['filter']
+            query[filt['field']] = filt['val']
         
         # Get the results
         # Only truncate if a limit was set
@@ -826,7 +832,39 @@ class ResultSet:
             if rounds[i] is not None:
                 for o in outputVals:
                     o[i] = o[i] - o[i] % rounds[i]  
-            
+
+        # The purple pass/fail test
+        if queryInfo.has_key('passfail'):
+            for o in outputVals:
+                if (o[1] == 'purple'):
+                    o[1] = 0
+                else:
+                    o[1] = 1
+                    
+        if queryInfo.has_key('cton'):
+            for o in outputVals:
+                if o[1] == 'red':
+                    o[1] = '0'
+                elif o[1] == 'green':
+                    o[1] = '1'
+                if o[1] == 'yellow':
+                    o[1] = '2'
+                if o[1] == 'orange':
+                    o[1] = '3'
+                if o[1] == 'purple':
+                    o[1] = '4'
+                if o[1] == 'blue':
+                    o[1] = '5'
+                    
+        
+        # Some results may be in string of tupletime.  Convert to epoch
+        # Nate is working on better fix
+        if queryInfo.has_key('fixdate'):
+            for o in outputVals:
+                if (type(o[1]) == unicode):
+                    tup = o[1].split(':')
+                    o[1] = float(tup[0]) * 3600 + float(tup[1]) * 60 + float(tup[2])
+                        
         
         # Track the start and end time of the resultset
         idx = params.index('capturetimeEpochMS')
@@ -864,7 +902,8 @@ class ResultSet:
         for i in range(len(params)):
             if rounds[i] is not None:
                 for o in outputVals:
-                    o[i] = o[i] - o[i] % rounds[i]
+                    if o[i] is not None:
+                        o[i] = o[i] - o[i] % rounds[i]
 
         idx = params.index('capturetimeEpochMS')        
         dataset = { 'startTime': outputVals[0][idx],

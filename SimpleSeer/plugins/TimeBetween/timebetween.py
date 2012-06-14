@@ -62,6 +62,9 @@ class TimeBetweenMeasurement(base.MeasurementPlugin):
             if len(M.Result.objects(measurement = self.measurement.id, capturetime__gte = maxtime)):
                 return [] 
         
-        timediff = abs(r1.capturetime - r2.capturetime)
+        if r1.capturetime > r2.capturetime:
+          timediff = (r1.capturetime - r2.capturetime).seconds
+        else:
+          timediff = (r2.capturetime - r2.capturetime).seconds
 
         return [timediff]

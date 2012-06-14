@@ -18,7 +18,7 @@ of = OLAPFactory()
 
 qi = {'objType':'inspection', 'objName':'Motion', 'objFields':['capturetimeEpochMS', 'numeric', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
 dimoving = {'formula':'moving', 'params':['capturetimeEpochMS', 'numeric'], 'window':5, 'trim':True, 'partial':'drop'}
-qihist = {'objType':'inspection', 'objName':'Motion', 'objFields':['capturetimeEpochMS', 'numeric', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, 10, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
+qihist = {'objType':'inspection', 'objName':'Motion', 'objFields':['numeric', 'capturetimeEpochMS', 'inspection', 'frame', 'measurement', 'id'], 'round': [10, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
 cihist = {'name':'sumbucket', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10} 
 
 
