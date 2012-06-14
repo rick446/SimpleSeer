@@ -84,7 +84,7 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         self.height = data.height()
         self.angle = data.angle()
 
-        #self.meancolor = scv_cleanse(data.meanColor())
+        self.meancolor = data.meanColor()
         self.featuretype = data.__class__.__name__
         
         data.image = ''
