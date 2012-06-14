@@ -218,7 +218,7 @@ class Controls(object):
           ControlObject(13, self, [self.fire_green])
        ]
 
-       self.colormatch_measurement = M.Measurement.objects(method="closestcolor")[0]
+       self.colormatch_measurement = M.Measurement.objects(method="closestcolorml")[0]
        self.SS = SS
 
        if not "debug" in config:

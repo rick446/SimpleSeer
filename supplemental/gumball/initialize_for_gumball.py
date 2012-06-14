@@ -27,8 +27,10 @@ insp = Inspection( name= "Region",
    camera='Color Check')
 insp.save()
 
-meas = Measurement( name="Gumball Color", label="Color", method = "closestcolor", inspection = insp.id )
+meas = Measurement( name="Gumball Color", label="Color", method = "closestcolorml", inspection = insp.id )
 meas.save()
+
+exit()
 
 insp2 = Inspection( name= "Delivery Confirmation",
   method="blob",
