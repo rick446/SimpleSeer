@@ -22,11 +22,12 @@ module.exports = class Router extends Backbone.Router
         application.homeView.postRender()
         
   framelist: ->
-    application.lastframes.fetch
+    application.lastframes.fetch_filtered
       success: ->
         $('ul.nav').find(".active").removeClass("active")
         $('ul.nav').find('li.frames').addClass('active')
         $('#main').slideReplace application.framelistView.render().el, 'right'
+        application.framelistView.postRender()
         
         
   frame: (id) ->

@@ -159,6 +159,7 @@ class Frame(SimpleDoc, mongoengine.Document):
             {'$sort': sorts },
             {'$project': {'_id': 1} }]
         cmd = db.command('aggregate', 'frame', pipeline=pipeline)
+        total_frames = len(cmd['result'])
         seen = set()
         ids = []
         # We have to do skip/limit in Python so we can skip over duplicate frames
@@ -174,7 +175,9 @@ class Frame(SimpleDoc, mongoengine.Document):
         frames = cls.objects.filter(id__in=ids)
         frame_index = dict(
             (f.id, f) for f in frames)
+        chosen_frames = []
         for id in ids:
             frame = frame_index.get(id)
             if frame is None: continue
-            yield frame
+            chosen_frames.append(frame)
+        return total_frames, chosen_frames

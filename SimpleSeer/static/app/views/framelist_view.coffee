@@ -11,11 +11,17 @@ module.exports = class FramelistView extends View
     @loading=false
     @collection = collection
     @_frameViews = []
+    @filter = {}
+    $.datepicker.setDefaults $.datepicker.regional['']
 
     @collection.on('add', @addFrame)
     @collection.on('reset', @addFrames)
     $(window).on('scroll', @loadMore)
   
+  events:
+    "submit #filter_form": "filterFrames"
+    "reset #filter_form": "filterFrames"
+
   getRenderData: =>
     count_viewing: @collection.length
     count_total: @collection.total_frames
@@ -29,6 +35,10 @@ module.exports = class FramelistView extends View
     @$el.find('#loading_message').hide()
     return this
 
+  postRender: =>
+    $('#filter_form input[name=time_from]').datetimepicker {timeFormat: 'hh:mm:ss'}
+    $('#filter_form input[name=time_to]').datetimepicker {timeFormat: 'hh:mm:ss'}
+
   loadMore: (evt)=>
     if !@loading && $('#loading_message').length && ($(window).scrollTop() >= $(document).height() - $(window).height())
       $('body').on('mousewheel', @disableEvent)
@@ -38,13 +48,7 @@ module.exports = class FramelistView extends View
       @$el.find('#loading_message').fadeIn('fast')
       @loading=true
       @pages=@pages+1
-      @collection.fetch
-        add: true
-        data:
-          page: @pages
-          before: @newest
-        error: =>
-          @$el.find('#loading_message').hide()
+      @fetchFiltered()
 
   addFrame: (frame)=>
     @loading=false
@@ -62,7 +66,32 @@ module.exports = class FramelistView extends View
       @$el.find('#count_viewing').html @collection.length
 
   addFrames: (frames)=>
-    frames.each @addFrame
+    if frames.length
+      @$el.find('#frame_holder').html ''
+      @$el.find('#frame_counts').show()
+      frames.each @addFrame
+    else
+      @$el.find('#frame_holder').html '<p>No results found for this search.</p>'
+
+  filterFrames: (evt)=>
+    @filter = {}
+    @pages = 1
+    if evt.type == 'submit'
+      evt.preventDefault()
+      _($('#filter_form').serializeArray()).each (input)=>
+        if input.value != ''
+          if input.name == 'time_from' || input.name == 'time_to'
+            @filter[input.name] = Math.floor($('input[name='+input.name+']').datepicker( "getDate" ).getTime())
+          else
+            @filter[input.name] = input.value
+    @$el.find('#frame_holder').html 'Loading...'
+    @$el.find('#frame_counts').hide()
+    @fetchFiltered()
+
+  fetchFiltered: =>
+    @collection.fetch_filtered
+      page: @pages
+      filter: @filter
 
   disableEvent: (evt)=>
     evt.preventDefault()
