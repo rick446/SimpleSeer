@@ -85,7 +85,9 @@ class WithPlugins(object):
 class SONScrub(SONManipulator):
     _bson_primitive_types = (
         int, float, basestring, datetime,
-        type(None) )
+        type(None),
+        bson.RE_TYPE, bson.Code, bson.Binary,
+        bson.DBRef, bson.ObjectId)
     _serializers = {}
     _deserializers = {0x80: lambda v,c: loads(v)}
 
@@ -129,6 +131,10 @@ class SONScrub(SONManipulator):
         cls._deserializers[type_id] = deserialize
         return type_id
 
+    @classmethod
+    def register_pickled_type(cls, type):
+        cls._serializers[type] = (cls._pickle, 0x80)
+
     def transform_incoming(self, son, collection):
         if isinstance(son, self._bson_primitive_types):
             pass
@@ -142,9 +148,7 @@ class SONScrub(SONManipulator):
             son = dict((k,v) for k,v in son if v is not self.Missing)
         else:
             (serializer, type_id) = self._find_serializer(type(son))
-            if serializer is None:
-                son = bson.Binary(dumps(son, protocol=2), 128)
-            else:
+            if serializer is not None:
                 son = serializer(son, collection)
                 if type_id is not None:
                     son = bson.Binary(son, type_id)
@@ -173,3 +177,7 @@ class SONScrub(SONManipulator):
     @classmethod
     def _scrub(cls, son, collection):
         return cls.Missing
+
+    @classmethod
+    def _pickle(cls, son, collection):
+        return bson.Binary(dumps(son, protocol=-1))
