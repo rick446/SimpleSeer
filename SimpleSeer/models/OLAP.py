@@ -833,7 +833,7 @@ class ResultSet:
                 for o in outputVals:
                     o[i] = o[i] - o[i] % rounds[i]  
 
-        # The purple pass/fail test
+        # The purple pass/fail test.  Specific to gumball demo.
         if queryInfo.has_key('passfail'):
             for o in outputVals:
                 if (o[1] == 'purple'):
@@ -841,6 +841,7 @@ class ResultSet:
                 else:
                     o[1] = 1
                     
+        # Temporary hack for gumball machines.  Need to convert color string to number codes for Jim.
         if queryInfo.has_key('cton'):
             for o in outputVals:
                 if o[1] == 'red':
@@ -856,15 +857,6 @@ class ResultSet:
                 if o[1] == 'blue':
                     o[1] = '5'
                     
-        
-        # Some results may be in string of tupletime.  Convert to epoch
-        # Nate is working on better fix
-        if queryInfo.has_key('fixdate'):
-            for o in outputVals:
-                if (type(o[1]) == unicode):
-                    tup = o[1].split(':')
-                    o[1] = float(tup[0]) * 3600 + float(tup[1]) * 60 + float(tup[2])
-                        
         
         # Track the start and end time of the resultset
         idx = params.index('capturetimeEpochMS')
@@ -902,9 +894,32 @@ class ResultSet:
         for i in range(len(params)):
             if rounds[i] is not None:
                 for o in outputVals:
-                    if o[i] is not None:
-                        o[i] = o[i] - o[i] % rounds[i]
+                    o[i] = o[i] - o[i] % rounds[i]  
 
+        # The purple pass/fail test.  Specific to gumball demo.
+        if queryInfo.has_key('passfail'):
+            for o in outputVals:
+                if (o[1] == 'purple'):
+                    o[1] = 0
+                else:
+                    o[1] = 1
+                    
+        # Temporary hack for gumball machines.  Need to convert color string to number codes for Jim.
+        if queryInfo.has_key('cton'):
+            for o in outputVals:
+                if o[1] == 'red':
+                    o[1] = '0'
+                elif o[1] == 'green':
+                    o[1] = '1'
+                if o[1] == 'yellow':
+                    o[1] = '2'
+                if o[1] == 'orange':
+                    o[1] = '3'
+                if o[1] == 'purple':
+                    o[1] = '4'
+                if o[1] == 'blue':
+                    o[1] = '5'
+        
         idx = params.index('capturetimeEpochMS')        
         dataset = { 'startTime': outputVals[0][idx],
                     'endTime': outputVals[0][idx],
