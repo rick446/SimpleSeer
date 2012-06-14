@@ -32,8 +32,11 @@ class Session():
         self.configure(config_dict)
 
     def configure(self, d):
+        from .models.base import SONScrub
         self._config = d
         mongoengine.connect(self.database, **self.mongo)
+        db = mongoengine.connection.get_db()
+        db.add_son_manipulator(SONScrub())
         self.log = logging.getLogger(__name__)
 
     def get_config(self):
