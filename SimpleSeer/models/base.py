@@ -12,14 +12,13 @@ from SimpleCV import Image
 
 log = logging.getLogger(__name__)
 
-class SimpleDoc(object):
+class Picklable(object):
     _jsonignore = [None]
-    meta=dict(auto_create_index=True)
-    
     
     def __getstate__(self):  
         ret = {}
-        ret['id'] = self.id
+        if hasattr(self, 'id'):
+            ret['id'] = self.id
 
         for k in self._data.keys():
             if k == 'id': continue
@@ -43,15 +42,18 @@ class SimpleDoc(object):
             
         return ret
 
+class SimpleDoc(Picklable):
+    meta=dict(auto_create_index=True)
+    
     def update_from_json(self, d):
         for k,v in d.items():
             setattr(self, k, v)
         
-class SimpleEmbeddedDoc(object):
+class SimpleEmbeddedDoc(Picklable):
     """
     Any embedded docs (for object trees) should extend SimpleEmbeddedDoc
     """
-    _jsonignore = [None]
+    pass
     
 class WithPlugins(object):
 

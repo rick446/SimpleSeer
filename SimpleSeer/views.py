@@ -4,7 +4,7 @@ import json
 import logging
 from datetime import datetime
 
-import bson
+import bson.json_util
 import gevent
 import coffeescript
 from socketio import socketio_manage
@@ -93,6 +93,22 @@ def lastframes():
     total_frames = frames.count()
     frames = frames.skip((int(params.get('page', 1))-1)*20).limit(20)
     return dict(frames=list(frames), total_frames=total_frames)
+
+@route('/frames', methods=['GET'])
+@util.jsonify
+def frames():
+    params = request.values.to_dict()
+    f_params = json.loads(
+        params.get('filter', '[]'),
+        object_hook=bson.json_util.object_hook)
+    s_params = json.loads(
+        params.get('sort', '[]'),
+        object_hook=bson.json_util.object_hook)
+    skip = int(params.get('skip', 0))
+    limit = int(params.get('limit', 20))
+    frames = M.Frame.search(f_params, s_params, skip, limit)
+    frames = list(frames)
+    return frames
 
 #TODO, abstract this for layers and thumbnails        
 @route('/grid/imgfile/<frame_id>', methods=['GET'])
