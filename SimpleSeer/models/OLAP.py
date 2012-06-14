@@ -862,13 +862,13 @@ class ResultSet:
                     o[1] = '0'
                 elif o[1] == 'green':
                     o[1] = '1'
-                if o[1] == 'yellow':
+                elif o[1] == 'yellow':
                     o[1] = '2'
-                if o[1] == 'orange':
+                elif o[1] == 'orange':
                     o[1] = '3'
-                if o[1] == 'purple':
+                elif o[1] == 'purple':
                     o[1] = '4'
-                if o[1] == 'blue':
+                elif o[1] == 'blue':
                     o[1] = '5'
                 else:
                     o[1] = '5'
@@ -928,13 +928,13 @@ class ResultSet:
                     o[1] = '0'
                 elif o[1] == 'green':
                     o[1] = '1'
-                if o[1] == 'yellow':
+                elif o[1] == 'yellow':
                     o[1] = '2'
-                if o[1] == 'orange':
+                elif o[1] == 'orange':
                     o[1] = '3'
-                if o[1] == 'purple':
+                elif o[1] == 'purple':
                     o[1] = '4'
-                if o[1] == 'blue':
+                elif o[1] == 'blue':
                     o[1] = '5'
                 else:
                     o[1] = None
