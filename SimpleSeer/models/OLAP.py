@@ -689,36 +689,50 @@ class RealtimeOLAP:
         olaps = OLAP.objects
         for o in olaps:
             
-            # First, check for entries that just want the raw data
-            # (If no descInfo is set or if descInfo lacks a formula field)
-            if (o.descInfo is None) or (not o.descInfo.has_key('formula')):
-                r = ResultSet()
-                rset = r.resultToResultSet(o.queryInfo, res)
-                self.sendMessage(o, rset['data'])
-
-            elif o.descInfo['formula'] == 'moving':
-                # Special case for the moving average
-                # TODO: This goes through the unnecessary step of putting together chart params.  
-                # Could optimize by just doing data steps
-                
-                o.queryInfo['limit'] = o.descInfo['window']
-                rset = o.execute()
-                self.sendMessage(o, rset['data'])
-                
+            # First test if this result is related to the OLAP
+            # Can match on measurements or inspection
+            match = False
+            if (o.queryInfo['objType'] == 'measurement'):
+                m = Measurement.objects(name=o.queryInfo['objName'])
+                if m[0].id == res.measurement:
+                    match = True
             else:
-                # Trigger a descriptive if the previous record was on the other side of a group by window/interval
-                window = o.descInfo['window']
-                thisTime = calendar.timegm(res.capturetime.timetuple())
-                previousTime = self.lastResult()
-                border = thisTime - (thisTime % window)
+                i = Inspection.objects(name=o.queryInfo['objName'])
+                if i[0].id == res.inspection:
+                    match = True
                 
-                if (previousTime < border):
-                    # This does the unnecessary step of creating chart info.  Could optimize this.
-                    # log.info('Sending descriptive for ' + o.name)
-                    o.descInfo['trim'] = 0
-                    rset = o.execute(sincetime = border - window)
+            
+            if match:
+                # First, check for entries that just want the raw data
+                # (If no descInfo is set or if descInfo lacks a formula field)
+                if (o.descInfo is None) or (not o.descInfo.has_key('formula')):
+                    r = ResultSet()
+                    rset = r.resultToResultSet(o.queryInfo, res)
+                    self.sendMessage(o, rset['data'])
+
+                elif o.descInfo['formula'] == 'moving':
+                    # Special case for the moving average
+                    # TODO: This goes through the unnecessary step of putting together chart params.  
+                    # Could optimize by just doing data steps
+                    
+                    o.queryInfo['limit'] = o.descInfo['window']
+                    rset = o.execute()
                     self.sendMessage(o, rset['data'])
                     
+                else:
+                    # Trigger a descriptive if the previous record was on the other side of a group by window/interval
+                    window = o.descInfo['window']
+                    thisTime = calendar.timegm(res.capturetime.timetuple())
+                    previousTime = self.lastResult()
+                    border = thisTime - (thisTime % window)
+                    
+                    if (previousTime < border):
+                        # This does the unnecessary step of creating chart info.  Could optimize this.
+                        # log.info('Sending descriptive for ' + o.name)
+                        o.descInfo['trim'] = 0
+                        rset = o.execute(sincetime = border - window)
+                        self.sendMessage(o, rset['data'])
+                        
                 
     def lastResult(self):
         # Show the timestamp of the last entry in the result table
@@ -896,7 +910,8 @@ class ResultSet:
         for i in range(len(params)):
             if rounds[i] is not None:
                 for o in outputVals:
-                    o[i] = o[i] - o[i] % rounds[i]  
+                    if o[i] is not None:
+                        o[i] = o[i] - o[i] % rounds[i]  
 
         # The purple pass/fail test.  Specific to gumball demo.
         if queryInfo.has_key('passfail'):
@@ -922,7 +937,7 @@ class ResultSet:
                 if o[1] == 'blue':
                     o[1] = '5'
                 else:
-                    o[1] = '5'
+                    o[1] = None
         
         idx = params.index('capturetimeEpochMS')        
         dataset = { 'startTime': outputVals[0][idx],
