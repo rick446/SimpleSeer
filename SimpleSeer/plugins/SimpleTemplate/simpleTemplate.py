@@ -13,6 +13,7 @@ insp = Inspection( name= "SimpleTemplate",
                    camera = "Default Camera")
 insp.save()
 
+#Inspection(name="derp7",method="simpleTemplate",parameters={"template":"/home/kscottz/SimpleSeer/SimpleSeer/plugins/SimpleTemplate/template.png"}).save()
 
 
 """
@@ -64,6 +65,8 @@ class SimpleTemplate(base.InspectionPlugin):
       fs.draw()
       for f in fs: # do the conversion from SCV featureset to SimpleSeer featureset
         ff = M.FrameFeature()
+        f.image = None
+        f.template = None
         ff.setFeature(f)
         retVal.append(ff)
 

@@ -1,6 +1,6 @@
-class Blob
+class OCR
   constructor: (inspection) ->
     @inspection = inspection
   represent: () =>
-    "Blob Detected Derp!"
-plugin this, blob:Blob
+    "Read Text"
+plugin this, ocr:OCR

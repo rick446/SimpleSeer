@@ -50,7 +50,7 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
     width = mongoengine.FloatField()
     height = mongoengine.FloatField()
     angle = mongoengine.FloatField()
-    meancolor = mongoengine.ListField(mongoengine.FloatField())
+    #meancolor = mongoengine.ListField(mongoengine.FloatField())
     
     #these are feature properties which are not saved
     #note that plugins can inject into this
@@ -73,8 +73,7 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         self.height = data.height()
         self.angle = data.angle()
 
-
-        self.meancolor = data.meanColor()
+        #self.meancolor = scv_cleanse(data.meanColor())
         self.featuretype = data.__class__.__name__
         
         data.image = ''

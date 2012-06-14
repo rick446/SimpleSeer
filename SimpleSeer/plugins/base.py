@@ -18,30 +18,26 @@ class InspectionPlugin(object):
         
         # yield the inspection coffeescript file 
         mpath = path+"Inspection"+ext
-        #print("Inspection+++++++++++++++++++++++")
-        #print(mpath)
-        #print("+++++++++++++++++++++++++++++++++")
         if( os.path.exists(mpath) ):
             f = open( mpath, 'r' )
             yval = f.read()
-            print("Inspection+++++++++++++++++++++++")
-            print(yval)
-            print("+++++++++++++++++++++++++++++++++")
+            #print("Inspection+++++++++++++++++++++++")
+            #print(mpath)
+            #print(yval)
+            #print("+++++++++++++++++++++++++++++++++")
 
             yield 'models/inspection', yval 
         else:
             yield 'models/inspection', '' 
         #yield the feature coffeescript file 
         mpath = path+"Feature"+ext
-        #print("Feature++++++++++++++++++++++++++")
-        #print(mpath)
-        #print("+++++++++++++++++++++++++++++++++")
         if( os.path.exists(mpath) ):
             f = open( mpath, 'r' )
             yval = f.read()
-            print("Feature++++++++++++++++++++++++++")
-            print(yval)
-            print("+++++++++++++++++++++++++++++++++")
+            #print("Feature++++++++++++++++++++++++++")
+            #print(mpath)
+            #print(yval)
+            #print("+++++++++++++++++++++++++++++++++")
             yield 'models/feature', yval 
         else:
             yield 'models/feature', '' 

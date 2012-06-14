@@ -1,5 +1,9 @@
-from cPickle import dumps
+import re
 import unittest
+from datetime import datetime
+from cPickle import dumps
+
+import bson
 
 from SimpleSeer.models.base import SONScrub
 
@@ -78,10 +82,16 @@ class TestSonScrub(unittest.TestCase):
 
     def test_pickle(self):
         obj = dict(a=_Custom())
+        self.scrubber.register_pickled_type(_Custom)
         d = self.scrubber.transform_incoming(obj, None)
         d1 = self.scrubber.transform_outgoing(d, None)
         self.assertEqual(str(d['a']), dumps(_Custom(), protocol=2))
         self.assert_(isinstance(d1['a'], _Custom))
+
+    def test_pass_unknown(self):
+        obj = dict(a=_Custom())
+        d = self.scrubber.transform_incoming(obj, None)
+        self.assert_(isinstance(d['a'], _Custom))
 
     def test_too_many_bintypes(self):
         def gen_type():
@@ -103,3 +113,19 @@ class TestSonScrub(unittest.TestCase):
             ValueError, self.scrubber.register_bintype,
             Custom2, lambda v,c:None, lambda v,c:None,
             type_id=129)
+
+    def test_dont_scrub_known_types(self):
+        obj = dict(
+            a=1,
+            b=2.0,
+            c='foo',
+            d=u'bar',
+            e=datetime.utcnow(),
+            f=None,
+            g=re.compile(r'.*'),
+            h=bson.Code('function() {}'),
+            i=bson.Binary('asdf'),
+            j=bson.DBRef('foo', 'bar'),
+            k=bson.ObjectId())
+        d = self.scrubber.transform_incoming(obj, None)
+        self.assertEqual(obj, d)
