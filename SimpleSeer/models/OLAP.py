@@ -856,6 +856,8 @@ class ResultSet:
                     o[1] = '4'
                 if o[1] == 'blue':
                     o[1] = '5'
+                else:
+                    o[1] = '5'
                     
         
         # Track the start and end time of the resultset
@@ -918,6 +920,8 @@ class ResultSet:
                 if o[1] == 'purple':
                     o[1] = '4'
                 if o[1] == 'blue':
+                    o[1] = '5'
+                else:
                     o[1] = '5'
         
         idx = params.index('capturetimeEpochMS')        
