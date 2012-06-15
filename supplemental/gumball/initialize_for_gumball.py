@@ -52,7 +52,7 @@ meas3.save()
 ## Histogram of color of gumballs evaluated
 of1 = OLAPFactory()
 qi1 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1}
-ci1 = {'accumulate': True, 'name':'column', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10, 'colormap': {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple', '5': 'blue'},'map': {'0': 'red','1': 'green','2': 'yellow','3': 'orange','4': 'purple','5': 'blue'}}
+ci1 = {'accumulate': True, 'name':'column', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10, 'colormap': {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple', '5': 'blue'},'map': {'0': 'red','1': 'green','2': 'yellow','3': 'orange','4': 'purple','5': 'blue'},'renderorder':1}
 o1 = of1.makeOLAP(queryInfo = qi1, descInfo = None, chartInfo = ci1)
 o1.allow = 1000
 o1.name = 'ColorEvaled'
@@ -84,7 +84,7 @@ o5.save()
 of6 = OLAPFactory()
 qi6 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'yellow'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
 di6 = {'formula':'movingCount', 'params':['capturetimeEpochMS', 'string'], 'window':86400, 'trim':False, 'partial':'drop'}
-ci6 = {'minval':0, 'maxval':None, 'color':'yellow'}
+ci6 = {'minval':0, 'maxval':None, 'color':'yellow', 'renderorder':5, 'name':'spline'}
 o6 = of6.makeOLAP(queryInfo = qi6, descInfo = di6, chartInfo=ci6)
 o6.allow = 1000
 o6.name = 'YellowOnly'
@@ -95,7 +95,7 @@ o6.save()
 of7 = OLAPFactory()
 qi7 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'green'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
 di7 = {'formula':'movingCount', 'params':['capturetimeEpochMS', 'string'], 'window':86400, 'trim':False, 'partial':'drop'}
-ci7 = {'minval':0, 'maxval':None, 'color':'green'}
+ci7 = {'minval':0, 'maxval':None, 'color':'green', 'renderorder':3, 'name':'spline'}
 o7 = of7.makeOLAP(queryInfo = qi7, descInfo = di7, chartInfo=ci7)
 o7.allow = 1000
 o7.name = 'GreenOnly'
@@ -106,7 +106,7 @@ o7.save()
 of8 = OLAPFactory()
 qi8 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'purple'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
 di8 = {'formula':'movingCount', 'params':['capturetimeEpochMS', 'string'], 'window':86400, 'trim':False, 'partial':'drop'}
-ci8 = {'minval':0, 'maxval':None, 'color':'blue'}
+ci8 = {'minval':0, 'maxval':None, 'color':'blue', 'renderorder':4, 'halfsize':True, 'name':'spline'}
 o8 = of8.makeOLAP(queryInfo = qi8, descInfo = di8, chartInfo=ci8)
 o8.allow = 1000
 o8.name = 'PurpleOnly'
@@ -129,7 +129,7 @@ o8.save()
 of9 = OLAPFactory()
 qi9 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'red'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
 di9 = {'formula':'movingCount', 'params':['capturetimeEpochMS', 'string'], 'window':86400, 'trim':False, 'partial':'drop'}
-ci9 = {'minval':0, 'maxval':None, 'color':'red', 'renderorder':1}
+ci9 = {'minval':0, 'maxval':None, 'color':'red', 'renderorder':2, 'halfsize':True, 'name':'spline'}
 o9 = of9.makeOLAP(queryInfo = qi9, descInfo = di9, chartInfo=ci9)
 o9.allow = 1000
 o9.name = 'RedOnly'
@@ -139,7 +139,8 @@ o9.save()
 ## PassFail
 of10 = OLAPFactory()
 qi10 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None, 'passfail':1}
-o10 = of10.makeOLAP(queryInfo = qi10, descInfo = None)
+ci10 = {'minval':0, 'maxval':None, 'name':'marbleoverview'}
+o10 = of10.makeOLAP(queryInfo = qi10, descInfo = None, chartInfo=ci10)
 o10.allow = 1000
 o10.name = 'GumballPassFail'
 o10.realtime = 1
