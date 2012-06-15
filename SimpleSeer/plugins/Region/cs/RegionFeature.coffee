@@ -1,11 +1,11 @@
-class BlobsFeature
+class RegionFeature
 	constructor: (feature) ->
 		@feature = feature
 
 	icon: () => "/img/object.png" 
 		
 	represent: () =>
-		"Blob at (" +    @feature.get("x") + "," + @feature.get("y") + 
+		"Region at (" +    @feature.get("x") + "," + @feature.get("y") + 
 			") with area " +
 			@feature.get("featuredata").mArea + " and size (" +
 			@feature.get("width") + "," +
@@ -14,18 +14,17 @@ class BlobsFeature
 	tableOk: => true
 
 	tableHeader: () =>
-		["X", "Y", "Width", "Height","Area","Mean Color"]
+		["X", "Y", "Width", "Height","Area"]
 
 	tableData: () =>
 		[@feature.get("x"),
 		@feature.get("y"),
 		@feature.get("width"),
 		@feature.get("height"),
-                @feature.get("featuredata").mArea,
-                @feature.get("featuredata").mColor]
+                @feature.get("featuredata").mArea]
 	  
 	render: (pjs) =>
-		pjs.stroke 255, 0, 255
+		pjs.stroke 255, 128, 255
 		pjs.strokeWeight 3
 		pjs.color c = pjs.color(255, 0, 255, 128)
 		pjs.fill(c)
@@ -38,4 +37,4 @@ class BlobsFeature
 		# LHS - The name of the python class that is the feature
 		# by the inspection
 		# RHS - The name of this coffee script feature class.
-plugin this, Blob:BlobsFeature
+plugin this, Region:RegionFeature

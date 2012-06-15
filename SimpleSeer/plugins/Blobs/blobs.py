@@ -177,9 +177,8 @@ class Blobs(base.InspectionPlugin):
         feats = []
         
         for b in reversed(blobs): #change sort order to big->small
-            #b.draw()
-            
-            #b.__class__ = BlobsFeature
+            c = b.meanColor()
+            b.mColor = (int(c[0]),int(c[1]),int(c[2]))
             ff = M.FrameFeature()
             b.image = image
             ff.setFeature(b)
