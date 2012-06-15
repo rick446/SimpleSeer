@@ -5,6 +5,7 @@ Flask-REST
 jsonpickle
 ujson
 anyjson
+guppy
 FormEncode
 pyzmq
 gevent
