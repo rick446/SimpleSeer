@@ -21,10 +21,10 @@ class InspectionPlugin(object):
         if( os.path.exists(mpath) ):
             f = open( mpath, 'r' )
             yval = f.read()
-            #print("Inspection+++++++++++++++++++++++")
-            #print(mpath)
-            #print(yval)
-            #print("+++++++++++++++++++++++++++++++++")
+            # print("Inspection+++++++++++++++++++++++")
+            # print(mpath)
+            # print(yval)
+            # print("+++++++++++++++++++++++++++++++++")
 
             yield 'models/inspection', yval 
         else:
@@ -34,10 +34,10 @@ class InspectionPlugin(object):
         if( os.path.exists(mpath) ):
             f = open( mpath, 'r' )
             yval = f.read()
-            #print("Feature++++++++++++++++++++++++++")
-            #print(mpath)
-            #print(yval)
-            #print("+++++++++++++++++++++++++++++++++")
+            # print("Feature++++++++++++++++++++++++++")
+            # print(mpath)
+            # print(yval)
+            # print("+++++++++++++++++++++++++++++++++")
             yield 'models/feature', yval 
         else:
             yield 'models/feature', '' 

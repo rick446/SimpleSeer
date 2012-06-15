@@ -27,11 +27,39 @@ insp = Inspection( name= "Region",
    camera='Color Check')
 insp.save()
 
+<<<<<<< HEAD
 meas = Measurement( name="Gumball Color", label="Color", method = "closestcolorml", inspection = insp.id)
+=======
+<<<<<<< HEAD
+meas = Measurement( name="Gumball Color", label="Color", method = "closestcolorml", inspection = insp.id )
+=======
+meas = Measurement( name="Gumball Color", label="Color", method = "closestcolor", inspection = insp.id, parameters = {'ignore': {'black': [128.10160714285715,
+   127.26797077922078,
+   132.76154220779222],
+  'empty': [123.60414772727273, 116.55637175324675, 115.54138798701298]},
+ 'pallette': {'green': [191.94692370129872,
+   195.63243506493507,
+   0.5167857142857143],
+  'orange': [231.45718344155844, 123.85157467532467, 1.1843587662337662],
+  'purple': [174.33642045454545, 147.7037418831169, 161.55934253246753],
+  'red': [240.56868506493507, 84.30886363636364, 62.88374188311688],
+  'yellow': [224.09747564935066, 177.7784577922078, 0.0034334415584415584]}} )
+>>>>>>> 456e1b776ae361fb6db1f7452444193946ed668e
+>>>>>>> eddbb8f8cadc4f0e329a12f724de918de942a69a
 meas.save()
 
+<<<<<<< HEAD
+exit()
+
+insp2 = Inspection( name= "Delivery Confirmation",
+  method="blobs",
+  parameters = { "thresh": 120, "limit": 1 },
+  camera = "Delivery Check")
+insp2.save()
+=======
 meas = Measurement( name="Delivery Color", label="Color", method = "closestcolor_manual", inspection = insp.id )
 meas.save()
+>>>>>>> 9783993c3b85aa7c215c5b1ba910dfb6ead8b9b5
 
 meas3 = Measurement( name="Delivery Time", label="Seconds", method = "timebetween_manual", inspection = insp.id, 
   parameters = dict( inspection = insp.id ))
