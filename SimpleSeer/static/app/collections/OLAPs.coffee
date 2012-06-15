@@ -149,6 +149,7 @@ module.exports = class OLAPs extends Collection
           <h2>Served: {{data.served}} | Mean Time: {{ data.meantime }} seconds | Fails: {{ data.failed }}</h2>
         </div>'
       addPoint: (d,shift=true) ->
+        shift = false
         #x = d.y
         #d.y = d.y
         if shift

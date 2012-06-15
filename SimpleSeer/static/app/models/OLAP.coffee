@@ -6,6 +6,7 @@ module.exports = class OLAP extends Model
   pointStack: () ->
     stack : []
     add: (d,shift=true) ->
+      shift = false
       _a = {x:d.x.toString(),y:d.y,id:d.id.toString()}
       @.stack.push _a
       if shift
