@@ -27,17 +27,7 @@ insp = Inspection( name= "Region",
    camera='Color Check')
 insp.save()
 
-meas = Measurement( name="Gumball Color", label="Color", method = "closestcolor", inspection = insp.id, parameters = {'ignore': {'black': [128.10160714285715,
-   127.26797077922078,
-   132.76154220779222],
-  'empty': [123.60414772727273, 116.55637175324675, 115.54138798701298]},
- 'pallette': {'green': [191.94692370129872,
-   195.63243506493507,
-   0.5167857142857143],
-  'orange': [231.45718344155844, 123.85157467532467, 1.1843587662337662],
-  'purple': [174.33642045454545, 147.7037418831169, 161.55934253246753],
-  'red': [240.56868506493507, 84.30886363636364, 62.88374188311688],
-  'yellow': [224.09747564935066, 177.7784577922078, 0.0034334415584415584]}} )
+meas = Measurement( name="Gumball Color", label="Color", method = "closestcolorml", inspection = insp.id)
 meas.save()
 
 meas = Measurement( name="Delivery Color", label="Color", method = "closestcolor_manual", inspection = insp.id )

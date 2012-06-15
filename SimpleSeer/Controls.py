@@ -258,7 +258,7 @@ class Controls(object):
           ControlObject(13, self, [self.fire_green])
        ]
 
-       self.colormatch_measurement = M.Measurement.objects(method="closestcolor")[0]
+       self.colormatch_measurement = M.Measurement.objects(method="closestcolorml")[0]
        self.timesince_measurement = M.Measurement.objects(method="timebetween_manual")[0]
        self.deliveredcolor_measurement = M.Measurement.objects(method="closestcolor_manual")[0]
        self.region_inspection = M.Inspection.objects[0]
