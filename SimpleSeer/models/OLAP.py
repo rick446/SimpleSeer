@@ -839,7 +839,7 @@ class ResultSet:
             query['capturetime__lt']= datetime.utcfromtimestamp(queryInfo['before'])
         
         if queryInfo.has_key('sinceTime'):
-            currentTime = mktime(gmtime())
+            currentTime = mktime(datetime.utcnow().timetuple())
             limitTime = currentTime - currentTime % queryInfo['sinceTime']
             query['capturetime__gt'] = datetime.fromtimestamp(limitTime)
         
