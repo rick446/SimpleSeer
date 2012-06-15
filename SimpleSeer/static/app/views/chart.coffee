@@ -271,7 +271,7 @@ module.exports = class ChartView extends View
             if this.axis.options.type == 'datetime'
               Highcharts.dateFormat('%m/%d<br>%I:%M:%S', this.value)
             else
-              m =  application.charts.get @.chart.id
+              m = application.charts.get @.chart.id
               if m.attributes.chartInfo.map
                 return m.attributes.chartInfo.map[this.value]
               else
