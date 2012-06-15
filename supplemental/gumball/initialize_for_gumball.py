@@ -30,19 +30,9 @@ insp.save()
 meas = Measurement( name="Gumball Color", label="Color", method = "closestcolor", inspection = insp.id )
 meas.save()
 
-insp2 = Inspection( name= "Delivery Confirmation",
-  method="blobs",
-  parameters = { "thresh": 120, "limit": 1 },
-  camera = "Delivery Check")
-insp2.save()
-
-meas3 = Measurement( name="Delivery Time", label="Seconds", method = "timebetween", inspection = insp2.id, 
+meas3 = Measurement( name="Delivery Time", label="Seconds", method = "timebetween_manual", inspection = insp.id, 
   parameters = dict( inspection = insp.id ))
 meas3.save()
-
-meas4 = Measurement( name="Delivery Radius", label="radius", method = "blob_radius", inspection = insp2.id)
-meas4.save()
-
 
 
 
