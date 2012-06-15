@@ -122,7 +122,7 @@ class ControlWatcher(threading.Thread):
 
             else:
                 since = (datetime.datetime.utcnow() - self.control.inspecttime).seconds
-                if since > 2:
+                if since > .5:
                    self.control.state = 'notgood'
                    self.control.servo_bad()
                    self.control.servo_mix()

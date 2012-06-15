@@ -30,12 +30,12 @@ class ClosestColorMeasurementML(base.MeasurementPlugin):
             mask = self.mask.reize(w,h)
             fv = self.feature_extractor(frame.image,mask)
             guess = self.dtree.predict(fv)
-            result = self.color_map[guess[0]]
+            result = self.labels[guess[0]]
         else:
             fv = self.feature_extractor(frame.image,self.mask)
             guess = self.dtree.predict(fv)
-            result = self.color_map[guess[0]]
+            result = self.labels[guess[0]]
         print "RESULT"+self.labels[guess[0]]
-        if result == Color.WHITE : # our fail color
+        if result == "fail" : # our fail color
             return [] 
         return [result]
