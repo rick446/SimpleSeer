@@ -62,10 +62,9 @@ o2.save()
 ## Delivery time, moving average
 of5 = OLAPFactory()
 qi5 = {'objType':'measurement', 'objName':'Delivery Time', 'objFields':['capturetimeEpochMS', 'numeric', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
-di5 = {'formula':'moving', 'params':['capturetimeEpochMS', 'numeric'], 'window':5, 'trim':True, 'partial':'drop'}
 ci5 = {'renderorder':100, 'name':'line'}
-o5 = of5.makeOLAP(queryInfo = qi5, descInfo = di5, chartInfo=ci5)
-o5.name = 'Delivery Time Moving Average'
+o5 = of5.makeOLAP(queryInfo = qi5, descInfo = None, chartInfo=ci5)
+o5.name = 'Delivery Time'
 o5.allow = 1000
 o5.aggregate = 'mean'
 o5.realtime = 1
