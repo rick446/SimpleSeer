@@ -81,6 +81,9 @@ class ControlWatcher(threading.Thread):
                 self.control.state = 'good'
                 self.control.servo_good()
                 self.control.state = "start"
+              elif (r[0].string == "purple"):
+                self.control.state = 'notgood'
+                self.control.servo_bad() 
               else:
                 self.control.state = 'notgood'
                 self.control.servo_notgood()

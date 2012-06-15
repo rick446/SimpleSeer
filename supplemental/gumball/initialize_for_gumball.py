@@ -33,7 +33,7 @@ meas.save()
 exit()
 
 insp2 = Inspection( name= "Delivery Confirmation",
-  method="blob",
+  method="blobs",
   parameters = { "thresh": 120, "limit": 1 },
   camera = "Delivery Check")
 insp2.save()
@@ -50,7 +50,7 @@ meas4.save()
 
 ## Histogram of color of gumballs evaluated
 of1 = OLAPFactory()
-qi1 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['string', 'capturetimeEpochMS', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
+qi1 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1}
 ci1 = {'name':'sumbucket', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10}
 o1 = of1.makeOLAP(queryInfo = qi1, descInfo = None, chartInfo = ci1)
 o1.allow = 1000
@@ -79,7 +79,7 @@ o3.save()
 
 ## Histogram of diameter of gumballs delivered
 of4 = OLAPFactory()
-qi4 = {'objType':'measurement', 'objName':'Delivery Radius', 'objFields':['numeric', 'capturetimeEpochMS', 'inspection', 'frame', 'measurement', 'id'], 'round': [2, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
+qi4 = {'objType':'measurement', 'objName':'Delivery Radius', 'objFields':['capturetimeEpochMS', 'numeric', 'inspection', 'frame', 'measurement', 'id'], 'round': [2, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
 ci4 = {'name':'sumbucket', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10}
 o4 = of4.makeOLAP(queryInfo = qi4, descInfo = None, chartInfo = ci4)
 o4.allow = 1000

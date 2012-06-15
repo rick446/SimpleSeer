@@ -732,6 +732,7 @@ class RealtimeOLAP:
                         o.descInfo['trim'] = 0
                         rset = o.execute(sincetime = border - window)
                         self.sendMessage(o, rset['data'])
+        
                         
                 
     def lastResult(self):
@@ -857,21 +858,22 @@ class ResultSet:
                     
         # Temporary hack for gumball machines.  Need to convert color string to number codes for Jim.
         if queryInfo.has_key('cton'):
+            idx = queryInfo['cton']
             for o in outputVals:
-                if o[1] == 'red':
-                    o[1] = '0'
-                elif o[1] == 'green':
-                    o[1] = '1'
-                elif o[1] == 'yellow':
-                    o[1] = '2'
-                elif o[1] == 'orange':
-                    o[1] = '3'
-                elif o[1] == 'purple':
-                    o[1] = '4'
-                elif o[1] == 'blue':
-                    o[1] = '5'
+                if o[idx] == 'red':
+                    o[idx] = '0'
+                elif o[idx] == 'green':
+                    o[idx] = '1'
+                elif o[idx] == 'yellow':
+                    o[idx] = '2'
+                elif o[idx] == 'orange':
+                    o[idx] = '3'
+                elif o[idx] == 'purple':
+                    o[idx] = '4'
+                elif o[idx] == 'blue':
+                    o[idx] = '5'
                 else:
-                    o[1] = '5'
+                    o[idx] = '5'
                     
         
         # Track the start and end time of the resultset
@@ -923,21 +925,22 @@ class ResultSet:
                     
         # Temporary hack for gumball machines.  Need to convert color string to number codes for Jim.
         if queryInfo.has_key('cton'):
+            idx = queryInfo['cton']
             for o in outputVals:
-                if o[1] == 'red':
-                    o[1] = '0'
-                elif o[1] == 'green':
-                    o[1] = '1'
-                elif o[1] == 'yellow':
-                    o[1] = '2'
-                elif o[1] == 'orange':
-                    o[1] = '3'
-                elif o[1] == 'purple':
-                    o[1] = '4'
-                elif o[1] == 'blue':
-                    o[1] = '5'
+                if o[idx] == 'red':
+                    o[idx] = '0'
+                elif o[idx] == 'green':
+                    o[idx] = '1'
+                elif o[idx] == 'yellow':
+                    o[idx] = '2'
+                elif o[idx] == 'orange':
+                    o[idx] = '3'
+                elif o[idx] == 'purple':
+                    o[idx] = '4'
+                elif o[idx] == 'blue':
+                    o[idx] = '5'
                 else:
-                    o[1] = None
+                    o[idx] = '5'
         
         idx = params.index('capturetimeEpochMS')        
         dataset = { 'startTime': outputVals[0][idx],
