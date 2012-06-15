@@ -42,7 +42,7 @@ meas3.save()
 ## Histogram of color of gumballs evaluated
 of1 = OLAPFactory()
 qi1 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1}
-ci1 = {'name':'sumbucket', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10}
+ci1 = {'accumulate': True, 'name':'column', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10, 'colormap': {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple', '5': 'blue'},'map': {'0': 'red','1': 'green','2': 'yellow','3': 'orange','4': 'purple','5': 'blue'}}
 o1 = of1.makeOLAP(queryInfo = qi1, descInfo = None, chartInfo = ci1)
 o1.allow = 1000
 o1.name = 'ColorEvaled'
@@ -52,7 +52,7 @@ o1.save()
 ## Histogram of color of gumballs delivered
 of2 = OLAPFactory()
 qi2 = {'objType':'measurement', 'objName':'Delivery Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1}
-ci2 = {'name':'sumbucket', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10}
+ci2 = {'name':'column', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10}
 o2 = of2.makeOLAP(queryInfo = qi2, descInfo = None, chartInfo = ci2)
 o2.allow = 1000
 o2.name = 'ColorDelivered'
