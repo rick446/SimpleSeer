@@ -145,7 +145,6 @@ module.exports = class OLAPs extends Collection
       min: d.chartInfo.min || 0
       template: _.template '
         <div id="stats" style="text-align: center; width: 100%; background: #eee; border-radius: 7px; padding: 15px; box-sizing: border-box;">
-          <h2>{{ name }}</h2><hr>
           <h2>Served: {{data.served}} | Mean Time: {{ data.meantime }} seconds | Fails: {{ data.failed }}</h2>
         </div>'
       addPoint: (d,shift=true) ->
