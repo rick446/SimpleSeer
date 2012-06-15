@@ -14,14 +14,15 @@ class RegionFeature
 	tableOk: => true
 
 	tableHeader: () =>
-		["X", "Y", "Width", "Height","Area"]
+		["X", "Y", "Width", "Height","Area","Mean Color"]
 
 	tableData: () =>
 		[@feature.get("x"),
 		@feature.get("y"),
 		@feature.get("width"),
 		@feature.get("height"),
-                @feature.get("featuredata").mArea]
+                @feature.get("featuredata").mArea,
+                @feature.get("featuredata").mColor]
 	  
 	render: (pjs) =>
 		pjs.stroke 255, 128, 255
@@ -37,4 +38,4 @@ class RegionFeature
 		# LHS - The name of the python class that is the feature
 		# by the inspection
 		# RHS - The name of this coffee script feature class.
-plugin this, Region:RegionFeature
+plugin this, BlobRegion:RegionFeature
