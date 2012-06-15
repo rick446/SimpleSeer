@@ -14,7 +14,7 @@ module.exports = class OLAPs extends Collection
     d2.sort (a,b) ->
       (a.chartInfo.renderorder || 100) - (b.chartInfo.renderorder || 101)
     for me in d2
-      console.log me.name, me.chartInfo.renderorder
+      #console.log me.name, me.chartInfo.renderorder
       #d1.buildChart d1.get me.id
       mod = d1.get me.id
       if !mod.view
