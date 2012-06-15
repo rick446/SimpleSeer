@@ -71,7 +71,8 @@ class ControlWatcher(threading.Thread):
             ss.inspect()
             ss.check()
 
-            r = ss.results[-1][0] #NEED TO CHANGE THIS
+            r = ss.results[-1][0] #NEED TO CHANGE THIS IF WE ADD NEW RESULTS
+            f = ss.lastframes[-1][0]
 
             if len(r):
               
@@ -81,6 +82,34 @@ class ControlWatcher(threading.Thread):
                 self.control.state = 'good'
                 self.control.servo_good()
                 self.control.state = "start"
+                timesince = (datetime.datetime.utcnow() - self.control.starttime).milliseconds / 1000.0
+                
+                
+                r2 = M.ResultEmbed(
+                  result_id = bson.ObjectId(),
+                  measurement_id = self.control.deliveredcolor_measurement.id,
+                  measurement_name = self.control.deliveredcolor_measurement.name,
+                  inspection_id = self.control.region_inspection.id,
+                  inspection_name = self.control.region_inspection.name,
+                  numeric = "",
+                  string = str(self.control.matchcolor)
+                )
+                
+                
+                
+                r = M.ResultEmbed(
+                  result_id = bson.ObjectId(),
+                  measurement_id = self.control.timesince_measurement.id,
+                  measurement_name = self.control.timesince_measurement.name,
+                  inspection_id = self.control.region_inspection.id,
+                  inspection_name = self.control.region_inspection.name,
+                  numeric = timesince,
+                  string = str(timesince)
+                )
+                
+                f.results.append(r,r2)
+                
+                
               elif (r[0].string == "purple"):
                 self.control.state = 'notgood'
                 self.control.servo_bad() 
@@ -95,7 +124,8 @@ class ControlWatcher(threading.Thread):
                    self.control.servo_bad()
                    self.control.servo_mix()
                 
-              
+            f.save(safe = False)
+  
             
           elif self.control.state == "notgood":
               self.control.state = 'getmarble'
@@ -222,6 +252,9 @@ class Controls(object):
        ]
 
        self.colormatch_measurement = M.Measurement.objects(method="closestcolor")[0]
+       self.timesince_measurement = M.Measurement.objects(method="timesince_manual")[0]
+       self.deliveredcolor_measurement = M.Measurement.objects(method="closestcolor_manual")[0]
+       self.region_inspection = M.Inspection.objects[0]
        self.SS = SS
 
        if not "debug" in config:

@@ -462,6 +462,10 @@ class DescriptiveStatistic:
         if (descInfo['formula'] == 'moving'):
             resultSet['data'] = self.assemble(self.movingAverage(group, series, meta, descInfo['window']))
             resultSet['labels'][valIdx] = str(descInfo['window']) + ' Measurement Moving Average'
+        # Moving Count
+        elif (descInfo['formula'] == 'movingCount'):
+            resultSet['data'] = self.assemble(self.movingCount(group, series, meta))
+            resultSet['labels'][valIdx] = 'Count since day'
         # Mean
         elif (descInfo['formula'] == 'mean'):
             resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], np.mean))
@@ -557,6 +561,12 @@ class DescriptiveStatistic:
     def count(self, x):
         return len(x)
     
+    def movingCount(self, group, series, meta):
+        
+        newSeries = range(1, len(series) + 1)
+        
+        return [group, newSeries, meta]
+        
 
     def binStatistic(self, group, series, meta, window, func):
         # Computed the indicated statistic (func) on each bin of data set
@@ -686,6 +696,9 @@ class DescriptiveStatistic:
 class RealtimeOLAP:
 
     def realtime(self, res):
+        
+        log.info('Talkin bout ' + str(res.id))
+        
         olaps = OLAP.objects
         for o in olaps:
             
@@ -719,6 +732,21 @@ class RealtimeOLAP:
                     rset = o.execute()
                     self.sendMessage(o, rset['data'])
                     
+                elif o.descInfo['formula'] == 'movingCount':
+                    # This is a stupid hack for gumball                    
+                    if o.queryInfo.has_key('filter'):
+                        filt = o.queryInfo['filter']
+                        if filt['val'] == res.string:
+                            rset = o.execute()
+                            if len(rset['data']) > 0:
+                                rset['data'] = rset['data'][-1]
+                                rset['data'][1] += 1
+                            else:
+                                rset['data'] = [res.capturetimeEpochMS, 1, res.inspection, res.frame, res.measurement, res.id]
+                            
+                            self.sendMessage(o, [rset['data']])
+                            
+                            
                 else:
                     # Trigger a descriptive if the previous record was on the other side of a group by window/interval
                     window = o.descInfo['window']
@@ -732,6 +760,7 @@ class RealtimeOLAP:
                         o.descInfo['trim'] = 0
                         rset = o.execute(sincetime = border - window)
                         self.sendMessage(o, rset['data'])
+        
                         
                 
     def lastResult(self):
@@ -809,10 +838,17 @@ class ResultSet:
         if queryInfo['before']:
             query['capturetime__lt']= datetime.utcfromtimestamp(queryInfo['before'])
         
+        if queryInfo.has_key('sinceTime'):
+            currentTime = mktime(gmtime())
+            limitTime = currentTime - currentTime % queryInfo['sinceTime']
+            query['capturetime__gt'] = datetime.fromtimestamp(limitTime)
+        
         # If a custom filter was defined
         if queryInfo.has_key('filter'):
             filt = queryInfo['filter']
             query[filt['field']] = filt['val']
+        
+        print query
         
         # Get the results
         # Only truncate if a limit was set
@@ -857,21 +893,22 @@ class ResultSet:
                     
         # Temporary hack for gumball machines.  Need to convert color string to number codes for Jim.
         if queryInfo.has_key('cton'):
+            idx = queryInfo['cton']
             for o in outputVals:
-                if o[1] == 'red':
-                    o[1] = '0'
-                elif o[1] == 'green':
-                    o[1] = '1'
-                elif o[1] == 'yellow':
-                    o[1] = '2'
-                elif o[1] == 'orange':
-                    o[1] = '3'
-                elif o[1] == 'purple':
-                    o[1] = '4'
-                elif o[1] == 'blue':
-                    o[1] = '5'
+                if o[idx] == 'red':
+                    o[idx] = '0'
+                elif o[idx] == 'green':
+                    o[idx] = '1'
+                elif o[idx] == 'yellow':
+                    o[idx] = '2'
+                elif o[idx] == 'orange':
+                    o[idx] = '3'
+                elif o[idx] == 'purple':
+                    o[idx] = '4'
+                elif o[idx] == 'blue':
+                    o[idx] = '5'
                 else:
-                    o[1] = '5'
+                    o[idx] = '5'
                     
         
         # Track the start and end time of the resultset
@@ -923,21 +960,22 @@ class ResultSet:
                     
         # Temporary hack for gumball machines.  Need to convert color string to number codes for Jim.
         if queryInfo.has_key('cton'):
+            idx = queryInfo['cton']
             for o in outputVals:
-                if o[1] == 'red':
-                    o[1] = '0'
-                elif o[1] == 'green':
-                    o[1] = '1'
-                elif o[1] == 'yellow':
-                    o[1] = '2'
-                elif o[1] == 'orange':
-                    o[1] = '3'
-                elif o[1] == 'purple':
-                    o[1] = '4'
-                elif o[1] == 'blue':
-                    o[1] = '5'
+                if o[idx] == 'red':
+                    o[idx] = '0'
+                elif o[idx] == 'green':
+                    o[idx] = '1'
+                elif o[idx] == 'yellow':
+                    o[idx] = '2'
+                elif o[idx] == 'orange':
+                    o[idx] = '3'
+                elif o[idx] == 'purple':
+                    o[idx] = '4'
+                elif o[idx] == 'blue':
+                    o[idx] = '5'
                 else:
-                    o[1] = None
+                    o[idx] = '5'
         
         idx = params.index('capturetimeEpochMS')        
         dataset = { 'startTime': outputVals[0][idx],
