@@ -178,7 +178,8 @@ class Blobs(base.InspectionPlugin):
         
         for b in reversed(blobs): #change sort order to big->small
             #b.draw()
-            b.__class__ = BlobsFeature
+            
+            #b.__class__ = BlobsFeature
             ff = M.FrameFeature()
             b.image = image
             ff.setFeature(b)
