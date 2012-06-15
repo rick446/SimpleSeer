@@ -26,7 +26,8 @@ module.exports = class OLAPs extends Collection
           inHalf = true
         mod.view = new ChartView({id:me.id,model:me,className:cn})
         #mod.view.anchorId = me.id
-        mod.view.render()
+        if mod.id == '4fdb44bafb920a1f42000005'
+          mod.view.render()
     return
 
   previewImage: (fId) =>

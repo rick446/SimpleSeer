@@ -55,7 +55,7 @@ module.exports = class ChartView extends View
     if @.model.chartInfo.xtype == 'datetime'
       d.data[0] = moment(d.data[0]*1000)
     if @.model.chartInfo.accumulate
-      _id = d.data[0]
+      _id = d.data[1]
     else
       _id =d.frame_id
     _point =
