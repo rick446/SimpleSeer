@@ -30,6 +30,10 @@ insp.save()
 meas = Measurement( name="Gumball Color", label="Color", method = "closestcolor", inspection = insp.id )
 meas.save()
 
+meas = Measurement( name="Delivery Color", label="Color", method = "closestcolor_manual", inspection = insp.id )
+meas.save()
+
+m
 meas3 = Measurement( name="Delivery Time", label="Seconds", method = "timebetween_manual", inspection = insp.id, 
   parameters = dict( inspection = insp.id ))
 meas3.save()
