@@ -62,7 +62,7 @@ o1.save()
 ## Histogram of color of gumballs delivered
 of2 = OLAPFactory()
 qi2 = {'objType':'measurement', 'objName':'Delivery Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1}
-ci2 = {'name':'column', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10}
+ci2 = {'accumulate': True, 'name':'column', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10, 'colormap': {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple', '5': 'blue'},'map': {'0': 'red','1': 'green','2': 'yellow','3': 'orange','4': 'purple','5': 'blue'}}
 o2 = of2.makeOLAP(queryInfo = qi2, descInfo = None, chartInfo = ci2)
 o2.allow = 1000
 o2.name = 'ColorDelivered'
@@ -102,14 +102,26 @@ o7.name = 'GreenOnly'
 o7.realtime = 1
 o7.save()
 
-## Blue gumball delivered
+## Purple gumball delivered
 of8 = OLAPFactory()
-qi8 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'blue'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
+qi8 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'purple'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
 di8 = {'formula':'movingCount', 'params':['capturetimeEpochMS', 'string'], 'window':86400, 'trim':False, 'partial':'drop'}
 ci8 = {'minval':0, 'maxval':None, 'color':'blue'}
 o8 = of8.makeOLAP(queryInfo = qi8, descInfo = di8, chartInfo=ci8)
 o8.allow = 1000
-o8.name = 'BlueOnly'
+o8.name = 'PurpleOnly'
+o8.realtime = 1
+o8.save()
+
+
+## Orange gumball delivered
+of8 = OLAPFactory()
+qi8 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'orange'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
+di8 = {'formula':'movingCount', 'params':['capturetimeEpochMS', 'string'], 'window':86400, 'trim':False, 'partial':'drop'}
+ci8 = {'minval':0, 'maxval':None, 'color':'blue'}
+o8 = of8.makeOLAP(queryInfo = qi8, descInfo = di8, chartInfo=ci8)
+o8.allow = 1000
+o8.name = 'OrangeOnly'
 o8.realtime = 1
 o8.save()
 
