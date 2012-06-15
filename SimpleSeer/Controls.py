@@ -218,6 +218,10 @@ class Controls(object):
 
     def servo_good(self):
         self.fwheel.write(self.fwheel_pos5)
+        time.sleep(0.1)
+        self.fwheel.write(self.fwheel_pos5+10)
+        time.sleep(0.05)
+        self.fwheel.write(self.fwheel_pos5)
         self.rwheel.write(self.rwheel_pos3)
         time.sleep(self.SLEEPTIME)
 
