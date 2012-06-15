@@ -247,10 +247,10 @@ class SimpleSeer(object):
                     #this camera, or all cameras if no camera is specified
                     continue
                 
-                results = inspection.execute(frame.image)
-                frame.features.extend(results)
+                feats = inspection.execute(frame.image)
+                frame.features.extend(feats)
                 for m in inspection.measurements:
-                    frame.results += m.execute(frame, results)
+                    m.execute(frame, feats)
                     
             for watcher in self.watchers:
                 watcher.check(frame.results)
