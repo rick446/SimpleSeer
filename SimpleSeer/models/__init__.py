@@ -4,7 +4,7 @@ from Inspection import Inspection, InspectionSchema
 from Measurement import Measurement, MeasurementSchema
 from FrameSet import FrameSet, FrameSetSchema
 from OLAP import OLAP, OLAPSchema
-from Result import Result
+from Result import Result, ResultEmbed
 from Watcher import Watcher
 # from Statistic import Statistic
 
