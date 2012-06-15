@@ -135,6 +135,7 @@ module.exports = class OLAPs extends Collection
       render: (target) ->
         target.html @.template {values:@.values}
     marbleoverview: (d)->
+      name:d.name
       stack:[]
       data:
         served:0
@@ -143,24 +144,16 @@ module.exports = class OLAPs extends Collection
       max: d.chartInfo.max || 100
       min: d.chartInfo.min || 0
       template: _.template '
-      <div id="stats-container" class="span2">
-        <div id="stats" style="text-align: center; width: 100%; margin-top: 35px; background: #eee; border-radius: 7px; padding: 15px; box-sizing: border-box;">
-          <h1>Gumballs</h1><hr>
-          <h2>Served:</h2>
-          <h3>{{data.served}}%</h3><hr>
-          <h2>Mean Time:</h2>
-          <h3>{{ data.meantime }}</h3><hr>
-          <h2>Fails:</h2>
-          <h3>{{ data.failed }}</h3><hr>
-        </div>
-      </div>'
+        <div id="stats" style="text-align: center; width: 100%; background: #eee; border-radius: 7px; padding: 15px; box-sizing: border-box;">
+          <h2>Served: {{data.served}} | Mean Time: {{ data.meantime }} seconds | Fails: {{ data.failed }}</h2>
+        </div>'
       addPoint: (d,shift=true) ->
-        x = d.y
-        d.x = d.y
+        #x = d.y
+        #d.y = d.y
         if shift
           p = @.stack.shift()
           #@values[p.x] -= p.y
-        @.stack.push({x:x,y:d.y})
+        @.stack.push({x:d.x,y:d.y})
         #@values[x] += d.y
       setData: (d) ->
         @stack = []
@@ -170,11 +163,16 @@ module.exports = class OLAPs extends Collection
         _counts = [0,0,0]
         _time = 0
         for i in @stack
-          _counts[i.x]++
-          _time += i.y
-        console.log _counts
+          _counts[i.y]++
+          if !_to
+            _to = i.x.unix()
+          else
+            _time += i.x.unix() - _to
+            _to = i.x.unix()
+        #console.log _counts
         @data.meantime = _time / @stack.length
+        @data.meantime = @data.meantime.toFixed(3)
         @data.served = _counts[1]
         @data.failed = _counts[0]
-        target.html @.template {data:@.data}
+        target.html @.template {data:@.data,name:@.name}
 

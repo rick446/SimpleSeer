@@ -139,7 +139,7 @@ o9.save()
 ## PassFail
 of10 = OLAPFactory()
 qi10 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None, 'passfail':1}
-ci10 = {'minval':0, 'maxval':None, 'name':'marbleoverview'}
+ci10 = {'minval':0, 'maxval':None, 'name':'marbleoverview', 'renderorder':1}
 o10 = of10.makeOLAP(queryInfo = qi10, descInfo = None, chartInfo=ci10)
 o10.allow = 1000
 o10.name = 'Gumball Pass/Fail'
