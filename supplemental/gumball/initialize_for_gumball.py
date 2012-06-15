@@ -142,6 +142,6 @@ qi10 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['captur
 ci10 = {'minval':0, 'maxval':None, 'name':'marbleoverview', 'renderorder':1}
 o10 = of10.makeOLAP(queryInfo = qi10, descInfo = None, chartInfo=ci10)
 o10.allow = 1000
-o10.name = 'Gumball Pass/Fail'
+o10.name = 'Candies Overview'
 o10.realtime = 1
 o10.save()

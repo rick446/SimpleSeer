@@ -848,7 +848,6 @@ class ResultSet:
             filt = queryInfo['filter']
             query[filt['field']] = filt['val']
         
-        print query
         
         # Get the results
         # Only truncate if a limit was set
