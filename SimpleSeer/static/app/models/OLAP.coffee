@@ -92,7 +92,8 @@ module.exports = class OLAP extends Model
   pointStack: () ->
     stack : []
     add: (d,shift=true) ->
-      @.stack.push {x:d.x.toString(),y:d.y,id:d.id.toString()}
+      _a = {x:d.x.toString(),y:d.y,id:d.id.toString()}
+      @.stack.push _a
       if shift
         p = @.stack.shift()
       return p

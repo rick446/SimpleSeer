@@ -462,6 +462,10 @@ class DescriptiveStatistic:
         if (descInfo['formula'] == 'moving'):
             resultSet['data'] = self.assemble(self.movingAverage(group, series, meta, descInfo['window']))
             resultSet['labels'][valIdx] = str(descInfo['window']) + ' Measurement Moving Average'
+        # Moving Count
+        elif (descInfo['formula'] == 'movingCount'):
+            resultSet['data'] = self.assemble(self.movingCount(group, series, meta))
+            resultSet['labels'][valIdx] = 'Count since day'
         # Mean
         elif (descInfo['formula'] == 'mean'):
             resultSet['data'] = self.assemble(self.binStatistic(group, series, meta, descInfo['window'], np.mean))
@@ -557,6 +561,12 @@ class DescriptiveStatistic:
     def count(self, x):
         return len(x)
     
+    def movingCount(self, group, series, meta):
+        
+        newSeries = range(1, len(series) + 1)
+        
+        return [group, newSeries, meta]
+        
 
     def binStatistic(self, group, series, meta, window, func):
         # Computed the indicated statistic (func) on each bin of data set
@@ -686,6 +696,9 @@ class DescriptiveStatistic:
 class RealtimeOLAP:
 
     def realtime(self, res):
+        
+        log.info('Talkin bout ' + str(res.id))
+        
         olaps = OLAP.objects
         for o in olaps:
             
@@ -719,6 +732,21 @@ class RealtimeOLAP:
                     rset = o.execute()
                     self.sendMessage(o, rset['data'])
                     
+                elif o.descInfo['formula'] == 'movingCount':
+                    # This is a stupid hack for gumball                    
+                    if o.queryInfo.has_key('filter'):
+                        filt = o.queryInfo['filter']
+                        if filt['val'] == res.string:
+                            rset = o.execute()
+                            if len(rset['data']) > 0:
+                                rset['data'] = rset['data'][-1]
+                                rset['data'][1] += 1
+                            else:
+                                rset['data'] = [res.capturetimeEpochMS, 1, res.inspection, res.frame, res.measurement, res.id]
+                            
+                            self.sendMessage(o, [rset['data']])
+                            
+                            
                 else:
                     # Trigger a descriptive if the previous record was on the other side of a group by window/interval
                     window = o.descInfo['window']
@@ -810,10 +838,17 @@ class ResultSet:
         if queryInfo['before']:
             query['capturetime__lt']= datetime.utcfromtimestamp(queryInfo['before'])
         
+        if queryInfo.has_key('sinceTime'):
+            currentTime = mktime(gmtime())
+            limitTime = currentTime - currentTime % queryInfo['sinceTime']
+            query['capturetime__gt'] = datetime.fromtimestamp(limitTime)
+        
         # If a custom filter was defined
         if queryInfo.has_key('filter'):
             filt = queryInfo['filter']
             query[filt['field']] = filt['val']
+        
+        print query
         
         # Get the results
         # Only truncate if a limit was set
