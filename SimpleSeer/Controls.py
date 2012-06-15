@@ -5,6 +5,7 @@ import time
 
 import models as M
 import gc
+import bson
 import realtime as realtime
 
 
@@ -82,7 +83,8 @@ class ControlWatcher(threading.Thread):
                 self.control.state = 'good'
                 self.control.servo_good()
                 self.control.state = "start"
-                timesince = (datetime.datetime.utcnow() - self.control.starttime).milliseconds / 1000.0
+                td = (datetime.datetime.utcnow() - self.control.starttime)
+                timesince = float(td.seconds) + td.microseconds / 1000000.0
                 
                 
                 r2 = M.ResultEmbed(
@@ -91,7 +93,7 @@ class ControlWatcher(threading.Thread):
                   measurement_name = self.control.deliveredcolor_measurement.name,
                   inspection_id = self.control.region_inspection.id,
                   inspection_name = self.control.region_inspection.name,
-                  numeric = "",
+                  numeric = None,
                   string = str(self.control.matchcolor)
                 )
                 
@@ -106,8 +108,9 @@ class ControlWatcher(threading.Thread):
                   numeric = timesince,
                   string = str(timesince)
                 )
-                
-                f.results.append(r,r2)
+                from util import jsonencode
+                print jsonencode([r,r2])
+                f.results.extend([r,r2])
                 
                 
               elif (r[0].string == "purple"):
@@ -150,7 +153,7 @@ class Controls(object):
 
     #servo setup
     fwheel = None
-    fwheel_pos1 = 170
+    fwheel_pos1 = 165
     fwheel_pos2 = 115
     fwheel_pos3 = 51
     fwheel_pos4 = 25
@@ -215,6 +218,10 @@ class Controls(object):
 
     def servo_good(self):
         self.fwheel.write(self.fwheel_pos5)
+        time.sleep(0.1)
+        self.fwheel.write(self.fwheel_pos5+10)
+        time.sleep(0.05)
+        self.fwheel.write(self.fwheel_pos5)
         self.rwheel.write(self.rwheel_pos3)
         time.sleep(self.SLEEPTIME)
 
@@ -222,7 +229,7 @@ class Controls(object):
         self.awheel.write(self.awheel_right)
         time.sleep(self.ROTATE_TIME)
         self.awheel.write(self.awheel_left)
-        time.sleep(self.ROTATE_TIME)
+        time.sleep(self.ROTATE_TIME * 3)
         self.awheel.write(self.awheel_stop)
       
 

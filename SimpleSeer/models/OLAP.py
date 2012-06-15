@@ -839,7 +839,7 @@ class ResultSet:
             query['capturetime__lt']= datetime.utcfromtimestamp(queryInfo['before'])
         
         if queryInfo.has_key('sinceTime'):
-            currentTime = mktime(gmtime())
+            currentTime = calendar.timegm(datetime.utcnow().timetuple())
             limitTime = currentTime - currentTime % queryInfo['sinceTime']
             query['capturetime__gt'] = datetime.fromtimestamp(limitTime)
         
@@ -848,7 +848,6 @@ class ResultSet:
             filt = queryInfo['filter']
             query[filt['field']] = filt['val']
         
-        print query
         
         # Get the results
         # Only truncate if a limit was set

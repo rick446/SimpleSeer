@@ -75,7 +75,7 @@ module.exports = class ChartView extends View
       application.charts.previewImage e.target.id
     ), 500
     for m in application.charts.models
-      if !m.attributes.chartInfo.ticker
+      if !m.attributes.chartInfo.ticker && m.view.chart
         m.view.chart.showTooltip e.target.id
 
   clickPoint: (e) =>
@@ -186,6 +186,7 @@ module.exports = class ChartView extends View
       if @.chart.stack
         ep = @.chart.stack.add p
     addPoint: (d) =>
+      #console.log d
       if @.chart.stack
         @.chart.stack.add d
       if @.chart.lib == 'highchart'
@@ -270,7 +271,7 @@ module.exports = class ChartView extends View
             if this.axis.options.type == 'datetime'
               Highcharts.dateFormat('%m/%d<br>%I:%M:%S', this.value)
             else
-              m =  application.charts.get @.chart.id
+              m = application.charts.get @.chart.id
               if m.attributes.chartInfo.map
                 return m.attributes.chartInfo.map[this.value]
               else
