@@ -153,7 +153,7 @@ class Controls(object):
 
     #servo setup
     fwheel = None
-    fwheel_pos1 = 170
+    fwheel_pos1 = 165
     fwheel_pos2 = 115
     fwheel_pos3 = 51
     fwheel_pos4 = 25
