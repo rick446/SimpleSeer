@@ -9,22 +9,26 @@ from SimpleSeer.states import Core
 class TestStateMachine(unittest.TestCase):
 
     def setUp(self):
-        self.core = Core()
+        config = mock.Mock()
+        config.cameras = [] # prevent configuration of cameras
+        self.core = Core(config)
+        self.core.capture = mock.Mock(
+            return_value=[mock.Mock()])
 
     def test_single_frame(self):
         self.core.cameras = [ mock.Mock() ]
 
         @self.core.state('start')
-        def capture_frame(core):
-            core.wait('capture-frame')
-            core.cameras[0].capture()
-            return core.state('start')
+        def capture_frame(state):
+            state.core.wait('capture-frame')
+            state.core.capture()
+            return state.core.state('start')
 
         self.core.trigger('capture-frame')
         self.assertEqual(
             self.core.state('start'),
             self.core.step())
-        self.core.cameras[0].capture.assert_called_with()
+        self.core.capture.assert_called_with()
 
     def test_motion_threshold(self):
         slow_rate = 10.0
@@ -36,31 +40,33 @@ class TestStateMachine(unittest.TestCase):
         result.featuredata = dict(motion=10)
         motion.execute = mock.Mock(return_value=[result])
         self.core.get_inspection = mock.Mock(return_value=motion)
-        self.core.cameras = [ mock.Mock() ]
         def capture():
             print time.time(), 'Capture'
             capture.call_count += 1
+            return [ mock.Mock() ]
         capture.call_count = 0
-        self.core.cameras[0].capture = capture
+        self.core.capture = capture
 
         @self.core.state('start')
-        def slow_state(core):
+        def slow_state(state):
+            core = state.core
             core.set_rate(slow_rate)
             motion = core.get_inspection('motion')
             while True:
                 core.tick()
-                frame = core.cameras[0].capture()
+                frame = core.capture()[0]
                 features = motion.execute(frame)
                 if features[0].featuredata['motion'] > threshold0:
                     return core.state('fast')
 
         @self.core.state('fast')
-        def fast_state(core):
+        def fast_state(state):
+            core = state.core
             core.set_rate(fast_rate)
             motion = core.get_inspection('motion')
             while True:
                 core.tick()
-                frame = core.cameras[0].capture()
+                frame = core.capture()[0]
                 features = motion.execute(frame)
                 if features[0].featuredata['motion'] < threshold1:
                     return core.state('start')
@@ -82,10 +88,10 @@ class TestStateMachine(unittest.TestCase):
         self.core.trigger('terminate')
         trail = gl.get()
         self.assertEqual(trail, ['start', 'fast', 'start', None])
-        num_frames = self.core.cameras[0].capture.call_count
+        num_frames = self.core.capture.call_count
         print num_frames
         self.assertGreater(num_frames, 12)
-        self.assertLess(num_frames, 15)
+        self.assertLess(num_frames, 18)
 
     def test_conditional_inspections(self):
         threshold = 20
@@ -115,14 +121,14 @@ class TestStateMachine(unittest.TestCase):
         self.core.cameras[0].capture = capture
 
         @self.core.state('start')
-        def start_state(core):
+        def start_state(state):
+            core = state.core
             core.set_rate(10.0)
             motion = core.get_inspection('motion')
             blob = core.get_inspection('blob')
-            camera = core.cameras[0]
             while True:
                 core.tick()
-                frame = camera.capture()
+                frame = core.capture()[0]
                 features = motion.execute(frame)
                 if features[0].featuredata['motion'] > threshold:
                     blob.execute(frame)
