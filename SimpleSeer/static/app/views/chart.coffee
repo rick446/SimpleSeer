@@ -119,7 +119,7 @@ module.exports = class ChartView extends View
   drawChart: (data) =>
     renderData = @getRenderData()
     @.chart = @.chartInit renderData
-    if @.chart.realtime
+    if @.chart.realtime && application.socket
       application.socket.on "message:OLAP/#{renderData.name}/", @_update
       application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
     return

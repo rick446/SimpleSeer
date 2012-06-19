@@ -16,17 +16,18 @@ Application =
     OLAPs = require 'collections/OLAPs'
     FrameSets = require 'collections/framesets'
 
-    @.socket = io.connect '/rt'
-    @.socket.on 'timeout', ->
-      #alert 'websocket timeout'
-    @.socket.on 'connect', ->
-      #alert 'websocket connect'
-    @.socket.on 'error', ->
-      #alert 'websocket  error'
-    @.socket.on 'disconnect', ->
-      #alert 'websocket disconnect'
-    #@.socket.on 'message', (msg) ->
-    #  console.log 'Got message', msg
+    if !@.isMobile
+      @.socket = io.connect '/rt'
+      @.socket.on 'timeout', ->
+        #alert 'websocket timeout'
+      @.socket.on 'connect', ->
+        #alert 'websocket connect'
+      @.socket.on 'error', ->
+        #alert 'websocket  error'
+      @.socket.on 'disconnect', ->
+        #alert 'websocket disconnect'
+      #@.socket.on 'message', (msg) ->
+      #  console.log 'Got message', msg
 
     @inspections = new Inspections()
     @inspections.fetch()
