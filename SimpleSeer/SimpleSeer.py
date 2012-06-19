@@ -24,20 +24,6 @@ import realtime as realtime
 
 log = logging.getLogger(__name__)
 
-class DirectoryCamera(FrameSource):
-    filelist = []
-    counter = 0
-
-    def __init__(self, path):
-        self.filelist = glob(path)
-        self.counter = 0
-        
-    def getImage(self):
-        i = Image(self.filelist[self.counter])
-        self.counter = (self.counter + 1) % len(self.filelist)
-        return i
-
-
 class SimpleSeer(object):
     """
     The SimpleSeer object 
