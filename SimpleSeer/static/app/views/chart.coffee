@@ -231,29 +231,15 @@ module.exports = class ChartView extends View
   _dhc: (renderData) =>
     _target = $('#'+renderData.id+' .graph-container')
     
-    if renderData.chartInfo.ticker
-      enableTooltip = false
     chart = new Highcharts.Chart
       chart:
         renderTo: _target[0]
         type: renderData.chartInfo.name.toLowerCase()
         height: renderData.chartInfo.height || '150'
-        animation: false
-      title:
-        text:null
-      credits:
-        enabled:
-          false
-      legend:
-        enabled: false
-      plotOptions:
-        series:
-          #stickyTracking: false
-          lineWidth:2
       series: [ @createSeries renderData ]
-      tooltip:
-        snap:100
-        crosshairs:true
+      #tooltip:
+      #  snap:100
+      #  crosshairs:true
         #enabled:false
       #  headerFormat:
       #    ''
@@ -277,8 +263,6 @@ module.exports = class ChartView extends View
               else
                 return this.value
       yAxis:
-        title:
-          text: ''
         min:renderData.chartInfo.minval
         max:renderData.chartInfo.maxval
     chart.id = renderData.id
