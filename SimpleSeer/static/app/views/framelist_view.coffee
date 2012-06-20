@@ -95,3 +95,7 @@ module.exports = class FramelistView extends View
   disableEvent: (evt)=>
     evt.preventDefault()
     return false
+
+  reset: ()=>
+    @_frameViews = []
+    @pages = 1
