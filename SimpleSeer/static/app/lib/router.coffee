@@ -3,13 +3,8 @@ application = require 'application'
 Frame = require "../models/frame"
 FrameDetailView = require 'views/framedetail_view'
 
-
-
 module.exports = class Router extends Backbone.Router
-  routes:
-    '': 'home'
-    'frames': 'framelist'
-    'frame/:id': 'frame'
+  routes: application.settings['ui_routes'] || {}
 
   home: ->
     application.charts.fetch

@@ -58,7 +58,7 @@ class SimpleSeer(object):
             if camerainfo.has_key('virtual'):
                 self.cameras.append(VirtualCamera(camerainfo['source'], camerainfo['virtual']))
             elif camerainfo.has_key('directory'):
-                self.cameras.append(DirectoryCamera(camerainfo['directory']))
+                self.cameras.append(util.DirectoryCamera(camerainfo['directory']))
             elif camerainfo.has_key('kinect'):
                 k = Kinect()
                 k._usedepth = 0
