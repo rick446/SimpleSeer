@@ -147,7 +147,6 @@ def videofeed(width=0, camera=0):
         socket = ChannelManager().subscribe("capture.")
         
         while True:
-            capture_msg = socket.recv() #we actually ignore the message
             img = seer.get_image(**params)
             yield '--BOUNDARYSTRING\r\n'
             yield 'Content-Type: %s\r\n' % img['content_type']
@@ -156,7 +155,8 @@ def videofeed(width=0, camera=0):
             yield '\r\n'
             yield img['data']
             yield '\r\n'
-            gevent.sleep(0.01)
+            gevent.sleep(0)
+            socket.recv() #we actually ignore the message
     return Response(
         generate(),
         headers=[
