@@ -15,6 +15,8 @@ Application =
     Frames = require 'collections/frames'
     OLAPs = require 'collections/OLAPs'
     FrameSets = require 'collections/framesets'
+    Pallette = require 'lib/ui_helper'
+    @pallette = new Pallette()
 
     if !@.isMobile
       @.socket = io.connect '/rt'
