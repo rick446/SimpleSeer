@@ -15,6 +15,8 @@ Application =
     Frames = require 'collections/frames'
     OLAPs = require 'collections/OLAPs'
     FrameSets = require 'collections/framesets'
+    Pallette = require 'lib/ui_helper'
+    @pallette = new Pallette()
 
     if !@.isMobile
       @.socket = io.connect '/rt'
@@ -63,7 +65,7 @@ Application =
   alert: (message, alert_type) ->
     _set = true
     if alert_type == 'clear'
-      $("#messages > .alert").hide 'slow', -> $("#messages").html('')
+      $("#messages > .alert").hide 'slow', -> $(@).remove()
     else if alert_type == "redirect"
       Application.router.navigate(message, true)
     else
