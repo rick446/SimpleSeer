@@ -16,13 +16,14 @@ module.exports = class Frames extends Collection
       skip: 0
       sort: JSON.stringify({'capturetime': -1 })
     if options && options.filter
-      options.filter.capturetime = {}
-      if options.filter.time_from
-        options.filter.capturetime['$gte'] = {'$date': options.filter.time_from}
-        delete options.filter.time_from
-      if options.filter.time_to
-        options.filter.capturetime['$lte'] = {'$date': options.filter.time_to}
-        delete options.filter.time_to
+      if options.filter.time_from || options.filter.time_to
+        options.filter.capturetime = {}
+        if options.filter.time_from
+          options.filter.capturetime['$gte'] = {'$date': options.filter.time_from}
+          delete options.filter.time_from
+        if options.filter.time_to
+          options.filter.capturetime['$lte'] = {'$date': options.filter.time_to}
+          delete options.filter.time_to
       params.filter = JSON.stringify(options.filter)
     if options && options.page
       params.skip = (options.page-1)*20

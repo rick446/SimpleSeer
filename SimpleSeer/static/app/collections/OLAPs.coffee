@@ -57,8 +57,9 @@ module.exports = class OLAPs extends Collection
     if !fId
       fId = @lastframe
     @.changeFrameImage fId
-    for obj in @.models
-      application.socket.emit 'unsubscribe', 'OLAP/'+obj.attributes.name+'/'
+    if application.socket
+      for obj in @.models
+        application.socket.emit 'unsubscribe', 'OLAP/'+obj.attributes.name+'/'
     #application.alert('<a href="#">Pause</a>','error')
 
   unpause: =>
@@ -69,7 +70,8 @@ module.exports = class OLAPs extends Collection
     for obj in @.models
       tf = Math.round((new Date()).getTime() / 1000) - application.charts.timeframe
       obj.view.update parseInt(tf)
-      application.socket.emit 'subscribe', 'OLAP/'+obj.attributes.name+'/'
+      if application.socket
+        application.socket.emit 'subscribe', 'OLAP/'+obj.attributes.name+'/'
     $('.alert_error').remove()
     fDom = $('#frame img')
     fDom.attr('src',fDom.attr('live'))
