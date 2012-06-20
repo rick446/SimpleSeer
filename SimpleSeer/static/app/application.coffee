@@ -63,7 +63,7 @@ Application =
   alert: (message, alert_type) ->
     _set = true
     if alert_type == 'clear'
-      $("#messages > .alert").hide 'slow', -> $("#messages").html('')
+      $("#messages > .alert").hide 'slow', -> $(@).remove()
     else if alert_type == "redirect"
       Application.router.navigate(message, true)
     else
