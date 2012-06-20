@@ -7,7 +7,9 @@ class Alert(SimpleDoc, WithPlugins, mongoengine.Document):
     severity = mongoengine.StringField(max_length=1, choices=[
             ('I', 'Info'),
             ('W', 'Warning'),
-            ('E', 'Error')])
+            ('E', 'Error'),
+            ('C', "Clear"),
+            ('R', "Redirect")])
     message = mongoengine.StringField()
     
     def __repr__(self):
@@ -28,5 +30,16 @@ class Alert(SimpleDoc, WithPlugins, mongoengine.Document):
     def error(cls, message):
         ChannelManager().publish('alert/', dict(severity='error', message=message))
         return cls(severity='E', message=message)
+        
+    @classmethod
+    def clear(cls):
+        ChannelManager().publish('alert/', dict(severity='clear', message=''))
+        return cls(severity='C', message='')
+        
+    @classmethod
+    def redirect(cls, url):
+        ChannelManager().publish('alert/', dict(severity='redirect', message=url))
+        return cls(severity='R', message='')
+    
 
     

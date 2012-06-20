@@ -1,6 +1,5 @@
 import gc
 
-from SimpleSeer import models as M
 
 @core.state('start')
 def start(state):
@@ -17,6 +16,8 @@ def run(state):
         frames = core.capture()
         for frame in frames:
             process(frame)
+            frame.save()
+
 
 @core.on('run', 'rate.')
 def set_rate(state, name, data):
@@ -34,4 +35,4 @@ def process(frame):
         results = inspection.execute(frame.image)
         frame.features += results
         for m in inspection.measurements:
-            frame.results += m.execute(frame, results)
+            m.execute(frame, results)
