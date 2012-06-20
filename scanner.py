@@ -28,7 +28,7 @@ def scan(state):
     M.Alert.info("Preview scan, Please wait")
     preview = scan.getPreview()
     
-    blobs = preview.findBlobs(minsize = 250)
+    blobs = preview.stretch(25,255).findBlobs(minsize = 250)
     
     if not blobs:
       M.Alert.error("No part found, please reseat part close lid and retry")
@@ -46,6 +46,7 @@ def scan(state):
     id = '' 
     for frame in core.capture():
         process(frame)
+        frame.image = 
         frame.save()
         id = frame.id
     scan.setROI()
