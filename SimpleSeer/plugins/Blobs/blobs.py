@@ -9,10 +9,10 @@ import SimpleCV
 from SimpleSeer.base import jsonencode
 import json
 
-class BlobFeature(SimpleCV.Blob):
+class BlobsFeature(SimpleCV.Blob):
     pass
 
-class Blob(base.InspectionPlugin):
+class Blobs(base.InspectionPlugin):
     def __call__(self, image):
         params = util.utf8convert(self.inspection.parameters)
         #params = self.inspection.parameters
@@ -177,8 +177,8 @@ class Blob(base.InspectionPlugin):
         feats = []
         
         for b in reversed(blobs): #change sort order to big->small
-            #b.draw()
-            b.__class__ = BlobFeature
+            c = b.meanColor()
+            b.mColor = (int(c[0]),int(c[1]),int(c[2]))
             ff = M.FrameFeature()
             b.image = image
             ff.setFeature(b)
@@ -207,3 +207,10 @@ class BlobCount(base.MeasurementPlugin):
 
     def __call__(self, frame, featureset):
         return [len(featureset)]
+
+
+class BlobRadius(base.MeasurementPlugin):
+    
+    def __call__(self, frame, featureset):
+        return [f.feature.radius() for f in featureset]
+

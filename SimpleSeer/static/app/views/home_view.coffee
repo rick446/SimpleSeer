@@ -1,6 +1,6 @@
 View = require './view'
 FrameView = require './frame'
-template = require './templates/marbles'
+template = require './templates/home'
 application = require 'application'
 
 module.exports = class HomeView extends View
@@ -12,6 +12,29 @@ module.exports = class HomeView extends View
     Highcharts.setOptions
       global:
         useUTC: false
+      title:
+        text:null
+      yAxis:
+        title:
+          text: ''
+      tooltip:
+        snap:100
+        crosshairs:true
+        #enabled:false
+      plotOptions:
+        series:
+          #stickyTracking: false
+          lineWidth:2
+      credits:
+        enabled:
+          false
+      legend:
+        enabled: false
+      chart:
+        animation: false
+
+
+
   
   events:
     "click #realtimecontrol": "realtimeControl"

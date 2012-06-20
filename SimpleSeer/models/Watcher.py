@@ -7,6 +7,7 @@ from .Alert import Alert
 class Handler(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
     name = mongoengine.StringField()
     args = mongoengine.DictField()
+    state = mongoengine.StringField()
 
 class Watcher(SimpleDoc, WithPlugins, mongoengine.Document):
     """

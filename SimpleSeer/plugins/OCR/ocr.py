@@ -44,9 +44,10 @@ class OCR(base.InspectionPlugin):
     retVal = []
 
     myWords = image.readText()
-    if(len(myWords)==0):
+    #grrr ocr likes to spit back empty newlines
+    if(len(myWords)==0 or myWords == " \n\n"):
       return []
-
+    
     ff = M.FrameFeature()
     ff.setFeature(OCRFeature(image,myWords))
     retVal.append(ff)

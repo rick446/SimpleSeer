@@ -1,4 +1,6 @@
 import cPickle as pickle
+from cStringIO import StringIO
+from binascii import b2a_base64, a2b_base64
 from copy import deepcopy
 
 import cv
@@ -8,37 +10,33 @@ import mongoengine.base
 
 import SimpleCV
 
-from .base import SimpleEmbeddedDoc
+from .base import SimpleEmbeddedDoc, SONScrub
 from SimpleSeer.base import mebasedict_handle, mebaselist_handle
 
+def _numpy_save(son, collection):
+    sio = StringIO()
+    np.save(sio, son)
+    return sio.getvalue()
 
+def _numpy_load(son, collection):
+    sio = StringIO(son)
+    return np.load(sio)
 
-#helper function to get difficult to encode types out of SimpleCV native types
-def scv_cleanse(value):
-    if type(value) == cv.iplimage or isinstance(value, SimpleCV.Image):
-        return
-    if type(value) == list or type(value) == tuple:
-        return [scv_cleanse(v) for v in value]
-    if type(value) == dict:
-        d = {}
-        for k in value.keys():
-            d[k] = scv_cleanse(value[k])
-        return d
-    if issubclass(type(value), np.integer):
-        return int(value)
-    if issubclass(type(value), np.float):
-        return float(value)
-    else:
-        return value
-
-
-
+SONScrub.scrub_type(cv.iplimage)
+SONScrub.scrub_type(SimpleCV.Image)
+SONScrub.register_bsonifier(np.integer, lambda v,c: int(v))
+SONScrub.register_bsonifier(np.float, lambda v,c: float(v))
+SONScrub.register_bintype(np.ndarray, _numpy_save, _numpy_load)
+# matrices are instances of np.ndarray, no need to register them again
+# SONScrub.register_bintype(np.matrix, _numpy_save, _numpy_load)
 
 class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
-   
+
     featuretype = mongoengine.StringField()
     featuredata = mongoengine.DictField()  #this holds any type-specific feature data
-    featurepickle = mongoengine.BinaryField() #a pickle of the feature, for rendering out
+    # featurepickle = mongoengine.BinaryField() #a pickle of the feature, for
+    # rendering out
+    featurepickle_b64 = mongoengine.StringField() #a pickle of the feature, for rendering out
     _featurebuffer = ''
     #this is incredibly sloppy, really -- but we're going to get away with it
     #because features are essentially immutable
@@ -59,13 +57,19 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
     
     #these are feature properties which are not saved
     #note that plugins can inject into this
-    featuredata_mask = {
-        "image": True
-    }
+    featuredata_mask = set(['image'])
     
-    cleanse_mask = {
-        "mContour": True, "mContourAppx": True, "mConvexHull": True, "mHoleContour": True, 'mVertEdgeHist': True
-    }
+    cleanse_mask = set([
+        'mContour', 'mContourAppx', 'mConvexHull', 'mHoleContour',
+        'mVertEdgeHist'])
+
+    @property
+    def featurepickle(self):
+        return a2b_base64(self.featurepickle_b64)
+    
+    @featurepickle.setter
+    def featurepickle(self, value):
+        self.featurepickle_b64 = b2a_base64(value)
     
     #this converts a SimpleCV Feature object into a FrameFeature
     #clean this up a bit
@@ -73,15 +77,14 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         self._featurecache = data
         self.x = int(data.x)
         self.y = int(data.y)
-        self.points = scv_cleanse(deepcopy(data.points))
+        self.points = deepcopy(data.points)
 
-        self.area = scv_cleanse(data.area())
-        self.width = scv_cleanse(data.width())
-        self.height = scv_cleanse(data.height())
-        self.angle = scv_cleanse(data.angle())
+        self.area = data.area()
+        self.width = data.width()
+        self.height = data.height()
+        self.angle = data.angle()
 
-
-        self.meancolor = scv_cleanse(data.meanColor())
+        self.meancolor = data.meanColor()
         self.featuretype = data.__class__.__name__
         
         data.image = ''
@@ -96,16 +99,16 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
             datadict = data.__dict__
         
         for k in datadict:
-            if self.featuredata_mask.has_key(k) or hasattr(self, k) or k[0] == "_":
+            if k in self.featuredata_mask or hasattr(self, k) or k[0] == "_":
                 continue
                             
             value = getattr(data, k)
-            if self.cleanse_mask.has_key(k):
+            if k in self.cleanse_mask:
                 self.featuredata[k] = value
                 continue
             
             #here we need to handle all the cases for odd bits of data
-            self.featuredata[k] = scv_cleanse(value)
+            self.featuredata[k] = value
             
     @property
     def feature(self):

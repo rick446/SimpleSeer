@@ -55,7 +55,7 @@ module.exports = class ChartView extends View
     if @.model.chartInfo.xtype == 'datetime'
       d.data[0] = moment(d.data[0]*1000)
     if @.model.chartInfo.accumulate
-      _id = d.data[0]
+      _id = d.data[1]
     else
       _id =d.frame_id
     _point =
@@ -75,7 +75,7 @@ module.exports = class ChartView extends View
       application.charts.previewImage e.target.id
     ), 500
     for m in application.charts.models
-      if !m.attributes.chartInfo.ticker
+      if !m.attributes.chartInfo.ticker && m.view.chart
         m.view.chart.showTooltip e.target.id
 
   clickPoint: (e) =>
@@ -119,7 +119,7 @@ module.exports = class ChartView extends View
   drawChart: (data) =>
     renderData = @getRenderData()
     @.chart = @.chartInit renderData
-    if @.chart.realtime
+    if @.chart.realtime && application.socket
       application.socket.on "message:OLAP/#{renderData.name}/", @_update
       application.socket.emit 'subscribe', 'OLAP/'+renderData.name+'/'
     return
@@ -186,6 +186,7 @@ module.exports = class ChartView extends View
       if @.chart.stack
         ep = @.chart.stack.add p
     addPoint: (d) =>
+      #console.log d
       if @.chart.stack
         @.chart.stack.add d
       if @.chart.lib == 'highchart'
@@ -230,29 +231,15 @@ module.exports = class ChartView extends View
   _dhc: (renderData) =>
     _target = $('#'+renderData.id+' .graph-container')
     
-    if renderData.chartInfo.ticker
-      enableTooltip = false
     chart = new Highcharts.Chart
       chart:
         renderTo: _target[0]
         type: renderData.chartInfo.name.toLowerCase()
         height: renderData.chartInfo.height || '150'
-        animation: false
-      title:
-        text:null
-      credits:
-        enabled:
-          false
-      legend:
-        enabled: false
-      plotOptions:
-        series:
-          #stickyTracking: false
-          lineWidth:2
       series: [ @createSeries renderData ]
-      tooltip:
-        snap:100
-        crosshairs:true
+      #tooltip:
+      #  snap:100
+      #  crosshairs:true
         #enabled:false
       #  headerFormat:
       #    ''
@@ -270,14 +257,12 @@ module.exports = class ChartView extends View
             if this.axis.options.type == 'datetime'
               Highcharts.dateFormat('%m/%d<br>%I:%M:%S', this.value)
             else
-              m =  application.charts.get @.chart.id
+              m = application.charts.get @.chart.id
               if m.attributes.chartInfo.map
                 return m.attributes.chartInfo.map[this.value]
               else
                 return this.value
       yAxis:
-        title:
-          text: ''
         min:renderData.chartInfo.minval
         max:renderData.chartInfo.maxval
     chart.id = renderData.id

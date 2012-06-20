@@ -7,6 +7,7 @@ import threading
 from datetime import datetime
 
 from . import models as M
+from .Controls import Controls as Controls
 from .Session import Session
 from . import util
 
@@ -22,20 +23,6 @@ import realtime as realtime
 
 
 log = logging.getLogger(__name__)
-
-class DirectoryCamera(FrameSource):
-    filelist = []
-    counter = 0
-
-    def __init__(self, path):
-        self.filelist = glob(path)
-        self.counter = 0
-        
-    def getImage(self):
-        i = Image(self.filelist[self.counter])
-        self.counter = (self.counter + 1) % len(self.filelist)
-        return i
-
 
 class SimpleSeer(object):
     """
@@ -85,6 +72,7 @@ class SimpleSeer(object):
             else:
                 id = camerainfo['id']
                 del camerainfo['id']
+                del camerainfo['name']
                 if camerainfo.has_key('crop'):
                     del camerainfo['crop']
                 self.cameras.append(Camera(id, camerainfo))
@@ -100,14 +88,14 @@ class SimpleSeer(object):
         self.framecount = 0
         
         #log display started
-
-        #self.controls = Controls(self.config['arduino'])
-        
         self.initialized = True
+
+        if self.config.arduino:
+          self.controls = Controls(self.config.arduino, self)
+        
         
         super(SimpleSeer, self).__init__()
         self.daemon = True
-
         self.capture()
         #~ Inspection.inspect()
         #self.update()
@@ -167,7 +155,7 @@ class SimpleSeer(object):
         
         for i in imgs:
             img = i
-            frame = M.Frame(capturetime = datetime.now(), 
+            frame = M.Frame(capturetime = datetime.utcnow(), 
                 camera = self.cameras[-1])
             frame.image = img            
              
@@ -245,10 +233,10 @@ class SimpleSeer(object):
                     #this camera, or all cameras if no camera is specified
                     continue
                 
-                results = inspection.execute(frame.image)
-                frame.features.extend(results)
+                feats = inspection.execute(frame.image)
+                frame.features.extend(feats)
                 for m in inspection.measurements:
-                    frame.results += m.execute(frame, results)
+                    m.execute(frame, feats)
                     
             for watcher in self.watchers:
                 watcher.check(frame.results)
@@ -337,7 +325,7 @@ class SimpleSeer(object):
             while not self.halt:
                 timer_start = time.time()
                 
-                if iteration % 1000 == 0: gc.collect()
+                if iteration % 100 == 0: gc.collect()
                 iteration += 1
                 
                 self.capture()

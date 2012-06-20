@@ -24,7 +24,7 @@ meas = Measurement( name="center",
 
 meas.save()
 
-
+#Inspection(name="derp7",method="keypointTemplate",parameters={"template":"/home/kscottz/SimpleSeer/SimpleSeer/plugins/KeypointTemplate/template.png"}).save()
 """
 
 class KeypointTemplate(base.InspectionPlugin):
@@ -78,6 +78,12 @@ class KeypointTemplate(base.InspectionPlugin):
     if fs is not None:
       fs.draw()
       for f in fs: # do the conversion from SCV featureset to SimpleSeer featureset
+        f._homography = None
+        f._template = None
+        f._avgColor = None
+        #print f._minRect
+        #print type(f._minRect)
+        f.contour = [f._minRect[0],f._minRect[1],f._minRect[2],f._minRect[3]]
         ff = M.FrameFeature()
         ff.setFeature(f)
         retVal.append(ff)

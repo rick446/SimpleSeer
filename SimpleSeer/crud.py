@@ -45,14 +45,10 @@ def register(app):
 
     app.register_blueprint(bp)
 
-
-
-
-
-
 class ModelHandler(object):
 
-    def __init__(self, cls, schema, name, route, actions = ["list", "add", "update", "delete", "get"]):
+    def __init__(self, cls, schema, name, route,
+                 actions = ("list", "add", "update", "delete", "get")):
         self._cls = cls
         self.schema = schema()
         self.name = name

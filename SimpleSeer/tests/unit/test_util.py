@@ -1,3 +1,4 @@
+import time
 import unittest
 
 import mock
@@ -64,3 +65,17 @@ class TestGetSeer(unittest.TestCase):
         cls.assert_called_with()
         assert result is cls.return_value
 
+class TestClock(unittest.TestCase):
+
+    def test_clock(self):
+        c = util.Clock(100)
+        start = time.time()
+        a = None
+        for x in range(20):
+            c.tick()
+            b = time.time()
+            if a is not None:
+                self.assertAlmostEqual(b-a, 0.01, delta=0.002)
+            a = b
+        elapsed = time.time() - start
+        self.assertAlmostEqual(elapsed, 0.2, delta=0.01)

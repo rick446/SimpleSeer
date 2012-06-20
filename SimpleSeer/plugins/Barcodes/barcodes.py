@@ -17,7 +17,7 @@ from SimpleSeer import util
 from SimpleSeer import models as M
 from SimpleSeer.plugins import base
 
-class Barcode(base.InspectionPlugin):
+class Barcodes(base.InspectionPlugin):
 
   def __call__(self, image):
     params = util.utf8convert(self.inspection.parameters)
