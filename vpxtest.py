@@ -1,62 +1,71 @@
-import struct
-import PIL
-import vpx
-import pyvpx
-import gevent.monkey
+import time
 
-from SimpleCV import Camera, Image, ColorSpace
+import vpx
+import numpy as np
+from SimpleCV import Camera
 
 from SimpleSeer.util import Clock
+from SimpleSeer import models as M
 
-RATE=20.0
+RATE=24.0
+NUM_FRAMES=24
 
 def main():
-    test = Test()
-    gevent.monkey.patch_all()
-    camera = Camera(0, {})
+    camera = Camera(0, dict(width=640, height=480))
     clock = Clock(RATE)
 
-    stream = test.encode(camera, clock)
-    saved_stream = []
+    # capture frames as scv images
+    frames = list(capture_frames(camera, clock, NUM_FRAMES))
 
-    saved_stream = list(stream)
+    print '=== REALTIME ==='
+    decoded_frames = run_test(frames, vpx.VPX_DL_REALTIME)
+    playback(clock, decoded_frames)
+    print '=== GOOD QUALITY ==='
+    decoded_frames = run_test(frames, vpx.VPX_DL_GOOD_QUALITY)
+    playback(clock, decoded_frames)
+    print '=== BEST QUALITY ==='
+    decoded_frames = run_test(frames, vpx.VPX_DL_BEST_QUALITY)
+    playback(clock, decoded_frames)
 
-    with pyvpx.Decoder() as decoder:
-        for kind, packet in saved_stream:
-            try:
-                for img in decoder.decode(packet):
-                    img = img.convertTo(vpx.VPX_IMG_FMT_RGB24)
-                    pil_img = img.asPilImage()
-                    scv_img = Image(pil_img)
-                    scv_img.show()
-            except Exception, ex:
-                print 'Error', ex
+def capture_frames(camera, clock, num_frames):
+    for fno in xrange(num_frames):
+        clock.tick()
+        yield camera.getImage()
 
-class Test(object):
+def playback(clock, frames):
+    for img in frames:
+        clock.tick()
+        img.show()
 
-    def __init__(self):
-        self.stop = False
+def run_test(frames, deadline):
+    # Encode frames
+    start = time.time()
+    w,h = frames[0].width, frames[0].height
+    clip = M.Clip.encode(w,h,frames, deadline=deadline)
+    elapsed = time.time() - start
+    print '%d frames encoded in %fs, %.2f fps (avg) (%d kB)' % (
+        NUM_FRAMES, elapsed, NUM_FRAMES / elapsed,
+        sum(len(p) for p in clip.packets) / 2**10)
 
-    def encode(self, camera, clock):
-        img = camera.getImage()
-        w,h = img.width, img.height
+    # Decode frames
+    start = time.time()
+    decoded_frames = clip.images
+    elapsed = time.time() - start
+    print '%d frames decoded in %fs, %.2f fps (avg)' % (
+        NUM_FRAMES, elapsed, NUM_FRAMES / elapsed)
 
-        with pyvpx.Encoder(w,h) as encoder:
-            for f_no, scv_img in enumerate(
-                self.capture_iter(camera, clock)):
-                v8_img = pyvpx.Image(
-                    w, h, vpx.VPX_IMG_FMT_RGB24,
-                    data=scv_img.toString())
-                v8_img = v8_img.convertTo(vpx.VPX_IMG_FMT_I420)
-                for kind, packet in encoder.encode(v8_img, f_no):
-                    yield kind, str(packet)
-                if f_no == 10: break
-                print f_no
+    print 'MSE: %.2f' % mse_clip(frames, decoded_frames)
+    return decoded_frames
 
-    def capture_iter(self, camera, clock):
-        while not self.stop:
-            clock.tick()
-            yield camera.getImage()
+
+def mse_frame(org, new):
+    orga = np.fromstring(org.toString(), dtype=np.uint8)
+    newa = np.fromstring(new.toString(), dtype=np.uint8)
+    se = np.sum((orga-newa)**2)
+    return float(se) / len(orga)
+
+def mse_clip(org_frames, new_frames):
+    return sum(mse_frame(o,n) for o,n in zip(org_frames, new_frames)) / len(new_frames)
 
 if __name__ == '__main__':
     main()
