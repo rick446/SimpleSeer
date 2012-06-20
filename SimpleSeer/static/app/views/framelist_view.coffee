@@ -40,7 +40,8 @@ module.exports = class FramelistView extends View
     $('#filter_form input[name=time_to]').datetimepicker {timeFormat: 'hh:mm:ss'}
 
   loadMore: (evt)=>
-    if !@loading && $('#loading_message').length && ($(window).scrollTop() >= $(document).height() - $(window).height())
+    if !@loading && $('#loading_message').length && @collection.total_frames > 20\
+       && (@collection.total_frames - @collection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())
       $('body').on('mousewheel', @disableEvent)
       enable = =>
         $('body').off('mousewheel', @disableEvent)
@@ -57,8 +58,6 @@ module.exports = class FramelistView extends View
     if @$el.html() != ''
       next_page_size = @collection.total_frames - @collection.length
 
-      if next_page_size <= 0
-        $(window).off('scroll', @loadMore)
       @$el.find('#frame_holder').append(fv.render().el)
       @$el.find('#loading_message').fadeOut 1000, =>
         if next_page_size < 20
