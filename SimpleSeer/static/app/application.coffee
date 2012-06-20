@@ -25,6 +25,8 @@ Application =
       #alert 'disconnect'
     #@.socket.on 'message', (msg) ->
     #  console.log 'Got message', msg
+    @.socket.on "message:alert/", @_serveralert
+    @.socket.emit 'subscribe', 'alert/'
 
     @inspections = new Inspections()
     @inspections.fetch()
@@ -52,12 +54,27 @@ Application =
     # Freeze the object
     Object.freeze? this
 
+  _serveralert: (msg) ->
+    Application.alert(msg['data']['message'], msg['data']['severity'])
+
   alert: (message, alert_type) ->
+	
     _set = true
-    $(".alert_"+alert_type).each (e,v)->
-      if v.innerHTML == message
-        _set = false
-    if _set
-      $("#messages").append('<div class="alert alert_'+alert_type+'">'+message+'</div>')
+    if alert_type == 'clear'
+      $("#messages > .alert").hide 'slow', -> $("#messages").html('')
+    else if alert_type == "redirect"
+      Application.router.navigate(message, true)
+    else
+      $(".alert_"+alert_type).each (e,v)->
+        if v.innerHTML == message
+          _set = false
+      if _set
+        div = $("<div>",
+          style: "display: none",
+          class: "alert alert"+alert_type
+        ).html message
+        $("#messages").append div
+        div.show('normal')
+        
 
 module.exports = Application
