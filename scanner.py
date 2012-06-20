@@ -45,8 +45,24 @@ def scan(state):
     M.Alert.info("Scanning.... Please wait")
     id = '' 
     for frame in core.capture():
+        img = frame.image
+        numpdiff = (img - img.smooth()).getNumpy()
+        rows = numpdiff.sum(1)
+        rowsums = rows.sum(1)
+        thresh = np.mean(rowsums) + np.std(rowsums) * 3
+        stripe_rows = np.where(rowsums > thresh)
+        if len(stripe_rows[0]):
+        nump = img.getNumpy()
+        for index in stripe_rows[0]:
+            if index == 0 or index == img.width - 1:
+                continue
+            stripe = nump[index,:]
+            channels = np.where(stripe.min(0) > 10)
+            for channel in channels:
+                nump[index,:,channel] = np.round(np.mean([nump[index-1,:,channel], nump[index+1,:,channel]], 0))
+        frame.image = Image(nump)
+               
         process(frame)
-        frame.image = 
         frame.save()
         id = frame.id
     scan.setROI()
