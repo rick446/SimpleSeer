@@ -5,7 +5,7 @@ from cStringIO import StringIO
 import zmq
 import gevent
 import numpy as np
-from SimpleCV import Camera, VirtualCamera, Kinect
+from SimpleCV import Camera, VirtualCamera, Kinect, Scanner
 from SimpleCV import Image
 
 from . import models as M
@@ -49,6 +49,13 @@ class Core(object):
                     k._usedepth = 1
                 elif ctype == 'matrix':
                     k._usematrix = 1
+                cam = k
+            elif 'scanner' in cinfo:
+                cinfo.pop("scanner")
+                id = 0
+                if 'id' in cinfo:
+                    id = cinfo.pop('id')
+                cam = Scanner(id, cinfo)
             else:
                 id = cinfo.pop('id')
                 del cinfo['name']
