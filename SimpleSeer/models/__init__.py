@@ -6,6 +6,7 @@ from FrameSet import FrameSet, FrameSetSchema
 from OLAP import OLAP, OLAPSchema
 from Result import Result, ResultEmbed
 from Watcher import Watcher
+from Alert import Alert
 # from Statistic import Statistic
 
 models = ("Frame", "FrameFeature", "Inspection", "Measurement", "OLAP", "Result", "Watcher")
