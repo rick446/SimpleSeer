@@ -76,7 +76,7 @@ Handlebars.registerHelper 'epochdate', (epoch) ->
       n = "0" + n
     n.toString()
   
-  (d.getMonth() + 1) + "/" + zp(d.getDate()) + "/" + d.getYear()
+  (d.getMonth() + 1) + "/" + zp(d.getDate()) + "/" + (1900 + d.getYear())
   
 Handlebars.registerHelper 'featuresummary', (featureset) ->
   unless featureset?
