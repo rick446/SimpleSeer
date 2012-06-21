@@ -3,6 +3,7 @@ import gevent.queue
 from datetime import datetime
 
 import vpx
+import bson
 import numpy as np
 from SimpleCV import Camera as ScvCamera
 from SimpleCV import VirtualCamera, Kinect, FrameSource, Image
@@ -58,7 +59,9 @@ class VideoCamera(object):
                 image = self._cam.getImage()
                 frame = M.Frame(
                     capturetime=datetime.utcnow(),
-                    camera=self._cam.name)
+                    camera=self._cam.name,
+                    clip_id=bson.ObjectId() # fake, will replace
+                    )
                 frame.image = image
                 frames.put(frame)
                 while self._frame_queue.qsize() > self._queue_size:
