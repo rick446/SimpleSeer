@@ -48,7 +48,8 @@ class Result(SimpleDoc, mongoengine.Document):
     measurement_name = mongoengine.StringField()
     
     meta = {
-        'indexes': ["capturetime", ('camera', '-capturetime'), "frame", "inspection", "measurement"]
+        'indexes': ["capturetime", ('camera', '-capturetime'),
+                    "frame_id", "inspection_id", "measurement_id"]
     }
 
     
