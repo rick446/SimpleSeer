@@ -22,6 +22,7 @@ module.exports = class Router extends Backbone.Router
         application.homeView.postRender()
         
   framelist: ->
+    application.framelistView.reset()
     application.lastframes.fetch_filtered
       success: ->
         $('ul.nav').find(".active").removeClass("active")
