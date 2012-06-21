@@ -109,3 +109,56 @@ class OLAPFactory:
     
 
 
+class RealtimeOLAP():
+    
+    def realtime(self, res):
+        
+        olaps = OLAP.objects(__raw__={'$or': [ {'fieldInfo.type': 'measurement', 'fieldInfo.id': res.measurement}, 
+                                               {'fieldInfo.type':'inspection', 'fieldInfo.id': res.inspection}
+                                             ]}) 
+                                            
+        for o in olaps:
+            # If no statistics, just send result on its way
+            if not o.statsInfo:
+                data = self.resToData(o, res)
+                
+                if len(data) > 0:
+                    self.sendMessage(o, data)
+    
+    def resToData(self, o, res):
+        
+        # Have to enforce: filter
+        results = {}
+        
+        sinceok = (not 'since' in o.fieldInfo) or (res.capturetime > o.fieldInfo['since'])
+        beforeok = (not 'before' in o.fieldInfo) or (res.capturetime < o.fieldInfo['before'])
+        if not 'filter' in o.fieldInfo:
+            filterok = True
+        else:
+            key, val = o.fieldInfo['filter'].items()[0]
+            if res.__getattribute__(key) == val:
+                filterok = True
+            else:
+                filterOK = False
+        
+        if sinceok and beforeok and filterok:
+            mapFields = o.fieldInfo['map']
+        
+            # Use only the specified fields
+            for f in o.fieldInfo['fields']:
+                results[f] = res.__getattribute__(f) 
+                
+                # Map the values, if applicable
+                if (map in o.fieldInfo) and (o.fieldInfo['map']['field'] == f):
+                    results[f] = o.fieldInfo['map'].get(f, default = o.fieldInfo['map']['default']) 
+        
+        return results
+
+    def sendMessage(self, o, data):
+        if (len(data) > 0):
+            msgdata = [dict(
+                olap = str(o.name),
+                data = d) for d in data]
+            
+            olapName = 'OLAP/' + utf8convert(o.name) + '/'
+            ChannelManager().publish(olapName, dict(u='data', m=msgdata))
