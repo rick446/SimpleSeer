@@ -43,8 +43,7 @@ def sio(path):
 
 @route('/')
 def index():
-    return open(os.path.join(
-            os.path.dirname(__file__), 'static/public/index.html')).read()
+    return open(os.path.join(os.path.dirname(__file__), 'static/public/index.html')).read()
 
 @route('/plugins.js')
 def plugins():
@@ -54,7 +53,15 @@ def plugins():
         for name, plugin in plugins.items():
             for requirement, cs in plugin.coffeescript():
                 result.append('(function(plugin){')
-                result.append(coffeescript.compile(cs, True))
+                try:
+                    result.append(coffeescript.compile(cs, True))
+                except Exception, e:
+
+                    print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+                    print "COFFEE SCRIPT ERROR"
+                    print e
+                    print "~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"
+
                 result.append('}).call(require(%r), require("lib/plugin"));\n' % requirement)
     resp = make_response("\n".join(result), 200)
     resp.headers['Content-Type'] = "text/javascript"
@@ -140,7 +147,6 @@ def videofeed(width=0, camera=0):
         socket = ChannelManager().subscribe("capture.")
         
         while True:
-            capture_msg = socket.recv() #we actually ignore the message
             img = seer.get_image(**params)
             yield '--BOUNDARYSTRING\r\n'
             yield 'Content-Type: %s\r\n' % img['content_type']
@@ -149,7 +155,8 @@ def videofeed(width=0, camera=0):
             yield '\r\n'
             yield img['data']
             yield '\r\n'
-            gevent.sleep(0.01)
+            gevent.sleep(0)
+            socket.recv() #we actually ignore the message
     return Response(
         generate(),
         headers=[

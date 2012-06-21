@@ -1,8 +1,10 @@
+import time
 import collections
+from glob import glob
 from functools import wraps
 
 from flask import make_response
-from decorator import decorator
+from SimpleCV import FrameSource, Image
 
 from base import jsonencode
 import mongoengine
@@ -18,6 +20,41 @@ class LazyProperty(object):
         if obj is None: return None
         result = obj.__dict__[self.__name__] = self._func(obj)
         return result
+
+class DirectoryCamera(FrameSource):
+    filelist = []
+    counter = 0
+
+    def __init__(self, path):
+        self.filelist = glob(path)
+        self.counter = 0
+
+    def getImage(self):
+        i = Image(self.filelist[self.counter])
+        self.counter = (self.counter + 1) % len(self.filelist)
+        return i
+
+
+class Clock(object):
+    '''Simple class that allows framerate control'''
+
+    def __init__(self, rate_in_hz, sleep=None):
+        if sleep is None: sleep = time.sleep
+        self.period = 1.0 / rate_in_hz
+        self.ts = time.time()
+        self.sleep = sleep
+
+    def tick(self):
+        '''Call at the top of your timed loop to wait until the clock
+        ticks. If a negative wait is called for, don't wait at all.
+        '''
+        now = time.time()
+        remaining = self.ts - now
+        if remaining > 0:
+            self.sleep(remaining)
+            self.ts = self.ts + self.period
+        else:
+            self.ts = now + self.period
 
 def jsonify(f):
     """

@@ -5,6 +5,7 @@ import time
 
 import models as M
 import gc
+import bson
 import realtime as realtime
 
 
@@ -71,7 +72,8 @@ class ControlWatcher(threading.Thread):
             ss.inspect()
             ss.check()
 
-            r = ss.results[-1][0] #NEED TO CHANGE THIS
+            r = ss.results[-1][0] #NEED TO CHANGE THIS IF WE ADD NEW RESULTS
+            f = ss.lastframes[-1][0]
 
             if len(r):
               
@@ -81,6 +83,36 @@ class ControlWatcher(threading.Thread):
                 self.control.state = 'good'
                 self.control.servo_good()
                 self.control.state = "start"
+                td = (datetime.datetime.utcnow() - self.control.starttime)
+                timesince = float(td.seconds) + td.microseconds / 1000000.0
+                
+                
+                r2 = M.ResultEmbed(
+                  result_id = bson.ObjectId(),
+                  measurement_id = self.control.deliveredcolor_measurement.id,
+                  measurement_name = self.control.deliveredcolor_measurement.name,
+                  inspection_id = self.control.region_inspection.id,
+                  inspection_name = self.control.region_inspection.name,
+                  numeric = None,
+                  string = str(self.control.matchcolor)
+                )
+                
+                
+                
+                r = M.ResultEmbed(
+                  result_id = bson.ObjectId(),
+                  measurement_id = self.control.timesince_measurement.id,
+                  measurement_name = self.control.timesince_measurement.name,
+                  inspection_id = self.control.region_inspection.id,
+                  inspection_name = self.control.region_inspection.name,
+                  numeric = timesince,
+                  string = str(timesince)
+                )
+                from util import jsonencode
+                print jsonencode([r,r2])
+                f.results.extend([r,r2])
+                
+                
               elif (r[0].string == "purple"):
                 self.control.state = 'notgood'
                 self.control.servo_bad() 
@@ -90,12 +122,13 @@ class ControlWatcher(threading.Thread):
 
             else:
                 since = (datetime.datetime.utcnow() - self.control.inspecttime).seconds
-                if since > 2:
+                if since > .5:
                    self.control.state = 'notgood'
                    self.control.servo_bad()
                    self.control.servo_mix()
                 
-              
+            f.save(safe = False)
+  
             
           elif self.control.state == "notgood":
               self.control.state = 'getmarble'
@@ -120,7 +153,7 @@ class Controls(object):
 
     #servo setup
     fwheel = None
-    fwheel_pos1 = 170
+    fwheel_pos1 = 165
     fwheel_pos2 = 115
     fwheel_pos3 = 51
     fwheel_pos4 = 25
@@ -185,6 +218,10 @@ class Controls(object):
 
     def servo_good(self):
         self.fwheel.write(self.fwheel_pos5)
+        time.sleep(0.1)
+        self.fwheel.write(self.fwheel_pos5+10)
+        time.sleep(0.05)
+        self.fwheel.write(self.fwheel_pos5)
         self.rwheel.write(self.rwheel_pos3)
         time.sleep(self.SLEEPTIME)
 
@@ -192,7 +229,7 @@ class Controls(object):
         self.awheel.write(self.awheel_right)
         time.sleep(self.ROTATE_TIME)
         self.awheel.write(self.awheel_left)
-        time.sleep(self.ROTATE_TIME)
+        time.sleep(self.ROTATE_TIME * 3)
         self.awheel.write(self.awheel_stop)
       
 
@@ -221,7 +258,10 @@ class Controls(object):
           ControlObject(13, self, [self.fire_green])
        ]
 
-       self.colormatch_measurement = M.Measurement.objects(method="closestcolor")[0]
+       self.colormatch_measurement = M.Measurement.objects(method="closestcolorml")[0]
+       self.timesince_measurement = M.Measurement.objects(method="timebetween_manual")[0]
+       self.deliveredcolor_measurement = M.Measurement.objects(method="closestcolor_manual")[0]
+       self.region_inspection = M.Inspection.objects[0]
        self.SS = SS
 
        if not "debug" in config:

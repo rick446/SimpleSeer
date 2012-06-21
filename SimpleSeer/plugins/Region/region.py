@@ -1,16 +1,14 @@
-from SimpleCV import *
+from SimpleCV import Blob, Image, Color
+import SimpleCV
 from SimpleSeer import util
 from SimpleSeer import models as M
-
 from SimpleSeer.plugins import base
 
-# right now this will act just like a blob the interface should be exactly the same  
-#class RegionFeature(SimpleCV.Blob):
-#
-#    def __init__(self, blob):
-#        self = blob
 
 #below are "core" inspection functions
+class BlobRegion(SimpleCV.Blob):
+    pass
+
 class Region(base.InspectionPlugin):
     # TODO: Have this support unit coordiates (i.e. use floating point numbers versus points)
     def __call__(self, image):
@@ -28,7 +26,11 @@ class Region(base.InspectionPlugin):
                 ff = M.FrameFeature()
                 if( fs is not None and len(fs) > 0 ):                    
                     #fs[-1].draw()
-                    ff.setFeature(fs[-1]) # a little hacky but I am sure that it works
+                    b = fs[-1]
+                    b.__class__ = BlobRegion                   
+                    c = b.meanColor()
+                    b.mColor = (int(c[0]),int(c[1]),int(c[2]))
+                    ff.setFeature(b) # a little hacky but I am sure that it works
                     retVal = [ff]
   
         elif( params.has_key('x') and  params.has_key('y') and params.has_key('r') ): # circle
@@ -46,8 +48,12 @@ class Region(base.InspectionPlugin):
                 fs = image.findBlobsFromMask(mask)
                 ff = M.FrameFeature()
                 if( fs is not None and len(fs) > 0 ):                    
-                    #fs[-1].draw()                   
-                    ff.setFeature(fs[-1])
+                    #fs[-1].draw()
+                    b = fs[-1]
+                    b.__class__ = BlobRegion                  
+                    c = b.meanColor()
+                    b.mColor = (int(c[0]),int(c[1]),int(c[2]))
+                    ff.setFeature(b)
                     retVal = [ff]
 
         elif( params.has_key('contour') ):
@@ -58,8 +64,12 @@ class Region(base.InspectionPlugin):
                 fs = image.findBlobsFromMask(mask)
                 ff = M.FrameFeature()
                 if( fs is not None and len(fs) > 0 ):                    
-                    #fs[-1].draw()                   
-                    ff.setFeature(fs[-1])
+                    #fs[-1].draw()
+                    b = fs[-1]
+                    b.__class__ = BlobRegion                   
+                    c = b.meanColor()
+                    b.mColor = (int(c[0]),int(c[1]),int(c[2])) 
+                    ff.setFeature(b)
                     retVal = [ff]
             
         if( params.has_key("saveFile") ):

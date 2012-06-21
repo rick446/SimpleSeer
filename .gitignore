@@ -7,3 +7,5 @@ default.cfg
 SimpleSeer/static/public/*
 SimpleSeer.egg-info/*
 
+.coverage
+*.profile

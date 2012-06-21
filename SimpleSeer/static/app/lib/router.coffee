@@ -3,13 +3,13 @@ application = require 'application'
 Frame = require "../models/frame"
 FrameDetailView = require 'views/framedetail_view'
 
-
-
 module.exports = class Router extends Backbone.Router
-  routes:
-    '': 'home'
-    'frames': 'framelist'
-    'frame/:id': 'frame'
+  routes: application.settings['ui_routes'] || {}
+
+  for route, name of application.settings['ui_navurls']
+    $('.nav').append '<li class="'+name.toLowerCase()+'"><a href="#'+route+'">'+name+'</a></li>'
+  if application.settings['ui_enablenotebook']
+    $('.nav').append '<li class="notebook"><a href=\'javascript: window.open(window.location.protocol + "//" + window.location.hostname + ":5050");\'>Develop</a></li>'
 
   home: ->
     application.charts.fetch
@@ -22,6 +22,7 @@ module.exports = class Router extends Backbone.Router
         application.homeView.postRender()
         
   framelist: ->
+    application.framelistView.reset()
     application.lastframes.fetch_filtered
       success: ->
         $('ul.nav').find(".active").removeClass("active")
