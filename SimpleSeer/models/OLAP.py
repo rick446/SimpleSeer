@@ -707,11 +707,11 @@ class RealtimeOLAP:
             match = False
             if (o.queryInfo['objType'] == 'measurement'):
                 m = Measurement.objects(name=o.queryInfo['objName'])
-                if m[0].id == res.measurement:
+                if m[0].id == res.measurement_id:
                     match = True
             else:
                 i = Inspection.objects(name=o.queryInfo['objName'])
-                if i[0].id == res.inspection:
+                if i[0].id == res.inspection_id:
                     match = True
                 
             
@@ -742,7 +742,12 @@ class RealtimeOLAP:
                                 rset['data'] = rset['data'][-1]
                                 rset['data'][1] += 1
                             else:
-                                rset['data'] = [res.capturetimeEpochMS, 1, res.inspection, res.frame, res.measurement, res.id]
+                                rset['data'] = [
+                                    res.capturetimeEpochMS, 1,
+                                    res.inspection_id,
+                                    res.frame_id,
+                                    res.measurement_id,
+                                    res.id]
                             
                             self.sendMessage(o, [rset['data']])
                             

@@ -124,14 +124,8 @@ class Frame(SimpleDoc, mongoengine.Document):
         #TODO, this is sloppy -- we should handle this with cascading saves
         #or some other mechanism
         for r in self.results:
-            result,created = Result.objects.get_or_create(auto_save=False, id=r.result_id)
-            result.capturetime = self.capturetime
-            result.camera = self.camera
-            result.frame = self.id
-            result.inspection = r.inspection_id
-            result.measurement = r.measurement_id
-            result.string = r.string
-            result.numeric = r.numeric
+            result, created = r.get_or_create_result()
+            result.frame_id = self.id
             result.save(*args, **kwargs)
         
     def serialize(self):

@@ -42,7 +42,7 @@ class Watcher(SimpleDoc, WithPlugins, mongoengine.Document):
         # Create a dict of lists of results keyed by measurement name
         result_dict = {}
         for r in results:
-            m = Measurement.objects.get(_id=r.measurement)
+            m = Measurement.objects.get(_id=r.measurement_id)
             lst = result_dict.setdefault(m.name, [])
             lst.append(r)
         user_namespace = dict(
