@@ -39,13 +39,13 @@ class TimeBetweenMeasurement(base.MeasurementPlugin):
         else:
             insp2 = insp #we test time between measurements from the same inspection
                     
-        results1 = M.Result.objects(inspection = insp2).order_by("-capturetime")
+        results1 = M.Result.objects(inspection_id = insp2).order_by("-capturetime")
         if not len(results1):
             return []
             
         r1 = results1[0]
         r2param = dict(
-          inspection = insp
+          inspection_id = insp
         )
         if not showneg or insp == insp2:
             r2param["capturetime__lt"] = r1.capturetime
@@ -59,7 +59,7 @@ class TimeBetweenMeasurement(base.MeasurementPlugin):
         maxtime = max(r2.capturetime, r1.capturetime)
         if self.measurement.id:
             #TODO, we can check the SS.results array as well
-            if len(M.Result.objects(measurement = self.measurement.id, capturetime__gte = maxtime)):
+            if len(M.Result.objects(measurement_id = self.measurement.id, capturetime__gte = maxtime)):
                 return [] 
         
         if r1.capturetime > r2.capturetime:
