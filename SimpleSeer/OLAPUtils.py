@@ -12,16 +12,17 @@ class OLAPFactory:
     def fromObject(self, obj):
         # Create an OLAP object from another query-able object
         
-        # Find the type of object
+        # Find the type of object and 
+        # get a result to do some guessing on the data types
         if type(obj) == Measurement:
             queryType = 'measurement'
+            r = Result.objects(measurement = obj.id).limit(1)[0]
         elif type(obj) == Inspection:
             queryType = 'inspection'
+            r = Result.objects(measurement = obj.id).limit(1)[0]
         else:
             log.warn('OLAP factory got unknown type %s' % str(type(obj)))
         
-        # Get a result to do some guessing on the data types
-        r = Result.objects(queryType = obj.id).limit(1)[0]
         
         # Setup the fields.  Begin by assuming always want capturetime and id's of measurement, inspection, frame
         fields = ['capturetime', 'measurement', 'inspection', 'frame']
@@ -59,7 +60,7 @@ class OLAPFactory:
         # If a queryID specified, base everything off that object
         # Otherwise, base off the first object of that type
         if o.queryId:
-            obj = objType.objects(queryId)
+            obj = objType.objects(id=o.queryId)
         else:
             obj = objType.objects[0]
             o.queryId = obj.id
