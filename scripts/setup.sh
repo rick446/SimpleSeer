@@ -10,7 +10,7 @@
 seer_install () {
   echo "[Installing Seer]"
   echo "installing required system libraries"
-  sudo apt-get install python-dev python-setuptools python-pip libzmq-dev nodejs npm build-essential python-gevent libevent-dev supervisor ipython-notebook
+  sudo apt-get install python-dev python-setuptools python-pip libzmq-dev nodejs npm build-essential python-gevent libevent-dev supervisor ipython-notebook swig libvpx-dev  
   echo "installing brunch"
   sudo npm install -g brunch
   echo "installing PIP requirements"
