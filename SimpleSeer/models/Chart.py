@@ -31,7 +31,7 @@ log = logging.getLogger(__name__)
 class ChartSchema(fes.Schema):
     name = fev.UnicodeString()
     olap = fev.UnicodeString()
-    style = fev.OneOf(['line', 'bar', 'pie', 'spline', 'area', 'areaspline','column','scatter'], if_missing='line')            
+    style = fev.UnicodeString()            
     color = fev.UnicodeString(if_missing='blue')                  
     colormap = V.JSON(if_missing={})
     labelmap = V.JSON(if_missing={})
