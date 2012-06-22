@@ -118,8 +118,8 @@ class RealtimeOLAP():
     
     def realtime(self, res):
         
-        olaps = OLAP.objects(__raw__={'$or': [ {'queryType': 'measurement', 'queryId': res.measurement}, 
-                                               {'queryType':'inspection', 'queryId': res.inspection}
+        olaps = OLAP.objects(__raw__={'$or': [ {'queryType': 'measurement_id', 'queryId': res.measurement}, 
+                                               {'queryType':'inspection_id', 'queryId': res.inspection}
                                              ]}) 
                                             
         for o in olaps:
@@ -135,27 +135,26 @@ class RealtimeOLAP():
         # Have to enforce: filter
         results = {}
         
-        sinceok = (not 'since' in o.fieldInfo) or (res.capturetime > o.fieldInfo['since'])
-        beforeok = (not 'before' in o.fieldInfo) or (res.capturetime < o.fieldInfo['before'])
-        if not 'filter' in o.fieldInfo:
+        sinceok = (not o.since) or (res.capturetime > o.since)
+        beforeok = (not o.before) or (res.capturetime < o.before)
+        if not o.customFilter:
             filterok = True
         else:
-            key, val = o.fieldInfo['filter'].items()[0]
+            key, val = o.customFilter.items()[0]
             if res.__getattribute__(key) == val:
                 filterok = True
             else:
                 filterOK = False
         
         if sinceok and beforeok and filterok:
-            mapFields = o.fieldInfo['map']
-        
+            
             # Use only the specified fields
-            for f in o.fieldInfo['fields']:
+            for f in o.fields:
                 results[f] = res.__getattribute__(f) 
                 
                 # Map the values, if applicable
-                if (map in o.fieldInfo) and (o.fieldInfo['map']['field'] == f):
-                    results[f] = o.fieldInfo['map'].get(f, default = o.fieldInfo['map']['default']) 
+                if (o.valueMap) and (o.valueMap['field'] == f):
+                    results[f] = o.valueMap.get(f, default = o.valueMap['default']) 
         
         return results
 

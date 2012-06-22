@@ -11,6 +11,7 @@ import formencode as fe
 
 from .base import SimpleDoc
 from .FrameFeature import FrameFeature
+from .Clip import Clip
 from .Result import Result, ResultEmbed
 from .. import realtime
 from ..util import LazyProperty
@@ -43,6 +44,8 @@ class Frame(SimpleDoc, mongoengine.Document):
     
     height = mongoengine.IntField(default = 0)
     width = mongoengine.IntField(default = 0)
+    clip_id = mongoengine.ObjectIdField(default=None)
+    clip_frame = mongoengine.IntField(default=None)
     imgfile = mongoengine.FileField()
     layerfile = mongoengine.FileField()
     thumbnail_file = mongoengine.FileField()
@@ -65,10 +68,16 @@ class Frame(SimpleDoc, mongoengine.Document):
             thumbnail_img = Image(pil.open(StringIO(self.thumbnail_file.read())))
         return thumbnail_img
 
+    @LazyProperty
+    def clip(self):
+        return Clip.objects.get(id=self.clip_id)
+
     @property
     def image(self):
         if self._imgcache != '':
             return self._imgcache
+        if self.clip is not None:
+            return self.clip.images[self.clip_frame]
 
         self.imgfile.get().seek(0,0) #hackity hack, make sure the FP is at 0
         if self.imgfile != None:
@@ -103,9 +112,10 @@ class Frame(SimpleDoc, mongoengine.Document):
         if self._imgcache != '':
             s = StringIO()
             img = self._imgcache
-            img.getPIL().save(s, "jpeg", quality = 100)
-            self.imgfile.delete()
-            self.imgfile.put(s.getvalue(), content_type = "image/jpg")
+            if self.clip_id is None:
+                img.getPIL().save(s, "jpeg", quality = 100)
+                self.imgfile.delete()
+                self.imgfile.put(s.getvalue(), content_type = "image/jpg")
           
             if len(img._mLayers):
                 if len(img._mLayers) > 1:
@@ -124,14 +134,8 @@ class Frame(SimpleDoc, mongoengine.Document):
         #TODO, this is sloppy -- we should handle this with cascading saves
         #or some other mechanism
         for r in self.results:
-            result,created = Result.objects.get_or_create(auto_save=False, id=r.result_id)
-            result.capturetime = self.capturetime
-            result.camera = self.camera
-            result.frame = self.id
-            result.inspection = r.inspection_id
-            result.measurement = r.measurement_id
-            result.string = r.string
-            result.numeric = r.numeric
+            result, created = r.get_or_create_result()
+            result.frame_id = self.id
             result.save(*args, **kwargs)
         
     def serialize(self):

@@ -67,7 +67,7 @@ def main():
     args.func(session)
 
 def run_core_states(session):
-    _setup_command(session, use_gevent=True, remote_seer=True)
+    _setup_command(session, use_gevent=True, remote_seer=False)
     from SimpleSeer.states import Core
     import Pyro4
 

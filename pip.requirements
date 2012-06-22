@@ -5,12 +5,14 @@ Flask-REST
 jsonpickle
 ujson
 anyjson
+guppy
 FormEncode
 pyzmq
 gevent
 gevent-zeromq
 gevent-websocket
 gevent-socketio
+pyvpx
 pyro4
 cython
 coffeescript

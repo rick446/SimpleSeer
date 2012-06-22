@@ -8,6 +8,8 @@ from Chart import Chart, ChartSchema
 from Result import Result, ResultEmbed
 from Watcher import Watcher
 from Alert import Alert
+from Clip import Clip
 # from Statistic import Statistic
 
-models = ("Frame", "FrameFeature", "Inspection", "Measurement", "OLAP", "Chart", "Result", "Watcher")
+models = ("Frame", "FrameFeature", "Inspection", "Measurement", "OLAP", "Chart", "Result", "Watcher", 'Clip')
+

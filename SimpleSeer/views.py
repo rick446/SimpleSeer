@@ -129,8 +129,8 @@ def imgfile(frame_id):
     if 'download' in params:
         resp.headers['Content-disposition'] = 'attachment; filename="%s-%s.jpg"' % \
             (frame.camera.replace(' ','_'), frame.capturetime.strftime("%Y-%m-%d_%H_%M_%S"))
-    return resp    
-    
+    return resp
+
 @route('/videofeed-width<int:width>-camera<int:camera>.mjpeg', methods=['GET'])
 def videofeed(width=0, camera=0):    
     params = {
@@ -272,7 +272,7 @@ def inspection_remove():
     M.Watcher.objects.delete() #todo narrow by measurement
 
     M.Measurement.objects(inspection = bson.ObjectId(params["id"])).delete()
-    M.Result.objects(inspection = bson.ObjectId(params["id"])).delete()
+    M.Result.objects(inspection_id = bson.ObjectId(params["id"])).delete()
     seer.reloadInspections()
     seer.inspect()
     #util.get_seer().update()
@@ -338,7 +338,7 @@ def measurement_remove():
     try:
         params = request.values.to_dict()
         M.Measurement.objects(id = bson.ObjectId(params["id"])).delete()
-        M.Result.objects(measurement = bson.ObjectId(params["id"])).delete()
+        M.Result.objects(measurement_id = bson.ObjectId(params["id"])).delete()
         M.Watcher.objects.delete() #todo narrow by measurement
 
         util.get_seer().reloadInspections()

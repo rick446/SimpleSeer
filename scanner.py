@@ -1,6 +1,7 @@
 import gc
-
+import numpy as np
 import SimpleSeer.models as M
+from SimpleCV import Image
 
 
 @core.state('start')
@@ -14,7 +15,7 @@ def waitforbuttons(state):
     while True:
         core.tick()
         scan = core.cameras[0]
-        if scan.device.email or scan.device.file:
+        if scan.device.email or scan.device.file or scan.device.copy or scan.device.dev.get_option(30):
             return state.core.state('scan')
 
 @core.state('scan')
@@ -34,8 +35,15 @@ def scan(state):
       M.Alert.error("No part found, please reseat part close lid and retry")
       return core.state('waitforbuttons')
 
-    topleft = blobs[-1].mBoundingBox[0:2]
-    bottomright = (topleft[0] + blobs[-1].mBoundingBox[2], topleft[1] + blobs[-1].mBoundingBox[3])
+    topleft = list(blobs[-1].mBoundingBox[0:2])
+    bottomright = [topleft[0] + blobs[-1].mBoundingBox[2], topleft[1] + blobs[-1].mBoundingBox[3]]
+
+    topleft[0] = topleft[0] - 5
+    topleft[1] = topleft[1] - 5
+    
+    bottomright[0] = bottomright[0] + 5
+    bottomright[1] = bottomright[1] + 5  #5px margin
+
 
     scan.setROI(topleft, bottomright)
     scan.setProperty("resolution", 1200)
@@ -52,14 +60,14 @@ def scan(state):
         thresh = np.mean(rowsums) + np.std(rowsums) * 3
         stripe_rows = np.where(rowsums > thresh)
         if len(stripe_rows[0]):
-        nump = img.getNumpy()
-        for index in stripe_rows[0]:
-            if index == 0 or index == img.width - 1:
-                continue
-            stripe = nump[index,:]
-            channels = np.where(stripe.min(0) > 10)
-            for channel in channels:
-                nump[index,:,channel] = np.round(np.mean([nump[index-1,:,channel], nump[index+1,:,channel]], 0))
+            nump = img.getNumpy()
+            for index in stripe_rows[0]:
+                if index == 0 or index == img.width - 1:
+                    continue
+                stripe = nump[index,:]
+                channels = np.where(stripe.min(0) > 10)
+                for channel in channels:
+                    nump[index,:,channel] = np.round(np.mean([nump[index-1,:,channel], nump[index+1,:,channel]], 0))
         frame.image = Image(nump)
                
         process(frame)

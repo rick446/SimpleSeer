@@ -21,20 +21,6 @@ class LazyProperty(object):
         result = obj.__dict__[self.__name__] = self._func(obj)
         return result
 
-class DirectoryCamera(FrameSource):
-    filelist = []
-    counter = 0
-
-    def __init__(self, path):
-        self.filelist = glob(path)
-        self.counter = 0
-
-    def getImage(self):
-        i = Image(self.filelist[self.counter])
-        self.counter = (self.counter + 1) % len(self.filelist)
-        return i
-
-
 class Clock(object):
     '''Simple class that allows framerate control'''
 
@@ -87,11 +73,13 @@ def utf8convert(data):
         return data
 
 def get_seer():
-    from .SimpleSeer import SimpleSeer as SS
+    # from .SimpleSeer import SimpleSeer as SS
+    from .states import Core
     from . import service
-    if SS().disabled:  #check to see if we have seer
+    inst = Core.get()
+    if inst is None:
         return service.SeerProxy2()
-    return SS()
+    return inst
 
 def initialize_slave():
 	from .Session import Session

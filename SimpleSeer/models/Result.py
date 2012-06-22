@@ -18,6 +18,18 @@ class ResultEmbed(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
             self.inspection_name, self.measurement_name,
             self.numeric, self.string)
 
+    def get_or_create_result(self):
+        result, created =  Result.objects.get_or_create(
+            auto_save=False, id=self.result_id)
+        if created:
+            result.numeric = self.numeric
+            result.string = self.string
+            result.inspection_id=self.inspection_id
+            result.inspection_name = self.inspection_name
+            result.measurement_id = self.measurement_id
+            result.measurement_name = self.measurement_name
+        return result, created
+
 class Result(SimpleDoc, mongoengine.Document):
     """
     """
@@ -28,13 +40,16 @@ class Result(SimpleDoc, mongoengine.Document):
     capturetime = mongoengine.DateTimeField()
     camera = mongoengine.StringField()
 
-    inspection = mongoengine.ObjectIdField()
-    frame = mongoengine.ObjectIdField()
-    measurement = mongoengine.ObjectIdField()
+    frame_id = mongoengine.ObjectIdField()
+
+    inspection_id = mongoengine.ObjectIdField()
+    inspection_name = mongoengine.StringField()
+    measurement_id = mongoengine.ObjectIdField()
+    measurement_name = mongoengine.StringField()
     
     meta = {
-        'indexes': ["capturetime", ('camera', '-capturetime'), "frame", "inspection", "measurement", 
-                    ('measurement', '-capturetime'), ('inspection', '-capturetime')]
+        'indexes': ["capturetime", ('camera', '-capturetime'),
+                    "frame_id", "inspection_id", "measurement_id"]
     }
 
     
