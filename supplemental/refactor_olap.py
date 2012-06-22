@@ -15,7 +15,8 @@ from SimpleSeer.models.OLAP import OLAP
 from SimpleSeer.models.Chart import Chart
 from SimpleSeer.models.Inspection import Inspection
 from SimpleSeer.models.Measurement import Measurement 
- 
+
+# Note this cleans out all old results 
 Result.objects.delete()
 Inspection.objects.delete()
 Measurement.objects.delete()
