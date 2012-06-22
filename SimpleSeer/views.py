@@ -272,7 +272,7 @@ def inspection_remove():
     M.Watcher.objects.delete() #todo narrow by measurement
 
     M.Measurement.objects(inspection = bson.ObjectId(params["id"])).delete()
-    M.Result.objects(inspection = bson.ObjectId(params["id"])).delete()
+    M.Result.objects(inspection_id = bson.ObjectId(params["id"])).delete()
     seer.reloadInspections()
     seer.inspect()
     #util.get_seer().update()
@@ -338,7 +338,7 @@ def measurement_remove():
     try:
         params = request.values.to_dict()
         M.Measurement.objects(id = bson.ObjectId(params["id"])).delete()
-        M.Result.objects(measurement = bson.ObjectId(params["id"])).delete()
+        M.Result.objects(measurement_id = bson.ObjectId(params["id"])).delete()
         M.Watcher.objects.delete() #todo narrow by measurement
 
         util.get_seer().reloadInspections()
