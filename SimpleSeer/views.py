@@ -370,41 +370,27 @@ def settings():
     text = Session().get_config()
     return {"settings": text }
 
-@route('/olap/<olap_name>', methods=['GET'])
+@route('/web/<chart_name>', methods=['GET'])
 @util.jsonify
-def olap(olap_name):
-    o = M.OLAP.objects.get(name = olap_name)
+def chart(chart_name):
+    c = M.Chart.objects.get(name = chart_name)
     
-    return o.execute()
+    return c.createChart()
 
-@route('/olap/<olap_name>/since/<timestamp>', methods=['GET'])
+@route('/chart/<chart_name>/since/<timestamp>', methods=['GET'])
 @util.jsonify
-def olap_since(olap_name, timestamp):
-    o = M.OLAP.objects.get(name = olap_name)
+def chart_since(chart_name, timestamp):
+    c = M.Chart.objects.get(name = chart_name)
 
-    return o.execute(sincetime = int(float(timestamp)))
+    return c.createChart(sincetime = int(float(timestamp)))
 
-@route('/olap/<olap_name>/since/<sincetimestamp>/before/<beforetimestamp>', methods=['GET'])
+@route('/chart/<chart_name>/since/<sincetimestamp>/before/<beforetimestamp>', methods=['GET'])
 @util.jsonify
-def olap_since_before(olap_name, sincetimestamp, beforetimestamp):
-    o = M.OLAP.objects.get(name = olap_name)
+def chart_since_before(chart_name, sincetimestamp, beforetimestamp):
+    c = M.Chart.objects.get(name = chart_name)
 
-    return o.execute(sincetime = int(float(sincetimestamp)), beforetime = int(float(beforetimestamp)))
+    return c.createChart(sincetime = int(float(sincetimestamp)), beforetime = int(float(beforetimestamp)))
 
-
-@route('/olap/<olap_name>/since/<timestamp>/limit/<limit>', methods=['GET'])
-@util.jsonify
-def olap_since_limit(olap_name, timestamp, limit):
-    o = M.OLAP.objects.get(name = olap_name)
-
-    return o.execute(sincetime = int(timestamp), limitresults=int(limit))
-
-@route('/olap/<olap_name>/limit/<limit>', methods=['GET'])
-@util.jsonify
-def olap_limit(olap_name, limit):
-    o = M.OLAP.objects.get(name = olap_name)
-
-    return o.execute(limitresults=int(limit))
 
 
 @route('/start', methods=['GET', 'POST'])
