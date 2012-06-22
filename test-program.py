@@ -1,5 +1,5 @@
 import gc
-
+from SimpleSeer import models as M
 
 @core.state('start')
 def start(state):

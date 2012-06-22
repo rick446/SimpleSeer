@@ -57,17 +57,15 @@ class Result(SimpleDoc, mongoengine.Document):
         # Shortcut to return the capture time in epoch microseconds
         
         epochTime = calendar.timegm(self.capturetime.timetuple()) + self.capturetime.time().microsecond / 1000000.0
-        # Quick hack for jim: may change this:
-        # epochTime *= 1000
         return epochTime
 
     capturetimeEpochMS = property(capEpochMS)
 
     def save(self, *args, **kwargs):
         # Push notification to OLAP to decide whether to publish this update
-        from .OLAP import RealtimeOLAP
-        o = RealtimeOLAP()
-        o.realtime(self)
+        from SimpleSeer.OLAPUtils import RealtimeOLAP
+        ro = RealtimeOLAP()
+        ro.realtime(self)
         
         super(Result, self).save(*args, **kwargs)
 
