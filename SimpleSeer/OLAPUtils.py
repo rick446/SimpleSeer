@@ -7,6 +7,8 @@ from gevent import Greenlet, sleep
 from datetime import datetime, timedelta
 from time import mktime
 
+from .util import utf8convert
+from .realtime import ChannelManager
 
 import logging
 log = logging.getLogger(__name__)
@@ -118,8 +120,8 @@ class RealtimeOLAP():
     
     def realtime(self, res):
         
-        olaps = OLAP.objects(__raw__={'$or': [ {'queryType': 'measurement_id', 'queryId': res.measurement}, 
-                                               {'queryType':'inspection_id', 'queryId': res.inspection}
+        olaps = OLAP.objects(__raw__={'$or': [ {'queryType': 'measurement_id', 'queryId': res.measurement_id}, 
+                                               {'queryType':'inspection_id', 'queryId': res.inspection_id}
                                              ]}) 
                                             
         for o in olaps:

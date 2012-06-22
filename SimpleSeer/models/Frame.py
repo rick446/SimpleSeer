@@ -135,6 +135,7 @@ class Frame(SimpleDoc, mongoengine.Document):
         #or some other mechanism
         for r in self.results:
             result, created = r.get_or_create_result()
+            result.capturetime = self.capturetime
             result.frame_id = self.id
             result.save(*args, **kwargs)
         

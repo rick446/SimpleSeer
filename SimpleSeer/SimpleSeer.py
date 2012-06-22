@@ -17,7 +17,6 @@ from .base import pil
 import numpy as np
 from glob import glob
 from cStringIO import StringIO
-from .OLAPUtils import RealtimeOLAP
 import realtime as realtime
 
 

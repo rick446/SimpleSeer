@@ -370,7 +370,7 @@ def settings():
     text = Session().get_config()
     return {"settings": text }
 
-@route('/web/<chart_name>', methods=['GET'])
+@route('/chart/<chart_name>', methods=['GET'])
 @util.jsonify
 def chart(chart_name):
     c = M.Chart.objects.get(name = chart_name)
