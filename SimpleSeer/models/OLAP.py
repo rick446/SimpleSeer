@@ -53,14 +53,14 @@ class OLAP(SimpleDoc, mongoengine.Document):
     name = mongoengine.StringField()
     maxLen = mongoengine.IntField()
     queryType = mongoengine.StringField()
-    queryId = mongoengine.StringField()
+    queryId = mongoengine.ObjectIdField()
     fields = mongoengine.ListField()
     groupTime = mongoengine.StringField()
     valueMap = mongoengine.DictField()
     since = mongoengine.IntField()
     before = mongoengine.IntField()
     customFilter = mongoengine.DictField()
-    statsInfo = mongoengine.DictField()
+    statsInfo = mongoengine.ListField()
     
     meta = {
         'indexes': ['name']
@@ -145,7 +145,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
         captureTime = {}
         if self.since:
             sinceTime = datetime.fromtimestamp(self.since)
-            captureTime['$gt'] = sinceTime
+            captureTime['$gte'] = sinceTime
         
         if self.before:
             beforeTime = datetime.fromtimestamp(self.before)
