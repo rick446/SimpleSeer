@@ -12,6 +12,7 @@ gevent
 gevent-zeromq
 gevent-websocket
 gevent-socketio
+pyvpx
 pyro4
 cython
 coffeescript

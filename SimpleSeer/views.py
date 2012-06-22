@@ -129,8 +129,8 @@ def imgfile(frame_id):
     if 'download' in params:
         resp.headers['Content-disposition'] = 'attachment; filename="%s-%s.jpg"' % \
             (frame.camera.replace(' ','_'), frame.capturetime.strftime("%Y-%m-%d_%H_%M_%S"))
-    return resp    
-    
+    return resp
+
 @route('/videofeed-width<int:width>-camera<int:camera>.mjpeg', methods=['GET'])
 def videofeed(width=0, camera=0):    
     params = {

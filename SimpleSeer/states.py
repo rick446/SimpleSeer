@@ -1,16 +1,14 @@
-from datetime import datetime
+from collections import deque
 from Queue import Queue, Empty
 from cStringIO import StringIO
 
 import zmq
 import gevent
-import numpy as np
-from SimpleCV import Camera, VirtualCamera, Kinect, Scanner
-from SimpleCV import Image
 
 from . import models as M
 from .base import jsondecode, jsonencode
-from .util import Clock, DirectoryCamera
+from .util import Clock
+from .camera import StillCamera, VideoCamera
 
 class Core(object):
     '''Implements the core functionality of SimpleSeer
@@ -23,50 +21,40 @@ class Core(object):
         inspection=M.Inspection,
         measurement=M.Measurement,
         watcher=M.Watcher)
+    _instance=None
 
     class Transition(Exception):
         def __init__(self, state):
             self.state = state
 
     def __init__(self, config):
+        if Core._instance is not None:
+            assert RuntimeError, 'Only one state machine allowed currently'
+        Core._instance = self
         self._states = {}
         self._cur_state = None
         self._events = Queue()
         self._clock = Clock(1.0, sleep=gevent.sleep)
         self._config = config
         self.cameras = []
-        for camera in config.cameras:
-            cinfo = camera.copy()
-            if 'virtual' in cinfo:
-                cam = VirtualCamera(cinfo['source'], cinfo['virtual'])
-            elif 'directory' in cinfo:
-                cam = DirectoryCamera(cinfo['directory'])
-            elif 'kinect' in cinfo:
-                ctype = cinfo['kinect']
-                k = Kinect()
-                k._usedepth = k._usematrix = 0
-                if ctype == 'depth':
-                    k._usedepth = 1
-                elif ctype == 'matrix':
-                    k._usematrix = 1
-                cam = k
-            elif 'scanner' in cinfo:
-                cinfo.pop("scanner")
-                id = 0
-                if 'id' in cinfo:
-                    id = cinfo.pop('id')
-                cam = Scanner(id, cinfo)
-            else:
-                id = cinfo.pop('id')
-                del cinfo['name']
-                cinfo.pop('crop', None)
-                cam = Camera(id, cinfo)
+        self.video_cameras = []
+        for cinfo in config.cameras:
+            cam = StillCamera(**cinfo)
+            video = cinfo.get('video')
+            if video is not None:
+                cam = VideoCamera(cam, 1.0, **video)
+                cam.start()
+                self.video_cameras.append(cam)
             self.cameras.append(cam)
 
         self.loadPlugins()
-        self.lastframes = []
+        self.lastframes = deque()
         self.framecount = 0
         self.reset()
+
+    @classmethod
+    def get(cls):
+        return cls._instance
 
     def reloadInspections(self):
         i = list(M.Inspection.objects)
@@ -132,27 +120,11 @@ class Core(object):
         currentframes = []
         self.framecount += 1
 
-        for i, cam in enumerate(self.cameras):
-            cinfo = self._config.cameras[i]
-            img = ""
-            if isinstance(cam, Kinect):
-                if cam._usedepth == 1:
-                    img = cam.getDepth()
-                elif cam._usematrix == 1:
-                    mat = cam.getDepthMatrix().transpose()
-                    img = Image(np.clip(mat - np.min(mat), 0, 255))
-                else:
-                    img = cam.getImage()
-            else:
-                img = cam.getImage()
-            if 'crop' in cinfo:
-                img = img.crop(*cinfo['crop'])
-            frame = M.Frame(capturetime=datetime.utcnow(), camera=cinfo['name'])
-            frame.image = img
-            currentframes.append(frame)
+        currentframes = [
+            cam.getFrame() for cam in self.cameras ]
 
         while len(self.lastframes) >= self._config.max_frames:
-            self.lastframes.pop(0)
+            self.lastframes.popleft()
 
         self.lastframes.append(currentframes)
         self.publish('capture.', { "capture": 1})
@@ -209,6 +181,8 @@ class Core(object):
 
     def set_rate(self, rate_in_hz):
         self._clock = Clock(rate_in_hz, sleep=gevent.sleep)
+        for cam in self.video_cameras:
+            cam.set_rate(rate_in_hz)
 
     def tick(self):
         self._handle_events()
