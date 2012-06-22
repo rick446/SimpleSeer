@@ -168,6 +168,7 @@ def run_notebook(session):
     app.start()
 
 def _setup_command(session, use_gevent, remote_seer):
+    from SimpleSeer import models as M
     if use_gevent:
         # Monkey patch socket routines
         from gevent import monkey
