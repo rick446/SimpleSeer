@@ -148,8 +148,8 @@ def thumbnail(frame_id):
             frame.save()
         else:
             s = StringIO()
-            t.save(s, "jpeg", quality = 25)
-            resp = make_response(s.get_value(), 200)
+            t.save(s, "jpeg", quality = 75)
+            resp = make_response(s.getvalue(), 200)
             resp.headers['Content-Type'] = "image/jpeg"
             return resp
     
