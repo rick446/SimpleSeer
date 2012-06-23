@@ -12,6 +12,6 @@ module.exports = class FramelistFrameView extends View
     capturetime: new Date parseInt @frame.get('capturetime')+'000'
     camera: @frame.get('camera')
     imgfile: @frame.get('imgfile')
-    thumbnail: @frame.get('thumbnail')
+    thumbnail_file: @frame.get('thumbnail_file')
     id: @frame.get('id')
     features: @frame.get('features')
