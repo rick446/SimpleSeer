@@ -130,6 +130,23 @@ def imgfile(frame_id):
         resp.headers['Content-disposition'] = 'attachment; filename="%s-%s.jpg"' % \
             (frame.camera.replace(' ','_'), frame.capturetime.strftime("%Y-%m-%d_%H_%M_%S"))
     return resp    
+
+#TODO, abstract this for layers and thumbnails        
+@route('/grid/thumbnail/<frame_id>', methods=['GET'])
+def thumbnail(frame_id):
+    params = request.values.to_dict()
+    frame = M.Frame.objects(id = bson.ObjectId(frame_id))
+    if not frame or not frame[0].thumbnail:
+        return "Image not found", 404
+    frame = frame[0]
+    resp = make_response(frame.thumbnail.read(), 200)
+    resp.headers['Content-Type'] = frame.thumbnail.content_type
+    if 'download' in params:
+        resp.headers['Content-disposition'] = 'attachment; filename="%s-%s.jpg"' % \
+            (frame.camera.replace(' ','_'), frame.capturetime.strftime("%Y-%m-%d_%H_%M_%S"))
+    return resp    
+
+
     
 @route('/videofeed-width<int:width>-camera<int:camera>.mjpeg', methods=['GET'])
 def videofeed(width=0, camera=0):    
