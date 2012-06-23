@@ -4,6 +4,7 @@ import mongoengine
 
 from SimpleSeer.base import Image, pil, pygame
 from SimpleSeer import util
+from SimpleSeer.Session import Session
 
 from formencode import validators as fev
 from formencode import schema as fes
@@ -60,7 +61,7 @@ class Frame(SimpleDoc, mongoengine.Document):
         if self.thumbnail_file is None or self.thumbnail_file.grid_id is None:
             img = self.image
             thumbnail_img = img.scale(140.0 / img.height)
-            if self.id and not is_slave in Session().mongo:
+            if self.id and not "is_slave" in Session().mongo:
                 img_data = StringIO()
                 thumbnail_img.save(img_data, "jpeg", quality = 25)
                 self.thumbnail_file.put(img_data.getvalue(), content_type='image/jpeg')
