@@ -78,7 +78,7 @@ class Frame(SimpleDoc, mongoengine.Document):
     def image(self):
         if self._imgcache != '':
             return self._imgcache
-        if self.clip is not None:
+        if self.clip_id is not None:
             return self.clip.images[self.clip_frame]
 
         self.imgfile.get().seek(0,0) #hackity hack, make sure the FP is at 0
