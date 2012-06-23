@@ -60,9 +60,11 @@ class Frame(SimpleDoc, mongoengine.Document):
         if self.thumbnail_file.grid_id is None:
             img = self.image
             thumbnail_img = img.scale(140.0 / img.height)
-            img_data = StringIO()
-            thumbnail_img.save(img_data, "jpeg", quality = 25)
-            self.thumbnail_file.put(img_data.getvalue(), content_type='image/jpeg')
+            if self.id and not is_slave in Session().mongo:
+			    img_data = StringIO()
+                thumbnail_img.save(img_data, "jpeg", quality = 25)
+                self.thumbnail_file.put(img_data.getvalue(), content_type='image/jpeg')
+                self.save()
         else:
             self.thumbnail_file.get().seek(0,0)
             thumbnail_img = Image(pil.open(StringIO(self.thumbnail_file.read())))
