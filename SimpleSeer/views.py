@@ -133,7 +133,7 @@ def imgfile(frame_id):
     return resp    
 
 #TODO, abstract this for layers and thumbnails        
-@route('/grid/thumbnail/<frame_id>', methods=['GET'])
+@route('/grid/thumbnail_file/<frame_id>', methods=['GET'])
 def thumbnail(frame_id):
     params = request.values.to_dict()
     frame = M.Frame.objects(id = bson.ObjectId(frame_id))

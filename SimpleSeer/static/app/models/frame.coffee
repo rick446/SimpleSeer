@@ -10,6 +10,6 @@ module.exports = class Frame extends Model
     if response.features.length
       response.features = new FeatureSet( (new Feature(f) for f in response.features) )
     
-    unless response.thumbnail?
-      response.thumbnail = "/grid/thumbnail/" + response.id
+    if not response.thumbnail_file? or not response.thumbnail_file
+      response.thumbnail_file = "/grid/thumbnail_file/" + response.id
     response
