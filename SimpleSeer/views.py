@@ -137,14 +137,17 @@ def imgfile(frame_id):
 def thumbnail(frame_id):
     params = request.values.to_dict()
     frame = M.Frame.objects(id = bson.ObjectId(frame_id))
-    if not frame or not frame[0].thumbnail:
+    if not frame or not frame[0].imgfile:
         return "Image not found", 404
     frame = frame[0]
-    resp = make_response(frame.thumbnail.read(), 200)
-    resp.headers['Content-Type'] = frame.thumbnail.content_type
-    if 'download' in params:
-        resp.headers['Content-disposition'] = 'attachment; filename="%s-%s.jpg"' % \
-            (frame.camera.replace(' ','_'), frame.capturetime.strftime("%Y-%m-%d_%H_%M_%S"))
+    
+    if not frame.thumbnail_file:
+		t = frame.thumbnail
+		if not "is_slave" in Session().mongo or not Session().mongo['is_slave']:
+			frame.save()
+    
+    resp = make_response(frame.thumbnail_file.read(), 200)
+    resp.headers['Content-Type'] = frame.thumbnail_file.content_type
     return resp    
 
 
