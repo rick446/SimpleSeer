@@ -57,7 +57,7 @@ class Frame(SimpleDoc, mongoengine.Document):
 
     @LazyProperty
     def thumbnail(self):
-        if self.thumbnail_file.grid_id is None:
+        if self.thumbnail_file is None or self.thumbnail_file.grid_id is None:
             img = self.image
             thumbnail_img = img.scale(140.0 / img.height)
             if self.id and not is_slave in Session().mongo:
