@@ -71,6 +71,7 @@ def scan(state):
         frame.image = Image(nump)
                
         process(frame)
+	t = frame.thumbnail
         frame.save()
         id = frame.id
     scan.setROI()
