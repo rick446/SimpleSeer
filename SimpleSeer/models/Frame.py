@@ -82,7 +82,7 @@ class Frame(SimpleDoc, mongoengine.Document):
             return self.clip.images[self.clip_frame]
 
         self.imgfile.get().seek(0,0) #hackity hack, make sure the FP is at 0
-        if self.imgfile != None:
+        if self.imgfile and self.imgfile.grid_id != None:
             try:
                 self._imgcache = Image(pil.open(StringIO(self.imgfile.read())))
             except (IOError, TypeError): # pragma no cover
