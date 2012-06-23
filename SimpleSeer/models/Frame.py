@@ -63,7 +63,7 @@ class Frame(SimpleDoc, mongoengine.Document):
             thumbnail_img = img.scale(140.0 / img.height)
             if self.id and not "is_slave" in Session().mongo:
                 img_data = StringIO()
-                thumbnail_img.save(img_data, "jpeg", quality = 25)
+                thumbnail_img.save(img_data, "jpeg", quality = 75)
                 self.thumbnail_file.put(img_data.getvalue(), content_type='image/jpeg')
                 self.save()
         else:

@@ -3,6 +3,7 @@ import re
 import json
 import logging
 from datetime import datetime
+from cStringIO import StringIO
 
 import bson.json_util
 import gevent
@@ -142,9 +143,15 @@ def thumbnail(frame_id):
     frame = frame[0]
     
     if not frame.thumbnail_file:
-		t = frame.thumbnail
-		if not "is_slave" in Session().mongo or not Session().mongo['is_slave']:
-			frame.save()
+        t = frame.thumbnail
+        if not "is_slave" in Session().mongo or not Session().mongo['is_slave']:
+            frame.save()
+        else:
+            s = StringIO()
+            t.save(s, "jpeg", quality = 25)
+            resp = make_response(s.get_value(), 200)
+            resp.headers['Content-Type'] = "image/jpeg"
+            return resp
     
     resp = make_response(frame.thumbnail_file.read(), 200)
     resp.headers['Content-Type'] = frame.thumbnail_file.content_type
