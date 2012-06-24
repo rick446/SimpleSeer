@@ -359,3 +359,6 @@ class SimpleSeer(object):
         
     def resume(self):
         self.halt = False
+
+    def getStatus(self):
+        return 'ok'
