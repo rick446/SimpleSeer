@@ -173,7 +173,29 @@ mongo_uninstall () {
 
 # The main script launch point
 reset
-print "args":$1
+while :
+do
+    case "$1" in
+      -i | --install)
+        echo "install command line"
+        seer_auto_install
+        return
+        ;;
+      -r | --remove)
+        echo "remove seer command line"
+        seer_remove
+        return
+        ;;
+      -s | --start)
+        echo "start seer command line"
+        start_seer
+        return
+        ;;        
+    esac
+    break
+done
+
+
 while true; do
     echo "-------------------------------------------------------------------------"
     echo "SimpleSeer setup tool"
