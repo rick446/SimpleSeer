@@ -7,14 +7,64 @@
 #
 #
 
-seer_install () {
-  echo "[Installing Seer]"
+seer_manual_install () {
+  reset
+  echo "[Manual-Installing Seer]"
+  read -p "Install System Requirements? (y/N) " -n 1 -r
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+      install_requirements
+  fi
+  read -p "Install PIP Requirements? (y/N) " -n 1 -r
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+      install_pip_requirements
+  fi
+  read -p "Setup System Environment? (y/N) " -n 1 -r
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+      setup_environment
+  fi
+  read -p "Setup MongoDB? (y/N) " -n 1 -r
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+      mongo_install
+  fi  
+  read -p "Setup SuperVisor? (y/N) " -n 1 -r
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+      setup_supervisor
+  fi
+  
+  echo "Everything should now be installed"
+
+}
+
+
+seer_auto_install () {
+  reset
+  echo "[Auto-Installing Seer]"
+  install_requirements
+  install_pip_requirements
+  setup_environment
+  mongo_install
+  setup_supervisor
+  echo "Everything should now be installed"
+}
+
+install_requirements() {
   echo "installing required system libraries"
   sudo apt-get install python-dev python-setuptools python-pip libzmq-dev nodejs npm build-essential python-gevent libevent-dev supervisor ipython-notebook swig libvpx-dev subversion
   echo "installing brunch"
   sudo npm install -g brunch
+}
+
+install_pip_requirements() {
   echo "installing PIP requirements"
   sudo pip install -r pip.requirements
+}
+
+setup_environment() {
   echo "linking for development"
   sudo python setup.py develop
   echo "setting up environment"
@@ -23,67 +73,57 @@ seer_install () {
   sudo ln -s `pwd`/etc/supervisor.conf /etc/supervisor/conf.d/supervisor.conf
   sudo ln -s `pwd`/etc/simpleseer.cfg /etc/simpleseer.cfg
   sudo ln -s `pwd`/etc/simpleseer-logging.cfg /etc/simpleseer-logging.cfg
+}
+
+setup_supervisor() {
   echo "stopping supervisord"
   sudo supervisorctl stop all
   sudo killall supervisord
   echo "starting supervisord"
   sudo supervisord
-  echo "starting all SimpleSeer services"
-  sudo supervisorctl start seer-dev:mongodb
+}
+
+start_seer() {
+  reset
+  echo "Starting all SimpleSeer services"
+  sudo supervisorctl start subsystem:mongodb
   echo "starting mongo..."
   sleep 5
   echo "starting pyro..."
-  sudo supervisorctl start seer-dev:simpleseer-pyro4
-  sleep 1
+  sudo supervisorctl start subsystem:pyro4
+  sleep 5
   echo "starting broker..."
-  sudo supervisorctl start seer-dev:simpleseer-broker
-  sleep 1
+  sudo supervisorctl start subsystem:broker
+  sleep 5
   echo "starting core..."
-  sudo supervisorctl start seer-dev:simpleseer-core
-  sleep 1
+  sudo supervisorctl start seer:core
+  sleep 2
   echo "starting scrub..."
-  sudo supervisorctl start seer-dev:simpleseer-scrub
-  sleep 1
+  sudo supervisorctl start seer:scrub
+  sleep 2
   echo "starting web..."
-  sudo supervisorctl start seer-dev:simpleseer-web
-  sleep 1
+  sudo supervisorctl start seer:web
+  sleep 2
   echo "Supervisor Status:"
   sudo supervisorctl status
-  echo 
-  echo ""
-  echo ""
-  echo "Everything should now be installed and working, test at:"
-  echo "http://localhost:8080"
-  echo ""
-  echo "if not please consult simpleseer.XXYYZZ.log in /tmp/ to determine issue"
-  echo ""
-  echo ""
 }
 
-seer_delete () {
-  echo "[Deleting Seer]"
+seer_remove () {
+  reset
+  echo "[Removing Seer from system]"
   echo "stopping supervisord"
   sudo supervisorctl stop all
   sudo killall supervisord
   echo "cleaning up old files..."
+  mongo_uninstall
   sudo rm -f /usr/local/bin/simpleseer
   sudo rm -rf /usr/local/lib/python2.7/dist-packages/SimpleSeer.egg-link
   sudo rm -rf /etc/simpleseer
   sudo rm -f /etc/supervisor/conf.d/supervisor.conf
   sudo rm -f /etc/simpleseer.cfg
   sudo rm -f /etc/simpleseer-logging.cfg
-  echo "...done deleting seer"
+  echo "...done deleting seer from system"
   echo ""
-}
-
-seer_reload () {
-  echo "--------------"
-  echo "Reloading Seer"
-  echo "--------------"
-  seer_delete
-  echo "Please wait while sockets are closed..."
-  sleep 15
-  seer_install
 }
 
 mongo_install () {
@@ -127,30 +167,34 @@ mongo_uninstall () {
   sudo rm -rf /var/lib/mongodb
   sudo rm -rf /var/log/mongodb
   echo "...done removing mongo"
-  echo ""
 }
 
 
 
-echo ""
-echo ""
-echo "+++++++++++++++++++++++++++++++++++++++++++++++"
-echo "SimpleSeer setup tool"
-echo "+++++++++++++++++++++++++++++++++++++++++++++++"
-echo "*run this from the main SimpleSeer directory with:"
-echo "source scripts/setup.sh"
-echo ""
+# The main script launch point
+reset
+print "args":$1
 while true; do
-
     echo "-------------------------------------------------------------------------"
-    read -p "[i]nstall, [r]eload, [d]elete, [m]ongo install, [k]ill mongo, or e[x]it this program?" choice
+    echo "SimpleSeer setup tool"
+    echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
+    echo "*run this from the main SimpleSeer directory with:"
+    echo "source scripts/setup.sh"
+    echo
+    echo "-------------------------------------------------------------------------"
+    echo "[a]uto install"
+    echo "[m]anual install"
+    echo "[r]emove from system"
+    echo "[s]tart seer"
+    echo "e[x]it"
+    echo
+    read -p "which option:" choice
     case $choice in
-        [i]* ) seer_install; break;;
-        [r]* ) seer_reload; break;;
-        [d]* ) seer_delete;;
-        [m]* ) mongo_install;;
-        [k]* ) mongo_uninstall;;
+        [a]* ) seer_auto_install;;
+        [m]* ) seer_manual_install;;
+        [r]* ) seer_remove;;
+        [s]* ) start_seer;;
         [x]* ) echo "exiting...";break;;
-        * ) echo "Please answer yes or no.";;
+        * ) echo "Please choose an option.";;
     esac
 done
