@@ -1,10 +1,12 @@
 import gc
 from SimpleSeer import models as M
 
+RATE=0.5
+
 @core.state('start')
 def start(state):
     core = state.core
-    core.set_rate(10.0)
+    core.set_rate(RATE)
     return state.core.state('run')
 
 @core.state('run')
