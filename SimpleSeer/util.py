@@ -1,8 +1,12 @@
 import time
+import re
+import uuid
+import datetime
 import collections
 from glob import glob
 from functools import wraps
 
+from bson import ObjectId, DBRef, MaxKey, MinKey
 from flask import make_response
 from SimpleCV import FrameSource, Image
 
@@ -82,15 +86,40 @@ def get_seer():
     return inst
 
 def initialize_slave():
-	from .Session import Session
-	from . import models as M
-	#if we're in slave mode, rip thru the models and 
-	#run a count() -- this gets over a bug in mongoengine
-	#where the ensure_indexes fault on being against a slavedb
-	if Session().mongo.has_key("is_slave") and Session().mongo["is_slave"]:
-		for m in M.models:
-			try:
-				exec("M."+m+".objects.count()")
-			except:
-				pass
-		mongoengine.connection._dbs["default"].slave_okay = True
+    from .Session import Session
+    from . import models as M
+    #if we're in slave mode, rip thru the models and
+    #run a count() -- this gets over a bug in mongoengine
+    #where the ensure_indexes fault on being against a slavedb
+    if Session().mongo.has_key("is_slave") and Session().mongo["is_slave"]:
+        for m in M.models:
+            try:
+                exec("M."+m+".objects.count()")
+            except:
+                pass
+        mongoengine.connection._dbs["default"].slave_okay = True
+
+def object_hook(dct):
+    '''Customized version from bson.json_utils that treats
+    timestamps as naive'''
+    if "$oid" in dct:
+        return ObjectId(str(dct["$oid"]))
+    if "$ref" in dct:
+        return DBRef(dct["$ref"], dct["$id"], dct.get("$db", None))
+    if "$date" in dct:
+        secs = float(dct["$date"]) / 1000.0
+        return datetime.datetime.utcfromtimestamp(secs)
+    if "$regex" in dct:
+        flags = 0
+        if "i" in dct["$options"]:
+            flags |= re.IGNORECASE
+        if "m" in dct["$options"]:
+            flags |= re.MULTILINE
+        return re.compile(dct["$regex"], flags)
+    if "$minKey" in dct:
+        return MinKey()
+    if "$maxKey" in dct:
+        return MaxKey()
+    if "$uuid" in dct:
+        return uuid.UUID(dct["$uuid"])
+    return dct

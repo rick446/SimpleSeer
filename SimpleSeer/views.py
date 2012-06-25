@@ -108,13 +108,13 @@ def frames():
     params = request.values.to_dict()
     f_params = json.loads(
         params.get('filter', '[]'),
-        object_hook=bson.json_util.object_hook)
-    log.info(f_params)
+        object_hook=util.object_hook)
     s_params = json.loads(
         params.get('sort', '[]'),
-        object_hook=bson.json_util.object_hook)
+        object_hook=util.object_hook)
     skip = int(params.get('skip', 0))
     limit = int(params.get('limit', 20))
+    import pdb; pdb.set_trace()
     total_frames, frames = M.Frame.search(f_params, s_params, skip, limit)
     return dict(frames=frames, total_frames=total_frames)
 
