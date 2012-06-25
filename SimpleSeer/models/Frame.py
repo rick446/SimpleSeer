@@ -104,8 +104,11 @@ class Frame(SimpleDoc, mongoengine.Document):
         self._imgcache = value
        
     def __repr__(self): # pragma no cover
-       return "<SimpleSeer Frame Object %d,%d captured with '%s' at %s>" % (
-            self.width, self.height, self.camera, self.capturetime.ctime()) 
+        capturetime = '???'
+        if self.capturetime:
+            capturetime = self.capturetime.ctime()
+        return "<SimpleSeer Frame Object %d,%d captured with '%s' at %s>" % (
+            self.width, self.height, self.camera, capturetime)
         
     def save(self, *args, **kwargs):
         #TODO: sometimes we want a frame with no image data, basically at this
