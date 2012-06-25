@@ -69,7 +69,7 @@ o2.fields = ['capturetime','numeric', 'measurement_id', 'inspection_id', 'frame_
 o2.since = None
 o2.before = None
 o2.customFilter = {} 
-o2.statsInfo = [{'avg':'numeric'}, {'first': 'measurement_id'}, {'first': 'inspection_id'}, {'first', 'frame_id'}]
+o2.statsInfo = [{'avg':'numeric'}, {'first': 'measurement_id'}, {'first': 'inspection_id'}, {'first': 'frame_id'}]
 o2.save()
 
 c2 = Chart()
