@@ -207,9 +207,9 @@ class OLAP(SimpleDoc, mongoengine.Document):
                 key, val = s.items()[0]
                 # Needs special handling for count
                 if type(val) == int:
-                    stats['count'] = {'$' + key: val}
+                    stats['count'] = {'$' + str(key): '$' + str(val)}
                 else:
-                    stats[val] = {'$' + key: '$' + val}
+                    stats[str(val)] = {'$' + str(key): '$' + str(val)}
             
             
             return stats
@@ -253,10 +253,12 @@ class OLAP(SimpleDoc, mongoengine.Document):
             # For string items, use the last element in the group
             # For numeric items, take the average
             for key, val in oldest.iteritems():
-                if (type(val) == int) or (type(val) == float):
-                    self.statsInfo.append({'avg': key})
-                else:
-                    self.statsInfo.append({'first': key})
+                
+                if not key == '_id':
+                    if (type(val) == int) or (type(val) == float):
+                        self.statsInfo.append({'avg': key})
+                    else:
+                        self.statsInfo.append({'first': key})
         
         if autoUpdate:
             self.save()
