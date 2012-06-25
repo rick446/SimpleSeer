@@ -75,7 +75,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
         results = self.doQuery()
         
         if len(results) > self.maxLen:
-            results = self.autoAggregate(results['data'])
+            results = self.autoAggregate(results)
         
         return results
 
