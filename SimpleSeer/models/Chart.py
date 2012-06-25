@@ -67,11 +67,17 @@ class Chart(SimpleDoc, mongoengine.Document):
     def __repr__(self):
         return "<Chart %s>" % self.name
     
-    def createChart(self):
+    def createChart(self, **kwargs):
         
         # Get the OLAP and its data
         o = OLAP.objects(name=self.olap)
         if len(o) == 1:
+            if ('since' in kwargs):
+                o[0].since = int(kwargs['since'])
+    
+            if 'before' in kwargs:
+                o[0].before = int(kwargs['since'])
+    
             data = o[0].execute()
         else:
             log.warn("Found %d OLAPS in query for %s" % (len(o), olap))
