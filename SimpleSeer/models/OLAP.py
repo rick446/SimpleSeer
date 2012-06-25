@@ -253,9 +253,9 @@ class OLAP(SimpleDoc, mongoengine.Document):
             # For numeric items, take the average
             for key, val in oldest.iteritems():
                 if (type(val) == int) or (type(val) == float):
-                    self.statsInfo.append({'$avg': key})
+                    self.statsInfo.append({'avg': key})
                 else:
-                    self.statsInfo.append({'$first': key})
+                    self.statsInfo.append({'first': key})
         
         if autoUpdate:
             self.save()
