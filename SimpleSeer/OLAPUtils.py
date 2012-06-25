@@ -132,6 +132,7 @@ class RealtimeOLAP():
                 data = self.resToData(o, res)
                 
                 if len(data) > 0:
+                    # Long term fix: only publish to charts that are listened to
                     cs = Chart.objects(olap = o.name)
                     
                     for c in cs:
@@ -171,8 +172,6 @@ class RealtimeOLAP():
             msgdata = dict(
                 olap = str(o.name),
                 data = data)
-            
-            print msgdata
             
             olapName = 'OLAP/' + utf8convert(o.name) + '/'
             ChannelManager().publish(olapName, dict(u='data', m=msgdata))

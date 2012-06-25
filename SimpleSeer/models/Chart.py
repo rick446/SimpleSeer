@@ -74,9 +74,15 @@ class Chart(SimpleDoc, mongoengine.Document):
         return "<Chart %s>" % self.name
     
     def mapData(self, results):
+        from calendar import timegm
+        from datetime import datetime
         data = []
         
         for r in results:
+            # Make this more generic than just capturetime
+            if 'capturetime' in r:
+                r['capturetime'] = timegm(datetime.timetuple(r['capturetime'])) * 1000 + r['capturetime'].microsecond / 1000
+            
             thisData = [r[d] for d in self.dataMap]
             thisMeta = [r[m] for m in self.metaMap]
             
@@ -90,10 +96,10 @@ class Chart(SimpleDoc, mongoengine.Document):
         o = OLAP.objects(name=self.olap)
         if len(o) == 1:
             if ('since' in kwargs):
-                o[0].since = int(kwargs['since'])
+                o[0].since = int(kwargs['since'] / 1000)
     
             if 'before' in kwargs:
-                o[0].before = int(kwargs['since'])
+                o[0].before = int(kwargs['since'] / 1000)
     
             data = o[0].execute()
         else:
