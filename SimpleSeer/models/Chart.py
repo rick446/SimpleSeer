@@ -75,16 +75,14 @@ class Chart(SimpleDoc, mongoengine.Document):
     
     def mapData(self, results):
         data = []
-        meta = []
         
         for r in results:
             thisData = [r[d] for d in self.dataMap]
             thisMeta = [r[m] for m in self.metaMap]
             
-            data.append(thisData)
-            meta.append(thisMeta)
+            data.append({'d': thisData, 'm': thisMeta})
                 
-        return {'d':data, 'm':meta}
+        return data
     
     def createChart(self, **kwargs):
         

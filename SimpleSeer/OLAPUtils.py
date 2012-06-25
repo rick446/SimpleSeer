@@ -119,6 +119,8 @@ class OLAPFactory:
 class RealtimeOLAP():
     
     def realtime(self, res):
+
+        from .models.Chart import Chart
         
         olaps = OLAP.objects(__raw__={'$or': [ {'queryType': 'measurement_id', 'queryId': res.measurement_id}, 
                                                {'queryType':'inspection_id', 'queryId': res.inspection_id}
@@ -130,7 +132,11 @@ class RealtimeOLAP():
                 data = self.resToData(o, res)
                 
                 if len(data) > 0:
-                    self.sendMessage(o, data)
+                    cs = Chart.objects(olap = o.name)
+                    
+                    for c in cs:
+                        chartData = c.mapData([data])
+                        self.sendMessage(o, chartData)
     
     def resToData(self, o, res):
         
@@ -162,18 +168,21 @@ class RealtimeOLAP():
 
     def sendMessage(self, o, data):
         if (len(data) > 0):
-            msgdata = [dict(
+            msgdata = dict(
                 olap = str(o.name),
-                data = d) for d in data]
+                data = data)
+            
+            print msgdata
             
             olapName = 'OLAP/' + utf8convert(o.name) + '/'
             ChannelManager().publish(olapName, dict(u='data', m=msgdata))
-
+            
 
 class ScheduledOLAP():
     
     def runSked(self):
         
+        log.info('Starting statistics schedules')
         # Get the olaps by aggregation intervals
         minuteOLAPs = OLAP.objects(groupTime = 'minute') 
         hourOLAPs = OLAP.objects(groupTime = 'hour') 
@@ -200,7 +209,7 @@ class ScheduledOLAP():
         
     def skedLoop(self, interval, os):
         
-        start = datetime.now()
+        start = datetime.utcnow()
         
         while (True):
             # Split the time into components to make it easier to round
@@ -227,18 +236,26 @@ class ScheduledOLAP():
 
             # Have each OLAP send
             for o in os:
+                
+                log.info('%s running on interval %s' % (o.name, interval)) 
+                
                 o.since = startBlockEpoch
                 o.before = endBlockEpoch
                 data = o.execute()
                 
+                print o.since
+                print o.before
+                
+                
                 # Cheat and use the realtime's send message function
                 ro = RealtimeOLAP()
+                print 'sending the message' + str(data)
                 ro.sendMessage(o, data)
             
             # Set the beginning time interval for the next iteraction
             start = endBlock + timedelta(0, 1)
             
-            sleepTime = (start - datetime.now()).total_seconds()
+            sleepTime = (start - datetime.utcnow()).total_seconds()
             
             # Wait until time to update again
             sleep(sleepTime)
