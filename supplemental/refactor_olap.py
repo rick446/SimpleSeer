@@ -64,12 +64,14 @@ o2.name = 'Motion, mean by minute'
 o2.maxLen = 1000 
 o2.queryType = 'measurement_id' 
 o2.queryId = meas.id
-o2.groupTime = 'minute' 
+#o2.groupTime = 'minute'
+o2.groupTime = None
 o2.fields = ['capturetime','numeric', 'measurement_id', 'inspection_id', 'frame_id']
 o2.since = None
 o2.before = None
 o2.customFilter = {} 
-o2.statsInfo = [{'avg':'numeric'}, {'first': 'measurement_id'}, {'first': 'inspection_id'}, {'first', 'frame_id'}]
+#o2.statsInfo = [{'avg':'numeric'}, {'first': 'measurement_id'}, {'first': 'inspection_id'}, {'first': 'frame_id'}]
+o2.statsInfo = []
 o2.save()
 
 c2 = Chart()
