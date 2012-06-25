@@ -55,18 +55,21 @@ c1.accumulate = False
 c1.renderorder = 1
 c1.halfsize = False
 c1.realtime = True
+c1.dataMap = ['capturetime','numeric']
+c1.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
 c1.save()
 
 o2 = OLAP()
 o2.name = 'Motion, mean by minute'  
 o2.maxLen = 1000 
 o2.queryType = 'measurement_id' 
-o2.queryId = meas.id 
+o2.queryId = meas.id
+o2.groupTime = 'minute' 
 o2.fields = ['capturetime','numeric', 'measurement_id', 'inspection_id', 'frame_id']
 o2.since = None
 o2.before = None
 o2.customFilter = {} 
-o2.statsInfo = []
+o2.statsInfo = [{'avg':'numeric'}]
 o2.save()
 
 c2 = Chart()
@@ -82,4 +85,6 @@ c2.accumulate = False
 c2.renderorder = 1
 c2.halfsize = False
 c2.realtime = True
+c2.dataMap = ['capturetime','numeric']
+c2.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
 c2.save()

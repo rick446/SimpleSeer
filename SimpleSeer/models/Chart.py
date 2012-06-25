@@ -26,6 +26,8 @@ log = logging.getLogger(__name__)
 # renderorder: integeter specifying location on screen.  Smaller values to the top, larger to the bottom
 # halfsize: if true, will draw at half the normal width.  Also causes subsequent graph to be drawn halfsize.
 # realtime: boolean where True means do realtime updating
+# datamap: a list of which fields are considered the raw data
+# metamap: a list of the fields that are considered metadata
 #################################
 
 class ChartSchema(fes.Schema):
@@ -42,6 +44,8 @@ class ChartSchema(fes.Schema):
     renderorder = fev.Int(if_missing=1)
     halfsize = fev.Bool(if_missing=False)
     realtime = fev.Bool(if_missing=True)
+    dataMap = V.JSON(if_missing=[])
+    metaMap = V.JSON(if_missing=[])
 
 
 class Chart(SimpleDoc, mongoengine.Document):
@@ -59,6 +63,8 @@ class Chart(SimpleDoc, mongoengine.Document):
     renderorder = mongoengine.IntField()
     halfsize = mongoengine.BooleanField()
     realtime = mongoengine.BooleanField()
+    dataMap = mongoengine.ListField()
+    metaMap = mongoengine.ListField()
 
     meta = {
         'indexes': ['name']
@@ -66,6 +72,19 @@ class Chart(SimpleDoc, mongoengine.Document):
 
     def __repr__(self):
         return "<Chart %s>" % self.name
+    
+    def mapData(self, results):
+        data = []
+        meta = []
+        
+        for r in results:
+            thisData = [r[d] for d in self.dataMap]
+            thisMeta = [r[m] for m in self.metaMap]
+            
+            data.append(thisData)
+            meta.append(thisMeta)
+                
+        return {'d':data, 'm':meta}
     
     def createChart(self, **kwargs):
         
@@ -96,7 +115,9 @@ class Chart(SimpleDoc, mongoengine.Document):
                      'renderorder': self.renderorder,
                      'halfsize': self.halfsize,
                      'realtime': self.realtime,
-                     'data': data}
+                     'dataMap': self.dataMap,
+                     'metaMap': self.metaMap,
+                     'data': self.mapData(data)}
 
         
         return chartData
