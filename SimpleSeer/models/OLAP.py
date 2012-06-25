@@ -205,6 +205,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
             
             for s in self.statsInfo:
                 key, val = s.items()[0]
+                # Needs special handling for count
                 if type(val) == int:
                     stats['count'] = {'$' + key: val}
                 else:
