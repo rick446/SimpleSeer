@@ -1,38 +1,48 @@
 View = require './view'
 template = require './templates/framelist'
 FramelistFrameView = require './framelistframe_view'
+application = require '../application'
 
 module.exports = class FramelistView extends View  
   template: template
 
   initialize: (collection)=>
     super()
-    @pages=1
+    @empty=true
     @loading=false
     @collection = collection
     @_frameViews = []
+    @_newFrameViews = []
     @filter = {}
+    @newFrames = []
     $.datepicker.setDefaults $.datepicker.regional['']
 
-    @collection.on('add', @addFrame)
-    @collection.on('reset', @addFrames)
-    $(window).on('scroll', @loadMore)
-  
+    @collection.on 'add', @addFrame
+    @collection.on 'reset', @addFrames
+    $(window).on 'scroll', @loadMore
+
+    application.socket.on "message:capture.", @capturedNewFrame
+    application.socket.emit 'subscribe', 'capture.'
+    setInterval @filterNew, 5000
+
   events:
     "submit #filter_form": "filterFrames"
     "reset #filter_form": "filterFrames"
+    "click #load_new": "loadNew"
 
   getRenderData: =>
     count_viewing: @collection.length
     count_total: @collection.total_frames
+    count_new: @newFrames.length
 
   render: =>
     super()
-    if @pages==1
+    if @empty==true
       @newest = @collection.at(0).get('capturetime')
     _(@_frameViews).each (fv) =>
       @$el.find('#frame_holder').append(fv.render().el)
     @$el.find('#loading_message').hide()
+    @empty=false
     return this
 
   postRender: =>
@@ -48,21 +58,51 @@ module.exports = class FramelistView extends View
       setTimeout enable, 1000
       @$el.find('#loading_message').fadeIn('fast')
       @loading=true
-      @pages=@pages+1
+      @empty=false
       @fetchFiltered()
+
+  loadNew: ()=>
+    newFrameViews = _.clone(@_newFrameViews).sort (a,b)->
+      if a.frame.get('capturetime') < b.frame.get('capturetime')
+        return -1
+      else
+        return 1
+    @_newFrameViews = []
+    for fv in newFrameViews
+      @$el.find('#frame_holder').prepend(fv.render().el)
+    @$el.find('#count_viewing').html @collection.length
+    @$el.find('#count_new').html '0'
+    @_frameViews = newFrameViews.concat(@_frameViews)
+
+  filterNew: ()=>
+    if @newFrames.length
+      filter = _.clone(@filter)
+      # get the stuff that's been added between now and last load
+      filter.time_to = @newest*1000
+      filter.time_from = (new Date).getTime() + ((new Date).getTimezoneOffset() * 60000)
+      @newFrames = []
+      @collection.fetch_filtered
+        page: 0
+        add: true
+        filter: filter
 
   addFrame: (frame)=>
     @loading=false
     fv = new FramelistFrameView frame
-    @_frameViews.push fv
-    if @$el.html() != ''
-      next_page_size = @collection.total_frames - @collection.length
+    if frame.get('capturetime') > @newest
+      @_newFrameViews.push fv
+      @$el.find('#count_new').html @_newFrameViews.length
+      @$el.find('#count_total').html @collection.total_frames
+    else
+      @_frameViews.push fv
+      if @$el.html() != ''
+        next_page_size = @collection.total_frames - @collection.length
 
-      @$el.find('#frame_holder').append(fv.render().el)
-      @$el.find('#loading_message').fadeOut 1000, =>
-        if next_page_size < 20
-          @$el.find('#next_page_size').html next_page_size
-      @$el.find('#count_viewing').html @collection.length
+        @$el.find('#frame_holder').append(fv.render().el)
+        @$el.find('#loading_message').fadeOut 1000, =>
+          if next_page_size < 20
+            @$el.find('#next_page_size').html next_page_size
+        @$el.find('#count_viewing').html @_frameViews.length
 
   addFrames: (frames)=>
     if frames.length
@@ -74,13 +114,15 @@ module.exports = class FramelistView extends View
 
   filterFrames: (evt)=>
     @filter = {}
-    @pages = 1
+    @empty = true
     if evt.type == 'submit'
       evt.preventDefault()
       _($('#filter_form').serializeArray()).each (input)=>
         if input.value != ''
           if input.name == 'time_from' || input.name == 'time_to'
             @filter[input.name] = Math.floor($('input[name='+input.name+']').datepicker( "getDate" ).getTime())
+            if input.name == 'time_from'
+              @newest = @filter[input.name]
           else
             @filter[input.name] = input.value
     @$el.find('#frame_holder').html 'Loading...'
@@ -88,9 +130,15 @@ module.exports = class FramelistView extends View
     @fetchFiltered()
 
   fetchFiltered: =>
+    skip = 0
+    filter = _.clone(@filter)
+    if !@empty
+      # skip = @_frameViews.length
+      filter.time_to = @newest*1000
+    console.log @newest*1000
     @collection.fetch_filtered
-      page: @pages
-      filter: @filter
+      skip: skip
+      filter: filter
 
   disableEvent: (evt)=>
     evt.preventDefault()
@@ -98,4 +146,9 @@ module.exports = class FramelistView extends View
 
   reset: ()=>
     @_frameViews = []
-    @pages = 1
+    @empty = true
+    @newFrames = []
+
+  capturedNewFrame: (m)=>
+    _(m.data.frame_ids).each (frame_id)=>
+      @newFrames.push(frame_id)

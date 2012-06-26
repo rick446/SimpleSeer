@@ -109,6 +109,7 @@ def frames():
     f_params = json.loads(
         params.get('filter', '[]'),
         object_hook=bson.json_util.object_hook)
+    log.info(f_params)
     s_params = json.loads(
         params.get('sort', '[]'),
         object_hook=bson.json_util.object_hook)
