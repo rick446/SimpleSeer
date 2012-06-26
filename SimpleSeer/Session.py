@@ -36,7 +36,7 @@ class Session():
         self._config = d
         #http://api.mongodb.org/python/current/examples/gevent.html
         #monkey patch socket and add use_greenlet
-        if self.mongo.get('use_greenlet', False) == True:
+        if self.mongo.get('use_greenlets', False) == True:
             monkey.patch_socket()
         mongoengine.connect(self.database, **self.mongo)
         db = mongoengine.connection.get_db()
