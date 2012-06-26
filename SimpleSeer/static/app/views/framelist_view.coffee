@@ -15,6 +15,7 @@ module.exports = class FramelistView extends View
     @_newFrameViews = []
     @filter = {}
     @newFrames = []
+    @total_frames = 0
     $.datepicker.setDefaults $.datepicker.regional['']
 
     @collection.on 'add', @addFrame
@@ -32,7 +33,7 @@ module.exports = class FramelistView extends View
 
   getRenderData: =>
     count_viewing: @collection.length
-    count_total: @collection.total_frames
+    count_total: @total_frames
     count_new: @newFrames.length
 
   render: =>
@@ -50,8 +51,8 @@ module.exports = class FramelistView extends View
     $('#filter_form input[name=time_to]').datetimepicker {timeFormat: 'hh:mm:ss'}
 
   loadMore: (evt)=>
-    if !@loading && $('#loading_message').length && @collection.total_frames > 20\
-       && (@collection.total_frames - @collection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())
+    if !@loading && $('#loading_message').length && @total_frames > 20\
+       && (@total_frames - @collection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())
       $('body').on('mousewheel', @disableEvent)
       enable = =>
         $('body').off('mousewheel', @disableEvent)
@@ -78,8 +79,8 @@ module.exports = class FramelistView extends View
     if @newFrames.length
       filter = _.clone(@filter)
       # get the stuff that's been added between now and last load
-      filter.time_to = @newest*1000
-      filter.time_from = (new Date).getTime() + ((new Date).getTimezoneOffset() * 60000)
+      filter.time_to = (new Date).getTime()
+      filter.time_from = @newest*1000
       @newFrames = []
       @collection.fetch_filtered
         page: 0
@@ -92,11 +93,12 @@ module.exports = class FramelistView extends View
     if frame.get('capturetime') > @newest
       @_newFrameViews.push fv
       @$el.find('#count_new').html @_newFrameViews.length
-      @$el.find('#count_total').html @collection.total_frames
+      @$el.find('#count_total').html @total_frames + @_newFrameViews.length
     else
       @_frameViews.push fv
+      @total_frames = @collection.total_frames
       if @$el.html() != ''
-        next_page_size = @collection.total_frames - @collection.length
+        next_page_size = @total_frames - @collection.length
 
         @$el.find('#frame_holder').append(fv.render().el)
         @$el.find('#loading_message').fadeOut 1000, =>
@@ -133,9 +135,8 @@ module.exports = class FramelistView extends View
     skip = 0
     filter = _.clone(@filter)
     if !@empty
-      # skip = @_frameViews.length
+      skip = @_frameViews.length
       filter.time_to = @newest*1000
-    console.log @newest*1000
     @collection.fetch_filtered
       skip: skip
       filter: filter

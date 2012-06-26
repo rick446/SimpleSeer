@@ -7,10 +7,6 @@ module.exports = class Frames extends Collection
 
   parse: (response)=>
     @total_frames = response.total_frames
-    capturetimes = []
-    for f in response.frames
-      capturetimes.push(f.capturetime)
-    console.log capturetimes
     return response.frames
 
   fetch_filtered: (options)=>
