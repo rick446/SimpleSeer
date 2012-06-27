@@ -120,16 +120,21 @@ class RealtimeOLAP():
     
     def realtime(self, res):
 
+        print 'In realtime'
+
         from .models.Chart import Chart
         
         olaps = OLAP.objects(__raw__={'$or': [ {'queryType': 'measurement_id', 'queryId': res.measurement_id}, 
                                                {'queryType':'inspection_id', 'queryId': res.inspection_id}
                                              ]}) 
-                                            
+        
+        print 'I found %d olaps' % len(olaps)                                    
         for o in olaps:
             # If no statistics, just send result on its way
             if not o.statsInfo:
                 data = self.resToData(o, res)
+                
+                print ' foo'
                 
                 if len(data) > 0:
                     # Long term fix: only publish to charts that are listened to
@@ -173,6 +178,7 @@ class RealtimeOLAP():
                 olap = str(o.name),
                 data = data)
             
+            print msgdata
             olapName = 'OLAP/' + utf8convert(o.name) + '/'
             ChannelManager().publish(olapName, dict(u='data', m=msgdata))
             
@@ -182,21 +188,13 @@ class ScheduledOLAP():
     def runSked(self):
         
         log.info('Starting statistics schedules')
-        # Get the olaps by aggregation intervals
-        minuteOLAPs = OLAP.objects(groupTime = 'minute') 
-        hourOLAPs = OLAP.objects(groupTime = 'hour') 
-        dayOLAPs = OLAP.objects(groupTime = 'day') 
         
         glets = []
         
-        # If OLAPs found, create a thread to manage each time interval
-        if len(minuteOLAPs) > 0:
-            glets.append(Greenlet(self.skedLoop, 'minute', minuteOLAPs))
-        if len(hourOLAPs) > 0:
-            glets.append(Greenlet(self.skedLoop, 'hour', hourOLAPs))
-        if len(dayOLAPs) > 0:
-            glets.append(Greenlet(self.skedLoop, 'day', dayOLAPs))
-        
+        glets.append(Greenlet(self.skedLoop, 'minute'))
+        glets.append(Greenlet(self.skedLoop, 'hour'))
+        glets.append(Greenlet(self.skedLoop, 'day'))
+    
         # Start all the greenlets
         for g in glets:
             g.start()
@@ -206,55 +204,62 @@ class ScheduledOLAP():
             g.join()
         
         
-    def skedLoop(self, interval, os):
+    def skedLoop(self, interval):
         
-        start = datetime.utcnow()
+        from datetime import datetime
+        
+        nextTime = datetime.utcnow()
         
         while (True):
+            log.info('Checking for OLAPs running every %s' % interval)
+            
             # Split the time into components to make it easier to round
-            year = start.year
-            month = start.month
-            day = start.day
-            hour = start.hour
-            minute = start.minute
+            year = nextTime.year
+            month = nextTime.month
+            day = nextTime.day
+            hour = nextTime.hour
+            minute = nextTime.minute
             
             # Setup the start and end time for the intervals
             if interval == 'minute':
-                startBlock = datetime(year, month, day, hour, minute)
-                endBlock = startBlock + timedelta(0, 60)
+                endBlock = datetime(year, month, day, hour, minute)
+                startBlock = endBlock - timedelta(0, 60)
+                nextTime = endBlock + timedelta(0, 61)
+                sleepTime = 60
             elif interval == 'hour':
-                startBlock = datetime(year, month, day, hour, 0)
-                endBlock = startBlock + timedelta(0, 3600)
+                endBlock = datetime(year, month, day, hour, 0)
+                startBlock = endBlock - timedelta(0, 3600)
+                nextTime = endBlock + timedelta(0, 3661)
+                sleepTime = 3600
             elif interval == 'day':
-                startBlock = datetime(year, month, day, 0, 0)
-                endBlock = startBlock + timedelta(1, 0)
+                endBlock = datetime(year, month, day, 0, 0)
+                startBlock = endBlock - timedelta(1, 0)
+                nextTime = endBlock + timedelta(1, 1)
+                sleepTime = 86400
             
             # OLAPs assume time in epoch seconds
             startBlockEpoch = mktime(startBlock.timetuple())
             endBlockEpoch = mktime(endBlock.timetuple())
 
-            # Have each OLAP send
+            # Find all OLAPs that run on this time interval
+            os = OLAP.objects(groupTime = interval) 
+    
+            # Have each OLAP send the message
             for o in os:
                 
-                log.info('%s running on interval %s' % (o.name, interval)) 
+                log.info('%s running per %s' % (o.name, interval)) 
                 
                 o.since = startBlockEpoch
                 o.before = endBlockEpoch
                 data = o.execute()
                 
-                print o.since
-                print o.before
-                
-                
                 # Cheat and use the realtime's send message function
                 ro = RealtimeOLAP()
-                print 'sending the message' + str(data)
+                #print 'sending the message' + str(data)
                 ro.sendMessage(o, data)
             
             # Set the beginning time interval for the next iteraction
-            start = endBlock + timedelta(0, 1)
-            
-            sleepTime = (start - datetime.utcnow()).total_seconds()
+            sleepTime = (nextTime - datetime.utcnow()).total_seconds()
             
             # Wait until time to update again
             sleep(sleepTime)
