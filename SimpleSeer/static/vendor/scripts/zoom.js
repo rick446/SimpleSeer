@@ -223,14 +223,14 @@ var zoom = (function(){
 				}
 
 				// If width/height values are set, calculate scale from those values
-				if( options.width !== undefined && options.height !== undefined ) {
-					options.scale = Math.max( Math.min( window.innerWidth / options.width, window.innerHeight / options.height ), 1 );
-				}
-
-				if( options.scale > 1 ) {
-					options.x *= options.scale;
-					options.y *= options.scale;
-
+				//if( options.width !== undefined && options.height !== undefined ) {
+				//	options.scale = Math.max( Math.min( window.innerWidth / options.width, window.innerHeight / options.height ), 1 );
+				//}
+                                //console.log(options.scale);
+				//if( options.scale > 1 ) {
+				//	options.x *= options.scale;
+				//	options.y *= options.scale;
+                                        options.scale = 2
 					var scrollOffset = getScrollOffset();
 
 					magnify( scrollOffset.x, scrollOffset.y, options.x, options.y, options.scale );
@@ -240,7 +240,7 @@ var zoom = (function(){
 					panEngageTimeout = setTimeout( function() {
 						panUpdateInterval = setInterval( pan, 1000 / 60 );
 					}, 800 );
-				}
+				//}
 			}
 		},
 

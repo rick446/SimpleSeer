@@ -10,12 +10,21 @@ module.exports = class FrameDetailView extends View
     
   zoom: (e) ->
     os = $('#display').offset()
-    zoom.in({
-      y: e.pageY - os.top
-      x: e.pageX - os.left
-      width: 300
-      height: 300
-    },$('#display-zoom'))
+    viewPort = $('#display-zoom')
+    if @zoomed
+      @zoomed = false
+      viewPort.css('position', 'static')
+      viewPort.css('left', 0)
+      viewPort.css('top', 0)
+      viewPort.css('width', '100%')
+      viewPort.css('height', '100%')
+    else
+      @zoomed = true
+      viewPort.css('position', 'relative')
+      viewPort.css('top', '-'+(e.pageY - os.top)+'px')
+      viewPort.css('left', '-'+(e.pageX - os.left)+'px')
+      viewPort.css('width', @.model.attributes.width+'px')
+      viewPort.css('height', @.model.attributes.height+'px')
 
   getRenderData: =>
     data = {}
