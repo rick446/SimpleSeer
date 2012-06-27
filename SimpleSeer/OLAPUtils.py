@@ -188,21 +188,13 @@ class ScheduledOLAP():
     def runSked(self):
         
         log.info('Starting statistics schedules')
-        # Get the olaps by aggregation intervals
-        minuteOLAPs = OLAP.objects(groupTime = 'minute') 
-        hourOLAPs = OLAP.objects(groupTime = 'hour') 
-        dayOLAPs = OLAP.objects(groupTime = 'day') 
         
         glets = []
         
-        # If OLAPs found, create a thread to manage each time interval
-        if len(minuteOLAPs) > 0:
-            glets.append(Greenlet(self.skedLoop, 'minute', minuteOLAPs))
-        if len(hourOLAPs) > 0:
-            glets.append(Greenlet(self.skedLoop, 'hour', hourOLAPs))
-        if len(dayOLAPs) > 0:
-            glets.append(Greenlet(self.skedLoop, 'day', dayOLAPs))
-        
+        glets.append(Greenlet(self.skedLoop, 'minute'))
+        glets.append(Greenlet(self.skedLoop, 'hour'))
+        glets.append(Greenlet(self.skedLoop, 'day'))
+    
         # Start all the greenlets
         for g in glets:
             g.start()
@@ -212,13 +204,15 @@ class ScheduledOLAP():
             g.join()
         
         
-    def skedLoop(self, interval, os):
+    def skedLoop(self, interval):
         
         from datetime import datetime
         
         nextTime = datetime.utcnow()
         
         while (True):
+            log.info('Checking for OLAPs running every %s' % interval)
+            
             # Split the time into components to make it easier to round
             year = nextTime.year
             month = nextTime.month
@@ -247,10 +241,13 @@ class ScheduledOLAP():
             startBlockEpoch = mktime(startBlock.timetuple())
             endBlockEpoch = mktime(endBlock.timetuple())
 
-            # Have each OLAP send
+            # Find all OLAPs that run on this time interval
+            os = OLAP.objects(groupTime = interval) 
+    
+            # Have each OLAP send the message
             for o in os:
                 
-                log.info('%s running on interval %s' % (o.name, interval)) 
+                log.info('%s running per %s' % (o.name, interval)) 
                 
                 o.since = startBlockEpoch
                 o.before = endBlockEpoch
