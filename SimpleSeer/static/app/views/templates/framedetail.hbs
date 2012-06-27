@@ -1,7 +1,12 @@
 <div class="row"><a href="#frames">Back to Inspection Images</a></div>
 <div class="row framedetailrow">
         <div id="frame" class="span8">
-                <div id="display"><img src="{{imgfile}}"><canvas id="displaycanvas"></canvas></div>
+                <div id="display">
+                        <div id="display-zoom">
+                                <img id="display-img" src="{{imgfile}}">
+                                <canvas id="displaycanvas"></canvas>
+                        </div>
+                </div>
                 <p class="frame_icons">
                         <a href="{{imgfile}}?download=True"><i class="icon-download"></i> Download</a>
                 </p>

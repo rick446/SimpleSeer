@@ -1,6 +1,7 @@
 import os
 import logging
 
+import mongoengine
 from flask import Flask
 from socketio.server import SocketIOServer
 
@@ -16,6 +17,12 @@ log = logging.getLogger(__name__)
 def make_app():
     util.initialize_slave()
     app = Flask(__name__)
+
+    @app.teardown_request
+    def teardown_request(exception):
+        conn = mongoengine.connection.get_connection()
+        conn.end_request()
+
     views.route.register_routes(app)
     crud.register(app)
     return app
