@@ -456,3 +456,6 @@ def watcher_remove():
     util.get_seer().reloadInspections()
     return util.get_seer().watchers
 
+@route('/_status', methods=['GET', 'POST'])
+def status():
+    return 'ok'
