@@ -40,7 +40,8 @@ exports.config =
           'vendor/scripts/moment.js',
           'vendor/scripts/jquery.tablesorter.js',
           'vendor/scripts/jquery.tablesorter.pager.js',
-          'vendor/scripts/processing.js']
+          'vendor/scripts/processing.js',
+          'vendor/scripts/zoom.js']
 
     stylesheets:
       defaultExtension: 'less'

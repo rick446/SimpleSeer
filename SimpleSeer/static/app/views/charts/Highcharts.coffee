@@ -7,9 +7,8 @@ module.exports = class HighchartsLib extends ChartView
     super d
     @lib = 'highcharts'
     this
-  
+
   buildChart: () =>
-    console.log @.model
     if @model.chartid
       #todo : make sure this doesnt clone graphs
       @template = ''

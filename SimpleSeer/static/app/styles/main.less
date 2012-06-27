@@ -78,9 +78,13 @@ ul {
 
 #display{
   position: relative;
+  overflow: hidden;
 }  
-#display > img {
+#display-img {
     width: 100%;
+}
+#display img {
+    max-width: none;
 }
 #displaycanvas {
     position: absolute;
@@ -105,9 +109,6 @@ ul {
   border-radius: 8px;
 }
 
-#frame img {
-  width: 100%;
-}
 
 .frame-small {
   padding: 20px;

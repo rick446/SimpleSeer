@@ -4,6 +4,18 @@ app = require('application')
 
 module.exports = class FrameDetailView extends View  
   template: template
+  
+  events:
+    'click #display-zoom' : 'zoom'
+    
+  zoom: (e) ->
+    os = $('#display').offset()
+    zoom.in({
+      y: e.pageY - os.top
+      x: e.pageX - os.left
+      width: 300
+      height: 300
+    },$('#display-zoom'))
 
   getRenderData: =>
     data = {}
@@ -18,6 +30,7 @@ module.exports = class FrameDetailView extends View
     
   
   postRender: =>
+    #app.viewPort = $('#display')
     if not @model.get('features').length
       return
     @$(".tablesorter").tablesorter()
@@ -30,6 +43,7 @@ module.exports = class FrameDetailView extends View
     
     @pjs.size $('#display > img').width(), @model.get("height") * scale
     @pjs.scale scale
-    @model.get('features').each (f) => f.render(@pjs) 
+    @model.get('features').each (f) => f.render(@pjs)
+
 
     
