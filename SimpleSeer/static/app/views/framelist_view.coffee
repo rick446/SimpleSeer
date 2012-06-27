@@ -49,6 +49,10 @@ module.exports = class FramelistView extends View
   postRender: =>
     $('#filter_form input[name=time_from]').datetimepicker {timeFormat: 'hh:mm:ss'}
     $('#filter_form input[name=time_to]').datetimepicker {timeFormat: 'hh:mm:ss'}
+    $.get '/cameras', (resp)=>
+      camera_list = $('#filter_form select')
+      for camera in resp.cameras
+        camera_list.append '<option value="'+camera.name+'">'+camera.name+'</option>'
 
   loadMore: (evt)=>
     if !@loading && $('#loading_message').length && @total_frames > 20\

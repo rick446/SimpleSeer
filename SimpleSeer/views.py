@@ -117,6 +117,12 @@ def frames():
     total_frames, frames = M.Frame.search(f_params, s_params, skip, limit)
     return dict(frames=frames, total_frames=total_frames)
 
+@route('/cameras', methods=['GET'])
+@util.jsonify
+def cameras():
+    config = Session()
+    return dict(cameras=config.cameras)
+
 #TODO, abstract this for layers and thumbnails        
 @route('/grid/imgfile/<frame_id>', methods=['GET'])
 def imgfile(frame_id):
