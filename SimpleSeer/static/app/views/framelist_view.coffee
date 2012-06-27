@@ -22,8 +22,8 @@ module.exports = class FramelistView extends View
     @collection.on 'reset', @addFrames
     $(window).on 'scroll', @loadMore
 
-    application.socket.on "message:capture.", @capturedNewFrame
-    application.socket.emit 'subscribe', 'capture.'
+    application.socket.on "message:capture/", @capturedNewFrame
+    application.socket.emit 'subscribe', 'capture/'
     setInterval @filterNew, 5000
 
   events:

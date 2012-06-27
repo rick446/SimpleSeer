@@ -171,7 +171,7 @@ def videofeed(width=0, camera=0):
     seer = SeerProxy2()
     log.info('Feeding video in greenlet %s', gevent.getcurrent())
     def generate():        
-        socket = ChannelManager().subscribe("capture.")
+        socket = ChannelManager().subscribe("capture/")
         
         while True:
             img = seer.get_image(**params)
