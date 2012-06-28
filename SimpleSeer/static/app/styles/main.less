@@ -78,9 +78,13 @@ ul {
 
 #display{
   position: relative;
+  overflow: hidden;
 }  
-#display > img {
+#display-img {
     width: 100%;
+}
+#display img {
+    max-width: none;
 }
 #displaycanvas {
     position: absolute;
@@ -105,9 +109,6 @@ ul {
   border-radius: 8px;
 }
 
-#frame img {
-  width: 100%;
-}
 
 .frame-small {
   padding: 20px;
@@ -155,29 +156,33 @@ p.frame_icons{
   margin-right: 5px;
 }
 
-
-
-#properties, #features {
+.frameData {
   padding: 5px;
   background: #eee;
   border: 4px solid #eee;
   border-radius: 8px;
   box-sizing: border-box;
   font-size: 13px;
+  margin: 0 0 5px;
 }
 
-#properties table {
+.frameData table {
   width: 100%;
   border: 1px solid #ddd;
   background: white;
 }
 
-#properties table span {
+.frameData table span {
   color: #aaa;
 }
 
-#properties table tr:nth-child(odd) td {
+.frameData table tr:nth-child(odd) td {
   background-color: #fcfcfc;
+}
+
+.metaDataEdit {
+  margin:-5px;
+  width:100%;
 }
 
 #features .set {

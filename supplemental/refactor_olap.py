@@ -45,10 +45,10 @@ o1.save()
 c1 = Chart()
 c1.name = 'Motion'
 c1.olap = o1.name
-c1.style = 'column'
+c1.style = 'spline'
 c1.minval = 0
 c1.maxval = 100
-c1.xtype = 'linear'
+c1.xtype = 'datetime'
 c1.colormap = {}
 c1.labelmap = {}
 c1.accumulate = False
@@ -77,10 +77,10 @@ o2.save()
 c2 = Chart()
 c2.name = 'Motion, mean by minute'
 c2.olap = o2.name
-c2.style = 'column'
+c2.style = 'spline'
 c2.minval = 0
 c2.maxval = 100
-c2.xtype = 'linear'
+c2.xtype = 'datetime'
 c2.colormap = {}
 c2.labelmap = {}
 c2.accumulate = False

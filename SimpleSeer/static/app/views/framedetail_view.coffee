@@ -4,6 +4,28 @@ app = require('application')
 
 module.exports = class FrameDetailView extends View  
   template: template
+  
+  events:
+    'click #display-zoom' : 'zoom'
+    'change .metaDataEdit' : 'updateMetaData'
+    
+  zoom: (e) ->
+    os = $('#display').offset()
+    viewPort = $('#display-zoom')
+    if @zoomed
+      @zoomed = false
+      viewPort.css('position', 'static')
+      viewPort.css('left', 0)
+      viewPort.css('top', 0)
+      viewPort.css('width', '100%')
+      viewPort.css('height', '100%')
+    else
+      @zoomed = true
+      viewPort.css('position', 'relative')
+      viewPort.css('top', '-'+(e.pageY - os.top)+'px')
+      viewPort.css('left', '-'+(e.pageX - os.left)+'px')
+      viewPort.css('width', @.model.attributes.width+'px')
+      viewPort.css('height', @.model.attributes.height+'px')
 
   getRenderData: =>
     data = {}
@@ -16,8 +38,26 @@ module.exports = class FrameDetailView extends View
       
     data
     
-  
+  addMetaBox: =>
+    $('#metadata table tbody').append('<tr><td><input class="metaDataEdit" type="text"></td><td><input class="metaDataEdit" type="text"></td></tr>')
+
+  updateMetaData: (e) =>
+    metadata = {}
+    _add = true
+    $("#metadata table tbody tr").each (ind,obj) ->
+      tds = $(obj).find('td')
+      if $(tds[0]).find('input').attr('value')
+        metadata[$(tds[0]).find('input').attr('value')] = $(tds[1]).find('input').attr('value')
+      else if $(tds[0]).find('input').attr('value') == '' && $(tds[1]).find('input').attr('value') == ''
+        _add = false
+    if _add
+      @addMetaBox()
+    @.model.set 'metadata', metadata
+    @.model.save()
+      
   postRender: =>
+    #app.viewPort = $('#display')
+    @addMetaBox()
     if not @model.get('features').length
       return
     @$(".tablesorter").tablesorter()
@@ -30,6 +70,7 @@ module.exports = class FrameDetailView extends View
     
     @pjs.size $('#display > img').width(), @model.get("height") * scale
     @pjs.scale scale
-    @model.get('features').each (f) => f.render(@pjs) 
+    @model.get('features').each (f) => f.render(@pjs)
+
 
     
