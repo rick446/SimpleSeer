@@ -39,12 +39,12 @@ module.exports = class FrameDetailView extends View
     data
     
   addMetaBox: =>
-    $('#metadata table tbody').append('<tr><td><input class="metaDataEdit" type="text"></td><td><input class="metaDataEdit" type="text"></td></tr>')
+    $('#metadata').append('<tr><td><input class="metaDataEdit" type="text"></td><td><input class="metaDataEdit" type="text"></td></tr>')
 
   updateMetaData: (e) =>
     metadata = {}
     _add = true
-    $("#metadata table tbody tr").each (ind,obj) ->
+    $("#metadata tr").each (ind,obj) ->
       tds = $(obj).find('td')
       if $(tds[0]).find('input').attr('value')
         metadata[$(tds[0]).find('input').attr('value')] = $(tds[1]).find('input').attr('value')
@@ -52,8 +52,7 @@ module.exports = class FrameDetailView extends View
         _add = false
     if _add
       @addMetaBox()
-    @.model.set 'metadata', metadata
-    @.model.save()
+    @.model.save {metadata: metadata}
       
   postRender: =>
     #app.viewPort = $('#display')
@@ -67,10 +66,7 @@ module.exports = class FrameDetailView extends View
     framewidth = @model.get("width")
     realwidth = $('#display > img').width()
     scale = realwidth / framewidth
-    
+        
     @pjs.size $('#display > img').width(), @model.get("height") * scale
     @pjs.scale scale
     @model.get('features').each (f) => f.render(@pjs)
-
-
-    

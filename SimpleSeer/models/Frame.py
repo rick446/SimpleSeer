@@ -19,7 +19,9 @@ from .. import realtime
 from ..util import LazyProperty
 
 
-class FrameSchema(fes.Schema):	
+class FrameSchema(fes.Schema):
+    allow_extra_fields=True
+    filter_extra_fields=True
     camera = fev.UnicodeString(not_empty=True)
     metadata = V.JSON(if_empty=dict, if_missing=None)
 	#TODO, make this feasible as a formencode schema for upload
