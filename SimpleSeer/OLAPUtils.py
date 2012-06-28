@@ -120,21 +120,18 @@ class RealtimeOLAP():
     
     def realtime(self, res):
 
-        print 'In realtime'
-
+    
         from .models.Chart import Chart
         
         olaps = OLAP.objects(__raw__={'$or': [ {'queryType': 'measurement_id', 'queryId': res.measurement_id}, 
                                                {'queryType':'inspection_id', 'queryId': res.inspection_id}
                                              ]}) 
         
-        print 'I found %d olaps' % len(olaps)                                    
         for o in olaps:
             # If no statistics, just send result on its way
             if not o.statsInfo:
                 data = self.resToData(o, res)
                 
-                print ' foo'
                 
                 if len(data) > 0:
                     # Long term fix: only publish to charts that are listened to
@@ -178,7 +175,6 @@ class RealtimeOLAP():
                 olap = str(o.name),
                 data = data)
             
-            print msgdata
             olapName = 'OLAP/' + utf8convert(o.name) + '/'
             ChannelManager().publish(olapName, dict(u='data', m=msgdata))
             
@@ -255,7 +251,6 @@ class ScheduledOLAP():
                 
                 # Cheat and use the realtime's send message function
                 ro = RealtimeOLAP()
-                #print 'sending the message' + str(data)
                 ro.sendMessage(o, data)
             
             # Set the beginning time interval for the next iteraction
