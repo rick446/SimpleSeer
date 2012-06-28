@@ -11,7 +11,7 @@
                         <a href="{{imgfile}}?download=True"><i class="icon-download"></i> Download</a>
                 </p>
         </div>
-        <div id="properties" class="span3">
+        <div id="properties" class="span3 frameData">
                 <table border="1" cellpadding="7">
                         <thead>
 
@@ -40,11 +40,25 @@
                         </tbody>
                 </table>
         </div>
+        <div id="metadata" class="span3 frameData">
+                <table border="1" cellpadding="7">
+                        <thead>
+
+                        </thead>
+                        <tbody>
+                        {{#key_value metadata}}
+                                <tr>
+                                        <td><input class="metaDataEdit" type="text" value="{{key}}"></td>
+                                        <td><input class="metaDataEdit" type="text" value="{{value}}"></td>
+                                </tr>
+                        {{/key_value}}
+                        </tbody>
+                </table>
+        </div>
 </div>
 
-
 <div class="row" style="margin-bottom: 30px;">
-  <div id="features" class="span12">
+  <div id="features" class="span12 frameData">
     {{#each featuretypes}}
        
         <h3>{{#if this.[0].icon}}<img class="featureicon" src="{{this.[0].icon}}">{{/if}}{{this.[0].name}} Detections</h3>

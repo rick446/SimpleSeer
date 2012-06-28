@@ -8,6 +8,7 @@ from SimpleSeer.Session import Session
 
 from formencode import validators as fev
 from formencode import schema as fes
+from SimpleSeer import validators as V
 import formencode as fe
 
 from .base import SimpleDoc
@@ -20,6 +21,7 @@ from ..util import LazyProperty
 
 class FrameSchema(fes.Schema):	
     camera = fev.UnicodeString(not_empty=True)
+    metadata = V.JSON(if_empty=dict, if_missing=None)
 	#TODO, make this feasible as a formencode schema for upload
 
 
@@ -50,6 +52,7 @@ class Frame(SimpleDoc, mongoengine.Document):
     imgfile = mongoengine.FileField()
     layerfile = mongoengine.FileField()
     thumbnail_file = mongoengine.FileField()
+    metadata = mongoengine.DictField()
     _imgcache = ''
 
     meta = {
