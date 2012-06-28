@@ -152,7 +152,7 @@ def thumbnail(frame_id):
             resp = make_response(s.getvalue(), 200)
             resp.headers['Content-Type'] = "image/jpeg"
             return resp
-    
+   
     resp = make_response(frame.thumbnail_file.read(), 200)
     resp.headers['Content-Type'] = frame.thumbnail_file.content_type
     return resp    
