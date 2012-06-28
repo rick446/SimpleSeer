@@ -108,10 +108,10 @@ def frames():
     params = request.values.to_dict()
     f_params = json.loads(
         params.get('filter', '[]'),
-        object_hook=bson.json_util.object_hook)
+        object_hook=util.object_hook)
     s_params = json.loads(
         params.get('sort', '[]'),
-        object_hook=bson.json_util.object_hook)
+        object_hook=util.object_hook)
     skip = int(params.get('skip', 0))
     limit = int(params.get('limit', 20))
     total_frames, frames = M.Frame.search(f_params, s_params, skip, limit)
@@ -171,7 +171,7 @@ def videofeed(width=0, camera=0):
     seer = SeerProxy2()
     log.info('Feeding video in greenlet %s', gevent.getcurrent())
     def generate():        
-        socket = ChannelManager().subscribe("capture.")
+        socket = ChannelManager().subscribe("capture/")
         
         while True:
             img = seer.get_image(**params)

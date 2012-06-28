@@ -25,10 +25,13 @@ module.exports = class Frames extends Collection
           options.filter.capturetime['$lte'] = {'$date': options.filter.time_to}
           delete options.filter.time_to
       params.filter = JSON.stringify(options.filter)
-    if options && options.page
-      params.skip = (options.page-1)*20
+    if options && options.skip
+      params.skip = options.skip
+    add = params.skip != 0
+    if options && options.add
+      add = options.add
     fetch_params =
-      add: params.skip != 0
+      add: add
       data: params
     if options && options.success
       fetch_params.success = options.success

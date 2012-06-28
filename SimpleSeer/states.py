@@ -127,7 +127,7 @@ class Core(object):
             self.lastframes.popleft()
 
         self.lastframes.append(currentframes)
-        self.publish('capture.', { "capture": 1})
+        self.publish('capture/', { "capture": 1})
         return currentframes
 
     def get_inspection(self, name):
