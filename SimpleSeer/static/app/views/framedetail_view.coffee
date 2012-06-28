@@ -8,6 +8,7 @@ module.exports = class FrameDetailView extends View
   events:
     'click #display-zoom' : 'zoom'
     'change .metaDataEdit' : 'updateMetaData'
+    'change .notesEdit' : 'updateNotes'
     
   zoom: (e) ->
     os = $('#display').offset()
@@ -53,6 +54,10 @@ module.exports = class FrameDetailView extends View
     if _add
       @addMetaBox()
     @.model.save {metadata: metadata}
+
+  updateNotes: (e) =>
+    @model.save {notes:$("#notesEdit").attr('value')}
+  
       
   postRender: =>
     #app.viewPort = $('#display')
