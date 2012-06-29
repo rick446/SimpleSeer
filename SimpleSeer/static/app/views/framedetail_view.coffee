@@ -51,7 +51,7 @@ module.exports = class FrameDetailView extends View
       if $(tds[0]).find('input').attr('value')
         metadata[$(tds[0]).find('input').attr('value')] = $(tds[1]).find('input').attr('value')
       else if $(tds[0]).find('input').attr('value') == '' && $(tds[1]).find('input').attr('value') == ''
-        _add = false
+        $(obj).remove()
     if _add
       @addMetaBox()
     @.model.save {metadata: metadata}
