@@ -80,7 +80,7 @@ def run_core_states(session):
     gevent.spawn_link_exception(core.run)
     
     so = ScheduledOLAP()
-    gevent.spawn_link_exception(so.runSked())
+    gevent.spawn_link_exception(so.runSked)
 
     Pyro4.Daemon.serveSimple(
         { core: "sightmachine.seer" },
