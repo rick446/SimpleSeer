@@ -16,6 +16,7 @@ module.exports = class FramelistView extends View
     @filter = {}
     @newFrames = []
     @total_frames = 0
+    @lastLoadTime = new Date()
     $.datepicker.setDefaults $.datepicker.regional['']
 
     @collection.on 'add', @addFrame
@@ -30,6 +31,7 @@ module.exports = class FramelistView extends View
     "submit #filter_form": "filterFrames"
     "reset #filter_form": "filterFrames"
     "click #load_new": "loadNew"
+    "click #filter_form input[name=time_to]": "setTimeToAsNow"
 
   getRenderData: =>
     count_viewing: @collection.length
@@ -44,6 +46,7 @@ module.exports = class FramelistView extends View
       @$el.find('#frame_holder').append(fv.render().el)
     @$el.find('#loading_message').hide()
     @empty=false
+    @lastLoadTime = new Date()
     return this
 
   postRender: =>
@@ -78,6 +81,7 @@ module.exports = class FramelistView extends View
     @$el.find('#count_viewing').html @collection.length
     @$el.find('#count_new').html '0'
     @_frameViews = newFrameViews.concat(@_frameViews)
+    @lastLoadTime = new Date()
 
   filterNew: ()=>
     if @newFrames.length
@@ -157,3 +161,8 @@ module.exports = class FramelistView extends View
   capturedNewFrame: (m)=>
     _(m.data.frame_ids).each (frame_id)=>
       @newFrames.push(frame_id)
+
+  setTimeToAsNow: (evt)=>
+    target = $(evt.target)
+    if !target.val()
+      target.datepicker("setDate", @lastLoadTime)
