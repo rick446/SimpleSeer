@@ -43,7 +43,6 @@ module.exports = class FrameDetailView extends View
     $('#metadata').append('<tr><td><input class="metaDataEdit" type="text"></td><td><input class="metaDataEdit" type="text"></td></tr>')
 
   updateMetaData: (e) =>
-    #todo: on key remove, destroy tr
     metadata = {}
     _add = true
     $("#metadata tr").each (ind,obj) ->

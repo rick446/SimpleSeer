@@ -13,7 +13,6 @@ module.exports = class ChartView extends View
     #if @.type == 'ChartView'
     #  console.error 'ChartView is abstract and cannot be instantiated'
     #  return
-    console.log @model
     @anchorId = @model.id
     @name = @model.name
     @realtime = @model.realtime || false
@@ -66,7 +65,7 @@ module.exports = class ChartView extends View
       return false
     $.getJSON(url, (data) =>
       #@._drawDataLegacy data.data,reset
-      @._drawData data,reset
+      @._drawData data.data,reset
       $('.alert_error').remove()
       return
      ).error =>
@@ -83,6 +82,7 @@ module.exports = class ChartView extends View
     @_drawData dd, reset
   
   _formatChartPoint: (d) =>
+    #console.log d
     if !@.model.accumulate
       cp = @.clickPoint
       mo = @.overPoint
@@ -132,11 +132,11 @@ module.exports = class ChartView extends View
       if @.model.accumulate
         dd = @.stack.buildData data
       else
-        for d in data.data
+        for d in data
           p = @_formatChartPoint d
           dd.push p
-        application.charts.lastframe = d.frame_id
-      @.setData(dd)
+        #application.charts.lastframe = d.frame_id
+      @.setData dd
     else
       for d in data
         if @.model.accumulate
