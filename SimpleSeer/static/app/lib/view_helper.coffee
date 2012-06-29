@@ -110,43 +110,18 @@ Handlebars.registerHelper 'featuredetail', (features) ->
   ret += "</tbody></table>"
   new Handlebars.SafeString(ret)
   
-
-#https://gist.github.com/1371586
-"""
- HELPER: #key_value
-
-  Usage: {{#key_value obj}} Key: {{key}} // Value: {{value}} {{/key_value}}
-
-  Iterate over an object, setting 'key' and 'value' for each property in
-  the object.
-"""
+# Usage: {{#key_value obj}} Key: {{key}} // Value: {{value}} {{/key_value}}
 Handlebars.registerHelper "key_value", (obj, fn) ->
-  buffer = ""
+  buffer = []
+  retVal = []
   key = undefined
   for key of obj
     if obj.hasOwnProperty(key)
-      buffer += fn(
-        key: key
-        value: obj[key]
-      )
-  buffer
-
-"""
-HELPER: #each_with_key
-  Usage: {{#each_with_key container key="myKey"}}...{{/each_with_key}}
-
-  Iterate over an object containing other objects. Each
-  inner object will be used in turn, with an added key ("myKey")
-  set to the value of the inner object's key in the container.
-"""
-Handlebars.registerHelper "each_with_key", (obj, fn) ->
-  context = undefined
-  buffer = ""
-  key = undefined
-  keyName = fn.hash.key
-  for key of obj
-    if obj.hasOwnProperty(key)
-      context = obj[key]
-      context[keyName] = key  if keyName
-      buffer += fn(context)
-  buffer
+      buffer.push key
+  _s = buffer.sort()
+  for k in _s
+    retVal += fn(
+      key: k
+      value: obj[k]
+    )
+  retVal
