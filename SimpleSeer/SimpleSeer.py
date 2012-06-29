@@ -328,13 +328,15 @@ class SimpleSeer(object):
                 iteration += 1
                 
                 self.capture()
-                realtime.ChannelManager().publish('capture.', { "capture": 1})
 
                 self.inspect()
                 self.check()
+                new_frame_ids = []
                 if self.config.record_all:
                     for frame in self.lastframes[-1]:
                         frame.save(safe = False)
+                        new_frame_ids.append(frame.id)
+                realtime.ChannelManager().publish('capture/', { "capture": 1, "frame_ids": new_frame_ids})
                 # TODO: I put this back under control of result
                 # Need to talk with Nate
                 #check any OLAPs

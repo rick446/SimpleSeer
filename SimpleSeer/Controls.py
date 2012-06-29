@@ -67,7 +67,7 @@ class ControlWatcher(threading.Thread):
             gc.collect()
             ss = self.control.SS    
             ss.capture()
-            realtime.ChannelManager().publish('capture.', { "capture": 1})
+            realtime.ChannelManager().publish('capture/', { "capture": 1})
 
             ss.inspect()
             ss.check()

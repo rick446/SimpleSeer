@@ -6,7 +6,7 @@ import vpx
 import bson
 import numpy as np
 from SimpleCV import Camera as ScvCamera
-from SimpleCV import VirtualCamera, Kinect, FrameSource, Image
+from SimpleCV import VirtualCamera, Kinect, FrameSource, Image, Scanner
 
 from . import util
 from . import models as M
@@ -89,6 +89,10 @@ class StillCamera(object):
         self.crop = crop
         if 'virtual' in cinfo:
             cam = VirtualCamera(cinfo['source'], cinfo['virtual'])
+        elif 'scanner' in cinfo:
+            cinfo.pop('scanner')
+            id = cinfo.pop('id')
+            cam = Scanner(id, cinfo)
         elif 'directory' in cinfo:
             cam = DirectoryCamera(cinfo['directory'])
         elif 'kinect' in cinfo:
@@ -122,6 +126,9 @@ class StillCamera(object):
         frame = M.Frame(capaturetime=datetime.utcnow(), camera=self.name)
         frame.image = self.getImage()
         return frame
+
+    def __getattr__(self, item):
+        return getattr(self._scv_cam, item)
 
 class DirectoryCamera(FrameSource):
     filelist = []

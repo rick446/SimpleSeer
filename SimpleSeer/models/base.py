@@ -2,6 +2,7 @@ import time
 import logging
 from cPickle import dumps, loads
 from datetime import datetime
+import calendar
 
 import bson
 import mongoengine
@@ -31,7 +32,7 @@ class Picklable(object):
             if (hasattr(v, "__json__")):
                 ret[k] = v.__json__()
             elif isinstance(v, datetime):
-                ret[k] = int(time.mktime(v.timetuple()) + v.microsecond/1e6)
+                ret[k] = calendar.timegm(v.timetuple())
             elif isinstance(v, mongoengine.fields.GridFSProxy):
                 if v is None:
                     ret[k] = None
