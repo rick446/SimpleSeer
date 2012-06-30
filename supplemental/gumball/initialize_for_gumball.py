@@ -23,8 +23,8 @@ Result.objects.delete()
 
 insp = Inspection( name= "Region", 
   method="region", 
-  parameters = { "x": 100, "y": 100, "w": 440, "h": 280 }, 
-   camera='Color Check')
+  parameters = { "x": 100, "y": 100, "w": 440, "h": 280 })
+   
 insp.save()
 
 meas = Measurement( name="Gumball Color", label="Color", method = "closestcolor", inspection = insp.id )
@@ -33,7 +33,6 @@ meas.save()
 meas = Measurement( name="Delivery Color", label="Color", method = "closestcolor_manual", inspection = insp.id )
 meas.save()
 
-m
 meas3 = Measurement( name="Delivery Time", label="Seconds", method = "timebetween_manual", inspection = insp.id, 
   parameters = dict( inspection = insp.id ))
 meas3.save()
@@ -59,25 +58,6 @@ o1.save()
 #o2.name = 'ColorDelivered'
 #o2.realtime = 1
 #o2.save()
-
-## Diameter of gumballs delivered
-of3 = OLAPFactory()
-qi3 = {'objType':'measurement', 'objName':'Delivery Radius', 'objFields':['capturetimeEpochMS', 'numeric', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
-o3 = of3.makeOLAP(queryInfo = qi3, descInfo = None)
-o3.allow = 1000
-o3.name = 'GumballDiameter'
-o3.realtime = 1
-o3.save()
-
-## Histogram of diameter of gumballs delivered
-of4 = OLAPFactory()
-qi4 = {'objType':'measurement', 'objName':'Delivery Radius', 'objFields':['capturetimeEpochMS', 'numeric', 'inspection', 'frame', 'measurement', 'id'], 'round': [2, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
-ci4 = {'name':'sumbucket', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10}
-o4 = of4.makeOLAP(queryInfo = qi4, descInfo = None, chartInfo = ci4)
-o4.allow = 1000
-o4.name = 'GumballDiameterHist'
-o4.realtime = 1
-o4.save()
 
 ## Delivery time, moving average
 of5 = OLAPFactory()

@@ -109,10 +109,7 @@ class ControlWatcher(threading.Thread):
                 
                 f.results.append(r,r2)
                 
-                
-              elif (r[0].string == "purple"):
-                self.control.state = 'notgood'
-                self.control.servo_bad() 
+
               else:
                 self.control.state = 'notgood'
                 self.control.servo_notgood()
@@ -122,7 +119,6 @@ class ControlWatcher(threading.Thread):
                 if since > 2:
                    self.control.state = 'notgood'
                    self.control.servo_bad()
-                   self.control.servo_mix()
                 
             f.save(safe = False)
   
@@ -150,20 +146,14 @@ class Controls(object):
 
     #servo setup
     fwheel = None
-    fwheel_pos1 = 170
-    fwheel_pos2 = 115
-    fwheel_pos3 = 51
-    fwheel_pos4 = 25
+    fwheel_pos1 = 85
+    fwheel_pos2 = 150
+    fwheel_pos4 = 20
     fwheel_pos5 = 0
 
     rwheel = None
-    rwheel_pos1 = 110
-    rwheel_pos2 = 137
-    rwheel_pos3 = 165
-
-    awheel_right = 0
-    awheel_stop = 158
-    awheel_left = 180
+    rwheel_pos2 = 97
+    rwheel_pos3 = 120
 
     SLEEPTIME = 1
     aggtime = 15
@@ -179,36 +169,50 @@ class Controls(object):
             
     def fire_green(self, state):
         self.firecolor(state, "green")
+        self.board.digital[6].write(1)
 
     def fire_yellow(self, state):
         self.firecolor(state, "yellow")
+        self.board.digital[5].write(1)
     
     def fire_orange(self, state):
         self.firecolor(state, "orange")
+        self.board.digital[4].write(1)
  
     def fire_red(self, state):
         self.firecolor(state, "red")
+        self.board.digital[3].write(1)
 
-
+    def fire_purple(self, state):
+        self.firecolor(state, "purple")
+        self.board.digital[2].write(1)
+        
     def servo_initialize(self):
         self.fwheel.write(self.fwheel_pos2)
         self.rwheel.write(self.rwheel_pos3)
         time.sleep(self.SLEEPTIME)
 
     def servo_inspection(self):
-        self.fwheel.write(self.fwheel_pos3 - 10)
-        time.sleep(0.2)
         self.fwheel.write(self.fwheel_pos1)
         self.rwheel.write(self.rwheel_pos3)
         time.sleep(self.SLEEPTIME)
 
 
     def servo_bad(self):
-        self.fwheel.write(self.fwheel_pos3)
-        self.rwheel.write(self.rwheel_pos1)
-        time.sleep(self.SLEEPTIME)
+        self.servo_notgood()
 
     def servo_notgood(self):
+        self.fwheel.write(self.fwheel_pos4 - 10)
+        time.sleep(0.2)
+        self.fwheel.write(self.fwheel_pos4 + 10)
+        time.sleep(0.2)
+        self.fwheel.write(self.fwheel_pos4)
+        time.sleep(0.2)
+        self.fwheel.write(self.fwheel_pos4 - 10)
+        time.sleep(0.2)
+        self.fwheel.write(self.fwheel_pos4 + 10)
+        time.sleep(0.2)
+
         self.fwheel.write(self.fwheel_pos4)
         self.rwheel.write(self.rwheel_pos2)
         time.sleep(self.SLEEPTIME)
@@ -218,13 +222,9 @@ class Controls(object):
         self.rwheel.write(self.rwheel_pos3)
         time.sleep(self.SLEEPTIME)
 
-    def servo_mix(self):
-        self.awheel.write(self.awheel_right)
-        time.sleep(self.ROTATE_TIME)
-        self.awheel.write(self.awheel_left)
-        time.sleep(self.ROTATE_TIME)
-        self.awheel.write(self.awheel_stop)
-      
+    def clear_leds(self):
+        for i in range(2,6):
+            self.board.digital[i].write(0)
 
 
     def __init__(self, config, SS):
@@ -238,13 +238,12 @@ class Controls(object):
        self.fwheel.mode = SERVO
        self.rwheel = self.board.get_pin('d:10:p')
        self.rwheel.mode = SERVO
-       self.awheel = self.board.get_pin('d:3:p')
-       self.awheel.mode = SERVO
-       self.awheel.write(self.awheel_stop)
+       
        
        self.state = 'start'
        
        self.controlobjects = [
+          ControlObject(7, self, [self.fire_purple]),
           ControlObject(9, self, [self.fire_red]),
           ControlObject(8, self, [self.fire_orange]),
           ControlObject(12, self, [self.fire_yellow]),
@@ -252,7 +251,7 @@ class Controls(object):
        ]
 
        self.colormatch_measurement = M.Measurement.objects(method="closestcolor")[0]
-       self.timesince_measurement = M.Measurement.objects(method="timesince_manual")[0]
+       self.timesince_measurement = M.Measurement.objects(method="timebetween_manual")[0]
        self.deliveredcolor_measurement = M.Measurement.objects(method="closestcolor_manual")[0]
        self.region_inspection = M.Inspection.objects[0]
        self.SS = SS

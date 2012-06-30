@@ -53,7 +53,7 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
     width = mongoengine.FloatField()
     height = mongoengine.FloatField()
     angle = mongoengine.FloatField()
-    #meancolor = mongoengine.ListField(mongoengine.FloatField())
+    meancolor = mongoengine.ListField(mongoengine.FloatField())
     
     #these are feature properties which are not saved
     #note that plugins can inject into this
