@@ -23,8 +23,8 @@ Result.objects.delete()
 
 insp = Inspection( name= "Region", 
   method="region", 
-  parameters = { "x": 100, "y": 100, "w": 440, "h": 280 }, 
-   camera='Color Check')
+  parameters = { "x": 100, "y": 100, "w": 440, "h": 280 })
+   
 insp.save()
 
 meas = Measurement( name="Gumball Color", label="Color", method = "closestcolorml", inspection = insp.id)
@@ -58,7 +58,6 @@ o2.allow = 1000
 o2.name = 'Colors Delivered'
 o2.realtime = 1
 o2.save()
-
 ## Delivery time, moving average
 of5 = OLAPFactory()
 qi5 = {'objType':'measurement', 'objName':'Delivery Time', 'objFields':['capturetimeEpochMS', 'numeric', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
