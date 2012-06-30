@@ -22,8 +22,8 @@ Result.objects.delete()
 
 insp = Inspection( name= "Region", 
   method="region", 
-  parameters = { "x": 100, "y": 100, "w": 440, "h": 280 }, 
-   camera='Color Check')
+  parameters = { "x": 100, "y": 100, "w": 440, "h": 280 })
+   
 insp.save()
 
 meas = Measurement( name="Gumball Color", label="Color", method = "closestcolorml", inspection = insp.id)
@@ -83,6 +83,7 @@ o2.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4}
 o2.customFilter = {} 
 o2.statsInfo = []
 o2.save()
+<<<<<<< HEAD
 
 c2 = Chart()
 c2.name = 'Color Delivered'
