@@ -36,6 +36,7 @@ class Core(object):
         self._events = Queue()
         self._clock = Clock(1.0, sleep=gevent.sleep)
         self._config = config
+        self.config = config #bkcompat for old SeerCore stuff
         self.cameras = []
         self.video_cameras = []
         for cinfo in config.cameras:
@@ -48,6 +49,7 @@ class Core(object):
             self.cameras.append(cam)
 
         self.loadPlugins()
+        self.reloadInspections()
         self.lastframes = deque()
         self.framecount = 0
         self.reset()
@@ -129,6 +131,43 @@ class Core(object):
         self.lastframes.append(currentframes)
         self.publish('capture/', { "capture": 1})
         return currentframes
+        
+    def inspect(self, frames = []):
+        if not len(frames) and not len(self.lastframes):
+            frames = self.capture()
+        elif not len(frames):
+            frames = self.lastframes[-1]
+        
+        for frame in frames:
+            frame.features = []
+            frame.results = []
+            for inspection in self.inspections:
+                if inspection.parent:  #root parents only
+                    continue
+                
+                if inspection.camera and frame.camera != inspection.camera:
+                    #this camera, or all cameras if no camera is specified
+                    continue
+                
+                feats = inspection.execute(frame.image)
+                frame.features.extend(feats)
+                for m in inspection.measurements:
+                    m.execute(frame, feats)
+                    
+            for watcher in self.watchers:
+                watcher.check(frame.results)
+                
+    @property
+    def results(self):
+        ret = []
+        for frameset in self.lastframes:
+            results = []
+            for f in frameset:
+                results += [f.results for f in frameset]
+            
+            ret.append(results)
+            
+        return ret
 
     def get_inspection(self, name):
         return M.Inspection.objects(name=name).next()

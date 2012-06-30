@@ -2,6 +2,7 @@
 import threading
 import datetime
 import time
+from glob import glob
 
 import models as M
 import gc
@@ -47,6 +48,7 @@ class ControlWatcher(threading.Thread):
           print self.control.state
 
           if self.control.state == "start":
+            self.control.clear_leds()
             self.control.servo_initialize()
             self.control.state = "waitforbutton"
 
@@ -70,7 +72,6 @@ class ControlWatcher(threading.Thread):
             realtime.ChannelManager().publish('capture/', { "capture": 1})
 
             ss.inspect()
-            ss.check()
 
             r = ss.results[-1][0] #NEED TO CHANGE THIS IF WE ADD NEW RESULTS
             f = ss.lastframes[-1][0]
@@ -82,6 +83,7 @@ class ControlWatcher(threading.Thread):
               if (r[0].string == self.control.matchcolor):
                 self.control.state = 'good'
                 self.control.servo_good()
+                self.control.clear_leds()
                 self.control.state = "start"
                 td = (datetime.datetime.utcnow() - self.control.starttime)
                 timesince = float(td.seconds) + td.microseconds / 1000000.0
@@ -205,19 +207,14 @@ class Controls(object):
         self.servo_notgood()
 
     def servo_notgood(self):
-        self.fwheel.write(self.fwheel_pos4 - 10)
-        time.sleep(0.2)
-        self.fwheel.write(self.fwheel_pos4 + 10)
-        time.sleep(0.2)
-        self.fwheel.write(self.fwheel_pos4)
-        time.sleep(0.2)
-        self.fwheel.write(self.fwheel_pos4 - 10)
-        time.sleep(0.2)
-        self.fwheel.write(self.fwheel_pos4 + 10)
-        time.sleep(0.2)
-
-        self.fwheel.write(self.fwheel_pos4)
         self.rwheel.write(self.rwheel_pos2)
+        
+        self.fwheel.write(self.fwheel_pos4 + 10)
+        time.sleep(0.2)
+        self.fwheel.write(self.fwheel_pos4 - 10)
+        time.sleep(0.2)
+        
+        self.fwheel.write(self.fwheel_pos4)
         time.sleep(self.SLEEPTIME)
 
     def servo_good(self):
@@ -229,15 +226,20 @@ class Controls(object):
         self.rwheel.write(self.rwheel_pos3)
         time.sleep(self.SLEEPTIME)
 
-   def clear_leds(self):
-        for i in range(2,6):
+    def clear_leds(self):
+        for i in range(2,7):
             self.board.digital[i].write(0)
 
 
     def __init__(self, config, SS):
        from pyfirmata import Arduino, util, SERVO
        self.SS = SS
-       self.board = Arduino(config['board'])
+       boardglob = config['board']
+       boards = glob(config['board'])
+       if not len(boards):
+              raise Exception("No Arduino found")
+       
+       self.board = Arduino(boards[0])
        self.iterator = util.Iterator(self.board)
        self.iterator.daemon = True
        self.iterator.start()
@@ -251,8 +253,8 @@ class Controls(object):
        
        self.controlobjects = [
           ControlObject(7, self, [self.fire_purple]),
-          ControlObject(9, self, [self.fire_red]),
-          ControlObject(8, self, [self.fire_orange]),
+          ControlObject(8, self, [self.fire_red]),
+          ControlObject(9, self, [self.fire_orange]),
           ControlObject(12, self, [self.fire_yellow]),
           ControlObject(13, self, [self.fire_green])
        ]

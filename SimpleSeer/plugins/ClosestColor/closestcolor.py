@@ -34,7 +34,6 @@ meas.save()
 class ClosestColorMeasurement(base.MeasurementPlugin):
 
     def __call__(self, frame, features):
-        
         results = []
         params = self.measurement.parameters
         pallette = {}

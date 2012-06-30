@@ -88,22 +88,14 @@ def run_core_states(session):
 
 
 def run_core(session):
-    session.args.program = 'test-program.py'
-    log = logging.getLogger(__name__)
-    log.info('core deprecated.  Use core-states. (forwarding core to core-states {0})'.format(session.args.program))
+    if session.statemachine:
+        session.args.program = session.statemachine       
+    else:
+        session.args.program = 'default-states.py'
+    #log = logging.getLogger(__name__)
+    #log.info('core deprecated.  Use core-states. (forwarding core to core-states {0})'.format(session.args.program))
     run_core_states(session)
-    return
-    """
-    _setup_command(session, use_gevent=False, remote_seer=False)
-    from SimpleSeer.SimpleSeer import SimpleSeer
-    import Pyro4
-    from SimpleSeer import models as M
 
-    seer = SimpleSeer()
-    Pyro4.Daemon.serveSimple(
-        { seer: "sightmachine.seer" },
-        ns=True)
-    """
 def run_perftest(session):
     _setup_command(session, use_gevent=False, remote_seer=False)
     from SimpleSeer.SimpleSeer import SimpleSeer
