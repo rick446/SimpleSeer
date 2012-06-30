@@ -1,4 +1,4 @@
-import glob
+from glob import glob
 import gevent.queue
 from datetime import datetime
 
@@ -135,7 +135,7 @@ class DirectoryCamera(FrameSource):
     counter = 0
 
     def __init__(self, path):
-        self.filelist = glob(path)
+	self.filelist = glob(path)
         self.counter = 0
 
     def getImage(self):

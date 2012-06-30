@@ -19,6 +19,7 @@ Inspection.objects.delete()
 Measurement.objects.delete()
 OLAP.objects.delete()
 Result.objects.delete()
+Chart.objects.delete()
 
 insp = Inspection( name= "Region", 
   method="region", 
@@ -47,7 +48,7 @@ o1.queryId = meas.id
 o1.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
 o1.since = None
 o1.before = None
-o1.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4}
+o1.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'field': 'string', 'default': 5}
 o1.customFilter = {} 
 o1.statsInfo = []
 o1.save()
@@ -79,11 +80,10 @@ o2.queryId = meas1.id
 o2.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
 o2.since = None
 o2.before = None
-o2.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4}
+o2.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'field': 'string', 'default': 5}
 o2.customFilter = {} 
 o2.statsInfo = []
 o2.save()
-<<<<<<< HEAD
 
 c2 = Chart()
 c2.name = 'Color Delivered'
@@ -139,19 +139,19 @@ o4 = OLAP()
 o4.name = 'DeliveredYellow'  
 o4.maxLen = 1000 
 o4.queryType = 'measurement_id' 
-o4.queryId = meas1.id 
+o4.queryId = meas.id 
 o4.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
 o4.since = None
 o4.before = None
 o4.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'default':5, 'field': 'string'}
-o4.customFilter = {'string': 'yellow'} 
+o4.customFilter = {'field': 'string', 'val': 'yellow'} 
 o4.statsInfo = []
-o4.postProc = {'movingcount':'string'}
+o4.postProc = {'movingCount':'string'}
 o4.save()
 
 c4 = Chart()
-c4.name = 'Candies by Color'
-c4.olap = o1.name
+c4.name = 'Delivered Candies by Color'
+c4.olap = o4.name
 c4.style = 'spline'
 c4.minval = 0
 c4.maxval = 100
@@ -172,14 +172,14 @@ o5 = OLAP()
 o5.name = 'DeliveredGreen'  
 o5.maxLen = 1000 
 o5.queryType = 'measurement_id' 
-o5.queryId = meas1.id 
+o5.queryId = meas.id 
 o5.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
 o5.since = None
 o5.before = None
 o5.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'default':5, 'field': 'string'}
-o5.customFilter = {'string': 'green'} 
+o5.customFilter = {'field': 'string', 'val': 'green'} 
 o5.statsInfo = []
-o5.postProc = {'movingcount':'string'}
+o5.postProc = {'movingCount':'string'}
 o5.save()
 
 c5 = Chart()
@@ -208,14 +208,14 @@ o6 = OLAP()
 o6.name = 'DeliveredPurple'  
 o6.maxLen = 1000 
 o6.queryType = 'measurement_id' 
-o6.queryId = meas1.id 
+o6.queryId = meas.id 
 o6.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
 o6.since = None
 o6.before = None
 o6.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'default':5, 'field': 'string'}
-o6.customFilter = {'string': 'purple'} 
+o6.customFilter = {'field': 'string', 'val': 'purple'} 
 o6.statsInfo = []
-o6.postProc = {'movingcount':'string'}
+o6.postProc = {'movingCount':'string'}
 o6.save()
 
 c6 = Chart()
@@ -242,14 +242,14 @@ o7 = OLAP()
 o7.name = 'DeliveredOrange'  
 o7.maxLen = 1000 
 o7.queryType = 'measurement_id' 
-o7.queryId = meas1.id 
+o7.queryId = meas.id 
 o7.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
 o7.since = None
 o7.before = None
 o7.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'default':5, 'field': 'string'}
-o7.customFilter = {'string': 'orange'} 
+o7.customFilter = {'field': 'string', 'val': 'orange'} 
 o7.statsInfo = []
-o7.postProc = {'movingcount':'string'}
+o7.postProc = {'movingCount':'string'}
 o7.save()
 
 c7 = Chart()
@@ -277,14 +277,14 @@ o8 = OLAP()
 o8.name = 'DeliveredRed'  
 o8.maxLen = 1000 
 o8.queryType = 'measurement_id' 
-o8.queryId = meas1.id 
+o8.queryId = meas.id 
 o8.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
 o8.since = None
 o8.before = None
 o8.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'default':5, 'field': 'string'}
-o8.customFilter = {'string': 'red'} 
+o8.customFilter = {'field': 'string', 'val': 'red'} 
 o8.statsInfo = []
-o8.postProc = {'movingcount':'string'}
+o8.postProc = {'movingCount':'string'}
 o8.save()
 
 c8 = Chart()
@@ -337,3 +337,4 @@ c9.dataMap = ['capturetime','string']
 c9.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
 c9.save()
 
+print "DANGER, WILL ROBINSON: For testing purposes in virtual env, delivered candies by color based on evaled candy."

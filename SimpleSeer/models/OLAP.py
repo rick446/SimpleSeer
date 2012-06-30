@@ -31,6 +31,8 @@ log = logging.getLogger(__name__)
 # groupTime: used for aggreagating result.  Possible values are: minute, hour, day
 # statsInfo: Select how to group and aggregate data.  List of dicts.  In each dict, the key is the name of the function and the val is the name of the field on which to apply the function
 #       Possible functions based on mongo aggregation framework, such as first, last, max, min, avg, sum
+# postProc: Stats function that require global data set (don't work well with mongo)
+#       Possible functions: movingCount
 #################################
 
   
@@ -46,7 +48,7 @@ class OLAPSchema(fes.Schema):
     before = fev.Int()
     #customFilter = V.JSON(if_empty=dict, if_missing=None)   
     #statsInfo = V.JSON(if_empty=dict, if_missing=None)
-    
+    #postProc = V.JSON(if_empty=dict, if_missing=None)
 
 class OLAP(SimpleDoc, mongoengine.Document):
 
@@ -61,6 +63,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
     before = mongoengine.IntField()
     customFilter = mongoengine.DictField()
     statsInfo = mongoengine.ListField()
+    postProc = mongoengine.DictField()
     
     meta = {
         'indexes': ['name']
@@ -77,7 +80,25 @@ class OLAP(SimpleDoc, mongoengine.Document):
         if len(results) > self.maxLen:
             results = self.autoAggregate(results)
         
+        results = self.doPostProc(results)
+        
         return results
+
+
+    def doPostProc(self, results, realtime=False):
+        
+        if 'movingCount' in self.postProc:
+            if realtime:
+                full_res = self.doQuery()
+                results[self.postProc['movingCount']] = len(full_res) + 1
+                
+            else:
+                print 'post proc'
+                for counter, r in enumerate(results):
+                    r[self.postProc['movingCount']] = len(results) - counter
+
+        return results
+
 
     def doQuery(self):
         db = self._get_db()

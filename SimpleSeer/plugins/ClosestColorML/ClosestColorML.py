@@ -7,7 +7,7 @@ from SimpleSeer.plugins import base
 class ClosestColorMeasurementML(base.MeasurementPlugin):
     def __init__(self,stuff):
         print stuff
-        path="/home/kscottz/SimpleSeer/SimpleSeer/plugins/ClosestColorML/"
+        path="./SimpleSeer/plugins/ClosestColorML/"
         fname = "ClosestColorML.pkl"
         pklfile = path + fname
         if( not os.path.exists(pklfile) ):
