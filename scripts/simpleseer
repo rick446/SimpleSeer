@@ -35,7 +35,7 @@ def main():
     parser.add_argument(
         '-l', '--logging', dest='logging', default='logging.ini')
     parser.add_argument(
-        '-c', '--config', dest='config', default='default.cfg')
+        '-c', '--config', dest='config', default='./etc/simpleseer.cfg')
     parser.add_argument('-p', '--profile', action='store_true')
     parser.add_argument('--profile-heap', action='store_true')
     core_states.add_argument('program')
@@ -79,10 +79,6 @@ def run_core_states(session):
     so = ScheduledOLAP()
     gevent.spawn_link_exception(so.runSked)
     
-    if session.arduino:
-        from SimpleSeer.Controls import Controls
-        core.control = Controls(session.arduino)
-
     core.start_socket_communication()
     gevent.spawn_link_exception(core.run)
  
@@ -100,6 +96,13 @@ def run_core(session):
     #log.info('core deprecated.  Use core-states. (forwarding core to core-states {0})'.format(session.args.program))
     run_core_states(session)
 
+def run_controls(session):
+    _setup_command(session, use_gevent=False, remote_seer=True)
+    from SimpleSeer.Controls import Controls
+    
+    if session.arduino:
+       Controls(session).run()
+
 def run_perftest(session):
     _setup_command(session, use_gevent=False, remote_seer=False)
     from SimpleSeer.SimpleSeer import SimpleSeer
@@ -109,7 +112,6 @@ def run_perftest(session):
     session.poll_interval = 0
     seer = SimpleSeer()
     seer.run()
-
 
 def run_web(session):
     _setup_command(session, use_gevent=True, remote_seer=True)
