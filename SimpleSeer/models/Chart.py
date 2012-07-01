@@ -15,6 +15,7 @@ log = logging.getLogger(__name__)
 #################################
 # name: the chart's name
 # olap: the name of the olap to query to get data
+# chartid: if overlaying multiple charts, provide the ID of the parent chart
 # style: the type of chart (line, pie, area, etc.), selected from the list in the schema
 # color: If chart has just one color, use the color parameter (this is just passed through: we need to more tightly define this)
 # colormap: If chart has multipe colors, map x-series labels to their appropriate colors.  e.g., {'average': 'blue', 'max': 'red'}
@@ -33,6 +34,7 @@ log = logging.getLogger(__name__)
 class ChartSchema(fes.Schema):
     name = fev.UnicodeString()
     olap = fev.UnicodeString()
+    chartid = fev.UnicodeString()
     style = fev.UnicodeString()            
     color = fev.UnicodeString(if_missing='blue')                  
     colormap = V.JSON(if_missing={})
@@ -53,6 +55,7 @@ class Chart(SimpleDoc, mongoengine.Document):
     name = mongoengine.StringField()
     olap = mongoengine.StringField()
     style = mongoengine.StringField()
+    chartid = mongoengine.ObjectIdField()
     color = mongoengine.StringField()
     colormap = mongoengine.DictField()
     labelmap = mongoengine.DictField()
@@ -79,7 +82,7 @@ class Chart(SimpleDoc, mongoengine.Document):
         data = []
         
         for r in results:
-            # Make this more generic than just capturetime
+            # TODO Make this more generic than just capturetime
             if 'capturetime' in r:
                 r['capturetime'] = timegm(datetime.timetuple(r['capturetime'])) * 1000 + r['capturetime'].microsecond / 1000
             
@@ -108,6 +111,7 @@ class Chart(SimpleDoc, mongoengine.Document):
         
         chartData = {'name': self.name,
                      'olap': self.olap,
+                     'chartid': self.chartid,
                      'style': self.style,
                      'color': self.color,
                      'colormap': self.colormap,

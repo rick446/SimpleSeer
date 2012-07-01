@@ -10,9 +10,8 @@ else:
 
 Session(config_file)
 
-from SimpleSeer.models import Inspection, Measurement, Frame, OLAP, Result
+from SimpleSeer.models import Inspection, Measurement, Frame, OLAP, Result, Chart
 from SimpleSeer.models import Result, Inspection, Measurement, Frame
-from SimpleSeer.models.OLAP import OLAP, OLAPFactory
  
 
 Frame.objects.delete()
@@ -20,6 +19,7 @@ Inspection.objects.delete()
 Measurement.objects.delete()
 OLAP.objects.delete()
 Result.objects.delete()
+Chart.objects.delete()
 
 insp = Inspection( name= "Region", 
   method="region", 
@@ -30,8 +30,8 @@ insp.save()
 meas = Measurement( name="Gumball Color", label="Color", method = "closestcolorml", inspection = insp.id)
 meas.save()
 
-meas = Measurement( name="Delivery Color", label="Color", method = "closestcolor_manual", inspection = insp.id )
-meas.save()
+meas1 = Measurement( name="Delivery Color", label="Color", method = "closestcolor_manual", inspection = insp.id )
+meas1.save()
 
 meas3 = Measurement( name="Delivery Time", label="Seconds", method = "timebetween_manual", inspection = insp.id, 
   parameters = dict( inspection = insp.id ))
@@ -40,97 +40,306 @@ meas3.save()
 
 
 ## Histogram of color of gumballs evaluated
-of1 = OLAPFactory()
-qi1 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1}
-ci1 = {'accumulate': True, 'name':'column', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10, 'colormap': {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'},'map': {'0': 'red','1': 'green','2': 'yellow','3': 'orange','4': 'purple'},'renderorder':2, 'halfsize':True}
-o1 = of1.makeOLAP(queryInfo = qi1, descInfo = None, chartInfo = ci1)
-o1.allow = 1000
-o1.name = 'Colors Evaluated'
-o1.realtime = 1
+o1 = OLAP()
+o1.name = 'EvaledColor'  
+o1.maxLen = 1000 
+o1.queryType = 'measurement_id' 
+o1.queryId = meas.id 
+o1.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
+o1.since = None
+o1.before = None
+o1.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'field': 'string', 'default': 5}
+o1.customFilter = {} 
+o1.statsInfo = []
 o1.save()
 
+c1 = Chart()
+c1.name = 'Color Evaluated'
+c1.olap = o1.name
+c1.style = 'column'
+c1.minval = 0
+c1.maxval = 100
+c1.xtype = 'linear'
+c1.colormap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
+c1.labelmap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
+c1.accumulate = True
+c1.renderorder = 2
+c1.halfsize = True
+c1.realtime = True
+c1.dataMap = ['capturetime','string']
+c1.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
+c1.save()
+
+
 ## Histogram of color of gumballs delivered
-of2 = OLAPFactory()
-qi2 = {'objType':'measurement', 'objName':'Delivery Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1}
-ci2 = {'accumulate': True, 'name':'column', 'color':'blue', 'minval':0, 'xtype':'linear', 'ticker':10, 'colormap': {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'},'map': {'0': 'red','1': 'green','2': 'yellow','3': 'orange','4': 'purple'}, 'renderorder':3}
-o2 = of2.makeOLAP(queryInfo = qi2, descInfo = None, chartInfo = ci2)
-o2.allow = 1000
-o2.name = 'Colors Delivered'
-o2.realtime = 1
+o2 = OLAP()
+o2.name = 'DeliveredColor'  
+o2.maxLen = 1000 
+o2.queryType = 'measurement_id' 
+o2.queryId = meas1.id 
+o2.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
+o2.since = None
+o2.before = None
+o2.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'field': 'string', 'default': 5}
+o2.customFilter = {} 
+o2.statsInfo = []
 o2.save()
-## Delivery time, moving average
-of5 = OLAPFactory()
-qi5 = {'objType':'measurement', 'objName':'Delivery Time', 'objFields':['capturetimeEpochMS', 'numeric', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None}
-ci5 = {'renderorder':100, 'name':'line'}
-o5 = of5.makeOLAP(queryInfo = qi5, descInfo = None, chartInfo=ci5)
-o5.name = 'Delivery Time'
-o5.allow = 1000
-o5.aggregate = 'mean'
-o5.realtime = 1
-o5.save()
+
+c2 = Chart()
+c2.name = 'Color Delivered'
+c2.olap = o2.name
+c2.style = 'column'
+c2.minval = 0
+c2.maxval = 100
+c2.xtype = 'linear'
+c2.colormap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
+c2.labelmap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
+c2.accumulate = True
+c2.renderorder = 3
+c2.halfsize = True
+c2.realtime = True
+c2.dataMap = ['capturetime','string']
+c2.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
+c2.save()
+
+
+## Delivery time
+o3 = OLAP()
+o3.name = 'DeliveryTime'  
+o3.maxLen = 1000 
+o3.queryType = 'measurement_id' 
+o3.queryId = meas3.id 
+o3.fields = ['capturetime','numeric', 'measurement_id', 'inspection_id', 'frame_id']
+o3.since = None
+o3.before = None
+o3.customFilter = {} 
+o3.statsInfo = []
+o3.save()
+
+c3 = Chart()
+c3.name = 'Delivery Time'
+c3.olap = o3.name
+c3.style = 'spline'
+c3.minval = 0
+c3.maxval = 100
+c3.xtype = 'datetime'
+c3.colormap = {}
+c3.labelmap = {}
+c3.accumulate = False
+c3.renderorder = 100
+c3.halfsize = False
+c3.realtime = True
+c3.dataMap = ['capturetime','numeric']
+c3.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
+c3.save()
+
 
 ## Yellow gumball delivered
-of6 = OLAPFactory()
-qi6 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'yellow'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
-di6 = {'formula':'movingCount', 'params':['capturetimeEpochMS', 'string'], 'window':86400, 'trim':False, 'partial':'drop'}
-ci6 = {'minval':0, 'maxval':None, 'color':'yellow', 'renderorder':4, 'name':'spline'}
-o6 = of6.makeOLAP(queryInfo = qi6, descInfo = di6, chartInfo=ci6)
-o6.allow = 1000
-o6.name = 'Candies by Color'
-o6.realtime = 1
-o6.save()
+o4 = OLAP()
+o4.name = 'DeliveredYellow'  
+o4.maxLen = 1000 
+o4.queryType = 'measurement_id' 
+o4.queryId = meas.id 
+o4.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
+o4.since = None
+o4.before = None
+o4.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'default':5, 'field': 'string'}
+o4.customFilter = {'field': 'string', 'val': 'yellow'} 
+o4.statsInfo = []
+o4.postProc = {'movingCount':'string'}
+o4.notNull = True
+o4.save()
+
+c4 = Chart()
+c4.name = 'Delivered Candies by Color'
+c4.olap = o4.name
+c4.style = 'spline'
+c4.minval = 0
+c4.maxval = 100
+c4.xtype = 'datetime'
+c4.colormap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
+c4.labelmap = {}
+c4.accumulate = False
+c4.renderorder = 4
+c4.halfsize = False
+c4.realtime = True
+c4.dataMap = ['capturetime','string']
+c4.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
+c4.save()
+
 
 ## Green gumball delivered
-of7 = OLAPFactory()
-qi7 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'green'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
-di7 = {'formula':'movingCount', 'params':['capturetimeEpochMS', 'string'], 'window':86400, 'trim':False, 'partial':'drop'}
-ci7 = {'minval':0, 'maxval':None, 'color':'green', 'name':'spline', 'chartid':str(o6.id), 'renderorder':50}
-o7 = of7.makeOLAP(queryInfo = qi7, descInfo = di7, chartInfo=ci7)
-o7.allow = 1000
-o7.name = 'Green Candies'
-o7.realtime = 1
-o7.save()
+o5 = OLAP()
+o5.name = 'DeliveredGreen'  
+o5.maxLen = 1000 
+o5.queryType = 'measurement_id' 
+o5.queryId = meas.id 
+o5.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
+o5.since = None
+o5.before = None
+o5.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'default':5, 'field': 'string'}
+o5.customFilter = {'field': 'string', 'val': 'green'} 
+o5.statsInfo = []
+o5.postProc = {'movingCount':'string'}
+o5.notNull = True
+o5.save()
+
+c5 = Chart()
+c5.name = 'Candies by Color Green'
+c5.olap = o5.name
+c5.chartid = c4.id
+c5.style = 'spline'
+c5.minval = 0
+c5.maxval = 100
+c5.xtype = 'datetime'
+c5.colormap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
+c5.labelmap = {}
+c5.accumulate = False
+c5.renderorder = c4.renderorder + 1
+c5.halfsize = False
+c5.realtime = True
+c5.dataMap = ['capturetime','string']
+c5.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
+c5.save()
+
+
+
 
 ## Purple gumball delivered
-of8 = OLAPFactory()
-qi8 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'purple'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
-di8 = {'formula':'movingCount', 'params':['capturetimeEpochMS', 'string'], 'window':86400, 'trim':False, 'partial':'drop'}
-ci8 = {'minval':0, 'maxval':None, 'color':'purple', 'name':'spline', 'chartid':str(o6.id), 'renderorder':50}
-o8 = of8.makeOLAP(queryInfo = qi8, descInfo = di8, chartInfo=ci8)
-o8.allow = 1000
-o8.name = 'Purple Candies'
-o8.realtime = 1
-o8.save()
+o6 = OLAP()
+o6.name = 'DeliveredPurple'  
+o6.maxLen = 1000 
+o6.queryType = 'measurement_id' 
+o6.queryId = meas.id 
+o6.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
+o6.since = None
+o6.before = None
+o6.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'default':5, 'field': 'string'}
+o6.customFilter = {'field': 'string', 'val': 'purple'} 
+o6.statsInfo = []
+o6.postProc = {'movingCount':'string'}
+o6.notNull = True
+o6.save()
+
+c6 = Chart()
+c6.name = 'Candies by Color Purple'
+c6.olap = o6.name
+c6.chartid = c4.id
+c6.style = 'spline'
+c6.minval = 0
+c6.maxval = 100
+c6.xtype = 'datetime'
+c6.colormap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
+c6.labelmap = {}
+c6.accumulate = False
+c6.renderorder = c4.renderorder + 1
+c6.halfsize = False
+c6.realtime = True
+c6.dataMap = ['capturetime','string']
+c6.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
+c6.save()
 
 
 ## Orange gumball delivered
-of8 = OLAPFactory()
-qi8 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'orange'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
-di8 = {'formula':'movingCount', 'params':['capturetimeEpochMS', 'string'], 'window':86400, 'trim':False, 'partial':'drop'}
-ci8 = {'minval':0, 'maxval':None, 'color':'orange', 'name':'spline', 'chartid':str(o6.id), 'renderorder':50}
-o8 = of8.makeOLAP(queryInfo = qi8, descInfo = di8, chartInfo=ci8)
-o8.allow = 1000
-o8.name = 'Orange Candies'
-o8.realtime = 1
-o8.save()
+o7 = OLAP()
+o7.name = 'DeliveredOrange'  
+o7.maxLen = 1000 
+o7.queryType = 'measurement_id' 
+o7.queryId = meas.id 
+o7.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
+o7.since = None
+o7.before = None
+o7.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'default':5, 'field': 'string'}
+o7.customFilter = {'field': 'string', 'val': 'orange'} 
+o7.statsInfo = []
+o7.postProc = {'movingCount':'string'}
+o7.notNull = True
+o7.save()
+
+c7 = Chart()
+c7.name = 'Candies by Color Orange'
+c7.olap = o7.name
+c7.chartid = c4.id
+c7.style = 'spline'
+c7.minval = 0
+c7.maxval = 100
+c7.xtype = 'datetime'
+c7.colormap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
+c7.labelmap = {}
+c7.accumulate = False
+c7.renderorder = c4.renderorder + 1
+c7.halfsize = False
+c7.realtime = True
+c7.dataMap = ['capturetime','string']
+c7.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
+c7.save()
+
+
 
 ## Red gumball delivered
-of9 = OLAPFactory()
-qi9 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'filter':{'field':'string', 'val':'red'}, 'since':None, 'before':None, 'limit':1000, 'required':None, 'cton':1, 'sinceTime':86400}
-di9 = {'formula':'movingCount', 'params':['capturetimeEpochMS', 'string'], 'window':86400, 'trim':False, 'partial':'drop'}
-ci9 = {'minval':0, 'maxval':None, 'color':'red', 'name':'spline', 'chartid':str(o6.id), 'renderorder':50}
-o9 = of9.makeOLAP(queryInfo = qi9, descInfo = di9, chartInfo=ci9)
-o9.allow = 1000
-o9.name = 'Red Candies'
-o9.realtime = 1
-o9.save()
+o8 = OLAP()
+o8.name = 'DeliveredRed'  
+o8.maxLen = 1000 
+o8.queryType = 'measurement_id' 
+o8.queryId = meas.id 
+o8.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
+o8.since = None
+o8.before = None
+o8.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'default':5, 'field': 'string'}
+o8.customFilter = {'field': 'string', 'val': 'red'} 
+o8.statsInfo = []
+o8.postProc = {'movingCount':'string'}
+o8.notNull = True
+o8.save()
+
+c8 = Chart()
+c8.name = 'Candies by Color Red'
+c8.olap = o8.name
+c8.chartid = c4.id
+c8.style = 'spline'
+c8.minval = 0
+c8.maxval = 100
+c8.xtype = 'datetime'
+c8.colormap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
+c8.labelmap = {}
+c8.accumulate = False
+c8.renderorder = c4.renderorder + 1
+c8.halfsize = False
+c8.realtime = True
+c8.dataMap = ['capturetime','string']
+c8.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
+c8.save()
+
 
 ## PassFail
-of10 = OLAPFactory()
-qi10 = {'objType':'measurement', 'objName':'Gumball Color', 'objFields':['capturetimeEpochMS', 'string', 'inspection', 'frame', 'measurement', 'id'], 'round': [None, None, None, None, None, None], 'since':None, 'before':None, 'limit':1000, 'required':None, 'passfail':1}
-ci10 = {'minval':0, 'maxval':None, 'name':'marbleoverview', 'renderorder':1}
-o10 = of10.makeOLAP(queryInfo = qi10, descInfo = None, chartInfo=ci10)
-o10.allow = 1000
-o10.name = 'Candies Overview'
-o10.realtime = 1
-o10.save()
+o9 = OLAP()
+o9.name = 'PassFail'  
+o9.maxLen = 1000 
+o9.queryType = 'measurement_id' 
+o9.queryId = meas1.id 
+o9.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
+o9.since = None
+o9.before = None
+o9.valueMap = {'purple': 0, 'default':1, 'field': 'string'}
+o9.customFilter = {} 
+o9.statsInfo = []
+o9.save()
+
+c9 = Chart()
+c9.name = 'Candies Overview'
+c9.olap = o9.name
+c9.style = 'marpleoverview'
+c9.minval = 0
+c9.maxval = 100
+c9.xtype = 'datetime'
+c9.colormap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
+c9.labelmap = {}
+c9.accumulate = False
+c9.renderorder = c4.renderorder + 1
+c9.halfsize = False
+c9.realtime = True
+c9.dataMap = ['capturetime','string']
+c9.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
+c9.save()
+
+print "DANGER, WILL ROBINSON: For testing purposes in virtual env, delivered candies by color based on evaled candy."

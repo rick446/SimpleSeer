@@ -138,7 +138,8 @@ class RealtimeOLAP():
                     cs = Chart.objects(olap = o.name)
                     
                     for c in cs:
-                        chartData = c.mapData([data])
+                        thisData = data.copy()
+                        chartData = c.mapData([thisData])
                         self.sendMessage(o, chartData)
     
     def resToData(self, o, res):
@@ -151,11 +152,12 @@ class RealtimeOLAP():
         if not o.customFilter:
             filterok = True
         else:
-            key, val = o.customFilter.items()[0]
-            if res.__getattribute__(key) == val:
+            key = o.customFilter['field']
+            val = o.customFilter['val']
+            if res[key] == val:
                 filterok = True
             else:
-                filterOK = False
+                filterok = False
         
         if sinceok and beforeok and filterok:
             
@@ -165,7 +167,9 @@ class RealtimeOLAP():
                 
                 # Map the values, if applicable
                 if (o.valueMap) and (o.valueMap['field'] == f):
-                    results[f] = o.valueMap.get(f, default = o.valueMap['default']) 
+                    results[f] = o.valueMap.get(results[f], o.valueMap['default']) 
+        
+            results = o.doPostProc(results, True)
         
         return results
 

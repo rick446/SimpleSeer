@@ -31,6 +31,8 @@ log = logging.getLogger(__name__)
 # groupTime: used for aggreagating result.  Possible values are: minute, hour, day
 # statsInfo: Select how to group and aggregate data.  List of dicts.  In each dict, the key is the name of the function and the val is the name of the field on which to apply the function
 #       Possible functions based on mongo aggregation framework, such as first, last, max, min, avg, sum
+# postProc: Stats function that require global data set (don't work well with mongo)
+#       Possible functions: movingCount
 #################################
 
   
@@ -46,7 +48,8 @@ class OLAPSchema(fes.Schema):
     before = fev.Int()
     #customFilter = V.JSON(if_empty=dict, if_missing=None)   
     #statsInfo = V.JSON(if_empty=dict, if_missing=None)
-    
+    #postProc = V.JSON(if_empty=dict, if_missing=None)
+    notNull = fev.Bool()
 
 class OLAP(SimpleDoc, mongoengine.Document):
 
@@ -61,6 +64,8 @@ class OLAP(SimpleDoc, mongoengine.Document):
     before = mongoengine.IntField()
     customFilter = mongoengine.DictField()
     statsInfo = mongoengine.ListField()
+    postProc = mongoengine.DictField()
+    notNull = mongoengine.BooleanField()
     
     meta = {
         'indexes': ['name']
@@ -77,7 +82,28 @@ class OLAP(SimpleDoc, mongoengine.Document):
         if len(results) > self.maxLen:
             results = self.autoAggregate(results)
         
+        results = self.doPostProc(results)
+        
+        if (results == []) and (self.notNull):
+            results = self.defaultOLAP()
+        
         return results
+
+
+    def doPostProc(self, results, realtime=False):
+        
+        if 'movingCount' in self.postProc:
+            if realtime:
+                full_res = self.doQuery()
+                results[self.postProc['movingCount']] = len(full_res) + 1
+                
+            else:
+                print 'post proc'
+                for counter, r in enumerate(results):
+                    r[self.postProc['movingCount']] = len(results) - counter
+
+        return results
+
 
     def doQuery(self):
         db = self._get_db()
@@ -266,3 +292,27 @@ class OLAP(SimpleDoc, mongoengine.Document):
         
         else:
             return []
+
+    def defaultOLAP(self):
+        from bson import ObjectId
+        # Returns data set of all default values, formatted for this olap
+        
+        fakeResult = {}
+        
+        for f in self.fields:
+            if f == self.queryType:
+                fakeResult[f] = self.queryId
+            elif f[-2:] == 'id':
+                fakeResult[f] = ObjectId()
+            elif f == 'capturetime':
+                fakeResult[f] = datetime(1970, 1, 1)
+            elif f == 'string':
+                fakeResult[f] = '0'
+            elif f == 'numeric':
+                fakeResult[f] = 0
+            else:
+                fakeResult[f] = 0
+                
+        fakeResult['_id'] = ObjectId()
+                
+        return [fakeResult]
