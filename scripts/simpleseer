@@ -76,12 +76,16 @@ def run_core_states(session):
     with open(session.args.program) as fp:
         exec fp in dict(core=core)
 
-    core.start_socket_communication()
-    gevent.spawn_link_exception(core.run)
-    
     so = ScheduledOLAP()
     gevent.spawn_link_exception(so.runSked)
+    
+    if session.arduino:
+        from SimpleSeer.Controls import Controls
+        core.control = Controls(session.arduino)
 
+    core.start_socket_communication()
+    gevent.spawn_link_exception(core.run)
+ 
     Pyro4.Daemon.serveSimple(
         { core: "sightmachine.seer" },
         ns=True)

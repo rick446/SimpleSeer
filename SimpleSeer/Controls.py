@@ -1,14 +1,6 @@
-
-import threading
-import datetime
-import time
 from glob import glob
-
-import models as M
-import gc
-import bson
-import realtime as realtime
-
+import time
+import datetime
 
 class ControlObject:
    """
@@ -26,6 +18,7 @@ class ControlObject:
 
    def __init__(self, pin, C, handlers = []):
        self.controller = C
+       self.pin_id = pin
        self.pin = C.board.get_pin('d:%d:i' % pin)
        self.pin.enable_reporting()
        self.state = False
@@ -33,116 +26,15 @@ class ControlObject:
 
    def read(self): 
          newstate = self.pin.read()
-         if newstate != None and newstate != self.state: #need to add some "smoothing" here probably
-             self.state = newstate
+         if newstate != None and newstate != self.state and newstate:
              self.fire(newstate) 
+         self.state = newstate
 
    def fire(self, state):
        for function_ref in self.handlers:
           function_ref(state)   
            
-
-class ControlWatcher(threading.Thread):
-    def run(self):
-        while True:
-          print self.control.state
-
-          if self.control.state == "start":
-            self.control.clear_leds()
-            self.control.servo_initialize()
-            self.control.state = "waitforbutton"
-
-          elif self.control.state == "waitforbutton":
-            for co in self.control.controlobjects:
-                co.read()
-
-          elif self.control.state == "getmarble":
-            self.control.servo_initialize()
-            self.control.state = "inspect"
-
-          elif self.control.state == "inspect":
-            self.control.servo_inspection()
-            self.control.inspecttime = datetime.datetime.utcnow()
-            self.control.state = "waitforinspectresults"
-
-          elif self.control.state == "waitforinspectresults":
-            gc.collect()
-            ss = self.control.SS    
-            ss.capture()
-            realtime.ChannelManager().publish('capture/', { "capture": 1})
-
-            ss.inspect()
-
-            r = ss.results[-1][0] #NEED TO CHANGE THIS IF WE ADD NEW RESULTS
-            f = ss.lastframes[-1][0]
-
-            if len(r):
-              
-              print "Result: ", r[0].string
-
-              if (r[0].string == self.control.matchcolor):
-                self.control.state = 'good'
-                self.control.servo_good()
-                self.control.clear_leds()
-                self.control.state = "start"
-                td = (datetime.datetime.utcnow() - self.control.starttime)
-                timesince = float(td.seconds) + td.microseconds / 1000000.0
-                
-                
-                r2 = M.ResultEmbed(
-                  result_id = bson.ObjectId(),
-                  measurement_id = self.control.deliveredcolor_measurement.id,
-                  measurement_name = self.control.deliveredcolor_measurement.name,
-                  inspection_id = self.control.region_inspection.id,
-                  inspection_name = self.control.region_inspection.name,
-                  numeric = None,
-                  string = str(self.control.matchcolor)
-                )
-                
-                
-                
-                r = M.ResultEmbed(
-                  result_id = bson.ObjectId(),
-                  measurement_id = self.control.timesince_measurement.id,
-                  measurement_name = self.control.timesince_measurement.name,
-                  inspection_id = self.control.region_inspection.id,
-                  inspection_name = self.control.region_inspection.name,
-                  numeric = timesince,
-                  string = str(timesince)
-                )
-                from util import jsonencode
-                print jsonencode([r,r2])
-                f.results.extend([r,r2])
-                
-
-              else:
-                self.control.state = 'notgood'
-                self.control.servo_notgood()
-
-            else:
-                since = (datetime.datetime.utcnow() - self.control.inspecttime).seconds
-                if since > .5:
-                   self.control.state = 'notgood'
-                   self.control.servo_bad()
-                
-            f.save(safe = False)
-  
-            
-          elif self.control.state == "notgood":
-              self.control.state = 'getmarble'
-
-          elif self.control.state == "good":
-              self.control.state = 'start'
-
-          else:
-            pass
-                
-            
-            
-          time.sleep(0.1)
-
-  
-     
+       
 class Controls(object):
     iterator = ''
     board = ''
@@ -231,9 +123,8 @@ class Controls(object):
             self.board.digital[i].write(0)
 
 
-    def __init__(self, config, SS):
+    def __init__(self, config):
        from pyfirmata import Arduino, util, SERVO
-       self.SS = SS
        boardglob = config['board']
        boards = glob(config['board'])
        if not len(boards):
@@ -258,19 +149,6 @@ class Controls(object):
           ControlObject(12, self, [self.fire_yellow]),
           ControlObject(13, self, [self.fire_green])
        ]
-
-       self.colormatch_measurement = M.Measurement.objects(method="closestcolor")[0]
-       self.timesince_measurement = M.Measurement.objects(method="timebetween_manual")[0]
-       self.deliveredcolor_measurement = M.Measurement.objects(method="closestcolor_manual")[0]
-       self.region_inspection = M.Inspection.objects[0]
-       self.SS = SS
-
-       if not "debug" in config:
-         self.cw = ControlWatcher()
-         self.cw.control = self
-         self.cw.daemon = True
-         self.cw.start()
-
 
 
 
