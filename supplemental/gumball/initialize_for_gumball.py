@@ -147,6 +147,7 @@ o4.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'de
 o4.customFilter = {'field': 'string', 'val': 'yellow'} 
 o4.statsInfo = []
 o4.postProc = {'movingCount':'string'}
+o4.notNull = True
 o4.save()
 
 c4 = Chart()
@@ -180,6 +181,7 @@ o5.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'de
 o5.customFilter = {'field': 'string', 'val': 'green'} 
 o5.statsInfo = []
 o5.postProc = {'movingCount':'string'}
+o5.notNull = True
 o5.save()
 
 c5 = Chart()
@@ -216,6 +218,7 @@ o6.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'de
 o6.customFilter = {'field': 'string', 'val': 'purple'} 
 o6.statsInfo = []
 o6.postProc = {'movingCount':'string'}
+o6.notNull = True
 o6.save()
 
 c6 = Chart()
@@ -250,6 +253,7 @@ o7.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'de
 o7.customFilter = {'field': 'string', 'val': 'orange'} 
 o7.statsInfo = []
 o7.postProc = {'movingCount':'string'}
+o7.notNull = True
 o7.save()
 
 c7 = Chart()
@@ -285,6 +289,7 @@ o8.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'organge': 3, 'purple': 4, 'de
 o8.customFilter = {'field': 'string', 'val': 'red'} 
 o8.statsInfo = []
 o8.postProc = {'movingCount':'string'}
+o8.notNull = True
 o8.save()
 
 c8 = Chart()

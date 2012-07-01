@@ -49,6 +49,7 @@ class OLAPSchema(fes.Schema):
     #customFilter = V.JSON(if_empty=dict, if_missing=None)   
     #statsInfo = V.JSON(if_empty=dict, if_missing=None)
     #postProc = V.JSON(if_empty=dict, if_missing=None)
+    notNull = fev.Bool()
 
 class OLAP(SimpleDoc, mongoengine.Document):
 
@@ -64,6 +65,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
     customFilter = mongoengine.DictField()
     statsInfo = mongoengine.ListField()
     postProc = mongoengine.DictField()
+    notNull = mongoengine.BooleanField()
     
     meta = {
         'indexes': ['name']
@@ -81,6 +83,9 @@ class OLAP(SimpleDoc, mongoengine.Document):
             results = self.autoAggregate(results)
         
         results = self.doPostProc(results)
+        
+        if (results == []) and (self.notNull):
+            results = self.defaultOLAP()
         
         return results
 
@@ -287,3 +292,27 @@ class OLAP(SimpleDoc, mongoengine.Document):
         
         else:
             return []
+
+    def defaultOLAP(self):
+        from bson import ObjectId
+        # Returns data set of all default values, formatted for this olap
+        
+        fakeResult = {}
+        
+        for f in self.fields:
+            if f == self.queryType:
+                fakeResult[f] = self.queryId
+            elif f[-2:] == 'id':
+                fakeResult[f] = ObjectId()
+            elif f == 'capturetime':
+                fakeResult[f] = datetime(1970, 1, 1)
+            elif f == 'string':
+                fakeResult[f] = '0'
+            elif f == 'numeric':
+                fakeResult[f] = 0
+            else:
+                fakeResult[f] = 0
+                
+        fakeResult['_id'] = ObjectId()
+                
+        return [fakeResult]
