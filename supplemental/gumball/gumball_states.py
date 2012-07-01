@@ -12,10 +12,10 @@ RATE=0.5
 @core.state('start')
 def start(state):
     core = state.core
-    core.colormatch_measurement = M.Measurement.objects(method="closestcolor")[0]
-    core.timesince_measurement = M.Measurement.objects(method="timebetween_manual")[0]
-    core.deliveredcolor_measurement = M.Measurement.objects(method="closestcolor_manual")[0]
-    core.region_inspection = M.Inspection.objects[0]
+    core.control.colormatch_measurement = M.Measurement.objects(method="closestcolor")[0]
+    core.control.timesince_measurement = M.Measurement.objects(method="timebetween_manual")[0]
+    core.control.deliveredcolor_measurement = M.Measurement.objects(method="closestcolor_manual")[0]
+    core.control.region_inspection = M.Inspection.objects[0]
     return core.state('run')
     
 
@@ -88,7 +88,7 @@ def run(state):
               numeric = timesince,
               string = str(timesince)
             )
-            from util import jsonencode
+            from SimpleSeer.util import jsonencode
             print jsonencode([r,r2])
             f.results.extend([r,r2])
             
@@ -107,9 +107,8 @@ def run(state):
 
         
       elif core.control.state == "notgood":
-          #core.control.state = 'getmarble'
-          core.control.state = 'start' #FIXME TODO NJO
-
+          core.control.state = 'getmarble'
+          
       elif core.control.state == "good":
           core.control.state = 'start'
 

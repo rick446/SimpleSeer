@@ -45,12 +45,12 @@ class Controls(object):
     fwheel = None
     fwheel_pos1 = 85
     fwheel_pos2 = 150
-    fwheel_pos4 = 20
+    fwheel_pos4 = 22
     fwheel_pos5 = 0
 
     rwheel = None
     rwheel_pos2 = 97
-    rwheel_pos3 = 120
+    rwheel_pos3 = 115
 
     SLEEPTIME = 1
     aggtime = 15
@@ -101,21 +101,19 @@ class Controls(object):
     def servo_notgood(self):
         self.rwheel.write(self.rwheel_pos2)
         
-        self.fwheel.write(self.fwheel_pos4 + 10)
-        time.sleep(0.2)
-        self.fwheel.write(self.fwheel_pos4 - 10)
-        time.sleep(0.2)
+        self.fwheel.write(self.fwheel_pos4 - 5)
+        time.sleep(0.1)
         
         self.fwheel.write(self.fwheel_pos4)
         time.sleep(self.SLEEPTIME)
 
     def servo_good(self):
+        self.rwheel.write(self.rwheel_pos3)
         self.fwheel.write(self.fwheel_pos5)
         time.sleep(0.1)
         self.fwheel.write(self.fwheel_pos5+10)
         time.sleep(0.05)
         self.fwheel.write(self.fwheel_pos5)
-        self.rwheel.write(self.rwheel_pos3)
         time.sleep(self.SLEEPTIME)
 
     def clear_leds(self):
