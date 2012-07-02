@@ -71,6 +71,7 @@ def start(state):
 def waitforbutton(state):
     core = state.core
     servo_initialize(core)
+    M.Alert.clear()
     for c in colors:
         core.publish("ControlOutput/", { c: False })
         
@@ -83,6 +84,7 @@ def selectcolor(state, channel, message):
     core.starttime = datetime.datetime.utcnow()
     core.matchcolor = message['color']
     core.publish("ControlOutput/", { message['color']: True })
+    M.Alert.info(message['color'] + " button pressed")
 
     return state.transition('inspect')
     
@@ -136,13 +138,15 @@ def inspect(state):
             from SimpleSeer.util import jsonencode
             print jsonencode([r,r2])
             f.results.extend([r,r2])
-            
+            M.Alert.info(r[0].string + " delivered")
             f.save(safe = False)
             return core.state("good")
           else:
+            M.Alert.info(r[0].string + " found, checking next item")
             f.save(safe = False)
             return core.state('notgood')
-
+          
+          
         else:
             since = (datetime.datetime.utcnow() - core.inspecttime).seconds
             if since > 1:
