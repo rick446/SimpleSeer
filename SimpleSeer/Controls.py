@@ -59,8 +59,11 @@ class Button:
 class Servo(object):
     pin = None
     position = 0
+    board = None
+    id = None
     
     def __init__(self, pin_id, board):
+        self.pin_id = id
         self.board = board
         self.pin = self.board.get_pin('d:%d:p' % pin_id)
         self.pin.mode = SERVO
@@ -68,10 +71,13 @@ class Servo(object):
     def moveTo(self, value):
         self.pin.write(value)
         position = value
+        print "moving servo"
        
 class DigitalOut(object):
     pin = None
     state = False
+    board = None
+    id = None
     
     def __init__(self, pin_id, board):
         self.board = board
@@ -80,6 +86,7 @@ class DigitalOut(object):
         self.state = False
     
     def write(self, val):
+        print "writing to pin"
         if val:
             self.on()
         else:
@@ -146,15 +153,16 @@ class Controls(object):
             return
             
         while True:
-            channel, message = self.subsock.recv()
+            channel = self.subsock.recv()
+            message = self.subsock.recv()            
             message = jsondecode(message)
-            if "name" in message and "value" in message:
-                name = message['name']
-                value = message['value']
+            
+            for name,value in message.items():
                 if name in self.servos:
-                    self.servos['name'].moveTo(value)
+                    self.servos[name].moveTo(value)
                 elif name in self.digitalouts:
-                    self.digitalouts['name'].write(value)
+                    self.digitalouts[name].write(value)
+            gevent.sleep(0)
 
     def run(self):
         if self.subsock and len(self.buttons):
@@ -170,7 +178,7 @@ class Controls(object):
             for b in self.buttons:
                 b.read()
             
-            time.sleep(0)
+            gevent.sleep(0)
 
 
 
