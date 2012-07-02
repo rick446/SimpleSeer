@@ -112,7 +112,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
         project = self.createFields()
         stats = self.createStats()
         
-        sort = {'capturetime': -1}
+        sort = {'capturetime': 1}
   
         pipeline = self.assemblePipeline(match, project, stats, sort)
   
