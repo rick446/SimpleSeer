@@ -143,7 +143,7 @@ def inspect(state):
         else:
             since = (datetime.datetime.utcnow() - core.inspecttime).seconds
             if since > 1:
-               return core.state('waitforbutton')
+               return core.state('notgood')
 
 @core.state("good")
 def good(state):
