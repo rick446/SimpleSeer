@@ -100,7 +100,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
             else:
                 print 'post proc'
                 for counter, r in enumerate(results):
-                    r[self.postProc['movingCount']] = len(results) - counter
+                    r[self.postProc['movingCount']] = counter + 1
 
         return results
 
