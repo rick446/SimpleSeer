@@ -84,6 +84,7 @@ def selectcolor(state, channel, message):
     core.starttime = datetime.datetime.utcnow()
     core.matchcolor = message['color']
     core.publish("ControlOutput/", { message['color']: True })
+    M.Alert.clear()
     M.Alert.info(message['color'] + " button pressed")
 
     return state.transition('inspect')
@@ -138,10 +139,12 @@ def inspect(state):
             from SimpleSeer.util import jsonencode
             print jsonencode([r,r2])
             f.results.extend([r,r2])
+            M.Alert.clear()
             M.Alert.info(r[0].string + " delivered")
             f.save(safe = False)
             return core.state("good")
           else:
+            M.Alert.clear()
             M.Alert.info(r[0].string + " found, checking next item")
             f.save(safe = False)
             return core.state('notgood')
