@@ -52,7 +52,7 @@ class ChannelManager(object):
         return sub_sock
 
     def unsubscribe(self, name, sub_sock):
-        log.info('Unubscribe to %s: %s', name, id(sub_sock))
+        log.info('Unsubscribe to %s: %s', name, id(sub_sock))
         channel = self._channels.get(name, None)
         if channel is None: return
         channel.pop(id(sub_sock), None)

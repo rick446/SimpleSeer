@@ -31,7 +31,8 @@ def main():
         'shell', description='Run the ipython shell')
     notebook = subparsers.add_parser(
         'notebook', description='Run the ipython notebook server')
-
+    controls = subparsers.add_parser(
+        'controls', description='Run a Control event server')
     parser.add_argument(
         '-l', '--logging', dest='logging', default='logging.ini')
     parser.add_argument(
@@ -47,6 +48,7 @@ def main():
     scrub.set_defaults(func=run_scrubber)
     shell.set_defaults(func=run_shell)
     notebook.set_defaults(func=run_notebook)
+    controls.set_defaults(func=run_controls)
 
 
     args = parser.parse_args()
@@ -98,6 +100,7 @@ def run_core(session):
 
 def run_controls(session):
     _setup_command(session, use_gevent=False, remote_seer=True)
+    #note that we do run gevent, but we don't want to monkey.patch_all
     from SimpleSeer.Controls import Controls
     
     if session.arduino:
