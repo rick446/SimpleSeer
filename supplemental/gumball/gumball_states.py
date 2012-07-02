@@ -61,6 +61,9 @@ def start(state):
     core.timesince_measurement = M.Measurement.objects(method="timebetween_manual")[0]
     core.deliveredcolor_measurement = M.Measurement.objects(method="closestcolor_manual")[0]
     core.region_inspection = M.Inspection.objects[0]
+    core.capture()
+    core.publish('capture/', { "capture": 1})
+    
     return core.state('waitforbutton')
     
 
