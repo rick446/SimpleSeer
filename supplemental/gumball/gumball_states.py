@@ -112,7 +112,7 @@ def inspect(state):
 
         if len(r):
           print "Result: ", r[0].string
-
+          res = r
           if (r[0].string == core.matchcolor):
             td = (datetime.datetime.utcnow() - core.starttime)
             timesince = float(td.seconds) + td.microseconds / 1000000.0
@@ -140,12 +140,12 @@ def inspect(state):
             print jsonencode([r,r2])
             f.results.extend([r,r2])
             M.Alert.clear()
-            M.Alert.info(r[0].string + " delivered")
+            M.Alert.info(res[0].string + " delivered")
             f.save(safe = False)
             return core.state("good")
           else:
             M.Alert.clear()
-            M.Alert.info(r[0].string + " found, checking next item")
+            M.Alert.info(res[0].string + " found, checking next item")
             f.save(safe = False)
             return core.state('notgood')
           
