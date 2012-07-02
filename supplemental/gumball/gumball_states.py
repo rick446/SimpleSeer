@@ -9,13 +9,13 @@ import SimpleSeer.realtime as realtime
 
 
 #servo constants
-fwheel_pos1 = 85
-fwheel_pos2 = 150
-fwheel_pos4 = 22
+fwheel_pos1 = 97
+fwheel_pos2 = 163
+fwheel_pos4 = 23
 fwheel_pos5 = 0
 
-rwheel_pos2 = 97
-rwheel_pos3 = 115
+rwheel_pos2 = 130
+rwheel_pos3 = 157
 
 SLEEPTIME = 1
 aggtime = 15
@@ -37,7 +37,7 @@ def servo_inspection(core):
 
 def servo_notgood(core):
     core.publish("ControlOutput/", { "rwheel": rwheel_pos2})
-    core.publish("ControlOutput/", { "fwheel": fwheel_pos4 - 5 })
+    core.publish("ControlOutput/", { "fwheel": fwheel_pos4 - 10 })
     sleep(0.1)
     
     core.publish("ControlOutput/", { "fwheel": fwheel_pos4 })
@@ -46,8 +46,8 @@ def servo_notgood(core):
 def servo_good(core):
     core.publish("ControlOutput/", { "rwheel": rwheel_pos3 })
     core.publish("ControlOutput/", { "fwheel": fwheel_pos5 })
-    sleep(0.1)
-    core.publish("ControlOutput/", { "fwheel": fwheel_pos5+10 })
+    sleep(0.2)
+    core.publish("ControlOutput/", { "fwheel": fwheel_pos5 + 10})
     sleep(0.1)
     core.publish("ControlOutput/", { "fwheel": fwheel_pos5 })
     sleep(SLEEPTIME)
