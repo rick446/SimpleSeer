@@ -2,6 +2,11 @@
 
 from SimpleSeer.base import *
 from SimpleSeer.Session import Session
+from os import system
+import mongoengine
+
+system('echo "db.dropDatabase()" | mongo default')
+
 
 if (len(sys.argv) > 1):
    config_file = sys.argv[1] 
@@ -12,14 +17,8 @@ Session(config_file)
 
 from SimpleSeer.models import Inspection, Measurement, Frame, OLAP, Result, Chart
 from SimpleSeer.models import Result, Inspection, Measurement, Frame
- 
 
-Frame.objects.delete()
-Inspection.objects.delete()
-Measurement.objects.delete()
-OLAP.objects.delete()
-Result.objects.delete()
-Chart.objects.delete()
+
 
 insp = Inspection( name= "Region", 
   method="region", 
@@ -27,7 +26,19 @@ insp = Inspection( name= "Region",
    
 insp.save()
 
-meas = Measurement( name="Gumball Color", label="Color", method = "closestcolorml", inspection = insp.id)
+meas = Measurement( name="Gumball Color", label="Color", method = "closestcolor", inspection = insp.id, 
+parameters =  {u'ignore': {u'empty': [52.05419642857143,
+   55.84642045454545,
+   56.93068993506493],
+  u'grey': [9.491712662337662, 12.480714285714285, 24.281233766233765]},
+ u'pallette': {u'green': [183.29511363636362,
+   191.0861038961039,
+   33.63636363636363],
+  u'orange': [253.12191558441558, 120.15337662337663, 11.212978896103897],
+  u'purple': [129.46625, 80.79396103896104, 90.85826298701299],
+  u'red': [254.67767045454545, 14.35101461038961, 27.175430194805195],
+  u'yellow': [221.99814123376623, 174.07620941558443, 0.006461038961038961]}}
+)
 meas.save()
 
 meas1 = Measurement( name="Delivery Color", label="Color", method = "closestcolor_manual", inspection = insp.id )
