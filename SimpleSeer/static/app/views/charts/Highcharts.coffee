@@ -4,8 +4,8 @@ ChartView = require '../chart'
 module.exports = class HighchartsLib extends ChartView
   template: require '../templates/chart'
   initialize:(d) =>
-    super d
     @lib = 'highcharts'
+    super d
     this
 
   buildChart: () =>
@@ -34,8 +34,8 @@ module.exports = class HighchartsLib extends ChartView
                 Highcharts.dateFormat('%m/%d<br>%I:%M:%S', this.value)
               else
                 m = application.charts.get @.chart.id
-                if m.attributes.labelmap && m.attributes.labelmap.length
-                  return m.labelmap[this.value]
+                if m.attributes.labelmap && m.attributes.labelmap[this.value]
+                  return m.attributes.labelmap[this.value]
                 else
                   return this.value
         yAxis:
@@ -44,16 +44,20 @@ module.exports = class HighchartsLib extends ChartView
       chart.id = @id
     super chart
 
-  addPoint: (d) =>
+  addPoint: (d,redraw=true,shift=true) =>
     super(d)
     if @.stack
       @.stack.add d
     series = @._c.get @.id
-    series.addPoint(d,true,true)
+    series.addPoint(d,redraw,shift)
 
   setData: (d) =>
     super(d)
     series = @._c.get @.id
+    #series.setData([])
+    #for _d in d
+    #  @.addPoint(_d, false, false)
+    #@_c.redraw()
     series.setData(d)
     
   showTooltip: (id) =>
@@ -92,3 +96,4 @@ module.exports = class HighchartsLib extends ChartView
     marker:
       enabled: true
       radius: 1
+    data:[]

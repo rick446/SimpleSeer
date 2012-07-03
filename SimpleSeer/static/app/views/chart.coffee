@@ -18,6 +18,8 @@ module.exports = class ChartView extends View
     @realtime = @model.realtime || false
     @type = @model.name.toLowerCase()
     @accumulate = @model['accumulate'] || false
+    @olap = @model.olap
+    @color = @model.color
     if @accumulate
       _m = application.charts.get @id
       @stack = _m.pointStack()
@@ -30,8 +32,7 @@ module.exports = class ChartView extends View
   addPoint: =>
     return
   incPoint: (d) =>
-    if @.stack
-      ep = @.stack.add d
+    return
 
   alterPoint: =>
     return
@@ -43,9 +44,11 @@ module.exports = class ChartView extends View
   afterRender: =>
     # may not need this
     @buildChart()
+    #todo: track all subscriptions. If subscribe is already in place, just bind callback, dont re-subscribe
     if @.realtime && application.socket
-      application.socket.on "message:Chart/#{@.name}/", @_update
-      application.socket.emit 'subscribe', 'Chart/'+@.name+'/'
+      application.socket.on "message:OLAP/#{@.olap}/", @_update
+      if !application.subscriptions['OLAP/'+@.olap+'/']
+        application.subscriptions['OLAP/'+@.olap+'/'] = application.socket.emit 'subscribe', 'OLAP/'+@.olap+'/'
 
   getRenderData: =>
     retVal = application.charts.get(@.anchorId)
@@ -82,13 +85,16 @@ module.exports = class ChartView extends View
     @_drawData dd, reset
   
   _formatChartPoint: (d) =>
-    #console.log d
+    #todo: push some of this up the abstraction chain
     if !@.model.accumulate
       cp = @.clickPoint
       mo = @.overPoint
     if @.model.xtype == 'datetime'
       d.d[0] = moment(d.d[0])
     if @.model.accumulate
+      #if !d.d?
+      #  console.dir d
+      #  console.trace()
       _id = d.d[1]
     else
       _id = d.m[2]
@@ -101,6 +107,7 @@ module.exports = class ChartView extends View
         mouseOver: mo
         click: cp
         #unselect: @.unselectPoint #application.charts.removeFrame
+    return _point
 
   overPoint: (e) =>
     if application.charts._imageLoader
@@ -126,27 +133,39 @@ module.exports = class ChartView extends View
     return false
 
   #todo: move this to setData
-  _drawData: (data,reset) =>
+  _drawData: (data,reset=false) =>
     dd = []
     if reset
       if @.model.accumulate
         dd = @.stack.buildData data
       else
+        #if @.name == 'Delivered Candies by Color' || @.name == 'Candies by Color Green'
+        #  console.log data
         for d in data
-          p = @_formatChartPoint d
-          dd.push p
-        #application.charts.lastframe = d.frame_id
+          #if @.name == 'Delivered Candies by Color' || @.name == 'Candies by Color Green'
+          #  console.log d.d[1]
+          if d.d[1] > 0
+            p = @_formatChartPoint d
+            dd.push p
+      #if @olap == 'DeliveredGreen'
+      #  console.dir dd
       @.setData dd
     else
       for d in data
+        #if @olap == 'DeliveredGreen'
+        #  console.log @_formatChartPoint d
         if @.model.accumulate
-          @.incPoint @_formatChartPoint d 
+          #console.dir d
+          #console.trace()
+          @.incPoint @_formatChartPoint d
         else
           @.addPoint(@_formatChartPoint(d),true,true)
-          application.charts.lastframe = d.frame_id
 
   _update: (data) =>
-    @_drawData data.data.m
+    #if @olap == 'PassFail'
+    #  console.trace()
+    #console.log @olap, data.data.m.data
+    @_drawData data.data.m.data
 
   render: =>
     super()
