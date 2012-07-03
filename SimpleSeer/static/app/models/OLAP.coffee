@@ -5,8 +5,8 @@ module.exports = class OLAP extends Model
 
   pointStack: () ->
     stack : []
-    add: (d,shift=true) ->
-      _a = {x:d.x.toString(),y:d.y,id:d.id.toString()}
+    add: (d,shift=false) ->
+      _a = {x:d.x,y:d.y,id:d.id}
       @.stack.push _a
       if shift
         p = @.stack.shift()
@@ -19,8 +19,7 @@ module.exports = class OLAP extends Model
       if !data
         data = @.view.stack.stack
       dd = []
-      console.log @.attributes.labelmap.length
-      if @.attributes.labelmap && @.attributes.labelmap.length > 0
+      if @.attributes.labelmap
         for i of @.attributes.labelmap
           dd[i] = {x:i,id:i,y:0}
           if @.attributes.colormap && @.attributes.colormap[i]

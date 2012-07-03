@@ -31,3 +31,5 @@ def relay(s1, s2, prefix):
         multipart_msg = s1.recv_multipart()
         log.info('relay %s %r', prefix, multipart_msg[0])
         s2.send_multipart(multipart_msg)
+        if (multipart_msg[0][:4] == 'OLAP'):
+            log.info(multipart_msg[1])

@@ -28,10 +28,11 @@ module.exports = class OLAPs extends Collection
           cn = 'graph-half-size'
           inHalf = true
         #mod.view = new ChartView({id:me.id,model:me,className:cn})
-        mod.view = new charts[me.style]({id:me.id,model:me,className:cn})
-        #mod.view.anchorId = me.id
-        #if mod.id == '4fdb762efb920a5ded000007'
-        mod.view.render()
+        if charts[me.style]
+          mod.view = new charts[me.style]({id:me.id,model:me,className:cn})
+          mod.view.render()
+        else
+          console.error me.style + ' is not a valid chart type'
     return
 
   previewImage: (fId) =>
