@@ -14,6 +14,8 @@ module.exports = class Router extends Backbone.Router
   home: ->
     application.charts.fetch
       success: (d1, d2) ->
+        if application.settings['ui_enablesubnav']? and not application.settings['ui_enablesubnav']
+          $('.subnav').hide()
         $('ul.nav').find(".active").removeClass("active")
         $('ul.nav').find('li.charts').addClass('active')
         $('#main').slideReplace application.homeView.render().el, 'left'
