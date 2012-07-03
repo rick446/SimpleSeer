@@ -164,7 +164,7 @@ module.exports = class ChartView extends View
   _update: (data) =>
     #if @olap == 'PassFail'
     #  console.trace()
-    console.log @olap, data.data.m.data
+    #console.log @olap, data.data.m.data
     @_drawData data.data.m.data
 
   render: =>

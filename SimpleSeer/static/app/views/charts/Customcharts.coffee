@@ -24,7 +24,7 @@ module.exports = class Customcharts extends ChartView
 
 
   incPoint: (d) =>
-    console.log 'inc'
+    #console.log 'inc'
     super d
     #if @.stack
     #  ep = @.stack.add d false
@@ -33,7 +33,7 @@ module.exports = class Customcharts extends ChartView
     return
 
   setData: (d) =>
-    console.log 'set'
+    #console.log 'set'
     super d
     if @.stack
       for _d in d
