@@ -77,20 +77,20 @@ class Chart(SimpleDoc, mongoengine.Document):
         return "<Chart %s>" % self.name
     
     def mapData(self, results):
-        from calendar import timegm
-        from datetime import datetime
         data = []
         
         for r in results:
             # TODO Make this more generic than just capturetime
             if 'capturetime' in r:
-                r['capturetime'] = timegm(datetime.timetuple(r['capturetime'])) * 1000 + r['capturetime'].microsecond / 1000
-            
-            thisData = [r[d] for d in self.dataMap]
-            thisMeta = [r[m] for m in self.metaMap]
+                if r['capturetime'] is not None:
+                    r['capturetime'] = int(float(r['capturetime'].strftime('%s.%f')) * 1000)
+                else:
+                    r['capturetime'] = 0
+            thisData = [r.get(d, 0) for d in self.dataMap]
+            thisMeta = [r.get(m, 0) for m in self.metaMap]
             
             data.append({'d': thisData, 'm': thisMeta})
-                
+            
         return data
     
     def createChart(self, **kwargs):
@@ -98,16 +98,19 @@ class Chart(SimpleDoc, mongoengine.Document):
         # Get the OLAP and its data
         o = OLAP.objects(name=self.olap)
         if len(o) == 1:
-            if ('since' in kwargs):
-                o[0].since = int(kwargs['since'] / 1000)
+            o = o[0]
+            if ('sincetime' in kwargs):
+                o.since = int(kwargs['sincetime'] / 1000)
+        
+            if 'beforetime' in kwargs:
+                o.before = int(kwargs['beforetime'] / 1000)
     
-            if 'before' in kwargs:
-                o[0].before = int(kwargs['since'] / 1000)
-    
-            data = o[0].execute()
+            data = o.execute()
         else:
             log.warn("Found %d OLAPS in query for %s" % (len(o), olap))
             data = []
+        
+        print 'Running since %d' % o.since
         
         chartData = {'name': self.name,
                      'olap': self.olap,
