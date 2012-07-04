@@ -50,7 +50,7 @@ module.exports = class FramelistView extends View
     return this
 
   postRender: =>
-    $('#filter_form input[name=time_from]').datetimepicker {timeFormat: 'hh:mm:ss'}
+    $('#filter_form input[name=time_from]').datetimepicker({timeFormat: 'hh:mm:ss'}).datepicker( "setDate",  new Date(@collection.earliest_date*1000))
     $('#filter_form input[name=time_to]').datetimepicker {timeFormat: 'hh:mm:ss'}
     $.get '/cameras', (resp)=>
       camera_list = $('#filter_form select')
@@ -131,10 +131,11 @@ module.exports = class FramelistView extends View
         if input.value != ''
           if input.name == 'time_from' || input.name == 'time_to'
             @filter[input.name] = Math.floor($('input[name='+input.name+']').datepicker( "getDate" ).getTime())
-            if input.name == 'time_from'
+            if input.name == 'time_to'
               @newest = @filter[input.name]
           else
             @filter[input.name] = input.value
+    @reset()
     @$el.find('#frame_holder').html 'Loading...'
     @$el.find('#frame_counts').hide()
     @fetchFiltered()
