@@ -17,6 +17,7 @@ Application =
     FrameSets = require 'collections/framesets'
     Pallette = require 'lib/ui_helper'
     @pallette = new Pallette()
+    @subscriptions = {}
 
     if !@.isMobile
       @.socket = io.connect '/rt'

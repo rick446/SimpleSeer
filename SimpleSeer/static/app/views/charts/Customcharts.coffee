@@ -4,8 +4,11 @@ ChartView = require '../chart'
 module.exports = class Customcharts extends ChartView
   template: require '../templates/chart'
   initialize:(d) =>
-    super d 
+    #@.$el = $ "<div/>", id: @id
     @lib = 'customchart'
+    _m = application.charts.get @id
+    @stack = _m.pointStack()
+    super d
     this
 
   buildChart: =>
@@ -13,22 +16,30 @@ module.exports = class Customcharts extends ChartView
     #super new application.charts.customCharts[data.chartInfo.name] data
 
   addPoint: (d) =>
-    console.log 'add point!'
+    #console.log 'add'
     super d
     if @.stack
-      @.stack.add d
-      #@.addPoint(d)
-      @.render($('#'+@.anchorId))
+      @.stack.add d, false
+      @.update()
+
 
   incPoint: (d) =>
-    #console.log 'inc point!'
+    #console.log 'inc'
     super d
+    #if @.stack
+    #  ep = @.stack.add d false
+    @.render($('#'+@.anchorId))
+
     return
 
   setData: (d) =>
-    #console.log 'set data!'
+    #console.log 'set'
     super d
-    #@.render()
+    if @.stack
+      for _d in d
+        #console.log _d
+        @.stack.add _d, false
+    @.update()
 
   render: =>
     super()
