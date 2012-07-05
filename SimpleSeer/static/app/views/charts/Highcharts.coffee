@@ -84,6 +84,7 @@ module.exports = class HighchartsLib extends ChartView
     d.y = 1
     super d
     if @.stack
+      @stack.add d
       dd = @.stack.buildData()
       @.setData(dd)
     return

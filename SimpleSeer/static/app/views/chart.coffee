@@ -22,9 +22,8 @@ module.exports = class ChartView extends View
     @color = @model.color
     if @accumulate
       _m = application.charts.get @id
-      @stack = _m.pointStack()
-    this
-    tf = Math.round((new Date()).getTime() / 1000) - application.charts.timeframe
+      @stack = _m.pointStack()    
+    tf = new moment().utc().subtract('s',application.charts.timeframe).valueOf()
     @update tf,null,true
     this  
   setData: =>
@@ -32,7 +31,7 @@ module.exports = class ChartView extends View
   addPoint: =>
     return
   incPoint: (d) =>
-    return
+    return d
 
   alterPoint: =>
     return
@@ -46,9 +45,9 @@ module.exports = class ChartView extends View
     @buildChart()
     #todo: track all subscriptions. If subscribe is already in place, just bind callback, dont re-subscribe
     if @.realtime && application.socket
-      application.socket.on "message:OLAP/#{@.olap}/", @_update
-      if !application.subscriptions['OLAP/'+@.olap+'/']
-        application.subscriptions['OLAP/'+@.olap+'/'] = application.socket.emit 'subscribe', 'OLAP/'+@.olap+'/'
+      application.socket.on "message:Chart/#{@.name}/", @_update
+      if !application.subscriptions['Chart/'+@.name+'/']
+        application.subscriptions['Chart/'+@.name+'/'] = application.socket.emit 'subscribe', 'Chart/'+@.name+'/'
 
   getRenderData: =>
     retVal = application.charts.get(@.anchorId)
@@ -67,13 +66,12 @@ module.exports = class ChartView extends View
       console.error 'frm and or to required'
       return false
     $.getJSON(url, (data) =>
-      #@._drawDataLegacy data.data,reset
       @._drawData data.data,reset
       $('.alert_error').remove()
       return
      ).error =>
        SimpleSeer.alert('Connection lost','error')
-
+  """
   _drawDataLegacy: (data, reset) =>
     if data.length == 0
       return
@@ -83,14 +81,14 @@ module.exports = class ChartView extends View
         data: [d[0], d[1]]
         frame_id: d[3]
     @_drawData dd, reset
-  
+  """
   _formatChartPoint: (d) =>
     #todo: push some of this up the abstraction chain
     if !@.model.accumulate
       cp = @.clickPoint
       mo = @.overPoint
     if @.model.xtype == 'datetime'
-      d.d[0] = moment(d.d[0])
+      d.d[0] = new moment.utc(d.d[0])
     if @.model.accumulate
       #if !d.d?
       #  console.dir d
@@ -164,7 +162,7 @@ module.exports = class ChartView extends View
   _update: (data) =>
     #if @olap == 'PassFail'
     #  console.trace()
-    #console.log @olap, data.data.m.data
+    #console.log @name, data.data.m.data
     @_drawData data.data.m.data
 
   render: =>

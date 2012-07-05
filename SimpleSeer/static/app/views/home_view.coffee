@@ -65,7 +65,7 @@ module.exports = class HomeView extends View
         interval = application.charts.timeframe * 1000
         dt = new Date()
         $('#date-to').datetimepicker('setDate',dt)
-        dtt = new Date(Math.round(dt.getTime() - interval))
+        dtt = new Date(dt.getTime() - interval)
         $('#date-from').datetimepicker('setDate',dtt)
       , 1000)
     else
@@ -93,29 +93,28 @@ module.exports = class HomeView extends View
     if application.charts.paused
       f = $('#date-from')
       t = $('#date-to')
-      #dt = moment()
-      dt = new Date
+      dt = new moment()
       if !f.datetimepicker('getDate')
         f.datetimepicker('setDate', dt)
     
       if !t.datetimepicker('getDate')
         t.datetimepicker('setDate', dt.subtract('minutes',1))
     
-      _dtf = $('#date-from').datetimepicker('getDate')
-      _dtt = $('#date-to').datetimepicker('getDate')
+      _dtf = new moment($('#date-from').datetimepicker('getDate'))
+      _dtt = new moment($('#date-to').datetimepicker('getDate'))
       if !_dtf
-        _dtf = new Date()
+        _dtf = new moment()
         $('#date-from').datetimepicker('setDate',_dtf)
       if !_dtt
-        _dtt = new Date()
+        _dtt = new moment()
         $('#date-to').datetimepicker('setDate',_dtt)
-      _dtf = _dtf.getTime() / 1000
-      _dtt = _dtt.getTime() / 1000
+      _dtf = _dtf.utc().valueOf()
+      _dtt = _dtt.utc().valueOf()
       for obj in application.charts.models
         obj.view.update _dtf,_dtt
     else
       application.charts.timeframe = $('#chart-interval').attr('value')
-      tf = Math.round((new Date()).getTime() / 1000) - application.charts.timeframe
+      tf = new moment().subtract('minutes',application.charts.timeframe).valueOf()
       for obj in application.charts.models
         obj.view.update tf
   toggleControlBar: =>

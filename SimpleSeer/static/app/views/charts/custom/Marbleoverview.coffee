@@ -15,7 +15,7 @@ module.exports = class marbleoverview extends ChartView
         <h2>Served: {{data.served}} | Mean Time: {{ data.meantime }} seconds | Fails: {{ data.failed }}</h2>
       </div>'
     super d
-    @.render($('#'+@id))
+    #@.render($('#'+@id))
     this
 
   addPoint: (d) =>
@@ -36,7 +36,7 @@ module.exports = class marbleoverview extends ChartView
         _to = i.x.unix()
     #console.log _time, @stack.stack.length
     @data.meantime = _time / @stack.stack.length
-    @data.meantime = @data.meantime.toFixed(3)
+    #@data.meantime = @data.meantime.toFixed(3)
     @data.served = _counts[1]
     @data.failed = _counts[0]
     @$el.html @template @getRenderData()
