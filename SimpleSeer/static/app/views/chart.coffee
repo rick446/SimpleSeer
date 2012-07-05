@@ -25,16 +25,17 @@ module.exports = class ChartView extends View
       @stack = _m.pointStack()    
     tf = new moment().utc().subtract('s',application.charts.timeframe).valueOf()
     @update tf,null,true
-    this  
-  setData: =>
-    return
-  addPoint: =>
-    return
+    this
+
+  setData: (d) =>
+    return d
+  addPoint: (d) =>
+    return d
   incPoint: (d) =>
     return d
+  alterPoint: (d) =>
+    return d
 
-  alterPoint: =>
-    return
   buildChart: (c=false) =>
     if c
       @_c = c
@@ -66,7 +67,8 @@ module.exports = class ChartView extends View
       console.error 'frm and or to required'
       return false
     $.getJSON(url, (data) =>
-      @._drawData data.data,reset
+      @_drawData( @_clean(data.data), reset)
+      #@._drawData data.data,reset
       $('.alert_error').remove()
       return
      ).error =>
@@ -88,7 +90,8 @@ module.exports = class ChartView extends View
       cp = @.clickPoint
       mo = @.overPoint
     if @.model.xtype == 'datetime'
-      d.d[0] = new moment.utc(d.d[0])
+      d.d[0] = new moment d.d[0]
+      #console.log d.d[0]
     if @.model.accumulate
       #if !d.d?
       #  console.dir d
@@ -137,14 +140,15 @@ module.exports = class ChartView extends View
       if @.model.accumulate
         dd = @.stack.buildData data
       else
+        dd = data
         #if @.name == 'Delivered Candies by Color' || @.name == 'Candies by Color Green'
         #  console.log data
-        for d in data
+        #for d in data
           #if @.name == 'Delivered Candies by Color' || @.name == 'Candies by Color Green'
           #  console.log d.d[1]
-          if d.d[1] > 0
-            p = @_formatChartPoint d
-            dd.push p
+          #if d.d[1] > 0
+            #p = @_formatChartPoint d
+            #dd.push p
       #if @olap == 'DeliveredGreen'
       #  console.dir dd
       @.setData dd
@@ -155,16 +159,21 @@ module.exports = class ChartView extends View
         if @.model.accumulate
           #console.dir d
           #console.trace()
-          @.incPoint @_formatChartPoint d
+          #@.incPoint @_formatChartPoint d
+          @.incPoint d
         else
-          @.addPoint(@_formatChartPoint(d),true,true)
+          #@.addPoint(@_formatChartPoint(d),true,true)
+          @.addPoint(d,true,true)
 
   _update: (data) =>
-    #if @olap == 'PassFail'
-    #  console.trace()
-    #console.log @name, data.data.m.data
-    @_drawData data.data.m.data
+    @_drawData @_clean data.data.m.data
 
+  _clean: (data) =>
+    refined = []
+    for d in data
+      refined.push @_formatChartPoint d
+    return refined
+    
   render: =>
     super()
     $('#chart-container').append @.$el
