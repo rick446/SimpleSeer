@@ -34,7 +34,7 @@ def main():
     controls = subparsers.add_parser(
         'controls', description='Run a Control event server')
     parser.add_argument(
-        '-l', '--logging', dest='logging', default='logging.ini')
+        '-l', '--logging', dest='logging')
     parser.add_argument(
         '-c', '--config', dest='config', default='./etc/simpleseer.cfg')
     parser.add_argument('-p', '--profile', action='store_true')
@@ -50,9 +50,11 @@ def main():
     notebook.set_defaults(func=run_notebook)
     controls.set_defaults(func=run_controls)
 
-
     args = parser.parse_args()
-    logging.config.fileConfig(args.logging)
+    if args.logging:
+        logging.config.fileConfig(args.logging)
+    else:
+        logging.basicConfig()
     from SimpleSeer.Session import Session
     
     session = Session(args.config)

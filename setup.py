@@ -3,6 +3,13 @@ import os, sys, glob, fnmatch
 
 #from SimpleCV import __version__
 
+entry_points = '''
+[paste.paster_create_template]
+simpleseer=SimpleSeer.template:SimpleSeerProjectTemplate
+'''
+with open("./SimpleSeer/plugins/plugins.ini") as fp:
+    entry_points += fp.read()
+
 setup(name="SimpleSeer",
   version=0.0,
   download_url='',
@@ -20,4 +27,4 @@ setup(name="SimpleSeer",
   package_data  = { },
   scripts=['scripts/simpleseer'],
   data_files=[ ('/etc/',['etc/simpleseer.cfg']) ],
-  entry_points=open("./SimpleSeer/plugins/plugins.ini").read())
+  entry_points=entry_points)

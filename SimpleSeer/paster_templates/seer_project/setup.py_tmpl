@@ -1,0 +1,34 @@
+#-*- python -*-
+import os
+from setuptools import setup, find_packages
+
+version = ${repr(version)|"0.0"}
+plugins_ini = os.path.join(
+    os.path.dirname(__file__),
+    'plugins.ini')
+
+entry_points = '''
+# Define (non-plugin) entry points here
+'''
+with open(plugins_ini) as fp:
+    entry_points += fp.read()
+
+setup(name=${repr(project)},
+      version=version,
+      description="${description|nothing}",
+      long_description="""\
+    ${long_description|nothing}""",
+      classifiers=[], # Get strings from http://www.python.org/pypi?%3Aaction=list_classifiers
+      keywords=${repr(keywords)|empty},
+      author=${repr(author)|empty},
+      author_email=${repr(author_email)|empty},
+      url=${repr(url)|empty},
+      license=${repr(license_name)|empty},
+      packages=find_packages(exclude=['ez_setup']),
+      include_package_data=True,
+      zip_safe=${repr(bool(zip_safe))|False},
+      install_requires=[
+        'SimpleSeer',
+        ],
+        entry_points=entry_points
+      )
