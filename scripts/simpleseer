@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import sys
 import time
 import gevent
@@ -17,6 +18,8 @@ def main():
         description='valid subcommands')
     perftest = subparsers.add_parser(
         'perftest', description='Run the core performance test')
+    ns = subparsers.add_parser(
+        'ns', description='Run the Pyro4 name server')
     core = subparsers.add_parser(
         'core', description='Run the core server')
     core_states = subparsers.add_parser(
@@ -43,6 +46,7 @@ def main():
     core.set_defaults(func=run_core)
     core_states.set_defaults(func=run_core_states)
     perftest.set_defaults(func=run_perftest)
+    ns.set_defaults(func=run_pyro4_ns)
     broker.set_defaults(func=run_broker)
     web.set_defaults(func=run_web)
     scrub.set_defaults(func=run_scrubber)
@@ -118,6 +122,11 @@ def run_perftest(session):
     seer = SimpleSeer()
     seer.run()
 
+def run_pyro4_ns(session):
+    _setup_command(session, use_gevent=False, remote_seer=True)
+    import Pyro4.naming
+    Pyro4.naming.main([])
+
 def run_web(session):
     _setup_command(session, use_gevent=True, remote_seer=True)
     from SimpleSeer.Web import WebServer, make_app
@@ -179,7 +188,6 @@ def run_notebook(session):
             '--port', '5050',
             '--ext', 'SimpleSeer.ipython_extension'])
     app.start()
-    
 
 def _setup_command(session, use_gevent, remote_seer):
     from SimpleSeer import models as M
