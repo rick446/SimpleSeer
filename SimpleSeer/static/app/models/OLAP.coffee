@@ -6,8 +6,8 @@ module.exports = class OLAP extends Model
   pointStack: () ->
     stack : []
     add: (d,shift=false) ->
-      _a = {x:d.x,y:d.y,id:d.id}
-      @.stack.push _a
+      #_a = {x:d.x,y:d.y,id:d.id}
+      @.stack.push d
       if shift
         p = @.stack.shift()
       return p
@@ -25,11 +25,7 @@ module.exports = class OLAP extends Model
           if @.attributes.colormap && @.attributes.colormap[i]
             dd[i].color = @.attributes.colormap[i]
       _stk = []
-      for d in data
-        if !d.x
-          p = @.view._formatChartPoint d
-        else
-          p = d
+      for p in data
         if dd[p.id]
           p = dd[p.id]
           p.y++
@@ -37,14 +33,9 @@ module.exports = class OLAP extends Model
           p.y = 1
         dd[p.id] = p
         _stk.push p
-      #if @.view.lib == 'custom'
-      #  console.log dd
       _dd = []
       for i in dd
         if i
           _dd.push i
       @.view.stack.set _stk
-      #if @.view.lib == 'custom'
-      #  console.log @.view.stack.stack
-
       return _dd

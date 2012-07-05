@@ -20,11 +20,13 @@ module.exports = class marbleoverview extends ChartView
 
   addPoint: (d) =>
     super d
+    #console.log d
+    @setData()
+
 
   setData: (d) =>
-    super d
-
-  update: =>
+    if d
+      super d
     _counts = [0,0,0]
     _time = 0
     for i in @stack.stack
@@ -36,7 +38,7 @@ module.exports = class marbleoverview extends ChartView
         _to = i.x.unix()
     #console.log _time, @stack.stack.length
     @data.meantime = _time / @stack.stack.length
-    #@data.meantime = @data.meantime.toFixed(3)
+    @data.meantime = @data.meantime.toFixed(3)
     @data.served = _counts[1]
     @data.failed = _counts[0]
     @$el.html @template @getRenderData()
