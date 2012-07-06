@@ -28,7 +28,7 @@ for match in colormatches.keys():
     stdev = np.std(colormatches[match], 0)
     dist = distance(pallette[match], mean)
      
-    print "%d %s matches meancolor distance %f" % (count, match, dist) 
+    print "%d %s matches meancolor distance %f std %s " % (count, match, dist, stdev) 
 
 print "new pallette"
 print str(means)
