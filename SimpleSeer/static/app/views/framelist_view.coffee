@@ -40,7 +40,7 @@ module.exports = class FramelistView extends View
 
   render: =>
     super()
-    if @empty==true
+    if @empty==true and @collection.at(0)
       @newest = @collection.at(0).get('capturetime')
     _(@_frameViews).each (fv) =>
       @$el.find('#frame_holder').append(fv.render().el)
@@ -50,12 +50,13 @@ module.exports = class FramelistView extends View
     return this
 
   postRender: =>
-    $('#filter_form input[name=time_from]').datetimepicker({timeFormat: 'hh:mm:ss'}).datepicker( "setDate",  new Date(@collection.earliest_date*1000))
+    time_from_field = $('#filter_form input[name=time_from]').datetimepicker {timeFormat: 'hh:mm:ss'}
+    if @collection.earliest_date
+      time_from_field.datepicker( "setDate",  new Date(@collection.earliest_date*1000))
     $('#filter_form input[name=time_to]').datetimepicker {timeFormat: 'hh:mm:ss'}
-    $.get '/cameras', (resp)=>
-      camera_list = $('#filter_form select')
-      for camera in resp.cameras
-        camera_list.append '<option value="'+camera.name+'">'+camera.name+'</option>'
+    camera_list = $('#filter_form select')
+    for camera in application.settings.cameras
+      camera_list.append '<option value="'+camera.name+'">'+camera.name+'</option>'
 
   loadMore: (evt)=>
     if !@loading && $('#loading_message').length && @total_frames > 20\

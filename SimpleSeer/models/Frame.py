@@ -202,8 +202,9 @@ class Frame(SimpleDoc, mongoengine.Document):
             frame = frame_index.get(id)
             if frame is None: continue
             chosen_frames.append(frame)
-        if 'capturetime' in filters:
-            earliest_date = None
-        else:
-            earliest_date = cls.objects.filter(**filters).order_by('capturetime').limit(1).first().capturetime
+        earliest_date = None
+        if 'capturetime' not in filters:
+            earliest_frame = cls.objects.filter(**filters).order_by('capturetime').limit(1).first()
+            if earliest_frame:
+                earliest_date = earliest_frame.capturetime
         return total_frames, chosen_frames, earliest_date
