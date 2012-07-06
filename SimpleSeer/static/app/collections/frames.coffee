@@ -7,6 +7,8 @@ module.exports = class Frames extends Collection
 
   parse: (response)=>
     @total_frames = response.total_frames
+    if response.earliest_date
+      @earliest_date = response.earliest_date
     return response.frames
 
   fetch_filtered: (options)=>

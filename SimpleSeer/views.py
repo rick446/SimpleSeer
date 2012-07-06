@@ -2,6 +2,7 @@ import os
 import re
 import json
 import logging
+import calendar
 from datetime import datetime
 from cStringIO import StringIO
 
@@ -114,8 +115,10 @@ def frames():
         object_hook=util.object_hook)
     skip = int(params.get('skip', 0))
     limit = int(params.get('limit', 20))
-    total_frames, frames = M.Frame.search(f_params, s_params, skip, limit)
-    return dict(frames=frames, total_frames=total_frames)
+    total_frames, frames, earliest_date = M.Frame.search(f_params, s_params, skip, limit)
+    if earliest_date:
+        earliest_date = calendar.timegm(earliest_date.timetuple())
+    return dict(frames=frames, total_frames=total_frames, earliest_date=earliest_date)
 
 #TODO, abstract this for layers and thumbnails        
 @route('/grid/imgfile/<frame_id>', methods=['GET'])
