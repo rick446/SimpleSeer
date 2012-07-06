@@ -1,7 +1,25 @@
 from setuptools import setup, find_packages
 import os, sys, glob, fnmatch
 
-#from SimpleCV import __version__
+plugins_ini = os.path.join(
+    os.path.dirname(__file__),
+    'SimpleSeer/plugins/plugins.ini')
+    
+entry_points = '''
+[seer.commands]
+perftest = SimpleSeer.commands:PerfTestCommand
+core = SimpleSeer.commands:CoreCommand
+core-states = SimpleSeer.commands:CoreStatesCommand
+broker = SimpleSeer.commands:BrokerCommand
+web = SimpleSeer.commands:WebCommand
+scrub = SimpleSeer.commands:ScrubCommand
+shell = SimpleSeer.commands:ShellCommand
+notebook = SimpleSeer.commands:NotebookCommand
+controls = SimpleSeer.commands:ControlsCommand
+replicate = SimpleSeer.commands:ReplicateCommand
+'''
+with open(plugins_ini) as fp:
+    entry_points += fp.read()
 
 entry_points = '''
 [paste.paster_create_template]
