@@ -92,17 +92,6 @@ def frame():
     resp.headers['Content-Type'] = result['content_type']
     return resp
 
-@route('/lastframes', methods=['GET'])
-@util.jsonify
-def lastframes():
-    params = request.values.to_dict()
-    frames = M.Frame.objects().order_by("-capturetime")
-    if 'before' in params:
-        frames = frames.filter(capturetime__lte=datetime.fromtimestamp(int(params['before'])))
-    total_frames = frames.count()
-    frames = frames.skip((int(params.get('page', 1))-1)*20).limit(20)
-    return dict(frames=list(frames), total_frames=total_frames)
-
 @route('/frames', methods=['GET'])
 @util.jsonify
 def frames():
@@ -159,6 +148,24 @@ def thumbnail(frame_id):
     resp = make_response(frame.thumbnail_file.read(), 200)
     resp.headers['Content-Type'] = frame.thumbnail_file.content_type
     return resp    
+
+
+@route('/latestimage-width<int:width>-camera<int:camera>.jpg', methods=['GET'])
+def latest_image(width=0, camera=0):
+    params = {
+        'width': width,
+        'index': -1,
+        'camera': camera,
+        }
+    params.update(request.values)
+
+    seer = SeerProxy2()
+    log.info('Getting latest image in greenlet %s', gevent.getcurrent())
+    img = seer.get_image(**params)
+    resp = make_response(img['data'], 200)
+    resp.headers['Content-Type'] = img['content_type']
+    resp.headers['Content-Length'] = len(img['data'])
+    return resp
 
 
 @route('/videofeed-width<int:width>-camera<int:camera>.mjpeg', methods=['GET'])

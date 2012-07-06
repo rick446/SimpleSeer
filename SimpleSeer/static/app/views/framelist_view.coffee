@@ -85,7 +85,7 @@ module.exports = class FramelistView extends View
     @lastLoadTime = new Date()
 
   filterNew: ()=>
-    if @newFrames.length
+    if @newFrames.length && @$el.is ':visible'
       filter = _.clone(@filter)
       # get the stuff that's been added between now and last load
       filter.time_to = (new Date).getTime()

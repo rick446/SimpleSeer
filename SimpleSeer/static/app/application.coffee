@@ -43,10 +43,8 @@ Application =
     @frames = new Frames()
     @framesets = new FrameSets()
 
-    @lastframes = new Frames()
-
     @homeView = new HomeView()
-    @framelistView = new FramelistView(@lastframes)
+    @framelistView = new FramelistView(@frames)
 
     # set up the timeout message dialog
     $('#lost_connection').dialog
