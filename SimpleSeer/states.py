@@ -129,7 +129,10 @@ class Core(object):
             self.lastframes.popleft()
 
         self.lastframes.append(currentframes)
-        self.publish('capture/', { "capture": 1})
+        new_frame_ids = []
+        for frame in currentframes:
+            new_frame_ids.append(frame.id)
+        self.publish('capture/', { "capture": 1, "frame_ids": new_frame_ids})
         return currentframes
         
     def inspect(self, frames = []):

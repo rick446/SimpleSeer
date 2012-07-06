@@ -16,6 +16,7 @@ module.exports = class FramelistView extends View
     @filter = {}
     @newFrames = []
     @total_frames = 0
+    @lastLoadTime = new Date()
     $.datepicker.setDefaults $.datepicker.regional['']
 
     @collection.on 'add', @addFrame
@@ -30,6 +31,7 @@ module.exports = class FramelistView extends View
     "submit #filter_form": "filterFrames"
     "reset #filter_form": "filterFrames"
     "click #load_new": "loadNew"
+    "click #filter_form input[name=time_to]": "setTimeToAsNow"
 
   getRenderData: =>
     count_viewing: @collection.length
@@ -38,17 +40,23 @@ module.exports = class FramelistView extends View
 
   render: =>
     super()
-    if @empty==true
+    if @empty==true and @collection.at(0)
       @newest = @collection.at(0).get('capturetime')
     _(@_frameViews).each (fv) =>
       @$el.find('#frame_holder').append(fv.render().el)
     @$el.find('#loading_message').hide()
     @empty=false
+    @lastLoadTime = new Date()
     return this
 
   postRender: =>
-    $('#filter_form input[name=time_from]').datetimepicker {timeFormat: 'hh:mm:ss'}
+    time_from_field = $('#filter_form input[name=time_from]').datetimepicker {timeFormat: 'hh:mm:ss'}
+    if @collection.earliest_date
+      time_from_field.datepicker( "setDate",  new Date(@collection.earliest_date*1000))
     $('#filter_form input[name=time_to]').datetimepicker {timeFormat: 'hh:mm:ss'}
+    camera_list = $('#filter_form select')
+    for camera in application.settings.cameras
+      camera_list.append '<option value="'+camera.name+'">'+camera.name+'</option>'
 
   loadMore: (evt)=>
     if !@loading && $('#loading_message').length && @total_frames > 20\
@@ -74,6 +82,7 @@ module.exports = class FramelistView extends View
     @$el.find('#count_viewing').html @collection.length
     @$el.find('#count_new').html '0'
     @_frameViews = newFrameViews.concat(@_frameViews)
+    @lastLoadTime = new Date()
 
   filterNew: ()=>
     if @newFrames.length
@@ -123,10 +132,11 @@ module.exports = class FramelistView extends View
         if input.value != ''
           if input.name == 'time_from' || input.name == 'time_to'
             @filter[input.name] = Math.floor($('input[name='+input.name+']').datepicker( "getDate" ).getTime())
-            if input.name == 'time_from'
+            if input.name == 'time_to'
               @newest = @filter[input.name]
           else
             @filter[input.name] = input.value
+    @reset()
     @$el.find('#frame_holder').html 'Loading...'
     @$el.find('#frame_counts').hide()
     @fetchFiltered()
@@ -153,3 +163,8 @@ module.exports = class FramelistView extends View
   capturedNewFrame: (m)=>
     _(m.data.frame_ids).each (frame_id)=>
       @newFrames.push(frame_id)
+
+  setTimeToAsNow: (evt)=>
+    target = $(evt.target)
+    if !target.val()
+      target.datepicker("setDate", @lastLoadTime)
