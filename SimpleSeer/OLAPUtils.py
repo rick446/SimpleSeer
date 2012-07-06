@@ -247,6 +247,7 @@ class ScheduledOLAP():
     def skedLoop(self, interval):
         
         from datetime import datetime
+        from .models.Chart import Chart
         
         nextTime = datetime.utcnow()
         
@@ -296,8 +297,7 @@ class ScheduledOLAP():
                 cs = Chart.objects(olap = o.name)
                     
                 for c in cs:
-                    thisData = data.copy()
-                    chartData = c.mapData([thisData])
+                    chartData = c.mapData(data)
                     ro = RealtimeOLAP() # To get access to the sendMessage fn
                     ro.sendMessage(o, chartData, c.name)
                 

@@ -109,9 +109,7 @@ class Chart(SimpleDoc, mongoengine.Document):
         else:
             log.warn("Found %d OLAPS in query for %s" % (len(o), olap))
             data = []
-        
-        print 'Running since %d' % o.since
-        
+                
         chartData = {'name': self.name,
                      'olap': self.olap,
                      'chartid': self.chartid,
