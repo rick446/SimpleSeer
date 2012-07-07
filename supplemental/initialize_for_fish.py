@@ -2,6 +2,7 @@
 
 from SimpleSeer.base import *
 from SimpleSeer.Session import Session
+from os import system
 
 if (len(sys.argv) > 1):
    config_file = sys.argv[1] 
@@ -13,11 +14,12 @@ Session(config_file)
 from SimpleSeer.models.Inspection import Inspection
 from SimpleSeer.models.Inspection import Measurement 
 from SimpleSeer.models.OLAP import OLAP 
+from SimpleSeer.models.Chart import Chart
  
 
-Inspection.objects.delete()
-Measurement.objects.delete()
-OLAP.objects.delete()
+system('echo "db.dropDatabase()" | mongo default')
+
+
 
 
 insp = Inspection( name= "Motion", method="motion")
@@ -27,7 +29,33 @@ meas = Measurement( name="movement", label="Movement", method = "movement", para
 meas.save()
 
 
-omove = OLAP(name='MotionMovingAverage', queryInfo = dict( name = 'Motion' ), descInfo = dict( formula = 'moving', window = 3), chartInfo = dict ( name='line', color = 'blue', min = 0, max = 100))
-omove.save()
-oraw = OLAP(name='Motion', queryInfo = dict( name = 'Motion' ), descInfo = None, chartInfo = dict ( name='line', color = 'blue', min = 0, max = 100))
-oraw.save()
+## Delivery time
+o = OLAP()
+o.name = 'Movement'  
+o.maxLen = 1000 
+o.queryType = 'measurement_id' 
+o.queryId = meas.id 
+o.fields = ['capturetime','numeric', 'measurement_id', 'inspection_id', 'frame_id']
+o.since = None
+o.before = None
+o.customFilter = {} 
+o.statsInfo = []
+o.save()
+
+c = Chart()
+c.name = 'Movement'
+c.olap = o.name
+c.style = 'spline'
+c.minval = 0
+c.maxval = None
+c.xtype = 'datetime'
+c.colormap = {}
+c.labelmap = {}
+c.accumulate = False
+c.renderorder = 1
+c.halfsize = False
+c.realtime = True
+c.dataMap = ['capturetime','numeric']
+c.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
+c.save()
+
