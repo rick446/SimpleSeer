@@ -22,7 +22,7 @@ entry_points += '''
 [paste.paster_create_template]
 simpleseer=SimpleSeer.template:SimpleSeerProjectTemplate
 '''
-with open("./SimpleSeer/plugins/plugins.ini") as fp:
+with open(plugins_ini) as fp:
     entry_points += fp.read()
 
 setup(name="SimpleSeer",
