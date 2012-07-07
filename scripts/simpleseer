@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 import sys
 import time
 import gevent
@@ -9,208 +10,45 @@ import logging.config
 
 import guppy
 import gevent
+import pkg_resources
 
 def main():
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(
-        title='subcommands',
-        description='valid subcommands')
-    perftest = subparsers.add_parser(
-        'perftest', description='Run the core performance test')
-    core = subparsers.add_parser(
-        'core', description='Run the core server')
-    core_states = subparsers.add_parser(
-        'core-states', description='Run the core server / state machine')
-    broker = subparsers.add_parser(
-        'broker', description='Run the message broker')
-    web = subparsers.add_parser(
-        'web', description='Run the web server')
-    scrub = subparsers.add_parser(
-        'scrub', description='Run the frame scrubber')
-    shell = subparsers.add_parser(
-        'shell', description='Run the ipython shell')
-    notebook = subparsers.add_parser(
-        'notebook', description='Run the ipython notebook server')
-    controls = subparsers.add_parser(
-        'controls', description='Run a Control event server')
-    parser.add_argument(
-        '-l', '--logging', dest='logging', default='logging.ini')
+    parser.add_argument('-l', '--logging', dest='logging')
     parser.add_argument(
         '-c', '--config', dest='config', default='./etc/simpleseer.cfg')
     parser.add_argument('-p', '--profile', action='store_true')
     parser.add_argument('--profile-heap', action='store_true')
-    core_states.add_argument('program')
-    core.set_defaults(func=run_core)
-    core_states.set_defaults(func=run_core_states)
-    perftest.set_defaults(func=run_perftest)
-    broker.set_defaults(func=run_broker)
-    web.set_defaults(func=run_web)
-    scrub.set_defaults(func=run_scrubber)
-    shell.set_defaults(func=run_shell)
-    notebook.set_defaults(func=run_notebook)
-    controls.set_defaults(func=run_controls)
+    subparsers = parser.add_subparsers(
+        title='subcommands',
+        description='valid subcommands')
+    # Load commands
+    for ep in pkg_resources.iter_entry_points('seer.commands'):
+        cls = ep.load()
+        sp = subparsers.add_parser(
+            ep.name, description=cls.__doc__)
+        cmd = cls(sp)
+        sp.set_defaults(command=ep.name)
+        sp.set_defaults(subcommand=cmd)
 
+    # parse args, configure logging
+    options = parser.parse_args()
+    if options.logging:
+        logging.config.fileConfig(options.logging)
+    else:
+        logging.basicConfig()
 
-    args = parser.parse_args()
-    logging.config.fileConfig(args.logging)
-    from SimpleSeer.Session import Session
-    
-    session = Session(args.config)
-    session.profile_heap = args.profile_heap
-    if args.profile:
-        log = logging.getLogger(__name__)
-        fn = args.command + '.profile'
+    options.subcommand.configure(options)
+    if options.profile:
+        log = logging.getLogger('simpleseer')
+        fn = options.command + '.profile'
         log.info('Running under profiler. Stats saved to %s', fn)
-        cProfile.runctx('args.func(session)',
+        cProfile.runctx('options.subcommand.run()',
                         globals=globals(),
                         locals=locals(),
                         filename=fn)
-    session.args = args
-    args.func(session)
-
-def run_core_states(session):
-    _setup_command(session, use_gevent=True, remote_seer=False)
-    from SimpleSeer.OLAPUtils import ScheduledOLAP
-    from SimpleSeer.states import Core
-    import Pyro4
-
-    core = Core(session)
-    with open(session.args.program) as fp:
-        exec fp in dict(core=core)
-
-    so = ScheduledOLAP()
-    gevent.spawn_link_exception(so.runSked)
-    
-    core.start_socket_communication()
-    gevent.spawn_link_exception(core.run)
- 
-    Pyro4.Daemon.serveSimple(
-        { core: "sightmachine.seer" },
-        ns=True)
-
-
-def run_core(session):
-    if session.statemachine:
-        session.args.program = session.statemachine       
     else:
-        session.args.program = 'default-states.py'
-    #log = logging.getLogger(__name__)
-    #log.info('core deprecated.  Use core-states. (forwarding core to core-states {0})'.format(session.args.program))
-    run_core_states(session)
-
-def run_controls(session):
-    _setup_command(session, use_gevent=False, remote_seer=True)
-    #note that we do run gevent, but we don't want to monkey.patch_all
-    from SimpleSeer.Controls import Controls
-    
-    if session.arduino:
-       Controls(session).run()
-
-def run_perftest(session):
-    _setup_command(session, use_gevent=False, remote_seer=False)
-    from SimpleSeer.SimpleSeer import SimpleSeer
-    from SimpleSeer import models as M
-
-    session.auto_start = False
-    session.poll_interval = 0
-    seer = SimpleSeer()
-    seer.run()
-
-def run_web(session):
-    _setup_command(session, use_gevent=True, remote_seer=True)
-    from SimpleSeer.Web import WebServer, make_app
-    from SimpleSeer import models as M
-    web = WebServer(make_app())
-    web.run_gevent_server()
-
-def run_broker(session):
-    _setup_command(session, use_gevent=True, remote_seer=True)
-    from SimpleSeer.broker import PubSubBroker
-    from SimpleSeer import models as M
-    psb = PubSubBroker(session.pub_uri, session.sub_uri)
-    psb.start()
-    psb.join()
-
-def run_scrubber(session):
-    _setup_command(session, use_gevent=False, remote_seer=True)
-    from SimpleSeer import models as M
-    log = logging.getLogger(__name__)
-    retention = session.retention
-    if not retention:
-        log.info('No retention policy set, skipping cleanup')
-        return
-    while retention['interval']:
-        q_csr = M.Frame.objects(imgfile__ne = None)
-        q_csr = q_csr.order_by('-capturetime')
-        q_csr = q_csr.skip(retention['maxframes'])
-        for f in q_csr:
-            f.imgfile.delete()
-            f.imgfile = None
-            f.save(False)
-        log.info('Purged %d frame files', q_csr.count())
-        time.sleep(retention["interval"])
-
-def run_shell(session):
-    _setup_command(session, use_gevent=False, remote_seer=True)
-    from IPython.config.loader import Config
-    from IPython.frontend.terminal.embed import InteractiveShellEmbed
-    from SimpleSeer.service import SeerProxy2
-    from SimpleSeer import models as M
-
-    banner = '''\nRunning the SimpleSeer interactive shell.\n'''
-    exit_msg = '\n... [Exiting the SimpleSeer interactive shell] ...\n'
-    shell= InteractiveShellEmbed(
-        banner1=banner, exit_msg=exit_msg, user_ns={})
-    shell.extension_manager.load_extension('SimpleSeer.ipython_extension')
-    shell()
-
-def run_notebook(session):
-    _setup_command(session, use_gevent=False, remote_seer=True)
-    from IPython.frontend.html.notebook import notebookapp
-    from IPython.frontend.html.notebook import kernelmanager
-    from SimpleSeer import models as M
-
-    kernelmanager.MappingKernelManager.first_beat=30.0
-    app = notebookapp.NotebookApp.instance()
-    app.initialize([
-            '--no-browser',
-            '--port', '5050',
-            '--ext', 'SimpleSeer.ipython_extension'])
-    app.start()
-    
-
-def _setup_command(session, use_gevent, remote_seer):
-    from SimpleSeer import models as M
-    if use_gevent:
-        # Monkey patch socket routines
-        from gevent import monkey
-        monkey.patch_all()
-        import gevent_zeromq
-        gevent_zeromq.monkey_patch()
-    if remote_seer:
-        from SimpleSeer.SimpleSeer import SimpleSeer as SS
-        SS(disable = True)
-    if session.mongo.has_key("is_slave") and session.mongo["is_slave"]:
-        M.base.SimpleDoc.meta['auto_create_index'] = False
-    if getattr(session, 'profile_heap', None):
-        if use_gevent:
-            gevent.spawn(_profile_heap_greenlet)
-        else:
-            t = threading.Thread(target=_profile_heap_thread)
-            t.daemon = True
-            t.start()
-
-def _profile_heap_thread():
-    while True:
-        h = guppy.hpy()
-        print h.heap()
-        time.sleep(5)
-
-def _profile_heap_greenlet():
-    while True:
-        h = guppy.hpy()
-        print h.heap()
-        gevent.sleep(5)
+        options.subcommand.run()
 
 if __name__ == '__main__':
    main()

@@ -1,4 +1,6 @@
 mongoengine
+https://github.com/ingenuitas/mmm/zipball/master
+https://github.com/ingenuitas/pyfirmata/zipball/master
 decorator
 Flask
 Flask-REST
@@ -17,4 +19,5 @@ coffeescript
 #-e git+git://github.com/doloopwhile/Python-CoffeeScript.git#egg=CoffeeScript
 -e svn+https://guppy-pe.svn.sourceforge.net/svnroot/guppy-pe/trunk/guppy@90#egg=guppy-dev_r90
 https://github.com/ingenuitas/pyvpx/zipball/master
-apt-get install python-sklearn
+python-sklearn
+
