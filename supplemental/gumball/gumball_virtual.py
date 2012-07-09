@@ -25,6 +25,7 @@ def start(state):
     core.set_rate(RATE)
     core.colormatch_measurement = M.Measurement.objects(method="closestcolor")[0]
     core.timesince_measurement = M.Measurement.objects(method="timebetween_manual")[0]
+    core.countsince_measurement = M.Measurement.objects(method="countbetween_manual")[0]
     core.deliveredcolor_measurement = M.Measurement.objects(method="closestcolor_manual")[0]
     core.region_inspection = M.Inspection.objects[0]
     core.capture()
@@ -39,6 +40,7 @@ def waitforbutton(state):
     
     time.sleep(random() * BUTTON_PAUSE)
     core.starttime = datetime.datetime.utcnow()
+    core.countsince = 0
     
     log.info('Waiting for button')
     core.matchcolor = colors[randint(0, 4)]
@@ -52,6 +54,8 @@ def waitforbutton(state):
 def inspect(state):
     core = state.core
     core.inspecttime = datetime.datetime.utcnow()
+    core.countsince += 1
+    
     
     while True:
         gc.collect()
@@ -89,8 +93,20 @@ def inspect(state):
               numeric = timesince,
               string = str(timesince)
             )
+            
+            
+            r3 = M.ResultEmbed(
+              result_id = bson.ObjectId(),
+              measurement_id = core.countsince_measurement.id,
+              measurement_name = core.countsince_measurement.name,
+              inspection_id = core.region_inspection.id,
+              inspection_name = core.region_inspection.name,
+              numeric = core.countsince,
+              string = str(core.matchcolor)
+            )
+            
             from SimpleSeer.util import jsonencode
-            f.results.extend([r,r2])
+            f.results.extend([r,r2, r3])
             f.save(safe = False)
             return core.state("good")
           else:
