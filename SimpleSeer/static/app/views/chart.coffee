@@ -7,6 +7,7 @@ application = require '../application'
 module.exports = class ChartView extends View
   template: ''
   lastframe: ''
+  _counter:0
   
   initialize: =>
     #todo: find a way to make this work:
@@ -89,7 +90,9 @@ module.exports = class ChartView extends View
     if !@.model.accumulate
       cp = @.clickPoint
       mo = @.overPoint
-    if @.model.xtype == 'datetime'
+    if !@.model.xtype
+      d.d[0] = @_counter++
+    else if @.model.xtype == 'datetime'
       d.d[0] = new moment d.d[0]
       #console.log d.d[0]
     if @.model.accumulate

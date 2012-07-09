@@ -23,10 +23,14 @@ module.exports = class HomeView extends View
         #enabled:false
       plotOptions:
         series:
+          #connectNulls: true
           #stickyTracking: false
           lineWidth:2
         area:
-          stacking: 'normal'
+          stacking: 'percent'
+        pie:
+          dataLabels:
+            enabled: false
       credits:
         enabled:
           false

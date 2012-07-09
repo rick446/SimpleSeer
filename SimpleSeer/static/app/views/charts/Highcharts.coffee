@@ -27,7 +27,7 @@ module.exports = class HighchartsLib extends ChartView
         xAxis:
           tickInterval: @model.tickerinterval * 1000 || null
           type:
-            @model.xtype || 'datetime'
+            @model.xtype || 'linear'
           labels:
             formatter: -> 
               if this.axis.options.type == 'datetime'
@@ -42,24 +42,32 @@ module.exports = class HighchartsLib extends ChartView
           min:@model.minval
           max:@model.maxval
       chart.id = @id
-    super chart
+      if @model.useLabels
+        chart.xAxis[0].setCategories @model.labelmap
+      super chart
 
-  setStackPoints: =>
+  setStackPoints: (d=false) =>
     if @stacked == true || @_c.series.length > 1
       @stacked=true
       @stackPoints = []
       for i,s of @_c.series
         l = s.data.length
-        @stackPoints[i] = s.data[--l]
+        p = s.data[--l]
+        if d && d.x > p.x
+          p.x = d.x
+          s.addPoint(p, false,true)
+        @stackPoints[i] = p
 
   addPoint: (d,redraw=true,shift=false) =>
     super(d)
-    @setStackPoints()
     if @.stack
       @.stack.add d
     else
       series = @._c.get @.id
-      series.addPoint(d,redraw,shift)
+      series.addPoint(d,false,shift)
+    @setStackPoints(d)
+    if redraw
+      series.chart.redraw();
 
   setData: (d) =>
     super(d)
