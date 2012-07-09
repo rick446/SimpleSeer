@@ -24,9 +24,9 @@ module.exports = class marbleoverview extends ChartView
     @setData()
 
 
-  setData: (d) =>
+  setData: (d, reset) =>
     if d
-      super d
+      super d, reset
     _counts = [0,0,0]
     _time = 0
     for i in @stack.stack

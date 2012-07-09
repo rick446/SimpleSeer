@@ -151,7 +151,7 @@ module.exports = class ChartView extends View
             #dd.push p
       #if @olap == 'DeliveredGreen'
       #  console.dir dd
-      @.setData dd
+      @.setData dd, true
     else
       for d in data
         #if @olap == 'DeliveredGreen'

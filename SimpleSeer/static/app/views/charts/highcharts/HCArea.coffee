@@ -9,6 +9,7 @@ module.exports = class area extends lib
 
   addPoint: (d) =>
     super(d)
-
+    
   setData: (d) =>
     super(d)
+

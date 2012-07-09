@@ -36,11 +36,13 @@ module.exports = class Customcharts extends ChartView
   #  console.log d.d
   #  super d
 
-  setData: (d) =>
+  setData: (d,reset=false) =>
     super d
+    if reset
+      @.stack.stack = []
     if @.stack
       for _d in d
-        @.stack.add _d, false
+        @.stack.add _d
     #@.update()
 
   render: =>

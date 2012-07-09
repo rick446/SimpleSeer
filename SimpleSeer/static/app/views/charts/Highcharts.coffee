@@ -2,6 +2,7 @@ application = require '../../application'
 ChartView = require '../chart'
 
 module.exports = class HighchartsLib extends ChartView
+  stacked = false
   template: require '../templates/chart'
   initialize:(d) =>
     @lib = 'highcharts'
@@ -10,7 +11,6 @@ module.exports = class HighchartsLib extends ChartView
 
   buildChart: () =>
     if @model.chartid
-      #todo : make sure this doesnt clone graphs
       @template = ''
       @$el.html ''
       m = application.charts.get @model.chartid
@@ -44,15 +44,26 @@ module.exports = class HighchartsLib extends ChartView
       chart.id = @id
     super chart
 
-  addPoint: (d,redraw=true,shift=true) =>
+  setStackPoints: =>
+    if @stacked == true || @_c.series.length > 1
+      @stacked=true
+      @stackPoints = []
+      for i,s of @_c.series
+        l = s.data.length
+        @stackPoints[i] = s.data[--l]
+
+  addPoint: (d,redraw=true,shift=false) =>
     super(d)
+    @setStackPoints()
     if @.stack
       @.stack.add d
-    series = @._c.get @.id
-    series.addPoint(d,redraw,shift)
+    else
+      series = @._c.get @.id
+      series.addPoint(d,redraw,shift)
 
   setData: (d) =>
     super(d)
+    @setStackPoints()
     series = @._c.get @.id
     #series.setData([])
     #for _d in d
@@ -98,3 +109,6 @@ module.exports = class HighchartsLib extends ChartView
       enabled: true
       radius: 1
     data:[]
+    
+  isStacked: =>
+    return @._c.series.length > 1 ? true : false

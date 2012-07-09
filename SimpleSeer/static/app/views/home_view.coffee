@@ -18,23 +18,22 @@ module.exports = class HomeView extends View
         title:
           text: ''
       tooltip:
-        snap:100
+        snap:50
         crosshairs:true
         #enabled:false
       plotOptions:
         series:
           #stickyTracking: false
           lineWidth:2
+        area:
+          stacking: 'normal'
       credits:
         enabled:
           false
       legend:
         enabled: false
       chart:
-        animation: false
-
-
-
+        animation: true
   
   events:
     "click #realtimecontrol": "realtimeControl"
@@ -114,7 +113,8 @@ module.exports = class HomeView extends View
         obj.view.update _dtf,_dtt
     else
       application.charts.timeframe = $('#chart-interval').attr('value')
-      tf = new moment().subtract('minutes',application.charts.timeframe).valueOf()
+      console.log application.charts.timeframe
+      tf = new moment().subtract('seconds',(application.charts.timeframe*1000)).valueOf()
       for obj in application.charts.models
         obj.view.update tf
   toggleControlBar: =>
