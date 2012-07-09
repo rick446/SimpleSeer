@@ -8,7 +8,7 @@ from formencode import schema as fes
 from SimpleSeer import validators as V
 import formencode as fe
 
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 log = logging.getLogger(__name__)
@@ -41,6 +41,7 @@ class OLAPSchema(fes.Schema):
     maxLen = fev.Int()
     queryType = fev.UnicodeString()
     queryId = fev.UnicodeString()
+    #queryIds = V.JSON(if_empty=[], if_missing=None)
     #fields = V.JSON(if_empty=dict, if_missing=None)
     #valueMap = V.JSON(if_empty=dict, if_missing=None)
     groupTime = fev.UnicodeString()
@@ -49,7 +50,7 @@ class OLAPSchema(fes.Schema):
     #customFilter = V.JSON(if_empty=dict, if_missing=None)   
     #statsInfo = V.JSON(if_empty=dict, if_missing=None)
     #postProc = V.JSON(if_empty=dict, if_missing=None)
-    notNull = fev.Bool()
+    notNull = fev.Int()
 
 class OLAP(SimpleDoc, mongoengine.Document):
 
@@ -57,6 +58,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
     maxLen = mongoengine.IntField()
     queryType = mongoengine.StringField()
     queryId = mongoengine.ObjectIdField()
+    queryIds = mongoengine.ListField()
     fields = mongoengine.ListField()
     groupTime = mongoengine.StringField()
     valueMap = mongoengine.DictField()
@@ -65,7 +67,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
     customFilter = mongoengine.DictField()
     statsInfo = mongoengine.ListField()
     postProc = mongoengine.DictField()
-    notNull = mongoengine.BooleanField()
+    notNull = mongoengine.IntField()
     
     meta = {
         'indexes': ['name']
@@ -84,7 +86,7 @@ class OLAP(SimpleDoc, mongoengine.Document):
         
         results = self.doPostProc(results)
         
-        if (results == []) and (self.notNull):
+        if (results == []) and (type(self.notNull) == int):
             results = self.defaultOLAP()
         
         return results
@@ -109,17 +111,18 @@ class OLAP(SimpleDoc, mongoengine.Document):
         
         match = self.createMatch()
         project = self.createFields()
+        multival = self.createMultiVal()
         stats = self.createStats()
         
         sort = {'capturetime': 1}
   
-        pipeline = self.assemblePipeline(match, project, stats, sort)
+        pipeline = self.assemblePipeline(match, multival, project, stats, sort)
   
         cmd = db.command('aggregate', 'result', pipeline=pipeline)
         return cmd['result']
 
 
-    def assemblePipeline(self, match, project, stats, sort):
+    def assemblePipeline(self, match, multival, project, stats, sort):
         
         pipeline = []
         
@@ -130,6 +133,13 @@ class OLAP(SimpleDoc, mongoengine.Document):
         # Will also have fields selected
         # But should eventually add handling to fail gracefully if not
         pipeline.append({'$project': project})
+        
+        
+        # Check if grouping multiple results
+        if multival:
+            pipeline.append({'$sort': self.queryId})
+            pipeline.append({'$group': multival})
+        
         
         # Always sort results by capturetime (not sure if this will ever be conditional)
         pipeline.append({'$sort': sort})
@@ -220,6 +230,17 @@ class OLAP(SimpleDoc, mongoengine.Document):
     
         return fields
     
+    def createMultiVal(self):
+        
+        multiVals = {}
+        
+        multiVals['_id'] = '$field_id'
+        
+        for f in self.fields:
+            multiVals[f] = {'$push': '$f'}
+        
+        return None
+    
     def createStats(self):
         
         stats = {}
@@ -304,14 +325,17 @@ class OLAP(SimpleDoc, mongoengine.Document):
             elif f[-2:] == 'id':
                 fakeResult[f] = ObjectId()
             elif f == 'capturetime':
-                fakeResult[f] = datetime(1970, 1, 1)
+                fakeResult[f] = datetime.utcnow()
             elif f == 'string':
-                fakeResult[f] = '0'
+                fakeResult[f] = self.notNull
             elif f == 'numeric':
-                fakeResult[f] = 0
+                fakeResult[f] = self.notNull
             else:
                 fakeResult[f] = 0
                 
         fakeResult['_id'] = ObjectId()
                 
-        return [fakeResult]
+        fake2 = fakeResult.copy()
+        fake2['capturetime'] -= timedelta(0,2)       
+                
+        return [fakeResult, fake2]
