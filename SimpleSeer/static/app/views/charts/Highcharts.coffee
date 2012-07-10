@@ -28,6 +28,8 @@ module.exports = class HighchartsLib extends ChartView
           tickInterval: @model.tickerinterval * 1000 || null
           type:
             @model.xtype || 'linear'
+          title:
+            text: @model.xTitle
           labels:
             formatter: -> 
               if this.axis.options.type == 'datetime'
@@ -39,6 +41,8 @@ module.exports = class HighchartsLib extends ChartView
                 else
                   return this.value
         yAxis:
+          title:
+            text: @model.yTitle
           min:@model.minval
           max:@model.maxval
       chart.id = @id

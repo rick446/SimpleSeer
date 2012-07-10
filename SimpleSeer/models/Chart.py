@@ -40,6 +40,8 @@ class ChartSchema(fes.Schema):
     color = fev.UnicodeString(if_missing='blue')                  
     colormap = V.JSON(if_empty=None, if_missing=None)
     labelmap = V.JSON(if_empty=None, if_missing=None)
+    xTitle = fev.UnicodeString(if_empty='', if_missing='')
+    yTitle = fev.UnicodeString(if_empty='', if_missing='')
     #stupid hack because i cant get labelmap to default to None
     useLabels = fev.Bool(if_missing=False)
     minval = fev.Int(if_missing=0)
@@ -63,6 +65,8 @@ class Chart(SimpleDoc, mongoengine.Document):
     color = mongoengine.StringField()
     colormap = mongoengine.DictField()
     labelmap = mongoengine.DictField()
+    xTitle = mongoengine.StringField()
+    yTitle = mongoengine.StringField()
     useLabels = mongoengine.BooleanField()
     minval = mongoengine.IntField()
     maxval = mongoengine.IntField()
@@ -124,6 +128,8 @@ class Chart(SimpleDoc, mongoengine.Document):
                      'labelmap': self.labelmap,
                      'minval': self.minval,
                      'maxval': self.maxval,
+                     'xTitle': self.xTitle,
+                     'yTitle': self.yTitle,
                      'xtype': self.xtype,
                      'accumulate': self.accumulate,
                      'renderorder': self.renderorder,

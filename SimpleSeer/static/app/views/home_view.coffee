@@ -17,6 +17,13 @@ module.exports = class HomeView extends View
       yAxis:
         title:
           text: ''
+          style:
+            color: '#5B5B5B'
+      xAxis:
+        title:
+          text: ''
+          style:
+            color: '#5B5B5B'
       tooltip:
         snap:50
         crosshairs:true
