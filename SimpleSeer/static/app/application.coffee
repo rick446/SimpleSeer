@@ -67,7 +67,8 @@ Application =
     _anchor = @settings.ui_alert_anchor || '#messages'
     _set = true
     if alert_type == 'clear'
-      $(_anchor +" > .alert").hide 'slow', -> $(@).remove()
+      moo = _anchor+" > .alert"
+      $(moo).hide 'slow', -> $(@).remove()
     else if alert_type == "redirect"
       Application.router.navigate(message, true)
     else
