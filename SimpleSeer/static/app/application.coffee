@@ -64,9 +64,10 @@ Application =
     Application.alert(msg['data']['message'], msg['data']['severity'])
 
   alert: (message, alert_type) ->
+    _anchor = @settings.ui_alert_anchor || '#messages'
     _set = true
     if alert_type == 'clear'
-      $("#messages > .alert").hide 'slow', -> $(@).remove()
+      $(_anchor +" > .alert").hide 'slow', -> $(@).remove()
     else if alert_type == "redirect"
       Application.router.navigate(message, true)
     else
@@ -79,7 +80,6 @@ Application =
           style: "display: none",
           class: "alert alert-"+alert_type
         ).html message
-        _anchor = @settings.ui_alert_anchor || '#messages'
         $(_anchor).append div
         div.show('normal')
         
