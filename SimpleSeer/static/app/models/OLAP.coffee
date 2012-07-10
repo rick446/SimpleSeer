@@ -2,10 +2,11 @@ Model = require "./model"
 
 module.exports = class OLAP extends Model
   urlRoot: -> "/api/chart"
+  shift = false
 
   pointStack: () ->
     stack : []
-    add: (d,shift=false) ->
+    add: (d,shift=@shift) ->
       #_a = {x:d.x,y:d.y,id:d.id}
       @.stack.push d
       if shift

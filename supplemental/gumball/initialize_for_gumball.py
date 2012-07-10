@@ -367,9 +367,9 @@ o9.maxLen = 1000
 o9.queryType = 'measurement_id' 
 o9.queryId = meas.id 
 o9.fields = ['capturetime','string', 'measurement_id', 'inspection_id', 'frame_id']
+o9.valueMap = {'red': 0, 'green': 1, 'yellow': 2, 'orange': 3, 'purple': 4, 'field': 'string', 'default': 5}
 o9.since = None
 o9.before = None
-o9.valueMap = {'purple': 0, 'default':1, 'field': 'string'}
 o9.customFilter = {} 
 o9.statsInfo = []
 o9.save()
