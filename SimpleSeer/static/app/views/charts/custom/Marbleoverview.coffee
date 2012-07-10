@@ -14,15 +14,20 @@ module.exports = class marbleoverview extends ChartView
     @max = @model.max || 100
     @min = @model.min || 0
     @template = _.template '
-      <div id="stats" style="text-align: center; width: 100%; background: #eee; border-radius: 7px; padding: 15px; box-sizing: border-box;">
-        <h2>Total: {{data.total}} | Mean Time: {{ data.meantime }} seconds</h2>
-        <h2>Shortest: {{data.shortest}}</h2>
-        <h2>Longest: {{data.longest}}</h2>
-        <li style="background:{{ colormap[0]}}">{{ data.colors[0] }}</li>
-        <li style="background:{{ colormap[1]}}">{{ data.colors[1] }}</li>
-        <li style="background:{{ colormap[2]}}">{{ data.colors[2] }}</li>
-        <li style="background:{{ colormap[3]}}">{{ data.colors[3] }}</li>
-        <li style="background:{{ colormap[4]}}">{{ data.colors[4] }}</li>
+      <div id="stats" style="">
+        <h2>{{name}}</h2>
+        <div style="float:left; margin:0 10px;">
+          <div class="swatch" style="border: 2px solid {{ colormap[0]}}">{{ data.colors[0] }}</div>
+          <div class="swatch" style="border: 2px solid {{ colormap[1]}}">{{ data.colors[1] }}</div>
+          <div class="swatch" style="border: 2px solid {{ colormap[2]}}">{{ data.colors[2] }}</div>
+          <div class="swatch" style="border: 2px solid {{ colormap[3]}}">{{ data.colors[3] }}</div>
+          <div class="swatch" style="border: 2px solid {{ colormap[4]}}">{{ data.colors[4] }}</div>
+        </div>
+        <h3>Number Served: {{data.total}}</h3>
+        <h3>Average Time: {{ data.meantime }} seconds</h3>
+        <h3>Fastest Time: {{data.shortest}}</h3>
+        <h3>Slowest Time: {{data.longest}}</h3>
+        <div style="clear:both;"></div>
       </div>'
     super d
     #@.render($('#'+@id))
