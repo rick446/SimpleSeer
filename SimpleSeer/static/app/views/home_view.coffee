@@ -31,6 +31,10 @@ module.exports = class HomeView extends View
         pie:
           dataLabels:
             enabled: false
+        column:
+          dataLabels:
+            enabled: true
+
       credits:
         enabled:
           false
