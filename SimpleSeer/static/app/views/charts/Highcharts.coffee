@@ -115,7 +115,7 @@ module.exports = class HighchartsLib extends ChartView
     color:@color || 'blue'
     marker:
       enabled: true
-      radius: 1
+      radius: 2
     data:[]
     
   isStacked: =>

@@ -103,6 +103,7 @@ module.exports = class ChartView extends View
     else
       _id = d.m[2]
     _point =
+      marker:{}
       y:d.d[1]
       x:d.d[0]
       id:_id
@@ -111,6 +112,9 @@ module.exports = class ChartView extends View
         mouseOver: mo
         click: cp
         #unselect: @.unselectPoint #application.charts.removeFrame
+    for i,s of @model.metaMap
+      if s == 'string' && @model.colormap
+        _point.marker.fillColor = @model.colormap[d.m[i]]
     return _point
 
   overPoint: (e) =>

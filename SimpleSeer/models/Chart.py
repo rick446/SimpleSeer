@@ -33,6 +33,7 @@ log = logging.getLogger(__name__)
 
 class ChartSchema(fes.Schema):
     name = fev.UnicodeString()
+    description = fev.UnicodeString()
     olap = fev.UnicodeString()
     chartid = fev.UnicodeString()
     style = fev.UnicodeString()            
@@ -55,6 +56,7 @@ class ChartSchema(fes.Schema):
 class Chart(SimpleDoc, mongoengine.Document):
 
     name = mongoengine.StringField()
+    description = mongoengine.StringField()
     olap = mongoengine.StringField()
     style = mongoengine.StringField()
     chartid = mongoengine.ObjectIdField()

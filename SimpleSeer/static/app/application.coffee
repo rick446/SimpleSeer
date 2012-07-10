@@ -77,9 +77,10 @@ Application =
         console.log message
         div = $("<div>",
           style: "display: none",
-          class: "offset1 alert alert-"+alert_type
+          class: "alert alert-"+alert_type
         ).html message
-        $("#messages").append div
+        _anchor = @settings.ui_alert_anchor || '#messages'
+        $(_anchor).append div
         div.show('normal')
         
       
