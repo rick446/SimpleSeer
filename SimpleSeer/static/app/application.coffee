@@ -3,7 +3,8 @@ Application =
   initialize: ->
     if @settings.mongo.is_slave
       $(".notebook").hide()
-      
+    if !@settings.template_paths?
+      @settings.template_paths = {}
     ViewHelper = require 'lib/view_helper'
     HomeView = require 'views/home_view'
     FramelistView = require 'views/framelist_view'
