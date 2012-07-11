@@ -56,7 +56,7 @@ module.exports = class HomeView extends View
     "change #chart-interval": "changeInterval"
     
   id: 'home-view'
-  template: application.settings.template_paths['home-view'] || './templates/home'
+  template: require application.settings.template_paths['home-view'] || './templates/home'
   getRenderData: =>
     return chartcount : application.charts.length
 
