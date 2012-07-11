@@ -1,7 +1,7 @@
 View = require './view'
 FrameView = require './frame'
-template = require './templates/gumball'
 application = require 'application'
+template = require application.settings.template_paths['home_view'] || './templates/home'
 
 module.exports = class HomeView extends View
   initialize: =>
