@@ -1,7 +1,6 @@
 View = require './view'
 FrameView = require './frame'
 application = require 'application'
-template = require application.settings.template_paths['home_view'] || './templates/home'
 
 module.exports = class HomeView extends View
   initialize: =>
@@ -57,7 +56,7 @@ module.exports = class HomeView extends View
     "change #chart-interval": "changeInterval"
     
   id: 'home-view'
-  template: template
+  template: application.settings.template_paths['home-view'] || './templates/home'
   getRenderData: =>
     return chartcount : application.charts.length
 
