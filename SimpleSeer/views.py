@@ -18,6 +18,8 @@ from .realtime import RealtimeNamespace, ChannelManager
 from .service import SeerProxy2
 from .Session import Session
 
+from .Filter import Filter
+
 log = logging.getLogger()
 
 class route(object):
@@ -123,9 +125,7 @@ def frames():
 
 @route('/features', methods=['GET'])
 @util.jsonify
-def features():
-	from .Filter import Filter
-	
+def features():	
 	f = Filter()
 	return f.getFilterOptions()
 	
