@@ -122,14 +122,24 @@ def frames():
         earliest_date = calendar.timegm(earliest_date.timetuple())
     return dict(frames=frames, total_frames=total_frames, earliest_date=earliest_date)
 
-
-@route('/features', methods=['GET'])
+	
+	
+@route('/getFilter/<filter_name>/<filter_type>', methods=['GET'])
 @util.jsonify
-def features():	
-	f = Filter()
-	return f.getFilterOptions()
-	
-	
+def getFilter(filter_name, filter_type):
+    from datetime import datetime
+    
+    types = ['numeric', 'string', 'autofill', 'datetime']
+
+    if (filter_type == 'numeric'):
+        return {'min': 0, 'max':100}
+    elif (filter_type == 'string'):
+        return {'min': '', 'max': ''}
+    elif (filter_type == 'autofill'):
+        return {'count': 3, 'enum': ['part1', 'part2', 'part3']}
+    elif (filter_type == 'datetime'):
+        return {'min': int(float(datetime(2012, 1, 1).strftime('%s.%f')) * 1000), 'max': int(float(datetime(2012, 12, 31).strftime('%s.%f')) * 1000)}
+    
 
 #TODO, abstract this for layers and thumbnails        
 @route('/grid/imgfile/<frame_id>', methods=['GET'])
