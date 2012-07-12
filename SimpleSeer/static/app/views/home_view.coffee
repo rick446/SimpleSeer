@@ -1,6 +1,5 @@
 View = require './view'
 FrameView = require './frame'
-template = require './templates/home'
 application = require 'application'
 
 module.exports = class HomeView extends View
@@ -17,6 +16,13 @@ module.exports = class HomeView extends View
       yAxis:
         title:
           text: ''
+          style:
+            color: '#5B5B5B'
+      xAxis:
+        title:
+          text: ''
+          style:
+            color: '#5B5B5B'
       tooltip:
         snap:50
         crosshairs:true
@@ -25,7 +31,7 @@ module.exports = class HomeView extends View
         series:
           #connectNulls: true
           #stickyTracking: false
-          lineWidth:2
+          lineWidth:1
         area:
           stacking: 'percent'
         pie:
@@ -50,7 +56,7 @@ module.exports = class HomeView extends View
     "change #chart-interval": "changeInterval"
     
   id: 'home-view'
-  template: template
+  template: require application.settings.template_paths['home-view'] || './templates/home'
   getRenderData: =>
     return chartcount : application.charts.length
 
@@ -121,7 +127,7 @@ module.exports = class HomeView extends View
         obj.view.update _dtf,_dtt
     else
       application.charts.timeframe = $('#chart-interval').attr('value')
-      console.log application.charts.timeframe
+      #console.log application.charts.timeframe
       tf = new moment().subtract('seconds',(application.charts.timeframe*1000)).valueOf()
       for obj in application.charts.models
         obj.view.update tf
@@ -155,3 +161,20 @@ module.exports = class HomeView extends View
       search_bar.addClass 'subnav-fixed'
     else
       search_bar.removeClass 'subnav-fixed'
+
+  toggleView: (link, objID) ->
+    detector = document.getElementById("frame-container")
+    video = document.getElementById("demo_video")
+    if link is "detector"
+      detector.style.display = "block"
+      video.style.display = "none"
+    else
+      detector.style.display = "none"
+      video.style.display = "block"
+    linksArray = document.getElementById("toggle").getElementsByTagName("a")
+    i = 0
+  
+    while i < linksArray.length
+      linksArray[i].style.color = "#7c7c7c"
+      i++
+    objID.style.color = "#000000"

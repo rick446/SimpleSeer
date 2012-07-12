@@ -52,7 +52,7 @@ meas4 = Measurement ( name="Delivery Count", label="Count", method = "countbetwe
 meas4.save()
 
 
-"""
+
 ## Count before delivery
 o0 = OLAP()
 o0.name = 'DeliveryCount'  
@@ -69,14 +69,18 @@ o0.notNull = 0
 o0.save()
 
 c0 = Chart()
-c0.name = 'Count before Delivery'
+c0.name = 'Candies Analyzed'
+c0.description = 'How many candies were analyzed per selection.'
 c0.olap = o0.name
-c0.style = 'spline'
+c0.style = 'line'
+c0.color = '#777'
 c0.minval = 0
 c0.maxval = None
 c0.xtype = None
 c0.colormap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
 c0.labelmap = {}
+c0.xTitle = 'Button Press'
+c0.yTitle = 'Count'
 c0.accumulate = False
 c0.renderorder = 10
 c0.halfsize = False
@@ -84,7 +88,7 @@ c0.realtime = True
 c0.dataMap = ['capturetime','numeric']
 c0.metaMap = ['string', 'measurement_id', 'inspection_id', 'frame_id']
 c0.save()
-"""
+
 
 """
 ## Histogram of color of gumballs evaluated
@@ -135,13 +139,17 @@ o2.save()
 
 c2 = Chart()
 c2.name = 'Color Delivered'
+c2.description = 'The number of times a selected color was delivered.'
 c2.olap = o2.name
 c2.style = 'column'
 c2.minval = 0
 c2.maxval = None
+c2.color = '#777'
 c2.xtype = 'linear'
 c2.colormap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
 c2.labelmap = {'0': 'red', '1': 'green', '2': 'yellow','3': u'orange','4': 'purple'}
+c2.xTitle = 'Candy Color'
+c2.yTitle = 'Count'
 c2.useLabels = True
 c2.accumulate = True
 c2.renderorder = 3
@@ -151,7 +159,7 @@ c2.dataMap = ['capturetime','string']
 c2.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
 c2.save()
 
-
+"""
 ## Delivery time
 o3 = OLAP()
 o3.name = 'DeliveryTime'  
@@ -182,7 +190,7 @@ c3.realtime = True
 c3.dataMap = ['capturetime','numeric']
 c3.metaMap = ['measurement_id', 'inspection_id', 'frame_id']
 c3.save()
-
+"""
 """
 ## Yellow gumball evaled
 o4 = OLAP()
@@ -375,7 +383,7 @@ o9.statsInfo = []
 o9.save()
 
 c9 = Chart()
-c9.name = 'Candies Overview'
+c9.name = 'Stats'
 c9.olap = o9.name
 c9.style = 'marbleoverview'
 c9.minval = 0

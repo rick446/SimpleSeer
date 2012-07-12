@@ -1,0 +1,51 @@
+		<div id="intro">
+			<div id="intro_label"><h1>Candy Color Picker</h1></div>
+			<div id="intro_text">The candy machine lets you push a button to select the color of the candy you desire.  The machine will then visually inspect candies until it finds a matching candy.  The processing data from the machine is simultaneously being gathered and displayed for you below.</div>
+		</div>
+		<div id="data_wrapper">
+			<div id="left">
+				<div id="view">
+					<div id="frame-container"></div>
+                    <div id="feedback"></div>
+					<div id="demo_video">
+						<p>A video demonstration of the candy machine at work is available on <a href="http://www.youtube.com/watch?v=u8e8tESOAJM">YouTube</a>!</p>
+
+						<iframe width="310" style="margin-top:30px;" src="http://www.youtube-nocookie.com/embed/VI2TEuBGQuw?rel=0" frameborder="0" allowfullscreen></iframe>
+					</div>
+				</div>
+				<ul id="toggle">
+					<li><a class="detector tvbutton" href="#" onclick="SimpleSeer.homeView.toggleView('detector', this);">Detector</a></li>
+					<li><a class="video tvbutton" href="#" onclick="SimpleSeer.homeView.toggleView('video', this);">Video</a></li>
+				</ul>
+
+				<div id="process">
+					<p><b>How It Works</b></p>
+
+					<p>The SimpleSeer application uses a camera to collect data about the candies as they are dropped from the hopper.  The application inspects this data to determine if the candy matches the desired color.  If it matches, the machine is directed to drop the candy into the success bin.  If it doesn't match, the candy is dropped into the discard bin, and another candy is selected for testing.</p>
+								
+				</div>
+			</div>
+
+			<div id="data">
+              <div id="chart-container" class="span7">
+              <!--
+				<div class="stats">
+					<h2>Stats</h2>
+					<p><label>Number Served:</label> 26</p>
+					<p><label>Mean Time:</label> 3.971 seconds</p>
+					<p><label>Fastet Time:</label> 0.586 seconds</p>
+					<p><label>Slowest Time:</label> 5.023 seconds</p>
+				</div>
+				<div class="color_delivered">
+					<h2>Color Delivered</h2>
+					<p>The number of times a selected color was delivered.</p>
+					<img src="img/bar_chart.png" border="0">
+				</div>
+				<div class="candies_analyzed">
+					<h2>Candies Analyzed</h2>
+					<p>How many candies were analyzed per selection.</p>
+					<img src="img/line_chart.png" border="0">
+				</div>
+              -->
+			</div>
+		</div>

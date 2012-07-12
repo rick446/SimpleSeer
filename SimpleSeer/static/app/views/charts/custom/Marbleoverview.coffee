@@ -7,26 +7,28 @@ module.exports = class marbleoverview extends ChartView
       total:0
       meantime:0
       colors:{}
-      shortest:999999999999
+      shortest:0
       longest:0
     }
     @resetColors()
     @max = @model.max || 100
     @min = @model.min || 0
     @template = _.template '
-      <div id="stats" style="">
+      <div id="stats" class="stats">
         <h2>{{name}}</h2>
-        <div style="float:left; margin:0 10px;">
+        <p><label>Number Served:</label> {{data.total}}</p>
+        <p><label>Average Time:</label> {{ data.meantime }} seconds</p>
+        <p><label>Fastest Time:</label> {{data.shortest}} seconds</p>
+        <p><label>Colors Analyzed:</label>
+        <div style="float:left;margin-top:-3px;">
           <div class="swatch" style="border: 2px solid {{ colormap[0]}}">{{ data.colors[0] }}</div>
           <div class="swatch" style="border: 2px solid {{ colormap[1]}}">{{ data.colors[1] }}</div>
           <div class="swatch" style="border: 2px solid {{ colormap[2]}}">{{ data.colors[2] }}</div>
           <div class="swatch" style="border: 2px solid {{ colormap[3]}}">{{ data.colors[3] }}</div>
           <div class="swatch" style="border: 2px solid {{ colormap[4]}}">{{ data.colors[4] }}</div>
         </div>
-        <h3>Number Served: {{data.total}}</h3>
-        <h3>Average Time: {{ data.meantime }} seconds</h3>
-        <h3>Fastest Time: {{data.shortest}}</h3>
-        <h3>Slowest Time: {{data.longest}}</h3>
+
+        </p>
         <div style="clear:both;"></div>
       </div>'
     super d
@@ -52,19 +54,21 @@ module.exports = class marbleoverview extends ChartView
       @data.colors[i.y]++
       _total++
       if !_to
-        _to = i.x.unix()
+        _to = i.x.valueOf() / 1000
       else
-        _diff = i.x.unix() - _to
+        _diff = i.x.valueOf() / 1000 - _to
         _time += _diff
-        _to = i.x.unix()
-        if _diff and _diff < @data.shortest
-          @data.shortest = _diff
-        if _diff and _diff > @data.longest
-          @data.longest = _diff
+        _to = i.x.valueOf() / 1000
+        if _diff and (_diff < @data.shortest or @data.shortest == 0) 
+          @data.shortest = _diff.toFixed(3)
+        if _diff and (_diff > @data.longest or @data.shortest == 0)
+          @data.longest = _diff.toFixed(3)
         
     #console.log _time, @stack.stack.length
     @data.meantime = _time / @stack.stack.length
     @data.meantime = @data.meantime.toFixed(3)
+    if isNaN @data.meantime
+      @data.meantime = 0
     @data.total = _total
     @$el.html @template @getRenderData()
 
