@@ -20,13 +20,19 @@ module.exports = class FrameDetailView extends View
       viewPort.css('top', 0)
       viewPort.css('width', '100%')
       viewPort.css('height', '100%')
-    else
-      @zoomed = true
-      viewPort.css('position', 'relative')
-      viewPort.css('top', '-'+(e.pageY - os.top)+'px')
-      viewPort.css('left', '-'+(e.pageX - os.left)+'px')
-      viewPort.css('width', @.model.attributes.width+'px')
-      viewPort.css('height', @.model.attributes.height+'px')
+    else    
+      _ratio = (@.model.attributes.width / viewPort.width()).toFixed(2);
+      if _ratio > 1
+        @zoomed = true
+        viewPort.css('position', 'relative')
+        _top = ((e.pageY * _ratio) - (os.top * _ratio))
+        _left = ((e.pageX * _ratio) - (os.left * _ratio))
+        _left -= _left / _ratio
+        _top -= _top / _ratio
+        viewPort.css('top', '-'+_top+'px')
+        viewPort.css('left', '-'+_left+'px')
+        viewPort.css('width', @.model.attributes.width+'px')
+        viewPort.css('height', @.model.attributes.height+'px')
 
   getRenderData: =>
     data = {}
