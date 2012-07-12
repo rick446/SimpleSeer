@@ -26,6 +26,9 @@ module.exports = class FramelistView extends View
     application.socket.on "message:capture/", @capturedNewFrame
     application.socket.emit 'subscribe', 'capture/'
     setInterval @filterNew, 5000
+    for o in application.settings.ui_filters_framemetadata
+      #{"field_name": "metadata.part_id", "format": "autofill", "label": "Part ID", "type":"frame" }
+      @addSubview o.format, application.getFilter(o.format), '#filter_form', {params:o}
 
   events:
     "submit #filter_form": "filterFrames"

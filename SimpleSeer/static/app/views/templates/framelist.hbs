@@ -1,15 +1,17 @@
 <div class="row">
-  <form class="well span3" id="filter_form">
-    <h4>Filter frames</h4>
-    <label>Camera:</label>
-    <select name="camera"></select>
-    <label>From:</label>
-    <input type="text" name="time_from">
-    <label>To:</label>
-    <input type="text" name="time_to" placeholder="Now">
-    <input class="btn btn-primary" type="submit" value="Filter">
-    <input class="btn" type="reset" value="Reset">
-  </form>
+  <div class="well span3" id="filter_form">
+    <form>
+      <h4>Filter frames</h4>
+      <label>Camera:</label>
+      <select name="camera"></select>
+      <label>From:</label>
+      <input type="text" name="time_from">
+      <label>To:</label>
+      <input type="text" name="time_to" placeholder="Now">
+      <input class="btn btn-primary" type="submit" value="Filter">
+      <input class="btn" type="reset" value="Reset">
+    </form>
+  </div>
   <div class="span9 offset3">
     <div id="frame_counts">
       <p>Viewing <span id="count_viewing">{{count_viewing}}</span> of <span id="count_total">{{count_total}}</span> frames.</p>

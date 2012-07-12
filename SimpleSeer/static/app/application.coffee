@@ -64,6 +64,15 @@ Application =
   _serveralert: (msg) ->
     Application.alert(msg['data']['message'], msg['data']['severity'])
 
+  getFilter: (name) ->
+    if !@ui?
+      @ui = {}
+      @ui.filters = require 'views/filters/init'
+      #TODO: make robust
+      #_ret = $.ajax 'http://127.0.0.1:8080/features', {dataType:'json', async:false}
+      #@ui.filters._options = $.parseJSON _ret.responseText
+    return @ui.filters[name]
+
   alert: (message, alert_type) ->
     _anchor = @settings.ui_alert_anchor || '#messages'
     _set = true
