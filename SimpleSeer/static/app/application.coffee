@@ -3,7 +3,8 @@ Application =
   initialize: ->
     if @settings.mongo.is_slave
       $(".notebook").hide()
-      
+    if !@settings.template_paths?
+      @settings.template_paths = {}
     ViewHelper = require 'lib/view_helper'
     HomeView = require 'views/home_view'
     FramelistView = require 'views/framelist_view'
@@ -64,9 +65,11 @@ Application =
     Application.alert(msg['data']['message'], msg['data']['severity'])
 
   alert: (message, alert_type) ->
+    _anchor = @settings.ui_alert_anchor || '#messages'
     _set = true
     if alert_type == 'clear'
-      $("#messages > .alert").hide 'slow', -> $(@).remove()
+      moo = _anchor+" > .alert"
+      $(moo).hide 'slow', -> $(@).remove()
     else if alert_type == "redirect"
       Application.router.navigate(message, true)
     else
@@ -77,9 +80,9 @@ Application =
         console.log message
         div = $("<div>",
           style: "display: none",
-          class: "offset1 alert alert-"+alert_type
+          class: "alert alert-"+alert_type
         ).html message
-        $("#messages").append div
+        $(_anchor).append div
         div.show('normal')
         
       
