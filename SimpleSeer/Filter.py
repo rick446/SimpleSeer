@@ -45,13 +45,14 @@ class Filter():
 		cmd = db.command('aggregate', collection, pipeline = pipeline)
 		
 		ret = {}
-		for key in cmd['result'][0]:
-			if type(cmd['result'][0][key]) == list:
-				cmd['result'][0][key].sort()
-		
-			if not key == '_id':
-				ret[key] = cmd['result'][0][key]
+		if len(cmd['result']) > 0:
+			for key in cmd['result'][0]:
+				if type(cmd['result'][0][key]) == list:
+					cmd['result'][0][key].sort()
 			
+				if not key == '_id':
+					ret[key] = cmd['result'][0][key]
+				
 		return ret
 		
 		
