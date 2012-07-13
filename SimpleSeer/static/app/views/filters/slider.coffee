@@ -17,7 +17,7 @@ module.exports = class SliderFilterView extends _filter
       max: @options.params.constraints.max
       values: [ @options.params.constraints.min, @options.params.constraints.max ]
       slide: (event, ui) =>
-        @$el.find("label").html @options.params.label + ": " + ui.values[0] + " - " + ui.values[1]
+        @$el.find("label").html ui.values[0] + " - " + ui.values[1]
       change: (event, ui) =>
         @setValue(ui.values, true)
     #@setValue [@options.params.constraints.min, @options.params.constraints.max]
