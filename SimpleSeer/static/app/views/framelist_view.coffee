@@ -29,7 +29,8 @@ module.exports = class FramelistView extends View
     for o in application.settings.ui_filters_framemetadata
       #{"field_name": "metadata.part_id", "format": "autofill", "label": "Part ID", "type":"frame" }
       @addSubview o.format, application.getFilter(o.format), '#filter_form', {params:o}
-
+  filterCallback: (data) =>
+    console.log data
   events:
     "submit #filter_form": "filterFrames"
     "reset #filter_form": "filterFrames"
