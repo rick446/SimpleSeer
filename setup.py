@@ -17,6 +17,7 @@ shell = SimpleSeer.commands:ShellCommand
 notebook = SimpleSeer.commands:NotebookCommand
 controls = SimpleSeer.commands:ControlsCommand
 replicate = SimpleSeer.commands:ReplicateCommand
+script = SimpleSeer.commands:ScriptCommand
 '''
 entry_points += '''
 [paste.paster_create_template]
