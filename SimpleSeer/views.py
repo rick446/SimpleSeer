@@ -17,7 +17,6 @@ from . import util
 from .realtime import RealtimeNamespace, ChannelManager
 from .service import SeerProxy2
 from .Session import Session
-
 from .Filter import Filter
 
 log = logging.getLogger()
@@ -123,6 +122,10 @@ def frames():
     return dict(frames=frames, total_frames=total_frames, earliest_date=earliest_date)
 
 	
+@route('/getFrames', methods=['GET'])
+@util.jsonify
+def getFrames():
+	return request.values
 	
 @route('/getFilter/<filter_type>/<filter_name>/<filter_format>', methods=['GET'])
 @util.jsonify
