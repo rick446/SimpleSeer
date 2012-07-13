@@ -122,10 +122,10 @@ def frames():
     return dict(frames=frames, total_frames=total_frames, earliest_date=earliest_date)
 
 	
-@route('/getFrames', methods=['GET'])
+@route('/getFrames/<filter_params>', methods=['GET'])
 @util.jsonify
-def getFrames():
-	return request.values
+def getFrames(filter_params):
+	return filter_params
 	
 @route('/getFilter/<filter_type>/<filter_name>/<filter_format>', methods=['GET'])
 @util.jsonify
