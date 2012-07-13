@@ -1,15 +1,97 @@
-from .models.Result import Result
-from .models.Measurement import Measurement
-from .models.FrameFeature import FrameFeature
+from .models.Frame import Frame
 
 class Filter():
 	
+	def checkFilter(self, filterType, filterName, filterFormat):
+		
+		if not filterFormat in ['numeric', 'string', 'autofill', 'datetime']:
+			return None
+		if not filterType in ['measurement', 'frame', 'framefeature']:
+			return None
+			
+		db = Frame._get_db()
+		
+		pipeline = []
+		collection = ''
+		field = ''
+		
+		if filterType == 'frame':
+			collection = 'frame'	
+			field = filterName
+		elif filterType == 'measurement':
+			collection = 'result'
+			field = filterFormat
+			
+			pipeline.append({'$match': {'measurement_name': filterName}})
+			
+		elif filterType == 'framefeature':
+			print filterName
+			feat, c, field = filterName.partition('.')
+			field = 'features.' + field
+			collection = 'frame'
+		
+			pipeline.append({'$unwind': '$features'})
+			pipeline.append({'$match': {'features.featuretype': feat}})
+			
+		if (filterFormat == 'numeric') or (filterFormat == 'datetime'):
+			pipeline.append({'$group': {'_id': 1, 'min': {'$min': '$' + field}, 'max': {'$max': '$' + field}}})
+		
+		if (filterFormat == 'autofill'):
+			pipeline.append({'$group': {'_id': 1, 'enum': {'$addToSet': '$' + field}}})	
+			
+		if (filterFormat == 'string'):
+			pipeline.append({'$group': {'_id': 1, 'found': {'$sum': 1}}})
+		
+		cmd = db.command('aggregate', collection, pipeline = pipeline)
+		
+		ret = {}
+		for key in cmd['result'][0]:
+			if type(cmd['result'][0][key]) == list:
+				cmd['result'][0][key].sort()
+		
+			if not key == '_id':
+				ret[key] = cmd['result'][0][key]
+			
+		return ret
+		
+		
+	
 	def getFilterOptions(self):
 		
-		return dict(self.measurementFilterOptions().items() + self.featureFilterOptions().items())
+		return dict(self.frameFilterOptions().items() + self.measurementFilterOptions().items() + self.featureFilterOptions().items())
+		
+	def frameFilterOptions(self):
+		from bson import Code
+		db = Frame._get_db()
+		
+		frameOpts = {}
+		
+		pipeline = [{'$group': {'_id': 1, 'mintime': {'$min': '$capturetime'}, 'maxtime': {'$max': '$capturetime'}}}]
+		cmd = db.command('aggregate', 'frame', pipeline = pipeline)
+		
+		c = cmd['result'][0]
+		frameOpts['capturetime'] = {'type': 'datetime', 'min': int(float(c['mintime'].strftime('%s.%f')) * 1000), 'max': int(float(c['maxtime'].strftime('%s.%f')) * 1000)}
+		
+		metas = {}
+		
+		for f in Frame.objects:
+			if f.metadata:
+				for key in f.metadata:
+					print 'checking for k: %s v: %d' % (key, val)
+					if key in metas and not val in metas[key]:
+						metas[key].append(val)
+					else:
+						metas[key] = [val]
+		
+		for key, val in metas.items():
+			metas[key].sort()
+			frameOpts[key] = {'type': 'enum', 'vals': metas[key]}
+		
+		
+		return frameOpts
 		
 	def measurementFilterOptions(self):
-		db = Measurement._get_db()
+		db = Frame._get_db()
 		
 		measOpts = {}
 		
@@ -26,7 +108,7 @@ class Filter():
 		return measOpts
 
 	def featureFilterOptions(self):
-		db = Measurement._get_db()
+		db = Frame._get_db()
 		
 		featOpts = {}
 		
