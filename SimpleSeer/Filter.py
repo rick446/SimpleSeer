@@ -22,6 +22,8 @@ class Filter():
 		elif filterType == 'measurement':
 			collection = 'result'
 			field = filterFormat
+			if (field == 'autofill'):
+				field = 'string'
 			
 			pipeline.append({'$match': {'measurement_name': filterName}})
 			
