@@ -57,6 +57,8 @@ class Filter():
 					cmd['result'][0][key] = int(float(cmd['result'][0][key].strftime('%s.%f')) * 1000)
 				if not key == '_id':
 					ret[key] = cmd['result'][0][key]
+		else:
+			return {"error":"no matches found"}
 				
 		return ret
 		
