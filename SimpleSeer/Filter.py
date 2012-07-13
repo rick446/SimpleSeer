@@ -6,9 +6,9 @@ class Filter():
 		from datetime import datetime
 		
 		if not filterFormat in ['numeric', 'string', 'autofill', 'datetime']:
-			return None
+			return {"error":"unknown format"}
 		if not filterType in ['measurement', 'frame', 'framefeature']:
-			return None
+			return {"error":"unknown type"}
 			
 		db = Frame._get_db()
 		
