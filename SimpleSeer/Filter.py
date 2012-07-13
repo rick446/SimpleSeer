@@ -2,6 +2,11 @@ from .models.Frame import Frame
 
 class Filter():
 	
+	def getFrames(self):
+		
+		frs = [Frame.objects[0], Frame.objects[1], Frame.objects[2]]
+		return 3, frs, Frame.objects[0].capturetime
+	
 	def checkFilter(self, filterType, filterName, filterFormat):
 		from datetime import datetime
 		

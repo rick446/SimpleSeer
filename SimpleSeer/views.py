@@ -125,7 +125,26 @@ def frames():
 @route('/getFrames/<filter_params>', methods=['GET'])
 @util.jsonify
 def getFrames(filter_params):
-	return filter_params
+	from .base import jsondecode
+	from HTMLParser import HTMLParser
+	
+	p = HTMLParser()
+	nohtml = str(p.unescape(filter_params))
+	foo = '[{"lt":10,"gt":5,"type":"measurement","name":"Delivery Count"},{"type":"measurement","eq":"green","name":"Gumball Color"}]'
+	foop = jsondecode(foo)
+
+	if nohtml[0] == "'":
+		nohtml = nohtml[1:]
+	if nohtml[-1] == "'":
+		nohtml = nohtml[:-1]
+
+	params = jsondecode(nohtml)
+	
+	f = Filter()
+	total_frames, frames, earliest_date = f.getFrames()
+	earliest_date = calendar.timegm(earliest_date.timetuple())
+	
+	return dict(frames=frames, total_frames=total_frames, earliest_date=earliest_date)
 	
 @route('/getFilter/<filter_type>/<filter_name>/<filter_format>', methods=['GET'])
 @util.jsonify
