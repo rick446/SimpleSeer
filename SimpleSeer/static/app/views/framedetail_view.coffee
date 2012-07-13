@@ -42,11 +42,11 @@ module.exports = class FrameDetailView extends View
     
     for k of @model.attributes
       data[k] = @model.attributes[k]
-    data.disabled = application.settings.is_slave || false
+    data.disabled = application.settings.mongo.is_slave || false
     data
     
   addMetaBox: =>
-    disabled = application.settings.is_slave || false
+    disabled = application.settings.mongo.is_slave || false
     html='<tr><td><input class="metaDataEdit" type="text"'
     if disabled
       html+=' disabled="disabled" '
