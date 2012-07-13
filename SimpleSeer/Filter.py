@@ -2,10 +2,45 @@ from .models.Frame import Frame
 
 class Filter():
 	
-	def getFrames(self):
+	def getFrames(self, allFilters):
 		
+		pipeline = []
+		prefilter = {}
+		unwindFeat = None
+		unwindRes = None
+		postfilter = {}
+		
+		for f in allFilters:
+			if f['type'] == 'measurement' and not unwindRes:
+				unwindRes = '$result'
+				
+				postfilter['results.measurement_name'] = f['name']
+				
+				if 'eq' in f:
+					postfilter['results.string'] = f['eq']
+				else:
+					tmp = {}
+					if 'gt' in f:
+						tmp['$gt'] = f['gt']
+					if 'lt' in f:
+						tmp['$lt'] = f['lt']
+					postfilter['results.numeric'] = tmp
+		
+		if prefilter:
+			pipeline.append({'$match': prefilter})
+		if unwindFeat:
+			pipeline.append({'$unwind': unwindFeat})
+		if unwindRes:
+			pipeline.append({'$unwind': unwindRes})
+		if postfilter:
+			pipeline.append({'$match': postfilter})
+		
+		print pipeline
+	
 		frs = [Frame.objects[0], Frame.objects[1], Frame.objects[2]]
 		return 3, frs, Frame.objects[0].capturetime
+		
+		
 	
 	def checkFilter(self, filterType, filterName, filterFormat):
 		from datetime import datetime
