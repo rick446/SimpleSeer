@@ -124,21 +124,15 @@ def frames():
 
 	
 	
-@route('/getFilter/<filter_name>/<filter_type>', methods=['GET'])
+@route('/getFilter/<filter_type>/<filter_name>/<filter_format>', methods=['GET'])
 @util.jsonify
-def getFilter(filter_name, filter_type):
-    from datetime import datetime
+def getFilter(filter_type, filter_name, filter_format):
     
-    types = ['numeric', 'string', 'autofill', 'datetime']
+    # formats: numeric, string, autofill, datetime
+    # types: measurement, frame, framefeature
 
-    if (filter_type == 'numeric'):
-        return {'min': 0, 'max':100}
-    elif (filter_type == 'string'):
-        return {'min': '', 'max': ''}
-    elif (filter_type == 'autofill'):
-        return {'count': 3, 'enum': ['part1', 'part2', 'part3']}
-    elif (filter_type == 'datetime'):
-        return {'min': int(float(datetime(2012, 1, 1).strftime('%s.%f')) * 1000), 'max': int(float(datetime(2012, 12, 31).strftime('%s.%f')) * 1000)}
+	f = Filter()
+	return f.checkFilter(filter_type, filter_name, filter_format)
     
 
 #TODO, abstract this for layers and thumbnails        
