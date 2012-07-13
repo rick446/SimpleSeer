@@ -13,6 +13,13 @@ from SimpleCV import FrameSource, Image
 from base import jsonencode
 import mongoengine
 
+def load_plugins():
+    from . import models
+    return dict(
+        inspection=models.Inspection.register_plugins('seer.plugins.inspection'),
+        measurement=models.Measurement.register_plugins('seer.plugins.measurement'),
+        watcher=models.Watcher.register_plugins('seer.plugins.watcher'))
+
 class LazyProperty(object):
 
     def __init__(self, func):

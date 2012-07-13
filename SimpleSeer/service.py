@@ -3,6 +3,7 @@ from itertools import chain
 import Pyro4
 
 from . import models as M
+from . import util
 
 class SeerProxy2(object):
     '''It's a proxy of a Pyro4.Proxy, so it's a proxy^2. Get it?'''
@@ -13,8 +14,8 @@ class SeerProxy2(object):
         if self.initialized: return
         self.initialized = True
         self._proxy = Pyro4.Proxy('PYRONAME:sightmachine.seer')
-        self.plugins = {}
-        self.register_plugins()
+        self._proxy.get_config()
+        self.plugins = util.load_plugins()
 
     @property
     def lastframes(self):
@@ -34,11 +35,6 @@ class SeerProxy2(object):
         objs = M.Frame.objects(id=id)
         if objs: return objs[0]
         return None
-
-    def register_plugins(self):
-        '''Plugins must be registered 'locally' to work right'''
-        for ptype, cls in self._proxy.get_plugin_types().items():
-            self.plugins[ptype] = cls.register_plugins('seer.plugins.' + ptype)
 
     def __getattr__(self, name):
         return getattr(self._proxy, name)
