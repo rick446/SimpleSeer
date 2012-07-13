@@ -1,6 +1,5 @@
 import json
 import logging
-from gevent import monkey
 import mongoengine
 
 class Session():
@@ -34,7 +33,6 @@ class Session():
     def configure(self, d):
         from .models.base import SONScrub
         self._config = d
-        self.mongo['use_greenlets'] = True  #use greenlet-safe connection pooling 
         mongoengine.connect(self.database, **self.mongo)
         db = mongoengine.connection.get_db()
         db.add_son_manipulator(SONScrub())

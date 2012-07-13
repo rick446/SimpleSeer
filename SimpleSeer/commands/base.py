@@ -14,16 +14,17 @@ class Command(object):
         '''Add any options here'''
 
     def configure(self, options):
-        from SimpleSeer import models as M
-        from SimpleSeer.Session import Session
         self.options = options
         self.log = logging.getLogger(__name__)
-        self.session = Session(options.config)
         if self.use_gevent:
+            import gevent_zeromq
             from gevent import monkey
             monkey.patch_all()
-            import gevent_zeromq
             gevent_zeromq.monkey_patch()
+        # These imports need to happen *after* monkey patching
+        from SimpleSeer.Session import Session
+        from SimpleSeer import models as M 
+        self.session = Session(options.config)
         if self.remote_seer:
             from SimpleSeer.SimpleSeer import SimpleSeer as SS
             SS(disable=True)
