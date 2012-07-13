@@ -1,6 +1,6 @@
 View = require './view'
 template = require './templates/framedetail'
-app = require('application')
+application = require('application')
 
 module.exports = class FrameDetailView extends View  
   template: template
@@ -42,11 +42,19 @@ module.exports = class FrameDetailView extends View
     
     for k of @model.attributes
       data[k] = @model.attributes[k]
-      
+    data.disabled = application.settings.is_slave || false
     data
     
   addMetaBox: =>
-    $('#metadata').append('<tr><td><input class="metaDataEdit" type="text"></td><td><input class="metaDataEdit" type="text"></td></tr>')
+    disabled = application.settings.is_slave || false
+    html='<tr><td><input class="metaDataEdit" type="text"'
+    if disabled
+      html+=' disabled="disabled" '
+    html+='></td><td><input class="metaDataEdit" type="text"'
+    if disabled
+      html+=' disabled="disabled" '    
+    html+='></td></tr>'
+    $('#metadata').append(html)
 
   updateMetaData: (e) =>
     metadata = {}
@@ -66,7 +74,7 @@ module.exports = class FrameDetailView extends View
   
       
   postRender: =>
-    #app.viewPort = $('#display')
+    #application.viewPort = $('#display')
     @addMetaBox()
     if not @model.get('features').length
       return
