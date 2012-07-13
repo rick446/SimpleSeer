@@ -3,6 +3,7 @@ from .models.Frame import Frame
 class Filter():
 	
 	def checkFilter(self, filterType, filterName, filterFormat):
+		from datetime import datetime
 		
 		if not filterFormat in ['numeric', 'string', 'autofill', 'datetime']:
 			return None
@@ -45,13 +46,16 @@ class Filter():
 		cmd = db.command('aggregate', collection, pipeline = pipeline)
 		
 		ret = {}
-		for key in cmd['result'][0]:
-			if type(cmd['result'][0][key]) == list:
-				cmd['result'][0][key].sort()
-		
-			if not key == '_id':
-				ret[key] = cmd['result'][0][key]
-			
+		if len(cmd['result']) > 0:
+			for key in cmd['result'][0]:
+				if type(cmd['result'][0][key]) == list:
+					cmd['result'][0][key].sort()
+				
+				if type(cmd['result'][0][key]) == datetime:
+					cmd['result'][0][key] = int(float(cmd['result'][0][key].strftime('%s.%f')) * 1000)
+				if not key == '_id':
+					ret[key] = cmd['result'][0][key]
+				
 		return ret
 		
 		
