@@ -78,8 +78,6 @@ class SimpleSeer(object):
         #log initialized camera X
         
         
-        util.initialize_slave()
-			
         self.reloadInspections() #initialize inspections so they get saved to redis
          
         util.load_plugins()

@@ -210,7 +210,7 @@ class Core(object):
         return audit_trail
 
     def set_rate(self, rate_in_hz):
-        self._clock = Clock(rate_in_hz, sleep=gevent.sleep)
+        self._clock = util.Clock(rate_in_hz, sleep=gevent.sleep)
         for cam in self.video_cameras:
             cam.set_rate(rate_in_hz)
 

@@ -9,6 +9,7 @@ class CoreStatesCommand(Command):
 
     def __init__(self, subparser):
         subparser.add_argument('program')
+        subparser.add_argument('--disable-pyro', action='store_true')
 
     def run(self):
         from SimpleSeer.OLAPUtils import ScheduledOLAP
@@ -23,17 +24,20 @@ class CoreStatesCommand(Command):
         gevent.spawn_link_exception(so.runSked)
 
         core.start_socket_communication()
-        gevent.spawn_link_exception(core.run)
 
-        Pyro4.Daemon.serveSimple(
-            { core: "sightmachine.seer" },
-            ns=True)
+        if not self.options.disable_pyro:
+            gevent.spawn_link_exception(core.run)
+            Pyro4.Daemon.serveSimple(
+                { core: "sightmachine.seer" },
+                ns=True)
+        else:
+            core.run()
 
 class CoreCommand(CoreStatesCommand):
     'Run the core server'
 
     def __init__(self, subparser):
-        pass
+        subparser.add_argument('--disable-pyro', action='store_true')
 
     def run(self):
         self.options.program = self.session.statemachine or 'default-states.py'

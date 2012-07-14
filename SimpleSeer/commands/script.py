@@ -1,5 +1,4 @@
 from .base import Command
-from .. import util
 
 class ScriptCommand(Command):
     "Run a user-defined script in the seer 'context'"
@@ -17,6 +16,7 @@ class ScriptCommand(Command):
     def run(self):
         from SimpleSeer import models as M
         from SimpleSeer.realtime import ChannelManager
+        from .. import util
         util.register_plugins()
         ns = dict(
             M=M, CM=ChannelManager(), self=self)
