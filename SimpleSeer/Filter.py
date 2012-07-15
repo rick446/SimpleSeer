@@ -5,43 +5,91 @@ class Filter():
 	def getFrames(self, allFilters):
 		
 		pipeline = []
-		prefilter = {}
-		unwindFeat = None
-		unwindRes = None
-		postfilter = {}
+		frames = []
+		measurements = []
+		features = []
 		
 		for f in allFilters:
-			if f['type'] == 'measurement' and not unwindRes:
-				unwindRes = '$result'
-				
-				postfilter['results.measurement_name'] = f['name']
-				
+			if f['type'] == 'measurement':
+				measurements.append(f)
+			elif f['type'] == 'frame':
+				frames.append(f)
+			elif f['type'] == 'framefeature':
+				features.append(f)
+		
+		if frames:
+			for f in frames:
 				if 'eq' in f:
-					postfilter['results.string'] = f['eq']
+					comp = f['eq']
 				else:
-					tmp = {}
+					comp = {}
 					if 'gt' in f:
-						tmp['$gt'] = f['gt']
-					if 'lt' in f:
-						tmp['$lt'] = f['lt']
-					postfilter['results.numeric'] = tmp
+						comp['$gt'] = f['gt']
+					elif 'lt' in f:
+						comp['$lt'] = f['lt']
+				
+				pipeline.append({'$match': {f['name']: comp}})
 		
-		if prefilter:
-			pipeline.append({'$match': prefilter})
-		if unwindFeat:
-			pipeline.append({'$unwind': unwindFeat})
-		if unwindRes:
-			pipeline.append({'$unwind': unwindRes})
-		if postfilter:
-			pipeline.append({'$match': postfilter})
+		if measurements:
+			proj = {'ne': self.andMeas(measurements)}
+			group = {'fails': {'$sum': '$ne'}}
+			
+			
+			for key in Frame._fields:
+				if key == 'id':
+					key = '_id'
+				proj[key] = 1
+				group[key] = {'$first': '$' + key}
+			
+			group['_id'] = '$_id'
 		
+			
+			pipeline.append({'$unwind': '$results'})
+			pipeline.append({'$project': proj})
+			pipeline.append({'$group': group})
+			pipeline.append({'$match': {'fails': 0}})
+			
+		pipeline.append({'$sort': {'capturetime': 1}})
+				
 		print pipeline
 	
-		frs = [Frame.objects[0], Frame.objects[1], Frame.objects[2]]
-		return 3, frs, Frame.objects[0].capturetime
+		db = Frame._get_db()
+		cmd = db.command('aggregate', 'frame', pipeline = pipeline)
 		
+		ids = []
+		for r in cmd['result']:
+			#print 'TICK' + str(r)
+			ids.append(r['_id'])
+	
+		frames = Frame.objects.filter(id__in=ids)
+        
+		frs = []
+		for f in frames:
+			frs.append(f)
+	
+		return len(frames), frs, frs[0].capturetime
 		
 	
+		
+	
+	def andMeas(self, measurements):
+		
+		parts = []
+		for m in measurements:	
+			comp = []
+			if 'eq' in m:
+				comp.append({'$eq': ['$results.string', m['eq']]})
+			if 'gt' in m:
+				comp.append({'$gt': ['$results.numeric', m['gt']]})
+			if 'lt' in m:
+				comp.append({'$lt': ['$results.numeric', m['lt']]})
+				
+			comp.append({'$eq': ['$results.measurement_name', m['name']]})
+			
+			parts.append({'$and': comp})
+			
+		return {'$cond': [{'$or': parts}, 0, 1]}
+		
 	def checkFilter(self, filterType, filterName, filterFormat):
 		from datetime import datetime
 		
