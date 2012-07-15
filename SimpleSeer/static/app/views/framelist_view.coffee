@@ -32,8 +32,8 @@ module.exports = class FramelistView extends View
   filterCallback: (data) =>
     console.log data
   events:
-    "submit #filter_form": "filterFrames"
-    "reset #filter_form": "filterFrames"
+    #"submit #filter_form": "filterFrames"
+    #"reset #filter_form": "filterFrames"
     "click #load_new": "loadNew"
     "click #filter_form input[name=time_to]": "setTimeToAsNow"
 
@@ -54,10 +54,6 @@ module.exports = class FramelistView extends View
     return this
 
   postRender: =>
-    time_from_field = $('#filter_form input[name=time_from]').datetimepicker {timeFormat: 'hh:mm:ss'}
-    if @collection.earliest_date
-      time_from_field.datepicker( "setDate",  new Date(@collection.earliest_date*1000))
-    $('#filter_form input[name=time_to]').datetimepicker {timeFormat: 'hh:mm:ss'}
     camera_list = $('#filter_form select')
     for camera in application.settings.cameras
       camera_list.append '<option value="'+camera.name+'">'+camera.name+'</option>'
@@ -89,6 +85,7 @@ module.exports = class FramelistView extends View
     @lastLoadTime = new Date()
 
   filterNew: ()=>
+    return
     if @newFrames.length
       filter = _.clone(@filter)
       # get the stuff that's been added between now and last load
@@ -128,6 +125,7 @@ module.exports = class FramelistView extends View
       @$el.find('#frame_holder').html '<p>No results found for this search.</p>'
 
   filterFrames: (evt)=>
+    return
     @filter = {}
     @empty = true
     if evt.type == 'submit'
