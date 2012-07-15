@@ -31,7 +31,7 @@ class Filter():
 				pipeline.append({'$match': {f['name']: comp}})
 		
 		if measurements:
-			proj = {'ne': self.andMeas(measurements)}
+			proj = {'ne': self.condMeas(measurements)}
 			group = {'fails': {'$sum': '$ne'}}
 			
 			
@@ -48,6 +48,26 @@ class Filter():
 			pipeline.append({'$project': proj})
 			pipeline.append({'$group': group})
 			pipeline.append({'$match': {'fails': 0}})
+			
+		if features:
+			proj = {'ne': self.condFeat(features)}
+			group = {'fails': {'$sum': '$ne'}}
+			
+			
+			for key in Frame._fields:
+				if key == 'id':
+					key = '_id'
+				proj[key] = 1
+				group[key] = {'$first': '$' + key}
+			
+			group['_id'] = '$_id'
+		
+			
+			pipeline.append({'$unwind': '$features'})
+			pipeline.append({'$project': proj})
+			pipeline.append({'$group': group})
+			pipeline.append({'$match': {'fails': 0}})
+			
 			
 		pipeline.append({'$sort': {'capturetime': 1}})
 				
@@ -72,7 +92,7 @@ class Filter():
 	
 		
 	
-	def andMeas(self, measurements):
+	def condMeas(self, measurements):
 		
 		parts = []
 		for m in measurements:	
@@ -89,6 +109,29 @@ class Filter():
 			parts.append({'$and': comp})
 			
 		return {'$cond': [{'$or': parts}, 0, 1]}
+		
+		
+	def condFeat(self, features):
+		
+		parts = []
+		for f in features:
+			feat, c, field = f['name'].partition('.')
+			
+			comp = []
+			if 'eq' in f:
+				comp.append({'$eq': ['$features.' + field, f['eq']]})
+			if 'gt' in f:
+				comp.append({'$gt': ['$features.' + field, f['gt']]})
+			if 'lt' in f:
+				comp.append({'$lt': ['$features.' + field, f['lt']]})
+				
+			comp.append({'$eq': ['$features.' + feat, f['name']]})
+			
+			parts.append({'$and': comp})
+			
+		return {'$cond': [{'$or': parts}, 0, 1]}
+		
+		
 		
 	def checkFilter(self, filterType, filterName, filterFormat):
 		from datetime import datetime
@@ -116,7 +159,6 @@ class Filter():
 			pipeline.append({'$match': {'measurement_name': filterName}})
 			
 		elif filterType == 'framefeature':
-			print filterName
 			feat, c, field = filterName.partition('.')
 			field = 'features.' + field
 			collection = 'frame'
