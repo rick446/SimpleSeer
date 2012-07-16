@@ -73,7 +73,10 @@ class Core(object):
             while True:
                 name = sub_sock.recv()
                 raw_data = sub_sock.recv()
-                data = jsondecode(raw_data)
+                try:
+                    data = jsondecode(raw_data)
+                except:
+                    continue
                 self.trigger(name, data)
         gevent.spawn_link_exception(g_listener)
         # Setup publisher
