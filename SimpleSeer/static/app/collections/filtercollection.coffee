@@ -4,7 +4,8 @@ Frame = require "../models/frame"
 
 module.exports = class FilterCollection extends Collection
   model: Frame
-
+  url:"/getFrames"
+  
   initialize: (params) =>
     super()
     @filters = []
@@ -22,10 +23,8 @@ module.exports = class FilterCollection extends Collection
       val = o.toJson()
       if val
         _json.push val
-    #todo: get root url from collection
-    #skip = 20 limit = 10 query = []
     _json = {skip:0,limit:0,query:_json}
-    url = "/getFrames/"+JSON.stringify _json
+    url = @url+"/"+JSON.stringify _json
     $.getJSON(url, (data) =>
       #@view.filterCallback data
       @reset data.frames
