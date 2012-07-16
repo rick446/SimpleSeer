@@ -14,7 +14,9 @@ module.exports = class AutofillFilterView extends _filter
     @$el.find('#'+@options.params.name).autocomplete
       source: @options.params.constraints.enum
       change: (event, ui) =>
-        @setValue(ui.item.value, true)
+        if ui.item
+          v = ui.item.value
+        @setValue(v, true)
 
   getRenderData: () =>
     return @options.params

@@ -22,8 +22,8 @@ module.exports = class FramelistView extends View
     @filtercollection = new Filters({model:Frame,view:@})
     $.datepicker.setDefaults $.datepicker.regional['']
 
-    @collection.on 'add', @addFrame
-    @collection.on 'reset', @addFrames
+    #@collection.on 'add', @addFrame
+    #@collection.on 'reset', @addFrames
     $(window).on 'scroll', @loadMore
     @filtercollection.on 'add', @addFrame
     @filtercollection.on 'reset', @addFrames
@@ -39,14 +39,14 @@ module.exports = class FramelistView extends View
     "click #filter_form input[name=time_to]": "setTimeToAsNow"
 
   getRenderData: =>
-    count_viewing: @collection.length
+    count_viewing: @filtercollection.length
     count_total: @total_frames
     count_new: @newFrames.length
 
   render: =>
     super()
-    if @empty==true and @collection.at(0)
-      @newest = @collection.at(0).get('capturetime')
+    #if @empty==true and @filtercollection.at(0)
+    #  @newest = @filtercollection.at(0).get('capturetime')
     _(@_frameViews).each (fv) =>
       @$el.find('#frame_holder').append(fv.render().el)
     @$el.find('#loading_message').hide()
