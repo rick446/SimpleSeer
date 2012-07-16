@@ -3,12 +3,13 @@ from datetime import datetime
 
 class Filter():
 	
-	def getFrames(self, allFilters):
+	def getFrames(self, allFilters, skip=0, limit=0):
 		
 		pipeline = []
 		frames = []
 		measurements = []
 		features = []
+		
 		
 		for f in allFilters:
 			if f['type'] == 'measurement':
@@ -72,7 +73,11 @@ class Filter():
 			
 			
 		pipeline.append({'$sort': {'capturetime': 1}})
-			
+		pipeline.append({'$skip': skip})
+		
+		if limit > 0:
+			pipeline.append({'$limit': limit})
+		
 		print pipeline
 				
 		db = Frame._get_db()
