@@ -19,4 +19,4 @@ coffeescript
 -e svn+https://guppy-pe.svn.sourceforge.net/svnroot/guppy-pe/trunk/guppy@90#egg=guppy-dev_r90
 https://github.com/ingenuitas/pyvpx/zipball/master
 scikit-learn
-MongoMultiMaster==0.0.4
+MongoMultiMaster==0.0.4dev
