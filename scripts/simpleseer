@@ -6,7 +6,6 @@ import gevent
 import argparse
 import cProfile
 import threading
-import logging.config
 
 import guppy
 import gevent
@@ -31,13 +30,8 @@ def main():
         sp.set_defaults(command=ep.name)
         sp.set_defaults(subcommand=cmd)
 
-    # parse args, configure logging
+    # parse args
     options = parser.parse_args()
-    if options.logging:
-        logging.config.fileConfig(options.logging)
-    else:
-        logging.basicConfig()
-
     options.subcommand.configure(options)
     if options.profile:
         log = logging.getLogger('simpleseer')
