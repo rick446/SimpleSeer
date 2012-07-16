@@ -30,7 +30,7 @@ module.exports = class Router extends Backbone.Router
         $('ul.nav').find(".active").removeClass("active")
         $('ul.nav').find('li.frames').addClass('active')
         $('#main').slideReplace application.framelistView.render().el, 'right'
-        application.framelistView.postRender()
+        #application.framelistView.postRender()
         
         
   frame: (id) ->
