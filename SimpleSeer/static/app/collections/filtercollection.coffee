@@ -24,7 +24,7 @@ module.exports = class FilterCollection extends Collection
         _json.push val
     #todo: get root url from collection
     #skip = 20 limit = 10 query = []
-    _json = [{skip:0,limit:0,query:_json}]
+    _json = {skip:0,limit:0,query:_json}
     url = "/getFrames/"+JSON.stringify _json
     $.getJSON(url, (data) =>
       #@view.filterCallback data
