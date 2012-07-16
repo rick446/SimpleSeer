@@ -2,6 +2,8 @@ View = require './view'
 template = require './templates/framelist'
 FramelistFrameView = require './framelistframe_view'
 application = require '../application'
+Frame = require "../../models/frame"
+Filters = require "../../collections/filtercollection"
 
 module.exports = class FramelistView extends View  
   template: template
@@ -17,20 +19,19 @@ module.exports = class FramelistView extends View
     @newFrames = []
     @total_frames = 0
     @lastLoadTime = new Date()
+    @filtercollection = new Filters({model:Frame,view:@})
     $.datepicker.setDefaults $.datepicker.regional['']
 
     @collection.on 'add', @addFrame
     @collection.on 'reset', @addFrames
     $(window).on 'scroll', @loadMore
+    @filtercollection.on 'add', @addFrame
+    @filtercollection.on 'reset', @addFrames
 
     application.socket.on "message:capture/", @capturedNewFrame
     application.socket.emit 'subscribe', 'capture/'
     setInterval @filterNew, 5000
-    for o in application.settings.ui_filters_framemetadata
-      #{"field_name": "metadata.part_id", "format": "autofill", "label": "Part ID", "type":"frame" }
-      @addSubview o.format, application.getFilter(o.format), '#filter_form', {params:o}
-  filterCallback: (data) =>
-    console.log data
+
   events:
     #"submit #filter_form": "filterFrames"
     #"reset #filter_form": "filterFrames"
@@ -52,12 +53,12 @@ module.exports = class FramelistView extends View
     @empty=false
     @lastLoadTime = new Date()
     return this
-
+  """
   postRender: =>
     camera_list = $('#filter_form select')
     for camera in application.settings.cameras
       camera_list.append '<option value="'+camera.name+'">'+camera.name+'</option>'
-
+  """
   loadMore: (evt)=>
     if !@loading && $('#loading_message').length && @total_frames > 20\
        && (@total_frames - @collection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())
@@ -68,7 +69,7 @@ module.exports = class FramelistView extends View
       @$el.find('#loading_message').fadeIn('fast')
       @loading=true
       @empty=false
-      @fetchFiltered()
+      #@fetchFiltered()
 
   loadNew: ()=>
     newFrameViews = _.clone(@_newFrameViews).sort (a,b)->
@@ -123,7 +124,7 @@ module.exports = class FramelistView extends View
       frames.each @addFrame
     else
       @$el.find('#frame_holder').html '<p>No results found for this search.</p>'
-
+  """
   filterFrames: (evt)=>
     return
     @filter = {}
@@ -142,7 +143,8 @@ module.exports = class FramelistView extends View
     @$el.find('#frame_holder').html 'Loading...'
     @$el.find('#frame_counts').hide()
     @fetchFiltered()
-
+  """
+  """
   fetchFiltered: =>
     skip = 0
     filter = _.clone(@filter)
@@ -152,7 +154,7 @@ module.exports = class FramelistView extends View
     @collection.fetch_filtered
       skip: skip
       filter: filter
-
+  """
   disableEvent: (evt)=>
     evt.preventDefault()
     return false

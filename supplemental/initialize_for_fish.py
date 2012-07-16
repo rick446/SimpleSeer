@@ -24,6 +24,8 @@ system('echo "db.dropDatabase()" | mongo default')
 
 insp = Inspection( name= "Motion", method="motion")
 insp.save()
+#insp2 = Inspection( name= "Blob", method="blob")
+#insp2.save()
 
 meas = Measurement( name="movement", label="Movement", method = "movement", parameters = dict(), units = "", featurecriteria = dict( index = 0 ), inspection = insp.id )
 meas.save()

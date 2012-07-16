@@ -68,9 +68,6 @@ Application =
     if !@ui?
       @ui = {}
       @ui.filters = require 'views/filters/init'
-      #TODO: make robust
-      #_ret = $.ajax 'http://127.0.0.1:8080/features', {dataType:'json', async:false}
-      #@ui.filters._options = $.parseJSON _ret.responseText
     return @ui.filters[name]
 
   alert: (message, alert_type) ->
