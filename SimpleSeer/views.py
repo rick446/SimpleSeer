@@ -10,7 +10,7 @@ import bson.json_util
 import gevent
 import coffeescript
 from socketio import socketio_manage
-from flask import request, make_response, Response
+from flask import request, make_response, Response, redirect
 
 from . import models as M
 from . import util
@@ -48,7 +48,7 @@ def sio(path):
 
 @route('/')
 def index():
-    return open(os.path.join(os.path.dirname(__file__), 'static/public/index.html')).read()
+    return redirect('/index.html')
 
 @route('/plugins.js')
 def plugins():

@@ -17,6 +17,7 @@ exports.config =
       joinTo:
         'javascripts/app.js': /^app/
         'javascripts/vendor.js': /^vendor/
+        'javascripts/seer.js': (path) -> true
       # Defines compilation order.
       # `vendor` files will be compiled before other ones
       # even if they are not present here.

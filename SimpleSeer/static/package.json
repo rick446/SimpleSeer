@@ -14,6 +14,7 @@
   "scripts": {
     "start": "brunch watch --server"
   },
+  "main": "app/index",
   "dependencies": {
     "javascript-brunch": "1.0.x || 1.1.x",
     "coffee-script-brunch": "1.0.x || 1.1.x",

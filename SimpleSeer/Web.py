@@ -38,12 +38,10 @@ class WebServer(object):
     
     def __init__(self, app):
         self.app = app
+        session = Session()
         if app.config['DEBUG'] or DEBUG:
             from werkzeug import SharedDataMiddleware
-            app.wsgi_app = SharedDataMiddleware(app.wsgi_app, {
-              '/': os.path.join(os.path.dirname(__file__), 'static/public')
-            })
-        
+            app.wsgi_app = SharedDataMiddleware(app.wsgi_app, session.web['static'])
         hostport = Session().web["address"].split(":")
         if len(hostport) == 2:
             host, port = hostport
