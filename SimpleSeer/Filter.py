@@ -10,6 +10,8 @@ class Filter():
 		measurements = []
 		features = []
 		
+		print 'OOOOO'
+		print 'allFilters'
 		
 		for f in allFilters:
 			if f['type'] == 'measurement':
