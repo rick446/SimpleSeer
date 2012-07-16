@@ -1,4 +1,5 @@
 from .models.Frame import Frame
+from datetime import datetime
 
 class Filter():
 	
@@ -31,8 +32,8 @@ class Filter():
 				pipeline.append({'$match': {f['name']: comp}})
 		
 		if measurements:
-			proj = {'ne': self.condMeas(measurements)}
-			group = {'fails': {'$sum': '$ne'}}
+			proj = {'ok': self.condMeas(measurements)}
+			group = {'allok': {'$min': '$ok'}}
 			
 			
 			for key in Frame._fields:
@@ -47,11 +48,11 @@ class Filter():
 			pipeline.append({'$unwind': '$results'})
 			pipeline.append({'$project': proj})
 			pipeline.append({'$group': group})
-			pipeline.append({'$match': {'fails': 0}})
+			pipeline.append({'$match': {'allok': 1}})
 			
 		if features:
-			proj = {'ne': self.condFeat(features)}
-			group = {'fails': {'$sum': '$ne'}}
+			proj = {'ok': self.condFeat(features)}
+			group = {'allok': {'$min': '$ok'}}
 			
 			
 			for key in Frame._fields:
@@ -69,16 +70,18 @@ class Filter():
 			pipeline.append({'$match': {'fails': 0}})
 			
 			
+			
 		pipeline.append({'$sort': {'capturetime': 1}})
-				
+			
 		print pipeline
-	
+				
 		db = Frame._get_db()
 		cmd = db.command('aggregate', 'frame', pipeline = pipeline)
 		
+		print 'Found %d results' % len(cmd['result'])
+		
 		ids = []
 		for r in cmd['result']:
-			#print 'TICK' + str(r)
 			ids.append(r['_id'])
 	
 		frames = Frame.objects.filter(id__in=ids)
@@ -86,50 +89,65 @@ class Filter():
 		frs = []
 		for f in frames:
 			frs.append(f)
-	
-		return len(frames), frs, frs[0].capturetime
-		
-	
+			
+		if len(frs) > 0:
+			earliest = frs[0].capturetime
+		else:
+			earliest = datetime(1970, 1, 1)
+			
+		return len(frames), frs, earliest
 		
 	
 	def condMeas(self, measurements):
 		
-		parts = []
+		# Basic output should look like:
+		# (NOT name match) OR (values match)
+		# So that always passes if does not match this result
+		# Or will pass if the values match the query
+		
 		for m in measurements:	
-			comp = []
+			
 			if 'eq' in m:
-				comp.append({'$eq': ['$results.string', m['eq']]})
-			if 'gt' in m:
-				comp.append({'$gt': ['$results.numeric', m['gt']]})
-			if 'lt' in m:
-				comp.append({'$lt': ['$results.numeric', m['lt']]})
+				comp = {'$eq': ['$results.string', m['eq']]}
+			else:
+				tmp = []
+				if 'gt' in m:
+					tmp.append({'$gte': ['$results.numeric', m['gt']]})
+				if 'lt' in m:
+					tmp.append({'$lte': ['$results.numeric', m['lt']]})	
 				
-			comp.append({'$eq': ['$results.measurement_name', m['name']]})
+				if len(tmp) > 1:
+					comp = {'$and': tmp}
+				else:
+					comp = tmp[0]
 			
-			parts.append({'$and': comp})
-			
-		return {'$cond': [{'$or': parts}, 0, 1]}
+		name = {'$not': [{'$eq': ['$results.measurement_name', str(m['name'])]}]}
+				
+		return {'$cond': [{'$or': [name, comp]}, 1, 0]}
 		
 		
 	def condFeat(self, features):
 		
-		parts = []
 		for f in features:
 			feat, c, field = f['name'].partition('.')
 			
-			comp = []
 			if 'eq' in f:
-				comp.append({'$eq': ['$features.' + field, f['eq']]})
-			if 'gt' in f:
-				comp.append({'$gt': ['$features.' + field, f['gt']]})
-			if 'lt' in f:
-				comp.append({'$lt': ['$features.' + field, f['lt']]})
-				
-			comp.append({'$eq': ['$features.' + feat, f['name']]})
+				comp = {'$eq': ['$features.' + field, f['eq']]}
+			else:
+				temp = []
+				if 'gt' in f:
+					tmp.append({'$gte': ['$features.' + field, f['gt']]})
+				if 'lt' in f:
+					tmp.append({'$lte': ['$features.' + field, f['lt']]})
+					
+			if len(tmp) > 1:
+				comp = {'$and': tmp}
+			else:
+				comp = tmp[0]
 			
-			parts.append({'$and': comp})
+		name = {'$not': [{'$eq': ['$features.featuretype', str(m['name'])]}]}
 			
-		return {'$cond': [{'$or': parts}, 0, 1]}
+		return {'$cond': [{'$or': [name, comp]}, 1, 0]}
 		
 		
 		

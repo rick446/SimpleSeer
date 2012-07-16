@@ -130,6 +130,8 @@ def getFrames(filter_params):
 	
 	p = HTMLParser()
 	nohtml = str(p.unescape(filter_params))
+	
+	"""
 	foo = '[{"lt":10,"gt":5,"type":"measurement","name":"Delivery Count"},{"type":"measurement","eq":"green","name":"Gumball Color"}]'
 	foop = jsondecode(foo)
 
@@ -137,14 +139,20 @@ def getFrames(filter_params):
 		nohtml = nohtml[1:]
 	if nohtml[-1] == "'":
 		nohtml = nohtml[:-1]
-
+    """
+    
 	params = jsondecode(nohtml)
 	
 	f = Filter()
 	total_frames, frames, earliest_date = f.getFrames(params)
 	earliest_date = calendar.timegm(earliest_date.timetuple())
 	
-	return dict(frames=frames, total_frames=total_frames, earliest_date=earliest_date)
+	retVal = dict(frames=frames, total_frames=total_frames, earliest_date=earliest_date)
+	
+	if retVal:
+		return retVal
+	else:
+		return {frames: None, 'error': 'no result found'} 
 	
 @route('/getFilter/<filter_type>/<filter_name>/<filter_format>', methods=['GET'])
 @util.jsonify
@@ -154,7 +162,12 @@ def getFilter(filter_type, filter_name, filter_format):
     # types: measurement, frame, framefeature
 
 	f = Filter()
-	return f.checkFilter(filter_type, filter_name, filter_format)
+	retVal = f.checkFilter(filter_type, filter_name, filter_format)
+	
+	if retVal:
+		return retVal
+	else:
+		return {'error': 'no result found'}
     
 
 #TODO, abstract this for layers and thumbnails        
