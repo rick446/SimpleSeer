@@ -112,10 +112,11 @@ class Filter():
 		# So that always passes if does not match this result
 		# Or will pass if the values match the query
 		
+		allfilts = []
 		for m in measurements:	
 			
 			if 'eq' in m:
-				comp = {'$eq': ['$results.string', m['eq']]}
+				comp = {'$eq': ['$results.string', str(m['eq'])]}
 			else:
 				tmp = []
 				if 'gt' in m:
@@ -128,13 +129,16 @@ class Filter():
 				else:
 					comp = tmp[0]
 			
-		name = {'$not': [{'$eq': ['$results.measurement_name', str(m['name'])]}]}
+			name = {'$not': [{'$eq': ['$results.measurement_name', str(m['name'])]}]}
+			combined = {'$or': [name, comp]}
+			allfilts.append(combined)
 				
-		return {'$cond': [{'$or': [name, comp]}, 1, 0]}
+		return {'$cond': [{'$and': allfilts}, 1, 0]}
 		
 		
 	def condFeat(self, features):
 		
+		allfilts = []
 		for f in features:
 			feat, c, field = f['name'].partition('.')
 			
@@ -152,9 +156,11 @@ class Filter():
 			else:
 				comp = tmp[0]
 			
-		name = {'$not': [{'$eq': ['$features.featuretype', str(m['name'])]}]}
+			name = {'$not': [{'$eq': ['$features.featuretype', str(m['name'])]}]}
+			combined = {'$or': [name, comp]}
+			allfilts.append(combined)
 			
-		return {'$cond': [{'$or': [name, comp]}, 1, 0]}
+		return {'$cond': [{'$and': allfilts}, 1, 0]}
 		
 		
 		
