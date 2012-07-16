@@ -38,6 +38,12 @@ class Session():
         db.add_son_manipulator(SONScrub())
         self.log = logging.getLogger(__name__)
 
+    def camera_name(self, camera_id):
+        for cam in self.cameras:
+            if cam['id'] == camera_id:
+                return cam['name']
+        return None
+
     def get_config(self):
         return self._config
 

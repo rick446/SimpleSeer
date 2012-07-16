@@ -38,6 +38,15 @@ from jsonpickle.pickler import Pickler
 import logging
 
 
+#little wrapper functions to set defaults for dumps/loads behavior
+def jsonencode(obj):
+#    import pdb; pdb.set_trace()
+    return jsonpickle.encode(obj, unpicklable=False)
+
+def jsondecode(data):
+    return json.loads(data)
+        
+   
 
 
 try:
@@ -49,15 +58,6 @@ except ImportError:
     import json
 
 
-#little wrapper functions to set defaults for dumps/loads behavior
-def jsonencode(obj):
-#    import pdb; pdb.set_trace()
-    return jsonpickle.encode(obj, unpicklable=False)
-
-def jsondecode(data):
-    return json.loads(data)
-        
-   
 #note these handlers are not ok for "picklable" stuff
 class BSONObjectIDHandler(jsonpickle.handlers.BaseHandler):
     def flatten(self, obj, data={}):

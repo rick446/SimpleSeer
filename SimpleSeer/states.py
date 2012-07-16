@@ -6,8 +6,8 @@ import zmq
 import gevent
 
 from . import models as M
+from . import util
 from .base import jsondecode, jsonencode
-from .util import Clock
 from .camera import StillCamera, VideoCamera
 
 class Core(object):
@@ -17,10 +17,6 @@ class Core(object):
        - measure
        - watch
     '''
-    _plugin_types = dict(
-        inspection=M.Inspection,
-        measurement=M.Measurement,
-        watcher=M.Watcher)
     _instance=None
 
     class Transition(Exception):
@@ -34,7 +30,7 @@ class Core(object):
         self._states = {}
         self._cur_state = None
         self._events = Queue()
-        self._clock = Clock(1.0, sleep=gevent.sleep)
+        self._clock = util.Clock(1.0, sleep=gevent.sleep)
         self._config = config
         self.config = config #bkcompat for old SeerCore stuff
         self.cameras = []
@@ -48,7 +44,7 @@ class Core(object):
                 self.video_cameras.append(cam)
             self.cameras.append(cam)
 
-        self.loadPlugins()
+        util.load_plugins()
         self.reloadInspections()
         self.lastframes = deque()
         self.framecount = 0
@@ -104,14 +100,6 @@ class Core(object):
 
     def get_config(self):
         return self._config.get_config()
-
-    @classmethod
-    def get_plugin_types(cls):
-        return cls._plugin_types
-
-    def loadPlugins(self):
-        for ptype, cls in self.get_plugin_types().items():
-            cls.register_plugins('seer.plugins.' + ptype)
 
     def reset(self):
         start = State(self, 'start')
@@ -222,7 +210,7 @@ class Core(object):
         return audit_trail
 
     def set_rate(self, rate_in_hz):
-        self._clock = Clock(rate_in_hz, sleep=gevent.sleep)
+        self._clock = util.Clock(rate_in_hz, sleep=gevent.sleep)
         for cam in self.video_cameras:
             cam.set_rate(rate_in_hz)
 
