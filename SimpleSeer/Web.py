@@ -15,7 +15,6 @@ DEBUG = True
 log = logging.getLogger(__name__)
 
 def make_app():
-    util.initialize_slave()
     app = Flask(__name__)
 
     @app.teardown_request

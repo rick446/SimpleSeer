@@ -2,6 +2,7 @@ import logging
 
 import zmq
 import gevent
+import gevent.coros
 
 from socketio.namespace import BaseNamespace
 
@@ -20,6 +21,7 @@ class ChannelManager(object):
         self.initialized = True
         self._channels = {}
         self.config = Session()
+        self._lock = gevent.coros.RLock()
         self.context = context or zmq.Context.instance()
         self.pub_sock = self.context.socket(zmq.PUB)
         self.pub_sock.connect(self.config.pub_uri)
@@ -37,9 +39,9 @@ class ChannelManager(object):
         nice to use a compact and fast encoding like BSON, these messages need to
         get relayed down to the browser, which is expecting JSON.
         '''
-
-        self.pub_sock.send(channel, zmq.SNDMORE)
-        self.pub_sock.send(jsonencode(message))
+        with self._lock:
+            self.pub_sock.send(channel, zmq.SNDMORE)
+            self.pub_sock.send(jsonencode(message))
 
     def subscribe(self, name):
         name=str(name)

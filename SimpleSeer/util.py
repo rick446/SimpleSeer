@@ -3,15 +3,18 @@ import re
 import uuid
 import datetime
 import collections
-from glob import glob
 from functools import wraps
 
+from .base import jsonencode
 from bson import ObjectId, DBRef, MaxKey, MinKey
 from flask import make_response
-from SimpleCV import FrameSource, Image
 
-from base import jsonencode
-import mongoengine
+def load_plugins():
+    from . import models
+    return dict(
+        inspection=models.Inspection.register_plugins('seer.plugins.inspection'),
+        measurement=models.Measurement.register_plugins('seer.plugins.measurement'),
+        watcher=models.Watcher.register_plugins('seer.plugins.watcher'))
 
 class LazyProperty(object):
 

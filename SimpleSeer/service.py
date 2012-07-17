@@ -1,8 +1,11 @@
+from cStringIO import StringIO
 from itertools import chain
 
 import Pyro4
 
 from . import models as M
+from . import util
+from .Session import Session
 
 class SeerProxy2(object):
     '''It's a proxy of a Pyro4.Proxy, so it's a proxy^2. Get it?'''
@@ -12,9 +15,13 @@ class SeerProxy2(object):
         self.__dict__ = self.__shared_state
         if self.initialized: return
         self.initialized = True
-        self._proxy = Pyro4.Proxy('PYRONAME:sightmachine.seer')
-        self.plugins = {}
-        self.register_plugins()
+        self.plugins = util.load_plugins()
+        try:
+            self._proxy = Pyro4.Proxy('PYRONAME:sightmachine.seer')
+            self._proxy.get_config()
+        except Pyro4.errors.NamingError, err:
+            self._proxy = None
+            self._proxy_error = err
 
     @property
     def lastframes(self):
@@ -29,16 +36,37 @@ class SeerProxy2(object):
         return frames
 
     def get_frame(self, index=-1, camera=0):
-        id = self.get_frame_id(index, camera)
+        if self._proxy:
+            id = self.get_frame_id(index, camera)
         if id is None: return None
-        objs = M.Frame.objects(id=id)
-        if objs: return objs[0]
-        return None
+        return M.Frame.objects.get(id=id)
 
-    def register_plugins(self):
-        '''Plugins must be registered 'locally' to work right'''
-        for ptype, cls in self._proxy.get_plugin_types().items():
-            self.plugins[ptype] = cls.register_plugins('seer.plugins.' + ptype)
+    def get_image(self, width, index=-1, camera=0):
+        if self._proxy:
+            return self._proxy.get_image(width, index, camera)
+        cname = Session().camera_name(camera)
+        q = M.Frame.objects(camera=cname)
+        if index < 0:
+            q = q.order_by('-capturetime')
+        else:
+            q = q.order_by('capturetime')
+            index = -(index + 1)
+        for frame in q:
+            if frame.has_image_data():
+                index += 1
+                if index == 0:
+                    image = frame.image
+                    break
+        else:
+            return None
+        if width:
+            image = image.scale(width / float(image.width))
+        sio = StringIO()
+        image.save(sio, 'jpeg', quality=60)
+        return dict(
+            content_type='image/jpeg', data=sio.getvalue())
 
     def __getattr__(self, name):
+        if self._proxy is None:
+            raise self._proxy_error
         return getattr(self._proxy, name)

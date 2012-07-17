@@ -1,5 +1,4 @@
 import time
-import logging
 import threading
 
 import gevent
@@ -14,16 +13,17 @@ class Command(object):
         '''Add any options here'''
 
     def configure(self, options):
-        from SimpleSeer import models as M
-        from SimpleSeer.Session import Session
         self.options = options
-        self.log = logging.getLogger(__name__)
-        self.session = Session(options.config)
         if self.use_gevent:
+            import gevent_zeromq
             from gevent import monkey
             monkey.patch_all()
-            import gevent_zeromq
             gevent_zeromq.monkey_patch()
+        # These imports need to happen *after* monkey patching
+        from SimpleSeer.Session import Session
+        from SimpleSeer import models as M
+        self._configure_logging()
+        self.session = Session(options.config)
         if self.remote_seer:
             from SimpleSeer.SimpleSeer import SimpleSeer as SS
             SS(disable=True)
@@ -34,6 +34,14 @@ class Command(object):
     def run(self):
         '''Actually run the command'''
         raise NotImplementedError, 'run'
+
+    def _configure_logging(self):
+        import logging
+        if self.options.logging:
+            logging.config.fileConfig(self.options.logging)
+        else:
+            logging.basicConfig()
+        self.log = logging.getLogger(__name__)
 
     @classmethod
     def simple(cls, use_gevent=True, remote_seer=True):
