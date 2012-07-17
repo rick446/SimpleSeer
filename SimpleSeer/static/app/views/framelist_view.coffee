@@ -32,11 +32,11 @@ module.exports = class FramelistView extends View
     #application.socket.emit 'subscribe', 'capture/'
     #setInterval @filterNew, 5000
     
-  events:
+  #events:
     #"submit #filter_form": "filterFrames"
     #"reset #filter_form": "filterFrames"
-    "click #load_new": "loadNew"
-    "click #filter_form input[name=time_to]": "setTimeToAsNow"
+    #"click #load_new": "loadNew"
+    #"click #filter_form input[name=time_to]": "setTimeToAsNow"
 
   getRenderData: =>
     count_viewing: @filtercollection.length

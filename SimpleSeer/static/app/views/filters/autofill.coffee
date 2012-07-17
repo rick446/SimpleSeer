@@ -11,9 +11,10 @@ module.exports = class AutofillFilterView extends _filter
     @
 
   afterRender: () =>
-    @$el.find('#'+@options.params.name).autocomplete
-      source: @options.params.constraints.enum
-      change: (event, ui) =>
+    #$( "#combobox" ).combobox();
+    
+    @$el.find('#'+@options.params.name).combobox
+      selected: (event, ui) =>
         if ui.item
           v = ui.item.value
         @setValue(v, true)
