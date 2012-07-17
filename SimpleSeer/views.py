@@ -142,12 +142,14 @@ def getFrames(filter_params):
     """
     
 	allparams = jsondecode(nohtml)
+	print allparams
 	limit = allparams['limit']
+	print 'limit %d' % limit
 	skip = allparams['skip']
 	query = allparams['query']
 	
 	f = Filter()
-	total_frames, frames, earliest_date = f.getFrames(query, limit, skip)
+	total_frames, frames, earliest_date = f.getFrames(query, limit=limit, skip=skip)
 	earliest_date = calendar.timegm(earliest_date.timetuple())
 	
 	retVal = dict(frames=frames, total_frames=total_frames, earliest_date=earliest_date)
