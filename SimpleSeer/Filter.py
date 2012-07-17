@@ -10,8 +10,8 @@ class Filter():
 		measurements = []
 		features = []
 		
-		print 'OOOOO'
-		print 'allFilters'
+		print 'limit: %d' % limit
+		print 'skip %d' % skip
 		
 		for f in allFilters:
 			if f['type'] == 'measurement':
@@ -29,7 +29,7 @@ class Filter():
 					comp = {}
 					if 'gt' in f:
 						comp['$gt'] = f['gt']
-					elif 'lt' in f:
+					if 'lt' in f:
 						comp['$lt'] = f['lt']
 				
 				pipeline.append({'$match': {f['name']: comp}})
