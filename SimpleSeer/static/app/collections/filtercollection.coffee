@@ -1,10 +1,16 @@
 Collection = require "./collection"
 application = require '../application'
 Frame = require "../models/frame"
+#FramelistFrameView = require './framelistframe_view'
 
 module.exports = class FilterCollection extends Collection
   model: Frame
   url:"/getFrames"
+  _defaults:
+    skip:0
+    limit:20
+  skip:0
+  limit:20
   
   initialize: (params) =>
     super()
@@ -23,10 +29,13 @@ module.exports = class FilterCollection extends Collection
       val = o.toJson()
       if val
         _json.push val
-    _json = {skip:0,limit:0,query:_json}
+    _json = {skip:@skip,limit:@limit,query:_json}
+    console.dir _json
     url = @url+"/"+JSON.stringify _json
     $.getJSON(url, (data) =>
       #@view.filterCallback data
+      #console.log data.frames
+      console.log data.frames.length
       @reset data.frames
       if params.success
         params.success(data)

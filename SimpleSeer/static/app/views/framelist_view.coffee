@@ -8,11 +8,11 @@ Filters = require "../../collections/filtercollection"
 module.exports = class FramelistView extends View  
   template: template
 
-  initialize: (collection)=>
+  initialize: ()=>
     super()
     @empty=true
     @loading=false
-    @collection = collection
+    #@collection = collection
     @_frameViews = []
     @_newFrameViews = []
     @filter = {}
@@ -25,13 +25,13 @@ module.exports = class FramelistView extends View
     #@collection.on 'add', @addFrame
     #@collection.on 'reset', @addFrames
     $(window).on 'scroll', @loadMore
-    @filtercollection.on 'add', @addFrame
-    @filtercollection.on 'reset', @addFrames
+    @filtercollection.on 'add', @addObj
+    @filtercollection.on 'reset', @addObjs
 
     application.socket.on "message:capture/", @capturedNewFrame
     application.socket.emit 'subscribe', 'capture/'
     setInterval @filterNew, 5000
-
+    
   events:
     #"submit #filter_form": "filterFrames"
     #"reset #filter_form": "filterFrames"
@@ -53,6 +53,10 @@ module.exports = class FramelistView extends View
     @empty=false
     @lastLoadTime = new Date()
     return this
+    
+  afterRender: =>
+    @filtercollection.fetch()
+
   """
   postRender: =>
     camera_list = $('#filter_form select')
@@ -61,7 +65,7 @@ module.exports = class FramelistView extends View
   """
   loadMore: (evt)=>
     if !@loading && $('#loading_message').length && @total_frames > 20\
-       && (@total_frames - @collection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())
+       && (@total_frames - @filtercollection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())
       $('body').on('mousewheel', @disableEvent)
       enable = =>
         $('body').off('mousewheel', @disableEvent)
@@ -72,6 +76,7 @@ module.exports = class FramelistView extends View
       #@fetchFiltered()
 
   loadNew: ()=>
+  """
     newFrameViews = _.clone(@_newFrameViews).sort (a,b)->
       if a.frame.get('capturetime') < b.frame.get('capturetime')
         return -1
@@ -80,11 +85,11 @@ module.exports = class FramelistView extends View
     @_newFrameViews = []
     for fv in newFrameViews
       @$el.find('#frame_holder').prepend(fv.render().el)
-    @$el.find('#count_viewing').html @collection.length
+    @$el.find('#count_viewing').html @filtercollection.length
     @$el.find('#count_new').html '0'
     @_frameViews = newFrameViews.concat(@_frameViews)
     @lastLoadTime = new Date()
-
+  """
   filterNew: ()=>
     return
     if @newFrames.length
@@ -93,12 +98,30 @@ module.exports = class FramelistView extends View
       filter.time_to = (new Date).getTime()
       filter.time_from = @newest*1000
       @newFrames = []
-      @collection.fetch_filtered
-        page: 0
-        add: true
-        filter: filter
+      #@collection.fetch_filtered
+      #  page: 0
+      #  add: true
+      #  filter: filter
 
+  addObj: (d,an)=>
+    fv = new FramelistFrameView d
+    if !an?
+      an = @$el.find('#frame_holder')
+    an.append(fv.render().el)
+
+  addObjs: (d,v)=>
+    console.log v
+    an = @$el.find('#frame_holder')
+    an.html ''
+    for o in d.models
+      @addObj o, an
+  """
   addFrame: (frame)=>
+    #fv = new FramelistFrameView frame
+    console.log @$el.find('#frame_holder')
+    #@$el.find('#frame_holder').append(fv.render().el)
+    #console.log @$el.find('#frame_holder')
+    #return
     @loading=false
     fv = new FramelistFrameView frame
     if frame.get('capturetime') > @newest
@@ -107,9 +130,9 @@ module.exports = class FramelistView extends View
       @$el.find('#count_total').html @total_frames + @_newFrameViews.length
     else
       @_frameViews.push fv
-      @total_frames = @collection.total_frames
+      @total_frames = @filtercollection.total_frames
       if @$el.html() != ''
-        next_page_size = @total_frames - @collection.length
+        next_page_size = @total_frames - @filtercollection.length
 
         @$el.find('#frame_holder').append(fv.render().el)
         @$el.find('#loading_message').fadeOut 1000, =>
@@ -118,12 +141,14 @@ module.exports = class FramelistView extends View
         @$el.find('#count_viewing').html @_frameViews.length
 
   addFrames: (frames)=>
+    @total_frames = 0
     if frames.length
       @$el.find('#frame_holder').html ''
       @$el.find('#frame_counts').show()
       frames.each @addFrame
     else
       @$el.find('#frame_holder').html '<p>No results found for this search.</p>'
+  """
   """
   filterFrames: (evt)=>
     return
