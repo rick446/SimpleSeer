@@ -35,6 +35,7 @@ exports.config =
           'vendor/scripts/ui/jquery.effects.core.js',
           'vendor/scripts/ui/jquery.ui.datepicker.js',
           'vendor/scripts/ui/jquery.ui.selectable.js',
+          'vendor/scripts/ui/jquery.ui.combobox.js',
           'vendor/scripts/jquery-ui-timepicker-addon.js',
           'vendor/scripts/jquery.mousewheel.js',
           'vendor/scripts/moment.js',
@@ -51,7 +52,8 @@ exports.config =
           'vendor/styles/jquery.jqplot.min.css',
           'vendor/styles/themes/base/jquery.ui.core.css',
           'vendor/styles/tablesorter-blue.css',
-          'vendor/styles/jquery.tablesorter.pager.css']
+          'vendor/styles/jquery.tablesorter.pager.css',
+          'vendor/styles/jquery.ui.combobox.css']
 
     templates:
       defaultExtension: 'hbs'
