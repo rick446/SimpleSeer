@@ -144,7 +144,6 @@ def getFrames(filter_params):
 	allparams = jsondecode(nohtml)
 	print allparams
 	limit = allparams['limit']
-	print 'limit %d' % limit
 	skip = allparams['skip']
 	query = allparams['query']
 	

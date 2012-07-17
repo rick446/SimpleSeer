@@ -10,9 +10,6 @@ class Filter():
 		measurements = []
 		features = []
 		
-		print 'limit: %d' % limit
-		print 'skip %d' % skip
-		
 		for f in allFilters:
 			if f['type'] == 'measurement':
 				measurements.append(f)
@@ -75,34 +72,40 @@ class Filter():
 			
 			
 		pipeline.append({'$sort': {'capturetime': 1}})
-		pipeline.append({'$skip': skip})
-		
-		if limit > 0:
-			pipeline.append({'$limit': limit})
 		
 		print pipeline
 				
 		db = Frame._get_db()
 		cmd = db.command('aggregate', 'frame', pipeline = pipeline)
 		
-		print 'Found %d results' % len(cmd['result'])
-		
 		ids = []
 		for r in cmd['result']:
 			ids.append(r['_id'])
 	
+		if skip < len(ids):
+			if (skip + limit) > len(ids):
+				ids = ids[skip:]
+			else:
+				ids = ids[skip:skip+limit]
+		else:
+			return 0, None, 0
+		
 		frames = Frame.objects.filter(id__in=ids)
+        
+		print len(frames)
         
 		frs = []
 		for f in frames:
 			frs.append(f)
-			
+		
+		print len(frs)
+		
 		if len(frs) > 0:
 			earliest = frs[0].capturetime
 		else:
 			earliest = datetime(1970, 1, 1)
 			
-		return len(frames), frs, earliest
+		return len(cmd['result']), frs, earliest
 		
 	
 	def condMeas(self, measurements):
