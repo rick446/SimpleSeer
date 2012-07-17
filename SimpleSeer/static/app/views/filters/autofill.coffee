@@ -10,6 +10,11 @@ module.exports = class AutofillFilterView extends _filter
     super()
     @
 
+  setValue: (v, send=false) =>
+    if v == '_'
+      v = ''
+    super(v,send)
+
   afterRender: () =>
     #$( "#combobox" ).combobox();
     

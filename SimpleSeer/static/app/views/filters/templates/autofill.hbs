@@ -1,7 +1,7 @@
 <h4>{{label}}</h4>
 <label for="{{name}}"></label>
 <select id="{{name}}">
-    <option value="">Select one...</option>
+    <option value="_">None</option>
     {{#each constraints.enum}}
     <option value="{{this}}">{{this}}</option>
     {{/each}}
