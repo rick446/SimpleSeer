@@ -27,8 +27,6 @@ module.exports = class _filter extends SubView
       v = null
     @value = v
     if send
-      #@submitQuery()
-      #console.log @collection
       @collection.fetch()
     
   getValue: () =>

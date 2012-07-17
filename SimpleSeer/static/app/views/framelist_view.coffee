@@ -28,9 +28,9 @@ module.exports = class FramelistView extends View
     @filtercollection.on 'add', @addObj
     @filtercollection.on 'reset', @addObjs
 
-    application.socket.on "message:capture/", @capturedNewFrame
-    application.socket.emit 'subscribe', 'capture/'
-    setInterval @filterNew, 5000
+    #application.socket.on "message:capture/", @capturedNewFrame
+    #application.socket.emit 'subscribe', 'capture/'
+    #setInterval @filterNew, 5000
     
   events:
     #"submit #filter_form": "filterFrames"
@@ -109,8 +109,12 @@ module.exports = class FramelistView extends View
       an = @$el.find('#frame_holder')
     an.append(fv.render().el)
 
-  addObjs: (d,v)=>
-    console.log v
+  addObjs: (d)=>
+    #console.log @filtercollection.length
+    @$el.find('#count_viewing').html @filtercollection.length
+    @$el.find('#count_total').html @filtercollection.length
+    if @filtercollection.length
+      @$el.find('#frame_counts').show()
     an = @$el.find('#frame_holder')
     an.html ''
     for o in d.models

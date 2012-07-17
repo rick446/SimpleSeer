@@ -9,8 +9,10 @@ module.exports = class DateTimeFilterView extends _filter
 
   initialize: () =>
     super()
-    @options.params.constraints.min = new moment(@options.params.constraints.min)
+    tf = new moment(@options.params.constraints.min)
+    @options.params.constraints.min = tf
     @options.params.constraints.max = new moment(@options.params.constraints.max)
+    @_vals['from'] = tf.valueOf()
     @
 
   afterRender: () =>

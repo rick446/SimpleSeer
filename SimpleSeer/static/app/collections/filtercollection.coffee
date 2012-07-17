@@ -30,12 +30,8 @@ module.exports = class FilterCollection extends Collection
       if val
         _json.push val
     _json = {skip:@skip,limit:@limit,query:_json}
-    console.dir _json
     url = @url+"/"+JSON.stringify _json
     $.getJSON(url, (data) =>
-      #@view.filterCallback data
-      #console.log data.frames
-      console.log data.frames.length
       @reset data.frames
       if params.success
         params.success(data)
