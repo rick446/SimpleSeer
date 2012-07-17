@@ -33,7 +33,11 @@ module.exports = class FilterCollection extends Collection
     url = @url+"/"+JSON.stringify _json
     console.dir _json
     $.getJSON(url, (data) =>
-      @reset data.frames
+      @.totalavail = data.total_frames
+      if @skip == 0
+        @reset data.frames
+      else
+        @add data.frames
       if params.success
         params.success(data)
       return

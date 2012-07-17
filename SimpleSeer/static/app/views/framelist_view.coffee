@@ -40,7 +40,7 @@ module.exports = class FramelistView extends View
 
   getRenderData: =>
     count_viewing: @filtercollection.length
-    count_total: @total_frames
+    count_total: @filtercollection.totalavail
     count_new: @newFrames.length
 
   render: =>
@@ -73,10 +73,14 @@ module.exports = class FramelistView extends View
       setTimeout enable, 1000
       @$el.find('#loading_message').fadeIn('fast')
       @loading=true
-      @empty=false
+      #@empty=false
       @filtercollection.skip += @filtercollection._defaults.limit
       @filtercollection.fetch()
       #@fetchFiltered()
+
+  clearLoading: (callback=->)=>
+    @loading = false
+    @$el.find('#loading_message').fadeOut 1000, callback
 
   loadNew: ()=>
   """
@@ -106,23 +110,24 @@ module.exports = class FramelistView extends View
       #  add: true
       #  filter: filter
 
-  addObj: (d,an)=>
+  addObj: (d)=>
+    an = @$el.find('#frame_holder')
+    @$el.find('#count_viewing').html @filtercollection.length
+    @$el.find('#count_total').html @filtercollection.totalavail
     fv = new FramelistFrameView d
-    if !an?
-      an = @$el.find('#frame_holder')
     an.append(fv.render().el)
+    @clearLoading()
 
   addObjs: (d)=>
-    #console.log @filtercollection.length
-    @$el.find('#count_viewing').html @filtercollection.length
-    @$el.find('#count_total').html @filtercollection.length
-    if @filtercollection.length
-      @$el.find('#frame_counts').show()
     an = @$el.find('#frame_holder')
     if @filtercollection.skip == 0
       an.html ''
+    @$el.find('#count_viewing').html @filtercollection.length
+    @$el.find('#count_total').html @filtercollection.totalavail    
     for o in d.models
-      @addObj o, an
+      fv = new FramelistFrameView o
+      an.append(fv.render().el)  
+    @clearLoading()
   """
   addFrame: (frame)=>
     #fv = new FramelistFrameView frame
