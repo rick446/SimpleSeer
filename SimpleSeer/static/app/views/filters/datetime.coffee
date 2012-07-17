@@ -19,6 +19,7 @@ module.exports = class DateTimeFilterView extends _filter
     tf = @$el.find('input[name=time_from]').datetimepicker {timeFormat: 'hh:mm:ss', onClose: @setValue}
     tt = @$el.find('input[name=time_to]').datetimepicker {timeFormat: 'hh:mm:ss', onClose: @setValue}
     tf.datepicker( "setDate",  new Date(@options.params.constraints.min))
+    tt.datepicker( "setDate",  new Date(@options.params.constraints.max))
     #console.log @options.params.constraints
     
   setValue :(e,u) =>
@@ -38,7 +39,7 @@ module.exports = class DateTimeFilterView extends _filter
     """
     @_vals[id] = dt.valueOf()
     if @_vals['to']? && @_vals['from']?
-      super([@_vals['to'],@_vals['from']],true)
+      super([@_vals['from'],@_vals['to']],true)
       
 
   getRenderData: () =>

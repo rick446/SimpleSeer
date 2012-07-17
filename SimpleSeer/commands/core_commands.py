@@ -20,8 +20,8 @@ class CoreStatesCommand(Command):
         with open(self.options.program) as fp:
             exec fp in dict(core=core)
 
-        so = ScheduledOLAP()
-        gevent.spawn_link_exception(so.runSked)
+        #so = ScheduledOLAP()
+        #gevent.spawn_link_exception(so.runSked)
 
         core.start_socket_communication()
 

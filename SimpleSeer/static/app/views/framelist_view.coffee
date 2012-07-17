@@ -64,8 +64,9 @@ module.exports = class FramelistView extends View
       camera_list.append '<option value="'+camera.name+'">'+camera.name+'</option>'
   """
   loadMore: (evt)=>
-    if !@loading && $('#loading_message').length && @total_frames > 20\
-       && (@total_frames - @filtercollection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())
+    if ($(window).scrollTop() >= $(document).height() - $(window).height())
+    #if !@loading && $('#loading_message').length && @total_frames > 2\
+    #   && (@total_frames - @filtercollection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())
       $('body').on('mousewheel', @disableEvent)
       enable = =>
         $('body').off('mousewheel', @disableEvent)
@@ -73,6 +74,8 @@ module.exports = class FramelistView extends View
       @$el.find('#loading_message').fadeIn('fast')
       @loading=true
       @empty=false
+      @filtercollection.skip += @filtercollection._defaults.limit
+      @filtercollection.fetch()
       #@fetchFiltered()
 
   loadNew: ()=>
@@ -116,7 +119,8 @@ module.exports = class FramelistView extends View
     if @filtercollection.length
       @$el.find('#frame_counts').show()
     an = @$el.find('#frame_holder')
-    an.html ''
+    if @filtercollection.skip == 0
+      an.html ''
     for o in d.models
       @addObj o, an
   """
