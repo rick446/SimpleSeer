@@ -39,8 +39,8 @@ class Filter():
 				pipeline.append({'$match': {f['name']: comp}})
 		
 		if measurements:
-			proj = {'ok': self.condMeas(measurements)}
-			group = {'allok': {'$min': '$ok'}}
+			proj = {'measok': self.condMeas(measurements)}
+			group = {'allmeasok': {'$sum': '$measok'}}
 			
 			
 			for key in Frame._fields:
@@ -55,11 +55,11 @@ class Filter():
 			pipeline.append({'$unwind': '$results'})
 			pipeline.append({'$project': proj})
 			pipeline.append({'$group': group})
-			pipeline.append({'$match': {'allok': 1}})
+			pipeline.append({'$match': {'allmeasok': len(measurements)}})
 			
 		if features:
-			proj = {'ok': self.condFeat(features)}
-			group = {'allok': {'$min': '$ok'}}
+			proj = {'featok': self.condFeat(features)}
+			group = {'allfeatok': {'$sum': '$featok'}}
 			
 			
 			for key in Frame._fields:
@@ -74,7 +74,7 @@ class Filter():
 			pipeline.append({'$unwind': '$features'})
 			pipeline.append({'$project': proj})
 			pipeline.append({'$group': group})
-			pipeline.append({'$match': {'fails': 0}})
+			pipeline.append({'$match': {'allfeatok': len(features)}})
 			
 			
 			
@@ -122,25 +122,21 @@ class Filter():
 		allfilts = []
 		for m in measurements:	
 			
+			comp = []
 			if 'eq' in m:
-				comp = {'$eq': ['$results.string', str(m['eq'])]}
-			else:
-				tmp = []
-				if 'gt' in m:
-					tmp.append({'$gte': ['$results.numeric', m['gt']]})
-				if 'lt' in m:
-					tmp.append({'$lte': ['$results.numeric', m['lt']]})	
-				
-				if len(tmp) > 1:
-					comp = {'$and': tmp}
-				else:
-					comp = tmp[0]
+				comp.append({'$eq': ['$results.string', str(m['eq'])]})
 			
-			name = {'$not': [{'$eq': ['$results.measurement_name', str(m['name'])]}]}
-			combined = {'$or': [name, comp]}
+			if 'gt' in m:
+				comp.append({'$gte': ['$results.numeric', m['gt']]})
+			
+			if 'lt' in m:
+				comp.append({'$lte': ['$results.numeric', m['lt']]})	
+				
+			comp.append({'$eq': ['$results.measurement_name', str(m['name'])]})
+			combined = {'$and': comp}
 			allfilts.append(combined)
 				
-		return {'$cond': [{'$and': allfilts}, 1, 0]}
+		return {'$cond': [{'$or': allfilts}, 1, 0]}
 		
 		
 	def condFeat(self, features):
