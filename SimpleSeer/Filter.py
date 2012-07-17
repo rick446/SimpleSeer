@@ -20,13 +20,20 @@ class Filter():
 		
 		if frames:
 			for f in frames:
+				
 				if 'eq' in f:
+					if f['name'] == 'capturetime':
+						f['eq'] = datetime.fromtimestamp(f['eq'] / 1000)
 					comp = f['eq']
 				else:
 					comp = {}
-					if 'gt' in f:
+					if 'gt' in f and f['gt']:
+						if f['name'] == 'capturetime':
+							f['gt'] = datetime.fromtimestamp(f['gt'] / 1000)
 						comp['$gt'] = f['gt']
-					if 'lt' in f:
+					if 'lt' in f and f['lt']:
+						if f['name'] == 'capturetime':
+							f['lt'] = datetime.fromtimestamp(f['lt'] / 1000)
 						comp['$lt'] = f['lt']
 				
 				pipeline.append({'$match': {f['name']: comp}})
@@ -88,23 +95,20 @@ class Filter():
 			else:
 				ids = ids[skip:skip+limit]
 		else:
-			return 0, None, 0
+			return 0, None, datetime(1970, 1, 1)
 		
 		frames = Frame.objects.filter(id__in=ids)
-        
-		print len(frames)
         
 		frs = []
 		for f in frames:
 			frs.append(f)
 		
-		print len(frs)
-		
 		if len(frs) > 0:
 			earliest = frs[0].capturetime
 		else:
 			earliest = datetime(1970, 1, 1)
-			
+		
+		
 		return len(cmd['result']), frs, earliest
 		
 	
