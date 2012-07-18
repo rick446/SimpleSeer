@@ -28,10 +28,13 @@
             <span class="icon-bar"></span>
           </a>
           <a class="brand" href="#"><img src="img/logo.png" alt="Sight Machine" height="18"/></a>
-          <div class="nav-collapse">
-            <ul class="nav">
-            </ul>
-          </div><!--/.nav-collapse -->
+          <span class="text">
+            <span id="client-name"></span>
+            <span id="clock"></span>
+            <script type="text/javascript">
+              $(function() { setInterval(function() { $("#clock").html((new Date()).toString()); }, 1); });
+            </script>            
+          </span>
         </div>
       </div>
     </div>
