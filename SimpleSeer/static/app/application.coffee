@@ -49,7 +49,7 @@ Application =
     @framelistView = new FramelistView(@lastframes)
 
     # set up the client name
-    $('#client-name').html Application.settings.ui_pagename
+    $('#client-name').html Application.settings.ui_pagename || ""
 
     # set up the timeout message dialog
     $('#lost_connection').dialog
