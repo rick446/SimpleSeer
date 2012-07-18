@@ -145,25 +145,19 @@ class Filter():
 		for f in features:
 			feat, c, field = f['name'].partition('.')
 			
+			comp = []
 			if 'eq' in f:
-				comp = {'$eq': ['$features.' + field, f['eq']]}
-			else:
-				temp = []
-				if 'gt' in f:
-					tmp.append({'$gte': ['$features.' + field, f['gt']]})
-				if 'lt' in f:
-					tmp.append({'$lte': ['$features.' + field, f['lt']]})
+				comp.append({'$eq': ['$features.' + field, str(f['eq'])]})
+			if 'gt' in f:
+				comp.append({'$gte': ['$features.' + field, f['gt']]})
+			if 'lt' in f:
+				comp.append({'$lte': ['$features.' + field, f['lt']]})
 					
-			if len(tmp) > 1:
-				comp = {'$and': tmp}
-			else:
-				comp = tmp[0]
-			
-			name = {'$not': [{'$eq': ['$features.featuretype', str(m['name'])]}]}
-			combined = {'$or': [name, comp]}
+			comp.append({'$eq': ['$features.featuretype', str(feat)]})
+			combined = {'$and': comp}
 			allfilts.append(combined)
 			
-		return {'$cond': [{'$and': allfilts}, 1, 0]}
+		return {'$cond': [{'$or': allfilts}, 1, 0]}
 		
 		
 		
