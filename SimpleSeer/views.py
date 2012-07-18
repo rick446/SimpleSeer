@@ -128,21 +128,12 @@ def getFrames(filter_params):
 	from .base import jsondecode
 	from HTMLParser import HTMLParser
 	
+	# filter_params should be in the form of a json encoded dicts
+	# that probably was also html encoded 
 	p = HTMLParser()
 	nohtml = str(p.unescape(filter_params))
-	
-	"""
-	foo = '[{"lt":10,"gt":5,"type":"measurement","name":"Delivery Count"},{"type":"measurement","eq":"green","name":"Gumball Color"}]'
-	foop = jsondecode(foo)
-
-	if nohtml[0] == "'":
-		nohtml = nohtml[1:]
-	if nohtml[-1] == "'":
-		nohtml = nohtml[:-1]
-    """
-    
 	allparams = jsondecode(nohtml)
-	print allparams
+	
 	limit = allparams['limit']
 	skip = allparams['skip']
 	query = allparams['query']
@@ -156,7 +147,38 @@ def getFrames(filter_params):
 	if retVal:
 		return retVal
 	else:
-		return {frames: None, 'error': 'no result found'} 
+		return {frames: None, 'error': 'no result found'}
+		
+		 
+@route('/downloadFrames/<result_format>/<filter_params>', methods=['GET'])
+def downloadFrames(result_format, filter_params):
+	from .base import jsondecode
+	from HTMLParser import HTMLParser
+	
+	# filter_params should be in the form of a json encoded dicts
+	# that probably was also html encoded 
+	p = HTMLParser()
+	nohtml = str(p.unescape(filter_params))
+	allparams = jsondecode(nohtml)
+	
+	limit = allparams['limit']
+	skip = allparams['skip']
+	query = allparams['query']
+	
+	f = Filter()
+	total_frames, frames, earliest_date = f.getFrames(query, limit=limit, skip=skip, dictOutput=True)
+	
+	if result_format == 'csv':
+		resp = make_response(f.toCSV(frames), 200)
+		resp.headers['Content-Type'] = 'text/csv'
+		resp.headers['Content-disposition'] = 'attachment; filename="frames.csv"'
+	elif result_format == 'excel':
+		resp = make_response(f.toExcel(frames), 200)
+		resp.headers['Content-Type'] = 'application/vnd.ms-excel'
+		resp.headers['Content-disposition'] = 'attachment; filename="frames.xls"'
+	else:
+		return 'Unknown format', 404
+	return resp
 	
 @route('/getFilter/<filter_type>/<filter_name>/<filter_format>', methods=['GET'])
 @util.jsonify

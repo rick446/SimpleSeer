@@ -1,9 +1,11 @@
 from .models.Frame import Frame
 from datetime import datetime
 
+FIELD_NAMES = ['camera', 'capturetime', 'height', 'width']
+
 class Filter():
 	
-	def getFrames(self, allFilters, skip=0, limit=0):
+	def getFrames(self, allFilters, skip=0, limit=0, dictOutput=False):
 		
 		pipeline = []
 		frames = []
@@ -80,44 +82,39 @@ class Filter():
 			
 		pipeline.append({'$sort': {'capturetime': 1}})
 		
-		print pipeline
-				
 		db = Frame._get_db()
 		cmd = db.command('aggregate', 'frame', pipeline = pipeline)
 		
-		ids = []
-		for r in cmd['result']:
-			ids.append(r['_id'])
-	
-		if skip < len(ids):
-			if (skip + limit) > len(ids):
-				ids = ids[skip:]
+		results = cmd['result']
+		
+		if skip < len(results):
+			if (skip + limit) > len(results):
+				results = results[skip:]
 			else:
-				ids = ids[skip:skip+limit]
+				results = results[skip:skip+limit]
 		else:
 			return 0, None, datetime(1970, 1, 1)
 		
-		frames = Frame.objects.filter(id__in=ids)
-        
-		frs = []
-		for f in frames:
-			frs.append(f)
+		earliest = results[0]['capturetime']
+			
 		
-		if len(frs) > 0:
-			earliest = frs[0].capturetime
+		# Check if need to output as dict or as Frames
+		if dictOutput:
+			return len(cmd['result']), results, earliest
+			
 		else:
-			earliest = datetime(1970, 1, 1)
-		
-		
-		return len(cmd['result']), frs, earliest
+			# Lookup the Frame objects by the ID frm the dict
+			ids = [r['_id'] for r in results]
+			frames = Frame.objects.filter(id__in=ids)
+			
+			# Conver the mongoengine queryset into a list of frames
+			
+			frs = [f for f in frames]
+			
+			return len(cmd['result']), frs, earliest
 		
 	
 	def condMeas(self, measurements):
-		
-		# Basic output should look like:
-		# (NOT name match) OR (values match)
-		# So that always passes if does not match this result
-		# Or will pass if the values match the query
 		
 		allfilts = []
 		for m in measurements:	
@@ -220,96 +217,59 @@ class Filter():
 				
 		return ret
 		
-		
 	
-	def getFilterOptions(self):
+	def toCSV(self, frames):
+		import StringIO
+		import csv
 		
-		return dict(self.frameFilterOptions().items() + self.measurementFilterOptions().items() + self.featureFilterOptions().items())
+		# csv libs assume saving to a file handle
+		f = StringIO.StringIO()
 		
-	def frameFilterOptions(self):
-		from bson import Code
-		db = Frame._get_db()
+		# Convert the dict to csv
+		csvDict = csv.DictWriter(f, FIELD_NAMES, extrasaction='ignore')
+		csvDict.writeheader()
+		csvDict.writerows(frames)
 		
-		frameOpts = {}
+		# Grab the string version of the output
+		output = f.getvalue()
+		f.close()
 		
-		pipeline = [{'$group': {'_id': 1, 'mintime': {'$min': '$capturetime'}, 'maxtime': {'$max': '$capturetime'}}}]
-		cmd = db.command('aggregate', 'frame', pipeline = pipeline)
+		return output
 		
-		c = cmd['result'][0]
-		frameOpts['capturetime'] = {'type': 'datetime', 'min': int(float(c['mintime'].strftime('%s.%f')) * 1000), 'max': int(float(c['maxtime'].strftime('%s.%f')) * 1000)}
+	def toExcel(self, frames):
+		import StringIO
+		from xlwt import Workbook, XFStyle
 		
-		metas = {}
+		# Need a file handle to save to
+		f = StringIO.StringIO()
 		
-		for f in Frame.objects:
-			if f.metadata:
-				for key in f.metadata:
-					print 'checking for k: %s v: %d' % (key, val)
-					if key in metas and not val in metas[key]:
-						metas[key].append(val)
-					else:
-						metas[key] = [val]
+		# Construct a workbook with one sheet
+		wb = Workbook()
+		s = wb.add_sheet('frames')
 		
-		for key, val in metas.items():
-			metas[key].sort()
-			frameOpts[key] = {'type': 'enum', 'vals': metas[key]}
+		# Create the style for date/time
+		dateStyle = XFStyle()
+		dateStyle.num_format_str = 'MM/DD/YYYY HH:MM:SS'
 		
+		# Add the header/field labels
+		r = s.row(0)
+		for i, name in enumerate(FIELD_NAMES):
+			r.write(i, name)
 		
-		return frameOpts
-		
-	def measurementFilterOptions(self):
-		db = Frame._get_db()
-		
-		measOpts = {}
-		
-		pipeline = [{'$unwind': '$results'}, {'$group': {'_id': '$results.measurement_name', 'max': {'$max': '$results.numeric'}, 'min': {'$min': '$results.numeric'}}}]
-		cmd = db.command('aggregate', 'frame', pipeline=pipeline)
-		
-		for m in cmd['result']:
-			if m['_id']:
-				if ('max' in m) and ('min' in m):
-					measOpts[m['_id']] = {'type': 'numeric', 'min':m['min'], 'max':m['max']}
+		# Write the data
+		for i, frame in enumerate(frames):
+			print type(frame['capturetime'])
+			for j, name in enumerate(FIELD_NAMES):
+				if type(frame[name]) == datetime:
+					s.write(i+1, j, frame[name], dateStyle)
 				else:
-					measOpts[m['_id']] = {'type': 'string'}
-
-		return measOpts
-
-	def featureFilterOptions(self):
-		db = Frame._get_db()
+					s.write(i+1, j, frame[name])
 		
-		featOpts = {}
+		# Save the the string IO and grab the string data
+		wb.save(f)
+		output = f.getvalue()
+		f.close()
 		
-		pipeline = [{'$unwind': '$features'}, {'$group': {'_id': '$features.featuretype',
-		                                                  'minx': {'$min': '$features.x'},
-		                                                  'maxx': {'$max': '$features.x'},
-		                                                  'miny': {'$min': '$features.y'},
-		                                                  'maxy': {'$max': '$features.y'},
-		                                                  'minarea': {'$min': '$features.area'},
-		                                                  'maxarea': {'$max': '$features.area'},
-		                                                  'minwidth': {'$min': '$features.width'},
-		                                                  'maxwidth': {'$max': '$features.width'},
-		                                                  'minheight': {'$min': '$features.height'},
-		                                                  'maxheight': {'$max': '$features.height'},
-		                                                  'minangle': {'$min': '$features.angle'},
-		                                                  'maxangle': {'$max': '$features.angle'},
-		                                                  'meancolor': {'$min': '$features.meancolor'}} }]
-		                                                  
-		cmd = db.command('aggregate', 'frame', pipeline=pipeline)
+		return output
 		
-		for f in cmd['result']:
-			if f['_id']:
-				if ('minx' in f) and ('maxx' in f):
-					featOpts[f['_id'] + '.x'] = {'type': 'numeric', 'min': f['minx'], 'max': f['maxx']}
-				if ('miny' in f) and ('maxy' in f):
-					featOpts[f['_id'] + '.y'] = {'type': 'numeric', 'min': f['miny'], 'max': f['maxy']}
-				if ('minarea' in f) and ('maxarea' in f):
-					featOpts[f['_id'] + '.area'] = {'type': 'numeric', 'min': f['minarea'], 'max': f['maxarea']}
-				if ('minwidth' in f) and ('maxwidth' in f):
-					featOpts[f['_id'] + '.width'] = {'type': 'numeric', 'min': f['minwidth'], 'max': f['maxwidth']}
-				if ('minheight' in f) and ('maxheight' in f):
-					featOpts[f['_id'] + '.height'] = {'type': 'numeric', 'min': f['minheight'], 'max': f['maxheight']}
-				if ('minangle' in f) and ('maxangle' in f):
-					featOpts[f['_id'] + '.angle'] = {'type': 'numeric', 'min': f['minangle'], 'max': f['maxangle']}
-				if 'meancolor' in f:
-					featOpts[f['_id'] + '.meancolor'] = {'type': 'string'}
-
-		return featOpts
+		
