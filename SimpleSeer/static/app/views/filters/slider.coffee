@@ -5,16 +5,31 @@ application = require 'application'
 module.exports = class SliderFilterView extends _filter
   id: 'slider-filter-view'
   template: template
-
+  enabled: false
+  
   initialize: () =>
     super()
     @
 
+  events:
+    'click :checkbox' : 'toggleEnabled'
+
+  toggleEnabled: ()=>
+    if @enabled
+      @enabled = false
+      @$el.find("#"+@options.params.name+"_sl").slider("disable")
+      @setValue('',true)
+    else
+      @enabled = true
+      @$el.find("#"+@options.params.name+"_sl").slider("enable")
+      @setValue([@_vals],true)
+
   afterRender: () =>
-    @$el.find("#slider-range").slider
+    @$el.find("#"+@options.params.name+"_sl").slider
       range: true
       min: @options.params.constraints.min
       max: @options.params.constraints.max
+      disabled:true
       values: [ @options.params.constraints.min, @options.params.constraints.max ]
       slide: (event, ui) =>
         @$el.find("label").html ui.values[0] + " - " + ui.values[1]
@@ -22,7 +37,8 @@ module.exports = class SliderFilterView extends _filter
         @setValue(ui.values, true)
     #@setValue [@options.params.constraints.min, @options.params.constraints.max]
     
-    $("#amount").val  $("#slider-range").slider("values", 0) + " - " + $("#slider-range").slider("values", 1)
+    $("#amount").val  $("#"+@name+"_sl").slider("values", 0) + " - " + $("#"+@name+"_sl").slider("values", 1)
+    super()
       
   getRenderData: () =>
     return @options.params

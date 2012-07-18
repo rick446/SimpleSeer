@@ -38,6 +38,20 @@ module.exports = class FramelistView extends View
     #"click #load_new": "loadNew"
     #"click #filter_form input[name=time_to]": "setTimeToAsNow"
 
+  events:
+      'click #minimize-control-panel' : 'toggleMenu'
+      'click .icon-item' : 'toggleMenu'
+  
+  toggleMenu: ()=>
+    if application.settings.showMenu
+      application.settings.showMenu = false
+      $('#second-tier-menu').hide()
+      $(".offset3").css('margin-left','0')
+    else
+      application.settings.showMenu = true
+      $('#second-tier-menu').show()
+      $(".offset3").css('margin-left','252px')
+  
   getRenderData: =>
     count_viewing: @filtercollection.length
     count_total: @filtercollection.totalavail
@@ -55,7 +69,11 @@ module.exports = class FramelistView extends View
     return this
     
   afterRender: =>
+    if !application.settings.showMenu?
+      application.settings.showMenu = true
+      @$el.find(".offset3").css('margin-left','252px')
     @filtercollection.fetch()
+
 
   """
   postRender: =>
