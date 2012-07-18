@@ -146,7 +146,7 @@ def inspect(state):
               measurement_name = core.countsince_measurement.name,
               inspection_id = core.region_inspection.id,
               inspection_name = core.region_inspection.name,
-              numeric = core.countsince
+              numeric = core.countsince,
               string = str(core.matchcolor)
             )
             
