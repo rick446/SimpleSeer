@@ -18,6 +18,8 @@ from .realtime import RealtimeNamespace, ChannelManager
 from .service import SeerProxy2
 from .Session import Session
 
+from .Filter import Filter
+
 log = logging.getLogger()
 
 class route(object):
@@ -119,6 +121,15 @@ def frames():
     if earliest_date:
         earliest_date = calendar.timegm(earliest_date.timetuple())
     return dict(frames=frames, total_frames=total_frames, earliest_date=earliest_date)
+
+
+@route('/features', methods=['GET'])
+@util.jsonify
+def features():	
+	f = Filter()
+	return f.getFilterOptions()
+	
+	
 
 #TODO, abstract this for layers and thumbnails        
 @route('/grid/imgfile/<frame_id>', methods=['GET'])
