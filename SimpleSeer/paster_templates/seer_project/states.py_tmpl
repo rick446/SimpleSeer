@@ -3,8 +3,13 @@
 
 import gc
 from SimpleSeer import models as M
+from SimpleSeer.Session import Session
 
-RATE=0.5
+config = Session()
+if config.poll_rate:
+    RATE=config.poll_rate
+else:
+    RATE = 0.5
 
 @core.state('start')
 def start(state):
@@ -20,24 +25,12 @@ def run(state):
         gc.collect()
         frames = core.capture()
         for frame in frames:
-            process(frame)
-            frame.save()
+            core.process(frame)
+            if config.record_all:
+                frame.save()
 
 
 @core.on('run', 'rate/')
 def set_rate(state, name, data):
     state.core.set_rate(data['rate'])
     state.transition('run')
-
-def process(frame):
-    frame.features = []
-    frame.results = []
-    for inspection in M.Inspection.objects:
-        if inspection.parent:
-            return
-        if inspection.camera and inspection.camera != frame.camera:
-            return
-        results = inspection.execute(frame.image)
-        frame.features += results
-        for m in inspection.measurements:
-            m.execute(frame, results)
