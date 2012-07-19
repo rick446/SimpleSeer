@@ -85,7 +85,6 @@ class Potentiometer:
         if newstate != None and newstate != self.state and newstate and self.state != None:
           if abs(self.previous - newstate) > 0.015:
             self.fire(newstate)
-            print( newstate )
             self.previous = newstate
         self.state = newstate
 
