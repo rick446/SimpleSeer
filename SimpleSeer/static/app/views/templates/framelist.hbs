@@ -20,14 +20,6 @@
   </div>
 </div>
 
-<label for="sortCombo">Sort by</label>
-<select id="sortCombo">
-{{#each sortComboVals}}
-  <option value="{{this.name}},1">{{this.label}} ascending</option>
-  <option value="{{this.name}},-1">{{this.label}} descending</option>
-{{/each}}
-</select>
-
   <div class="span9 offset3">
   
        <!--MAIN TABS -->
@@ -44,10 +36,11 @@
             <div id="control-copy">
               <span class="selection-tog"><a href="#">Select All / </a><a href="#"><span class="copy-off">None</span></a></span> <span class="selection-tog"><a href="#">Edit</a> / <a href="#"><span class="copy-off">Edit All</span></a></span>
               <span>List:</span>
-              <select class="style-select-listview">
-                <option>Date Descending</option>
-                <option></option>
-                <option></option>
+              <select id="sortCombo">
+              {{#each sortComboVals}}
+                <option value="{{this.name}},1">{{this.label}} ascending</option>
+                <option value="{{this.name}},-1">{{this.label}} descending</option>
+              {{/each}}
               </select>
             </div>
           </div>

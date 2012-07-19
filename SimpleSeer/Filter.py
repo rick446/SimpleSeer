@@ -21,7 +21,7 @@ class Filter():
 			elif f['type'] == 'framefeature':
 				features.append(f)
 		
-		pipeline.append({'$project': {'features.featurepickle_b64': 0}})
+		#pipeline.append({'$project': {'features.featurepickle_b64': 0}})
 		
 		if frames:
 			for f in frames:
@@ -84,7 +84,7 @@ class Filter():
 		else:
 			return 0, None
 		
-		print results
+		#print results
 		
 		# Check if need to output as dict or as Frames
 		if dictOutput:
