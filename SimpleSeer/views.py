@@ -136,13 +136,19 @@ def getFrames(filter_params):
 	
 	limit = allparams['limit']
 	skip = allparams['skip']
+	if 'sortkey' in allparams:
+		sortkey = allparams['sortkey']
+		sortorder = allparams['sortorder']
+	else:
+		sortkey = 'capturetime'
+		sortorder = -1
+		
 	query = allparams['query']
 	
 	f = Filter()
-	total_frames, frames, earliest_date = f.getFrames(query, limit=limit, skip=skip)
-	earliest_date = calendar.timegm(earliest_date.timetuple())
+	total_frames, frames = f.getFrames(query, limit=limit, skip=skip, sortkey=sortkey, sortorder=sortorder)
 	
-	retVal = dict(frames=frames, total_frames=total_frames, earliest_date=earliest_date)
+	retVal = dict(frames=frames, total_frames=total_frames)
 	
 	if retVal:
 		return retVal
@@ -163,10 +169,12 @@ def downloadFrames(result_format, filter_params):
 	
 	limit = allparams['limit']
 	skip = allparams['skip']
+	sortkey = allparams['sortkey']
+	sortorder = allparams['sortorder']
 	query = allparams['query']
 	
 	f = Filter()
-	total_frames, frames, earliest_date = f.getFrames(query, limit=limit, skip=skip, dictOutput=True)
+	total_frames, frames = f.getFrames(query, limit=limit, skip=skip, sortkey=sortkey, sortorder=sortorder, dictOutput=True)
 	
 	if result_format == 'csv':
 		resp = make_response(f.toCSV(frames), 200)

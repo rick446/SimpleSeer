@@ -6,7 +6,7 @@ FIELD_NAMES = ['camera', 'capturetime', 'height', 'width']
 
 class Filter():
 	
-	def getFrames(self, allFilters, skip=0, limit=0, dictOutput=False):
+	def getFrames(self, allFilters, skip=0, limit=0, sortkey='capturetime', sortorder=1, dictOutput=False):
 		
 		pipeline = []
 		frames = []
@@ -59,7 +59,8 @@ class Filter():
 			pipeline.append({'$project': proj})
 			pipeline.append({'$group': group})
 			pipeline.append({'$match': {'allmeasok': len(measurements)}})
-			
+		
+		# Handle features	
 		if features:
 			proj = {'featok': self.condFeat(features)}
 			group = {'allfeatok': {'$sum': '$featok'}}
@@ -79,40 +80,32 @@ class Filter():
 			pipeline.append({'$group': group})
 			pipeline.append({'$match': {'allfeatok': len(features)}})
 			
-			
-			
-		pipeline.append({'$sort': {'capturetime': 1}})
+		
+		# Sort
+		pipeline.append({'$sort': {sortkey: sortorder}})
 		
 		db = Frame._get_db()
 		cmd = db.command('aggregate', 'frame', pipeline = pipeline)
-		
 		results = cmd['result']
 		
+		# Perform the skip/limit 
+		# Note doing this in python instead of mongo since need original query to give total count of relevant results
 		if skip < len(results):
 			if (skip + limit) > len(results):
 				results = results[skip:]
 			else:
 				results = results[skip:skip+limit]
 		else:
-			return 0, None, datetime(1970, 1, 1)
+			return 0, None
 		
-		earliest = results[0]['capturetime']
-			
 		
 		# Check if need to output as dict or as Frames
 		if dictOutput:
-			return len(cmd['result']), results, earliest
-			
+			return len(cmd['result']), results	
 		else:
 			# Lookup the Frame objects by the ID frm the dict
-			ids = [r['_id'] for r in results]
-			frames = Frame.objects.filter(id__in=ids)
-			
-			# Conver the mongoengine queryset into a list of frames
-			
-			frs = [f for f in frames]
-			
-			return len(cmd['result']), frs, earliest
+			frs = [Frame.objects(id=r['_id'])[0] for r in results]
+			return len(cmd['result']), frs
 		
 	
 	def condMeas(self, measurements):
