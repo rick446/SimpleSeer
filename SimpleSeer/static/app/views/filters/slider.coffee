@@ -15,14 +15,15 @@ module.exports = class SliderFilterView extends _filter
     'click :checkbox' : 'toggleEnabled'
 
   toggleEnabled: ()=>
+    sl = @$el.find("#"+@options.params.name+"_sl")
     if @enabled
       @enabled = false
-      @$el.find("#"+@options.params.name+"_sl").slider("disable")
+      sl.slider("disable")
       @setValue('',true)
     else
       @enabled = true
-      @$el.find("#"+@options.params.name+"_sl").slider("enable")
-      @setValue([@_vals],true)
+      sl.slider("enable")      
+      @setValue(sl.slider("values"),true)
 
   afterRender: () =>
     @$el.find("#"+@options.params.name+"_sl").slider
