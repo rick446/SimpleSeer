@@ -162,7 +162,6 @@ module.exports = class FramelistView extends View
     for o in d.models
       fv = new FramelistFrameView o
       an.append(fv.render().el)
-      console.log o.attributes.capturetime
     @clearLoading()
   """
   addFrame: (frame)=>
