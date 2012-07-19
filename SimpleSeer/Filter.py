@@ -42,18 +42,10 @@ class Filter():
 				pipeline.append({'$match': {f['name']: comp}})
 		
 		if measurements:
+			proj, group = self.frameFields()
+		
 			proj = {'measok': self.condMeas(measurements)}
 			group = {'allmeasok': {'$sum': '$measok'}}
-			
-			
-			for key in Frame._fields:
-				if key == 'id':
-					key = '_id'
-				proj[key] = 1
-				group[key] = {'$first': '$' + key}
-			
-			group['_id'] = '$_id'
-		
 			
 			pipeline.append({'$unwind': '$results'})
 			pipeline.append({'$project': proj})
@@ -62,18 +54,10 @@ class Filter():
 		
 		# Handle features	
 		if features:
+			proj, group = self.frameFields()
+		
 			proj = {'featok': self.condFeat(features)}
 			group = {'allfeatok': {'$sum': '$featok'}}
-			
-			
-			for key in Frame._fields:
-				if key == 'id':
-					key = '_id'
-				proj[key] = 1
-				group[key] = {'$first': '$' + key}
-			
-			group['_id'] = '$_id'
-		
 			
 			pipeline.append({'$unwind': '$features'})
 			pipeline.append({'$project': proj})
@@ -107,6 +91,24 @@ class Filter():
 			frs = [Frame.objects(id=r['_id'])[0] for r in results]
 			return len(cmd['result']), frs
 		
+	
+	def frameFields(self):
+		proj = {}
+		group = {}
+		
+		for key in Frame._fields:
+			if key == 'id':
+				key = '_id'
+			proj[key] = 1
+			
+			if (key == 'results') or (key == 'frames'):
+				group[key] = {'$push': '$' + key}
+			else:
+				group[key] = {'$first': '$' + key}
+			
+		group['_id'] = '$_id'
+		
+		return proj, group
 	
 	def condMeas(self, measurements):
 		
