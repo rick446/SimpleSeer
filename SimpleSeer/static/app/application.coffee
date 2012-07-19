@@ -43,10 +43,8 @@ Application =
     @frames = new Frames()
     @framesets = new FrameSets()
 
-    @lastframes = new Frames()
-
     @homeView = new HomeView()
-    @framelistView = new FramelistView(@lastframes)
+    @framelistView = new FramelistView(@frames)
 
     # set up the client name
     $('#client-name').html Application.settings.ui_pagename || ""

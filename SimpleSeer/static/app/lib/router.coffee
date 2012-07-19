@@ -25,7 +25,7 @@ module.exports = class Router extends Backbone.Router
         
   framelist: ->
     application.framelistView.reset()
-    application.lastframes.fetch_filtered
+    application.frames.fetch_filtered
       success: ->
         $('ul.nav').find(".active").removeClass("active")
         $('ul.nav').find('li.frames').addClass('active')
@@ -39,7 +39,7 @@ module.exports = class Router extends Backbone.Router
       $('#main').slideReplace fdv.render().el, 'right'
       fdv.postRender()
        
-    f = application.lastframes.get(id)
+    f = application.frames.get(id)
     if f
       frame_view f
     else
