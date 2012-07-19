@@ -66,7 +66,7 @@ class Filter():
 			
 		
 		# Sort
-		pipeline.append({'$sort': {sortkey: sortorder}})
+		pipeline.append({'$sort': {sortkey: int(sortorder)}})
 		
 		db = Frame._get_db()
 		cmd = db.command('aggregate', 'frame', pipeline = pipeline)

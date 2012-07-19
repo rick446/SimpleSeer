@@ -56,6 +56,7 @@ module.exports = class FramelistView extends View
     count_viewing: @filtercollection.length
     count_total: @filtercollection.totalavail
     count_new: @newFrames.length
+    sortComboVals: @updateFilterCombo(false)
 
   render: =>
     super()
@@ -137,11 +138,11 @@ module.exports = class FramelistView extends View
       #  add: true
       #  filter: filter
       
-  updateFilterCombo: ()=>
-    an = @$el.find('#sortCombo')
+  updateFilterCombo: (apply=true)=>
+    out = []
     for o in @filtercollection.filters
-      $("<option value='"+o.options.params.field_name+",1'>"+o.options.params.label+" ascending</option>").appendTo("#sortCombo");
-      $("<option value='"+o.options.params.field_name+".-1'>"+o.options.params.label+" descending</option>").appendTo("#sortCombo");
+      out.push({'label':o.options.params.label,'name':o.options.params.field_name})
+    return out
       
 
   addObj: (d)=>

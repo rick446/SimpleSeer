@@ -29,8 +29,6 @@ module.exports = class FilterCollection extends Collection
   #  return chapter.get("capturetime")
   
   sortList: (sortkey, sortorder) =>
-    console.log sortkey
-    console.log sortorder
     for o in @filters
       if o.options.params.field_name == sortkey
         @sortkey = sortkey
