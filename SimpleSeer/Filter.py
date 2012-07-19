@@ -44,8 +44,8 @@ class Filter():
 		if measurements:
 			proj, group = self.frameFields()
 		
-			proj = {'measok': self.condMeas(measurements)}
-			group = {'allmeasok': {'$sum': '$measok'}}
+			proj['measok'] = self.condMeas(measurements)
+			group['allmeasok'] = {'$sum': '$measok'}
 			
 			pipeline.append({'$unwind': '$results'})
 			pipeline.append({'$project': proj})
@@ -56,8 +56,8 @@ class Filter():
 		if features:
 			proj, group = self.frameFields()
 		
-			proj = {'featok': self.condFeat(features)}
-			group = {'allfeatok': {'$sum': '$featok'}}
+			proj['featok'] = self.condFeat(features)
+			group['allfeatok'] = {'$sum': '$featok'}
 			
 			pipeline.append({'$unwind': '$features'})
 			pipeline.append({'$project': proj})
@@ -107,7 +107,7 @@ class Filter():
 				group[key] = {'$first': '$' + key}
 			
 		group['_id'] = '$_id'
-		
+
 		return proj, group
 	
 	def condMeas(self, measurements):
