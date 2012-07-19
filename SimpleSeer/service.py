@@ -19,7 +19,7 @@ class SeerProxy2(object):
         try:
             self._proxy = Pyro4.Proxy('PYRONAME:sightmachine.seer')
             self._proxy.get_config()
-        except Pyro4.errors.NamingError, err:
+        except (Pyro4.errors.CommunicationError, Pyro4.errors.NamingError), err:
             self._proxy = None
             self._proxy_error = err
 
