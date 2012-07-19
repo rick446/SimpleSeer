@@ -141,7 +141,7 @@ def getFrames(filter_params):
 		sortorder = allparams['sortorder']
 	else:
 		sortkey = 'capturetime'
-		sortorder = -1
+		sortorder = 1
 		
 	query = allparams['query']
 	
