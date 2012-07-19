@@ -16,13 +16,11 @@ module.exports = class Frame extends Model
     super()
     @
     
-  """
-  #deprecated: moved to initialize to cover objects instantiated on client side
   parse: (response) =>
+    console.log 'trace'
     if response.features.length
       response.features = new FeatureSet( (new Feature(f) for f in response.features) )
     
     if not response.thumbnail_file? or not response.thumbnail_file
       response.thumbnail_file = "/grid/thumbnail_file/" + response.id
     response
-  """
