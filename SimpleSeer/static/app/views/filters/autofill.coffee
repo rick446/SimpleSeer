@@ -4,6 +4,7 @@ application = require 'application'
 
 module.exports = class AutofillFilterView extends _filter
   id: 'autofill-filter-view'
+  className:'filter_widget'
   template: template
 
   initialize: () =>
@@ -18,11 +19,13 @@ module.exports = class AutofillFilterView extends _filter
   afterRender: () =>
     #$( "#combobox" ).combobox();
     
-    @$el.find('#'+@options.params.name).combobox
+    @$el.find('#'+@options.params.name+'_af').combobox
       selected: (event, ui) =>
         if ui.item
           v = ui.item.value
         @setValue(v, true)
+      width:"50px"
+    super()
 
   getRenderData: () =>
     return @options.params

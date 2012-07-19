@@ -21,6 +21,8 @@ module.exports = class DateTimeFilterView extends _filter
     tf.datepicker( "setDate",  new Date(@options.params.constraints.min))
     tt.datepicker( "setDate",  new Date(@options.params.constraints.max))
     #console.log @options.params.constraints
+    super()
+
     
   setValue :(e,u) =>
     #todo: check that e is valid dt
