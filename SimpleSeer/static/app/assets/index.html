@@ -43,5 +43,30 @@
     <div id="main" class="container">
     </div> <!-- /container -->
     <div id="lost_connection" title="Error">Could not connect to the server. Please try again later.</div>
+    <div id="browser_fail" style="display: none;">
+      <h2>UH OH....</h2>
+      <div class="text">
+        <script>
+          var ie = (function(){
+            var undef,v = 3,div = document.createElement('div'),all = div.getElementsByTagName('i');
+            while (div.innerHTML = '<!--[if gt IE ' + (++v) + ']><i></i><![endif]-->',all[0]);
+            return v > 4 ? v : undef;
+          }());
+
+          if( ie != undefined && ie < 8 ) {
+            document.write("It appears you are using an unsupported version of Internet Explorer. Please upgrade to Internet Explorer 9 or another modern browser.<div class=\"break\">&nbsp;</div><a class=\"btn\" href=\"https://www.google.com/intl/en/chrome/browser/\">Google Chrome</a> <span class='spacer'>or</span> <a class=\"btn\" href=\"http://www.mozilla.org/en-US/firefox/new/\">Mozilla Firefox</a>");
+          } else {
+            document.write("There was a problem with SimpleSeer that prevented the application from running. Refresh the page, and contact your system administrator if problem persists.");
+          }
+        </script>
+      </div>
+    </div>
 </body>
 </html>
+
+<script>
+  setTimeout(function() {
+    if( typeof SimpleSeer === 'undefined' ) { $("#browser_fail").show(); }
+    if( $("#browser_fail").is(':visible') == true ) { $("#lost_connection").hide(); }
+  }, 2000);
+</script>
