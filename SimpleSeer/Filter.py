@@ -1,4 +1,5 @@
 from .models.Frame import Frame
+from .models.Inspection import Inspection
 from datetime import datetime
 
 FIELD_NAMES = ['camera', 'capturetime', 'height', 'width']
@@ -225,8 +226,13 @@ class Filter():
 		# csv libs assume saving to a file handle
 		f = StringIO.StringIO()
 		
+		frames = self.flattenFeature(frames)
+		
+		if len(frames) > 0:
+			keys = frames[0].keys()
+		
 		# Convert the dict to csv
-		csvDict = csv.DictWriter(f, FIELD_NAMES, extrasaction='ignore')
+		csvDict = csv.DictWriter(f, keys)
 		csvDict.writeheader()
 		csvDict.writerows(frames)
 		
@@ -243,6 +249,11 @@ class Filter():
 		# Need a file handle to save to
 		f = StringIO.StringIO()
 		
+		frames = self.flattenFeature(frames)
+		
+		if len(frames) > 0:
+			keys = frames[0].keys()
+		
 		# Construct a workbook with one sheet
 		wb = Workbook()
 		s = wb.add_sheet('frames')
@@ -253,17 +264,17 @@ class Filter():
 		
 		# Add the header/field labels
 		r = s.row(0)
-		for i, name in enumerate(FIELD_NAMES):
+		for i, name in enumerate(keys):
 			r.write(i, name)
 		
 		# Write the data
 		for i, frame in enumerate(frames):
 			print type(frame['capturetime'])
-			for j, name in enumerate(FIELD_NAMES):
+			for j, name in enumerate(keys):
 				if type(frame[name]) == datetime:
 					s.write(i+1, j, frame[name], dateStyle)
 				else:
-					s.write(i+1, j, frame[name])
+					s.write(i+1, j, str(frame[name]))
 		
 		# Save the the string IO and grab the string data
 		wb.save(f)
@@ -272,4 +283,42 @@ class Filter():
 		
 		return output
 		
+	def flattenFeature(self, frames):
+		import pkg_resources
 		
+		# First pass is to find all possible feature names
+		featkeys = {}
+		
+		for frame in frames:	
+			for feature in frame['features']:
+				# Don't check this feature type if already done
+				if feature['featuretype'] not in featkeys:
+					# Get to the plugin via the inspection
+					# TODO: see if there is an easier way
+					insp = Inspection.objects(id=feature['inspection'])[0]
+					insp.register_plugins('seer.plugins.inspection')
+					plugin = insp.get_plugin(insp.method)
+					if 'printFields' in dir(plugin):
+						featkeys[feature['featuretype']] = plugin.printFields()
+					
+				
+		flatFrames = []
+		# Second pass, construct the flattened list of dicts
+		for frame in frames:
+			tmpFrame = {}
+			
+			for key in FIELD_NAMES:
+				tmpFrame[key] = frame[key]
+			
+			for featkey in featkeys.keys():
+				thisFeat = {}
+				for feat in frame['features']:
+					if feat['featuretype'] == featkey:
+						thisFeat = feat
+				
+				for k in featkeys[featkey]:
+					tmpFrame[featkey + '.' + k] = thisFeat.get(k, 'N/A')
+			
+			flatFrames.append(tmpFrame)
+			
+		return flatFrames
