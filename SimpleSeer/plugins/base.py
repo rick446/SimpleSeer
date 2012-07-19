@@ -6,6 +6,10 @@ class InspectionPlugin(object):
         self.inspection = inspection
 
     @classmethod
+    def printFields(cls):
+        return ["x", "y", "width", "height","area"]
+	
+    @classmethod
     def coffeescript(cls):
         ext = ".coffee"
         #Get the subclass name and location
