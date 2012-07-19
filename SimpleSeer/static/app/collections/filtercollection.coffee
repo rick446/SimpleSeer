@@ -15,6 +15,8 @@ module.exports = class FilterCollection extends Collection
   initialize: (params) =>
     super()
     @filters = []
+    if !application.settings.ui_filters_framemetadata?
+      application.settings.ui_filters_framemetadata = []
     if params.view
       @view = params.view
     #todo: map filter sets to view type
@@ -22,6 +24,22 @@ module.exports = class FilterCollection extends Collection
       @filters.push @view.addSubview o.format, application.getFilter(o.format), '#filter_form', {params:o,collection:@}
     @
 
+  #comparator: (chapter) =>
+  #  return -chapter.get("capturetime")
+  #  return chapter.get("capturetime")
+  
+  sortList: (sortkey, sortorder) =>
+    console.log sortkey
+    console.log sortorder
+    for o in @filters
+      if o.options.params.field_name == sortkey
+        @sortkey = sortkey
+        @sortorder = sortorder
+        @fetch()
+      #console.log o.options.params.label
+      #console.log o.options.params.field_name
+    return
+  
   fetch: (params={}) =>
     #todo: map .error to params.error
     _json = []
@@ -29,10 +47,17 @@ module.exports = class FilterCollection extends Collection
       val = o.toJson()
       if val
         _json.push val
-    _json = {skip:@skip,limit:@limit,query:_json}
+    _json =
+      skip:@skip
+      limit:@limit
+      query:_json
+      sortkey: @sortkey || 'capturetime'
+      sortorder: @sortorder || 1
     url = @url+"/"+JSON.stringify _json
     #console.dir _json
     $.getJSON(url, (data) =>
+      #for o in data.frames
+      #  console.log o.capturetime
       @.totalavail = data.total_frames
       if @skip == 0
         @reset data.frames
