@@ -42,6 +42,7 @@ class ChannelManager(object):
         with self._lock:
             self.pub_sock.send(channel, zmq.SNDMORE)
             self.pub_sock.send(jsonencode(message))
+            
 
     def subscribe(self, name):
         name=str(name)

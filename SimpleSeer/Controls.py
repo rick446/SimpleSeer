@@ -55,6 +55,42 @@ class Button:
 
     def fire(self, state):
         ChannelManager().publish("ControlInput/", self.message)
+
+class Potentiometer:
+    """
+    An abstract class for all objects -- controls Arduino pin assignment 
+    and previous state
+
+    This needs to be fleshed out
+
+    """
+    pin = '' 
+    state = 0
+    statechange = False
+    controller = ''
+    handlers = []
+    previous = 0
+
+    def __init__(self, pin, name, board):
+        self.pin_id = pin
+        self.board = board
+        self.pin = self.board.get_pin('a:%d:i' % pin)
+        self.pin.enable_reporting()
+        self.name = name
+        self.state = 0
+
+    def read(self):
+        newstate = self.pin.read() or 0
+        
+        if newstate != None and newstate != self.state and newstate and self.state != None:
+          if abs(self.previous - newstate) > 0.015:
+            self.fire(newstate)
+            print( newstate )
+            self.previous = newstate
+        self.state = newstate
+
+    def fire(self, state):
+        ChannelManager().publish("ControlInput/", {self.name: state})
        
 class Servo(object):
     pin = None
@@ -130,23 +166,28 @@ class Controls(object):
 
         #initialize servo objects
         self.servos = {}
-        if config["servos"]:
+        if "servos" in config:
             for servo in config["servos"]:
                 self.servos[servo['name']] = Servo(servo['pin'], self.board)
 
         #initialize light objects
         self.digitalouts = {}
-        if config["digitalouts"]:
+        if "digitalouts" in config:
             for do in config["digitalouts"]:
                 self.digitalouts[do['name']] = DigitalOut(do['pin'], self.board)
 
-        if config["digitalouts"] or config["servos"]:
+        if "digitalouts" in config or "servos" in config:
             self.subsock = ChannelManager().subscribe("ControlOutput/")
 
         self.buttons = []
-        if config["buttons"]:
+        if "buttons" in config:
             for button in config["buttons"]:
                 self.buttons.append(Button(button['pin'], button['message'], self.board))
+
+        self.potentiometers = []
+        if "potentiometers" in config:
+            for pot in config["potentiometers"]:
+                self.buttons.append(Potentiometer(pot['pin'], pot['name'], self.board))                
 
     def checkSubscription(self):
         if not self.subsock:
@@ -177,7 +218,10 @@ class Controls(object):
             #make sure we have a clean buffer before bouncing the buttons    
             for b in self.buttons:
                 b.read()
-            
+                
+            for p in self.potentiometers:
+                p.read()
+                
             gevent.sleep(0)
 
 
