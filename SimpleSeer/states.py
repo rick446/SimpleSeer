@@ -150,6 +150,20 @@ class Core(object):
                     
             for watcher in self.watchers:
                 watcher.check(frame.results)
+
+    def process(frame):
+        frame.features = []
+        frame.results = []
+        for inspection in M.Inspection.objects:
+            if inspection.parent:
+                return
+            if inspection.camera and inspection.camera != frame.camera:
+                return
+            results = inspection.execute(frame.image)
+            frame.features += results
+            for m in inspection.measurements:
+                m.execute(frame, results)
+
                 
     @property
     def results(self):
