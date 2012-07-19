@@ -57,13 +57,6 @@ class Button:
         ChannelManager().publish("ControlInput/", self.message)
 
 class Potentiometer:
-    """
-    An abstract class for all objects -- controls Arduino pin assignment 
-    and previous state
-
-    This needs to be fleshed out
-
-    """
     pin = '' 
     state = 0
     statechange = False
