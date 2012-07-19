@@ -17,7 +17,7 @@ class ScriptCommand(Command):
         from SimpleSeer import models as M
         from SimpleSeer.realtime import ChannelManager
         from .. import util
-        util.register_plugins()
+        util.load_plugins()
         ns = dict(
             M=M, CM=ChannelManager(), self=self)
         with open(self.options.script) as fp:

@@ -19,8 +19,51 @@
     </div>
   </div>
 </div>
+
+<label for="sortCombo">Sort by</label>
+<select id="sortCombo"></select>
+
   <div class="span9 offset3">
-    <div id="frame_holder"></div>
+  
+       <!--MAIN TABS -->
+      <div id="views">
+        <div id="views-tabs">
+          <div id="image-tab">Image View</div>
+          <div id="data-tab" class="unselected">Data View</div>
+        </div>
+        <div id="views-contain">
+          <div id="views-controls">
+            <div id="control-images">
+              <img id="list-view" src="img/icon-list-view.png"><img id="grid-view" class="list-unselected" src="img/icon-grid-view.png">
+            </div>
+            <div id="control-copy">
+              <span class="selection-tog"><a href="#">Select All / </a><a href="#"><span class="copy-off">None</span></a></span> <span class="selection-tog"><a href="#">Edit</a> / <a href="#"><span class="copy-off">Edit All</span></a></span>
+              <span>List:</span>
+              <select class="style-select-listview">
+                <option>Date Descending</option>
+                <option></option>
+                <option></option>
+              </select>
+            </div>
+          </div>
+          <div class="data-view-item">
+
+            <div id="frame_holder"></div>
+    
+          </div><!--END GRID IMAGE VIEW -->
+            
+            
+            <div id="data-views-contain">
+              <div id="data-view">
+                <h1>data view!</h1>
+              </div> <!-- END DATA VIEW ITEM -->
+            </div><!-- END DATA VIEW ITEM -->
+          </div>
+    
+    
+    
+    
+    
   </div>
 </div>
 <div id="loading_message" class="alert alert-info span11">

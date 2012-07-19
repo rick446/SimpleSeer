@@ -36,7 +36,6 @@ module.exports = class FrameDetailView extends View
 
   getRenderData: =>
     data = {}
-    
     if @model.get("features").length
       data.featuretypes = _.values(@model.get("features").groupBy (f) -> f.get("featuretype"))
     

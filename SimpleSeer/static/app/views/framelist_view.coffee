@@ -39,8 +39,8 @@ module.exports = class FramelistView extends View
     #"click #filter_form input[name=time_to]": "setTimeToAsNow"
 
   events:
-      'click #minimize-control-panel' : 'toggleMenu'
-      'click .icon-item' : 'toggleMenu'
+    'click #minimize-control-panel' : 'toggleMenu'
+    'click .icon-item' : 'toggleMenu'
   
   toggleMenu: ()=>
     if application.settings.showMenu
@@ -73,6 +73,15 @@ module.exports = class FramelistView extends View
       application.settings.showMenu = true
       @$el.find(".offset3").css('margin-left','252px')
     @filtercollection.fetch()
+    @$el.find('#sortCombo').combobox
+      selected: (event, ui) =>
+        if ui.item
+          v = ui.item.value
+        v = v.split(',')
+        @filtercollection.sortList(v[0],v[1])
+        #set sort order and key
+      width:"50px"
+
 
 
   """
@@ -127,6 +136,13 @@ module.exports = class FramelistView extends View
       #  page: 0
       #  add: true
       #  filter: filter
+      
+  updateFilterCombo: ()=>
+    an = @$el.find('#sortCombo')
+    for o in @filtercollection.filters
+      $("<option value='"+o.options.params.field_name+",1'>"+o.options.params.label+" ascending</option>").appendTo("#sortCombo");
+      $("<option value='"+o.options.params.field_name+".-1'>"+o.options.params.label+" descending</option>").appendTo("#sortCombo");
+      
 
   addObj: (d)=>
     an = @$el.find('#frame_holder')
@@ -144,7 +160,7 @@ module.exports = class FramelistView extends View
     @$el.find('#count_total').html @filtercollection.totalavail    
     for o in d.models
       fv = new FramelistFrameView o
-      an.append(fv.render().el)  
+      an.append(fv.render().el)
     @clearLoading()
   """
   addFrame: (frame)=>
