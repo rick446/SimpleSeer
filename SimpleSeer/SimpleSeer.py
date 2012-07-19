@@ -78,11 +78,9 @@ class SimpleSeer(object):
         #log initialized camera X
         
         
-        util.initialize_slave()
-			
         self.reloadInspections() #initialize inspections so they get saved to redis
          
-        self.loadPlugins()
+        util.load_plugins()
         self.lastframes = []
         self.framecount = 0
         
@@ -125,14 +123,6 @@ class SimpleSeer(object):
         self.inspections = i
         self.measurements = m
         self.watchers = w
-
-    @classmethod
-    def get_plugin_types(cls):
-        return cls._plugin_types
-
-    def loadPlugins(self):
-        for ptype, cls in self.get_plugin_types().items():
-            cls.register_plugins('seer.plugins.' + ptype)
 
     def loadImageSet(self, imgs = None):
         '''

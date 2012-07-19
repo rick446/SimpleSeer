@@ -1,5 +1,4 @@
 mongoengine
-https://github.com/ingenuitas/mmm/zipball/master
 https://github.com/ingenuitas/pyfirmata/zipball/master
 decorator
 Flask
@@ -11,7 +10,7 @@ guppy
 FormEncode
 pyzmq
 gevent
-gevent-zeromq
+gevent-zeromq==0.2.2
 gevent-websocket
 gevent-socketio
 pyro4
@@ -19,5 +18,5 @@ coffeescript
 #-e git+git://github.com/doloopwhile/Python-CoffeeScript.git#egg=CoffeeScript
 -e svn+https://guppy-pe.svn.sourceforge.net/svnroot/guppy-pe/trunk/guppy@90#egg=guppy-dev_r90
 https://github.com/ingenuitas/pyvpx/zipball/master
-python-sklearn
-
+scikit-learn
+MongoMultiMaster==0.0.4dev

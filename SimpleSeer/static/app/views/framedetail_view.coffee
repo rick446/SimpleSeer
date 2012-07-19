@@ -1,6 +1,6 @@
 View = require './view'
 template = require './templates/framedetail'
-app = require('application')
+application = require('application')
 
 module.exports = class FrameDetailView extends View  
   template: template
@@ -20,13 +20,19 @@ module.exports = class FrameDetailView extends View
       viewPort.css('top', 0)
       viewPort.css('width', '100%')
       viewPort.css('height', '100%')
-    else
-      @zoomed = true
-      viewPort.css('position', 'relative')
-      viewPort.css('top', '-'+(e.pageY - os.top)+'px')
-      viewPort.css('left', '-'+(e.pageX - os.left)+'px')
-      viewPort.css('width', @.model.attributes.width+'px')
-      viewPort.css('height', @.model.attributes.height+'px')
+    else    
+      _ratio = (@.model.attributes.width / viewPort.width()).toFixed(2);
+      if _ratio > 1
+        @zoomed = true
+        viewPort.css('position', 'relative')
+        _top = ((e.pageY * _ratio) - (os.top * _ratio))
+        _left = ((e.pageX * _ratio) - (os.left * _ratio))
+        _left -= _left / _ratio
+        _top -= _top / _ratio
+        viewPort.css('top', '-'+_top+'px')
+        viewPort.css('left', '-'+_left+'px')
+        viewPort.css('width', @.model.attributes.width+'px')
+        viewPort.css('height', @.model.attributes.height+'px')
 
   getRenderData: =>
     data = {}
@@ -36,11 +42,19 @@ module.exports = class FrameDetailView extends View
     
     for k of @model.attributes
       data[k] = @model.attributes[k]
-      
+    data.disabled = application.settings.mongo.is_slave || false
     data
     
   addMetaBox: =>
-    $('#metadata').append('<tr><td><input class="metaDataEdit" type="text"></td><td><input class="metaDataEdit" type="text"></td></tr>')
+    disabled = application.settings.mongo.is_slave || false
+    html='<tr><td><input class="metaDataEdit" type="text"'
+    if disabled
+      html+=' disabled="disabled" '
+    html+='></td><td><input class="metaDataEdit" type="text"'
+    if disabled
+      html+=' disabled="disabled" '    
+    html+='></td></tr>'
+    $('#metadata').append(html)
 
   updateMetaData: (e) =>
     metadata = {}
@@ -60,7 +74,7 @@ module.exports = class FrameDetailView extends View
   
       
   postRender: =>
-    #app.viewPort = $('#display')
+    #application.viewPort = $('#display')
     @addMetaBox()
     if not @model.get('features').length
       return
