@@ -613,7 +613,6 @@ a.video{
   width:640px;
 }
 .image-view-item{
-  border-bottom:#f0f0f0 solid 1px;
   border-top:#f0f0f0 solid 1px;
   padding:25px;
   padding-top:30px;
@@ -624,9 +623,11 @@ a.video{
 .image-id{
   color:#3698c9;
   font-size:16px;
+  width: 120px;
+  overflow: hidden;
 }
   .ivi-left{
-    width:300px;
+    width:150px;
     float:left;
   }
   .ivi-left table{
@@ -638,7 +639,14 @@ a.video{
   }
   .ivi-left-thumb-contain{
     float:right;
+    width: 160px;
     color:#3698c9;
+
+    .blackBar {
+      width: 100%;
+      background: black;
+      text-align: center;
+    }
   }
     .view{
       height:25px;
@@ -676,7 +684,6 @@ a.video{
 
     border:#ccc solid 1px;
     padding:10px;
-    padding-bottom:20px;
   }
 .ivi-right{
   float:left;
