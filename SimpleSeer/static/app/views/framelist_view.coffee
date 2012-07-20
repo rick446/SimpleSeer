@@ -182,7 +182,7 @@ module.exports = class FramelistView extends View
     an = @$el.find('#frame_holder')
     @$el.find('#count_viewing').html @filtercollection.length
     @$el.find('#count_total').html @filtercollection.totalavail
-    fv = new FramelistFrameView d
+    fv = new FramelistFrameView {model:d}
     if @page == "tabImage"
       an.append(fv.render().el)
     #else if @page == "tabData"
@@ -197,7 +197,7 @@ module.exports = class FramelistView extends View
     @$el.find('#count_total').html @filtercollection.totalavail    
     if @page == "tabImage"
       for o in d.models
-        fv = new FramelistFrameView o
+        fv = new FramelistFrameView {model:o}
         an.append(fv.render().el)
     else if @page == "tabData"
       _empty = "---"

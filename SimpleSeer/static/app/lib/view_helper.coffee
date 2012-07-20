@@ -109,6 +109,24 @@ Handlebars.registerHelper 'featuredetail', (features) ->
   
   ret += "</tbody></table>"
   new Handlebars.SafeString(ret)
+
+Handlebars.registerHelper 'featurelist', (features) ->
+  unless features.length > 0
+    return new Handlebars.SafeString("")
+    
+  keys = features.models[0].tableHeader();
+  values = features.models[0].tableData();
+
+  ret = ""
+  i = 0
+  while i < features.models[0].tableHeader().length
+    ret += "<tr>"
+    ret += "<td>" + keys[i] + "</td>"
+    ret += "<td>" + values[i] + "</td>"
+    ret += "</tr>"
+    i++
+
+  return new Handlebars.SafeString(ret)
   
 # Usage: {{#key_value obj}} Key: {{key}} // Value: {{value}} {{/key_value}}
 Handlebars.registerHelper "key_value", (obj, fn) ->

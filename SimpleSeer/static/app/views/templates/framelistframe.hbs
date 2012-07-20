@@ -13,19 +13,12 @@
     </div>
     <div class="ivi-right">
       <table>
-          {{#key_value metadata}}
+          {{#featurelist features}}
         <tr>
           <td class="item-detail">{{key}}</td>
           <td class="item-detail-value">{{value}}</td>
         </tr>
-          {{/key_value}}
-
-          {{#feature_summary}}
-        <tr>
-          <td class="item-detail">{{key}}</td>
-          <td class="item-detail-value">{{value}}</td>
-        </tr>
-          {{/feature_summary}}          
+          {{/featurelist}}          
 
         <tr>
           <td class="item-detail">Capture Time:</td>
@@ -34,15 +27,31 @@
 
         <tr>
           <td class="item-detail">Width:</td>
-          <td class="item-detail-value">{{width}}</td>
+          <td class="item-detail-value">{{width}} <span>pixels</span></td>
         </tr>
 
         <tr>
           <td class="item-detail">Height:</td>
-          <td class="item-detail-value">{{height}}</td>
+          <td class="item-detail-value">{{height}} <span>pixels</span></td>
         </tr>                     
       </table>
 
+      <div class="tableSpacer">
+        <table class="editableMeta">
+            {{#key_value metadata}}
+          <tr>
+            <td class="item-detail clickEdit">{{key}}</td>
+            <td class="item-detail-value clickEdit">{{value}}</td>
+          </tr>
+            {{/key_value}}
+          <tr>
+            <td class="item-detail clickEdit"><input type="text"></td>
+            <td class="item-detail-value clickEdit"><input type="text"></td>
+          </tr>            
+        </table>
+      </div>
+
+      <textarea class="notes-field">{{notes}}</textarea>  
     </div>
 
   </div>
