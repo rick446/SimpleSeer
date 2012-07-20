@@ -15,3 +15,5 @@ module.exports = class FramelistFrameView extends View
     thumbnail_file: @frame.get('thumbnail_file')
     id: @frame.get('id')
     features: @frame.get('features')
+    metadata: @frame.get('metadata')
+  

@@ -22,7 +22,7 @@ class Filter():
 				features.append(f)
 		
 		# TODO: We could add a lot more features here to optimization
-		pipeline.append({'$project': {'features.featurepickle_b64': 0}})
+		#pipeline.append({'$project': {'features.featurepickle_b64': 0}})
 		
 		if frames:
 			for f in frames:
@@ -69,6 +69,7 @@ class Filter():
 			
 		
 		# Sort
+<<<<<<< HEAD
 		# TODO: some more fancy queries could pull just the relevant result/feature out for sorting
 		if sortinfo:
 			if sortinfo['type'] == 'measurement':
@@ -79,6 +80,9 @@ class Filter():
 				pipeline.append({'$sort': {sortinfo['name']: sortinfo['order']}})
 		else:
 			pipeline.append({'$sort': {sortkey: sortorder}})
+=======
+		pipeline.append({'$sort': {sortkey: int(sortorder)}})
+>>>>>>> 54b25862e4df46ab2d011d8ffdac4e2be5464ad3
 		
 		db = Frame._get_db()
 		cmd = db.command('aggregate', 'frame', pipeline = pipeline)
@@ -94,7 +98,7 @@ class Filter():
 		else:
 			return 0, None
 		
-		print results
+		#print results
 		
 		# Check if need to output as dict or as Frames
 		if dictOutput:

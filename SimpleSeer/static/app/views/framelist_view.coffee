@@ -18,9 +18,11 @@ module.exports = class FramelistView extends View
     @filter = {}
     @newFrames = []
     @total_frames = 0
+    @showAll = false
     @lastLoadTime = new Date()
     @filtercollection = new Filters({model:Frame,view:@})
     $.datepicker.setDefaults $.datepicker.regional['']
+    @page = "tabImage"
 
     #@collection.on 'add', @addFrame
     #@collection.on 'reset', @addFrames
@@ -41,6 +43,39 @@ module.exports = class FramelistView extends View
   events:
     'click #minimize-control-panel' : 'toggleMenu'
     'click .icon-item' : 'toggleMenu'
+    'click #data-tab' : 'tabData'
+    'click #image-tab' : 'tabImage'
+  
+  tabData: ()=>
+    @page = "tabData"
+    @filtercollection.limit = 65536
+    @filtercollection.skip = 0
+    @filtercollection.fetch
+      success: () =>
+        $('#image-view').hide()
+        $('#data-view').show()
+        $('#data-tab').removeClass('unselected')
+        $('#image-tab').addClass('unselected')
+        $('#data-views-controls').show()
+        $('#views-controls').hide()
+        $('#views-contain').addClass('wide scroll')
+        $('#views').addClass('wide')
+        $('#content').addClass('wide')
+
+  tabImage: () =>
+    @page = "tabImage"
+    @filtercollection.limit = @filtercollection._defaults.limit
+    @filtercollection.skip = @filtercollection._defaults.skip
+    @filtercollection.fetch
+      success: () =>
+        $('#data-view').hide()
+        $('#image-view').show()
+        $('#image-tab').removeClass('unselected')
+        $('#data-tab').addClass('unselected')
+        $('#data-views-controls').hide()
+        $('#views-controls').show()
+        $('#views-contain').removeClass('wide')
+
   
   toggleMenu: ()=>
     if application.settings.showMenu
@@ -56,6 +91,7 @@ module.exports = class FramelistView extends View
     count_viewing: @filtercollection.length
     count_total: @filtercollection.totalavail
     count_new: @newFrames.length
+    sortComboVals: @updateFilterCombo(false)
 
   render: =>
     super()
@@ -81,8 +117,7 @@ module.exports = class FramelistView extends View
         @filtercollection.sortList(v[0],v[1])
         #set sort order and key
       width:"50px"
-
-
+    @$el.find("#tabDataTable").tablesorter()
 
   """
   postRender: =>
@@ -91,19 +126,18 @@ module.exports = class FramelistView extends View
       camera_list.append '<option value="'+camera.name+'">'+camera.name+'</option>'
   """
   loadMore: (evt)=>
-    if ($(window).scrollTop() >= $(document).height() - $(window).height())
+    if ($(window).scrollTop() >= $(document).height() - $(window).height()-1) && !@loading
+      if (@filtercollection.length+1) <= @filtercollection.totalavail
     #if !@loading && $('#loading_message').length && @total_frames > 2\
     #   && (@total_frames - @filtercollection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())
-      $('body').on('mousewheel', @disableEvent)
-      enable = =>
-        $('body').off('mousewheel', @disableEvent)
-      setTimeout enable, 1000
-      @$el.find('#loading_message').fadeIn('fast')
-      @loading=true
-      #@empty=false
-      @filtercollection.skip += @filtercollection._defaults.limit
-      @filtercollection.fetch()
-      #@fetchFiltered()
+        $('body').on('mousewheel', @disableEvent)
+        enable = =>
+          $('body').off('mousewheel', @disableEvent)
+        setTimeout enable, 1000
+        @$el.find('#loading_message').fadeIn('fast')
+        @loading=true
+        @filtercollection.skip += @filtercollection._defaults.limit
+        @filtercollection.fetch()
 
   clearLoading: (callback=->)=>
     @loading = false
@@ -137,11 +171,11 @@ module.exports = class FramelistView extends View
       #  add: true
       #  filter: filter
       
-  updateFilterCombo: ()=>
-    an = @$el.find('#sortCombo')
+  updateFilterCombo: (apply=true)=>
+    out = []
     for o in @filtercollection.filters
-      $("<option value='"+o.options.params.field_name+",1'>"+o.options.params.label+" ascending</option>").appendTo("#sortCombo");
-      $("<option value='"+o.options.params.field_name+".-1'>"+o.options.params.label+" descending</option>").appendTo("#sortCombo");
+      out.push({'label':o.options.params.label,'name':o.options.params.field_name})
+    return out
       
 
   addObj: (d)=>
@@ -149,7 +183,10 @@ module.exports = class FramelistView extends View
     @$el.find('#count_viewing').html @filtercollection.length
     @$el.find('#count_total').html @filtercollection.totalavail
     fv = new FramelistFrameView d
-    an.append(fv.render().el)
+    if @page == "tabImage"
+      an.append(fv.render().el)
+    #else if @page == "tabData"
+    #  @$el.find("#tabDataTable").tablesorter
     @clearLoading()
 
   addObjs: (d)=>
@@ -158,10 +195,28 @@ module.exports = class FramelistView extends View
       an.html ''
     @$el.find('#count_viewing').html @filtercollection.length
     @$el.find('#count_total').html @filtercollection.totalavail    
-    for o in d.models
-      fv = new FramelistFrameView o
-      an.append(fv.render().el)
+    if @page == "tabImage"
+      for o in d.models
+        fv = new FramelistFrameView o
+        an.append(fv.render().el)
+    else if @page == "tabData"
+      _empty = "---"
+      @$el.find("#tabDataTable").find('tbody').html('')
+      for o in d.models
+        if o.attributes.features.models
+          f = o.attributes.features.models[0].attributes.featuredata
+        else
+          f = {}
+        dt = new moment(o.attributes.capturetime*1000)
+        row = "<tr><td>"+dt.format("M-D-YY")+"</td><td>"+(f.head_width_mm||_empty)+"</td><td>"+(f.lbs_width_mm||_empty)+"</td><td>"+(f.shaft_width_mm||_empty)+"</td><td>"+(f.fillet_left_r||_empty)+"</td><td>"+(f.fillet_right_r||_empty)+"</td></tr>"
+        row = $(row)
+        resort = true; 
+        @$el.find("#tabDataTable").find('tbody')
+          .append(row) 
+          .trigger('addRows', [row, resort]); 
+      @$el.find("#tabDataTable").trigger('update')
     @clearLoading()
+
   """
   addFrame: (frame)=>
     #fv = new FramelistFrameView frame

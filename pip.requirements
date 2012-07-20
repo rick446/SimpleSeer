@@ -21,4 +21,6 @@ https://github.com/ingenuitas/pyvpx/zipball/master
 scikit-learn
 MongoMultiMaster==0.0.4dev
 xlwt
-
+paste
+pastescript
+pastedeploy

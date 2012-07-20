@@ -1,20 +1,27 @@
-<hr>
-<div class="row">
-  <div class="span2">
-    <a href="#frame/{{id}}"><img src="{{thumbnail_file}}" class="thumbnail" height="105"></a>
-    <p class="frame_icons">
-      <a href="#frame/{{id}}"><i class="icon-info-sign"></i> Details</a>
-      <a href="{{imgfile}}?download=True"><i class="icon-download"></i> Download</a>
-    </p>
-      <!-- <span class="label label-success">Pass</span> -->
+<div id="image-view">
+  <div class="image-view-item">
+    <div class="ivi-left">
+      <div class="ivi-left-thumb-contain">
+        <div class="thumb">
+          <div class="blackBar">
+            <img src="{{thumbnail_file}}">
+          </div>
+        </div>
+        <a href="{{imgfile}}?download=True"><div class="download">Download</div></a>
+        <a href="#frame/{{id}}"><div class="view">View</div></a>
+      </div>
+    </div>
+    <div class="ivi-right">
+      <table>
+          {{#key_value metadata}}
+        <tr>
+          <td class="item-detail">{{key}}</td>
+          <td class="item-detail-value">{{value}}</td>
+        </tr>
+          {{/key_value}}
+      </table>
+
+    </div>
+
   </div>
-  <div class="span7">
-    <ul class="information">
-        <li><b>Camera</b>: {{camera}}</li>
-        <li><b>Time</b>: {{capturetime}}</li>
-        {{#if features}}
-        <li><b>Features</b>:<ul class="features">{{featuresummary features}}</ul></li>
-        {{/if}}
-    </ul>
-  </div>
-</div>
+</div><!-- END IMAGE VIEW ITEM -->
