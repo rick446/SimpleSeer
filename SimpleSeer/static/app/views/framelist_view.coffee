@@ -19,6 +19,7 @@ module.exports = class FramelistView extends View
     @newFrames = []
     @total_frames = 0
     @showAll = false
+    @rendered = false
     @lastLoadTime = new Date()
     @filtercollection = new Filters({model:Frame,view:@})
     $.datepicker.setDefaults $.datepicker.regional['']
@@ -94,6 +95,9 @@ module.exports = class FramelistView extends View
     sortComboVals: @updateFilterCombo(false)
 
   render: =>
+    if @rendered
+      @.delegateEvents(@.events)
+    @rendered = true
     super()
     #if @empty==true and @filtercollection.at(0)
     #  @newest = @filtercollection.at(0).get('capturetime')
@@ -114,7 +118,7 @@ module.exports = class FramelistView extends View
         if ui.item
           v = ui.item.value
         v = v.split(',')
-        @filtercollection.sortList(v[0],v[1])
+        @filtercollection.sortList(v[0],v[1],v[2])
         #set sort order and key
       width:"50px"
     @$el.find("#tabDataTable").tablesorter()
@@ -174,7 +178,7 @@ module.exports = class FramelistView extends View
   updateFilterCombo: (apply=true)=>
     out = []
     for o in @filtercollection.filters
-      out.push({'label':o.options.params.label,'name':o.options.params.field_name})
+      out.push({'label':o.options.params.label,'name':o.options.params.field_name,'type':o.options.params.type})
     return out
       
 
@@ -220,9 +224,7 @@ module.exports = class FramelistView extends View
   """
   addFrame: (frame)=>
     #fv = new FramelistFrameView frame
-    console.log @$el.find('#frame_holder')
     #@$el.find('#frame_holder').append(fv.render().el)
-    #console.log @$el.find('#frame_holder')
     #return
     @loading=false
     fv = new FramelistFrameView frame
