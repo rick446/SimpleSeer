@@ -18,9 +18,11 @@ module.exports = class FramelistView extends View
     @filter = {}
     @newFrames = []
     @total_frames = 0
+    @showAll = false
     @lastLoadTime = new Date()
     @filtercollection = new Filters({model:Frame,view:@})
     $.datepicker.setDefaults $.datepicker.regional['']
+    @page = "tabImage"
 
     #@collection.on 'add', @addFrame
     #@collection.on 'reset', @addFrames
@@ -41,6 +43,37 @@ module.exports = class FramelistView extends View
   events:
     'click #minimize-control-panel' : 'toggleMenu'
     'click .icon-item' : 'toggleMenu'
+    'click #data-tab' : 'tabData'
+    'click #image-tab' : 'tabImage'
+  
+  tabData: ()=>
+    @page = "tabData"
+    @filtercollection.limit = 65536
+    @filtercollection.fetch
+      success: () =>
+        $('#image-view').hide()
+        $('#data-view').show()
+        $('#data-tab').removeClass('unselected')
+        $('#image-tab').addClass('unselected')
+        $('#data-views-controls').show()
+        $('#views-controls').hide()
+        $('#views-contain').addClass('wide scroll')
+        $('#views').addClass('wide')
+        $('#content').addClass('wide')
+
+  tabImage: () =>
+    @page = "tabImage"
+    @filtercollection.limit = @filtercollection._defaults.limit
+    @filtercollection.fetch
+      success: () =>
+        $('#data-view').hide()
+        $('#image-view').show()
+        $('#image-tab').removeClass('unselected')
+        $('#data-tab').addClass('unselected')
+        $('#data-views-controls').hide()
+        $('#views-controls').show()
+        $('#views-contain').removeClass('wide')
+
   
   toggleMenu: ()=>
     if application.settings.showMenu
@@ -147,7 +180,8 @@ module.exports = class FramelistView extends View
     @$el.find('#count_viewing').html @filtercollection.length
     @$el.find('#count_total').html @filtercollection.totalavail
     fv = new FramelistFrameView d
-    an.append(fv.render().el)
+    if @page == "tabImage"
+      an.append(fv.render().el)
     @clearLoading()
 
   addObjs: (d)=>
@@ -156,9 +190,10 @@ module.exports = class FramelistView extends View
       an.html ''
     @$el.find('#count_viewing').html @filtercollection.length
     @$el.find('#count_total').html @filtercollection.totalavail    
-    for o in d.models
-      fv = new FramelistFrameView o
-      an.append(fv.render().el)
+    if @page == "tabImage"
+      for o in d.models
+        fv = new FramelistFrameView o
+        an.append(fv.render().el)
     @clearLoading()
 
   """
