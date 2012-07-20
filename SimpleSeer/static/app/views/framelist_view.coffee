@@ -114,7 +114,7 @@ module.exports = class FramelistView extends View
         if ui.item
           v = ui.item.value
         v = v.split(',')
-        @filtercollection.sortList(v[0],v[1])
+        @filtercollection.sortList(v[0],v[1],v[2])
         #set sort order and key
       width:"50px"
     @$el.find("#tabDataTable").tablesorter()
@@ -174,7 +174,7 @@ module.exports = class FramelistView extends View
   updateFilterCombo: (apply=true)=>
     out = []
     for o in @filtercollection.filters
-      out.push({'label':o.options.params.label,'name':o.options.params.field_name})
+      out.push({'label':o.options.params.label,'name':o.options.params.field_name,'type':o.options.params.type})
     return out
       
 

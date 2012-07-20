@@ -28,7 +28,7 @@ module.exports = class FilterCollection extends Collection
   #  return -chapter.get("capturetime")
   #  return chapter.get("capturetime")
   
-  sortList: (sortkey, sortorder) =>
+  sortList: (sorttype, sortkey, sortorder) =>
     for o in @filters
       if o.options.params.field_name == sortkey
         @sortkey = sortkey
@@ -51,6 +51,10 @@ module.exports = class FilterCollection extends Collection
       query:_json
       sortkey: @sortkey || 'capturetime'
       sortorder: @sortorder || 1
+      sortinfo:
+        type: ''
+        name: @sortkey || 'capturetime'
+        order: @sortorder || 1
     url = @url+"/"+JSON.stringify _json
     #console.dir _json
     $.getJSON(url, (data) =>
