@@ -83,8 +83,6 @@ module.exports = class FramelistView extends View
         #set sort order and key
       width:"50px"
 
-
-
   """
   postRender: =>
     camera_list = $('#filter_form select')
@@ -92,19 +90,18 @@ module.exports = class FramelistView extends View
       camera_list.append '<option value="'+camera.name+'">'+camera.name+'</option>'
   """
   loadMore: (evt)=>
-    if ($(window).scrollTop() >= $(document).height() - $(window).height()-1)
+    if ($(window).scrollTop() >= $(document).height() - $(window).height()-1) && !@loading
+      if (@filtercollection.length+1) <= @filtercollection.totalavail
     #if !@loading && $('#loading_message').length && @total_frames > 2\
     #   && (@total_frames - @filtercollection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())
-      $('body').on('mousewheel', @disableEvent)
-      enable = =>
-        $('body').off('mousewheel', @disableEvent)
-      setTimeout enable, 1000
-      @$el.find('#loading_message').fadeIn('fast')
-      @loading=true
-      #@empty=false
-      @filtercollection.skip += @filtercollection._defaults.limit
-      @filtercollection.fetch()
-      #@fetchFiltered()
+        $('body').on('mousewheel', @disableEvent)
+        enable = =>
+          $('body').off('mousewheel', @disableEvent)
+        setTimeout enable, 1000
+        @$el.find('#loading_message').fadeIn('fast')
+        @loading=true
+        @filtercollection.skip += @filtercollection._defaults.limit
+        @filtercollection.fetch()
 
   clearLoading: (callback=->)=>
     @loading = false
@@ -163,6 +160,7 @@ module.exports = class FramelistView extends View
       fv = new FramelistFrameView o
       an.append(fv.render().el)
     @clearLoading()
+
   """
   addFrame: (frame)=>
     #fv = new FramelistFrameView frame
