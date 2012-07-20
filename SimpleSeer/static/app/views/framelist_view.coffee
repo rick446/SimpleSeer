@@ -49,6 +49,7 @@ module.exports = class FramelistView extends View
   tabData: ()=>
     @page = "tabData"
     @filtercollection.limit = 65536
+    @filtercollection.skip = 0
     @filtercollection.fetch
       success: () =>
         $('#image-view').hide()
@@ -64,6 +65,7 @@ module.exports = class FramelistView extends View
   tabImage: () =>
     @page = "tabImage"
     @filtercollection.limit = @filtercollection._defaults.limit
+    @filtercollection.skip = @filtercollection._defaults.skip
     @filtercollection.fetch
       success: () =>
         $('#data-view').hide()
