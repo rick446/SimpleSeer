@@ -38,7 +38,7 @@
               <span>List:</span>
               <select id="sortCombo">
               {{#each sortComboVals}}
-                <option value="{{this.name}},1">{{this.label}} ascending</option>
+                <option value="{{this.name}},1" {{#if_eq "capturetime" compare=this.name}}selected="selected"{{/if_eq}}>{{this.label}} ascending</option>
                 <option value="{{this.name}},-1">{{this.label}} descending</option>
               {{/each}}
               </select>

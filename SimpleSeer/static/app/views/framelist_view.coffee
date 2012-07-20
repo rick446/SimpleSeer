@@ -92,7 +92,7 @@ module.exports = class FramelistView extends View
       camera_list.append '<option value="'+camera.name+'">'+camera.name+'</option>'
   """
   loadMore: (evt)=>
-    if ($(window).scrollTop() >= $(document).height() - $(window).height())
+    if ($(window).scrollTop() >= $(document).height() - $(window).height()-1)
     #if !@loading && $('#loading_message').length && @total_frames > 2\
     #   && (@total_frames - @filtercollection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())
       $('body').on('mousewheel', @disableEvent)
