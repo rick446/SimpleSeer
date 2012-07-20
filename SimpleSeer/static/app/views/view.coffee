@@ -30,9 +30,11 @@ module.exports = class View extends Backbone.View
     for name, subview of @subviews
       subview.render()
 
-  addSubview: (name, viewClass, selector, options) =>
+  #@view.addSubview o.format, application.getFilter(o.format), '#filter_form', {params:o,collection:@}
+  addSubview: (name, viewClass, selector, options, subselector) =>
     options = options or {}
     _.extend options,
       parent:@
       selector:selector
+      subselector:subselector
     @subviews[name] = new viewClass(options)

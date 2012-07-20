@@ -11,6 +11,10 @@ module.exports = class FilterCollection extends Collection
     limit:20
   skip:0
   limit:20
+  sortParams:
+    sortkey:''
+    sortorder:''
+    sorttype:''
   
   initialize: (params) =>
     super()
@@ -31,11 +35,10 @@ module.exports = class FilterCollection extends Collection
   sortList: (sorttype, sortkey, sortorder) =>
     for o in @filters
       if o.options.params.field_name == sortkey
-        @sortkey = sortkey
-        @sortorder = sortorder
+        @sortParams.sortkey = sortkey
+        @sortParams.sortorder = sortorder
+        @sortParams.sorttype = sorttype
         @fetch()
-      #console.log o.options.params.label
-      #console.log o.options.params.field_name
     return
   
   fetch: (params={}) =>
@@ -49,17 +52,15 @@ module.exports = class FilterCollection extends Collection
       skip:@skip
       limit:@limit
       query:_json
-      sortkey: @sortkey || 'capturetime'
-      sortorder: @sortorder || 1
+      sortkey: @sortParams.sortkey || 'capturetime'
+      sortorder: @sortParams.sortorder || 1
       sortinfo:
-        type: ''
-        name: @sortkey || 'capturetime'
-        order: @sortorder || 1
+        type: @sortParams.sorttype || ''
+        name: @sortParams.sortkey || 'capturetime'
+        order: @sortParams.sortorder || 1
     url = @url+"/"+JSON.stringify _json
     #console.dir _json
     $.getJSON(url, (data) =>
-      #for o in data.frames
-      #  console.log o.capturetime
       @.totalavail = data.total_frames
       if @skip == 0
         @reset data.frames

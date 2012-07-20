@@ -19,6 +19,7 @@ module.exports = class FramelistView extends View
     @newFrames = []
     @total_frames = 0
     @showAll = false
+    @rendered = false
     @lastLoadTime = new Date()
     @filtercollection = new Filters({model:Frame,view:@})
     $.datepicker.setDefaults $.datepicker.regional['']
@@ -94,6 +95,9 @@ module.exports = class FramelistView extends View
     sortComboVals: @updateFilterCombo(false)
 
   render: =>
+    if @rendered
+      @.delegateEvents(@.events)
+    @rendered = true
     super()
     #if @empty==true and @filtercollection.at(0)
     #  @newest = @filtercollection.at(0).get('capturetime')
@@ -220,9 +224,7 @@ module.exports = class FramelistView extends View
   """
   addFrame: (frame)=>
     #fv = new FramelistFrameView frame
-    console.log @$el.find('#frame_holder')
     #@$el.find('#frame_holder').append(fv.render().el)
-    #console.log @$el.find('#frame_holder')
     #return
     @loading=false
     fv = new FramelistFrameView frame
