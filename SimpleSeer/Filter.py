@@ -6,7 +6,7 @@ FIELD_NAMES = ['camera', 'capturetime', 'height', 'width']
 
 class Filter():
 	
-	def getFrames(self, allFilters, skip=0, limit=0, sortkey='capturetime', sortorder=1, sortinfo = {}, dictOutput=False):
+	def getFrames(self, allFilters, skip=0, limit=0, sortinfo = {}, dictOutput=False):
 		
 		pipeline = []
 		frames = []
@@ -69,20 +69,16 @@ class Filter():
 			
 		
 		# Sort
-<<<<<<< HEAD
 		# TODO: some more fancy queries could pull just the relevant result/feature out for sorting
 		if sortinfo:
+			sortinfo['order'] = int(sortinfo['order'])
 			if sortinfo['type'] == 'measurement':
 				pipeline.append({'$sort': {'results.numeric': sortinfo['order'], 'results.string': sortinfo['order']}})
 			elif sortinfo['type'] == 'framefeature':
 				pipeline.append({'$sort': {'features.' + sortinfo['name']: sortinfo['order']}})
 			else:
+				print 'GOOD'
 				pipeline.append({'$sort': {sortinfo['name']: sortinfo['order']}})
-		else:
-			pipeline.append({'$sort': {sortkey: sortorder}})
-=======
-		pipeline.append({'$sort': {sortkey: int(sortorder)}})
->>>>>>> 54b25862e4df46ab2d011d8ffdac4e2be5464ad3
 		
 		db = Frame._get_db()
 		cmd = db.command('aggregate', 'frame', pipeline = pipeline)

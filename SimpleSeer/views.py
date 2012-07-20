@@ -136,17 +136,16 @@ def getFrames(filter_params):
 	
 	limit = allparams['limit']
 	skip = allparams['skip']
-	if 'sortkey' in allparams:
-		sortkey = allparams['sortkey']
-		sortorder = allparams['sortorder']
+	
+	if 'sortinfo' in allparams:
+		sortinfo = allparams['sortinfo']
 	else:
-		sortkey = 'capturetime'
-		sortorder = 1
+		sortinfo = {}
 		
 	query = allparams['query']
 	
 	f = Filter()
-	total_frames, frames = f.getFrames(query, limit=limit, skip=skip, sortkey=sortkey, sortorder=sortorder)
+	total_frames, frames = f.getFrames(query, limit=limit, skip=skip, sortinfo=sortinfo)
 	
 	retVal = dict(frames=frames, total_frames=total_frames)
 	
@@ -169,12 +168,16 @@ def downloadFrames(result_format, filter_params):
 	
 	limit = allparams['limit']
 	skip = allparams['skip']
-	sortkey = allparams['sortkey']
-	sortorder = allparams['sortorder']
+	
+	if 'sortinfo' in allparams:
+		sortinfo = allparams['sortinfo']
+	else:
+		sortinfo = {}
+	
 	query = allparams['query']
 	
 	f = Filter()
-	total_frames, frames = f.getFrames(query, limit=limit, skip=skip, sortkey=sortkey, sortorder=sortorder, dictOutput=True)
+	total_frames, frames = f.getFrames(query, limit=limit, skip=skip, sortinfo=sortinfo, dictOutput=True)
 	
 	if result_format == 'csv':
 		resp = make_response(f.toCSV(frames), 200)
