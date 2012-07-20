@@ -199,6 +199,7 @@ module.exports = class FramelistView extends View
         an.append(fv.render().el)
     else if @page == "tabData"
       _empty = "---"
+      @$el.find("#tabDataTable").find('tbody').html('')
       for o in d.models
         if o.attributes.features.models
           f = o.attributes.features.models[0].attributes.featuredata

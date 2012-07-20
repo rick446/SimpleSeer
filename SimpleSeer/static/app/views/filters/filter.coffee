@@ -24,7 +24,7 @@ module.exports = class _filter extends SubView
   
   setValue: (v, send=false) =>
     @collection.skip = @collection._defaults.skip
-    @collection.limit = @collection._defaults.limit
+    #@collection.limit = @collection._defaults.limit
     
     if v == ''
       v = null
