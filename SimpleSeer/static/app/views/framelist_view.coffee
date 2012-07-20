@@ -82,11 +82,11 @@ module.exports = class FramelistView extends View
     if application.settings.showMenu
       application.settings.showMenu = false
       $('#second-tier-menu').hide()
-      $(".offset3").css('margin-left','0')
+      $("#stage").css('margin-left','0')
     else
       application.settings.showMenu = true
       $('#second-tier-menu').show()
-      $(".offset3").css('margin-left','252px')
+      $("#stage").css('margin-left','252px')
   
   getRenderData: =>
     count_viewing: @filtercollection.length
@@ -95,6 +95,8 @@ module.exports = class FramelistView extends View
     sortComboVals: @updateFilterCombo(false)
 
   render: =>
+    @filtercollection.limit = @filtercollection._defaults.limit
+    @filtercollection.skip = @filtercollection._defaults.skip
     if @rendered
       @.delegateEvents(@.events)
     @rendered = true
@@ -111,7 +113,7 @@ module.exports = class FramelistView extends View
   afterRender: =>
     if !application.settings.showMenu?
       application.settings.showMenu = true
-      @$el.find(".offset3").css('margin-left','252px')
+      @$el.find("#stage").css('margin-left','252px')
     @filtercollection.fetch()
     @$el.find('#sortCombo').combobox
       selected: (event, ui) =>

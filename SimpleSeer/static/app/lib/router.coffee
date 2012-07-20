@@ -32,8 +32,8 @@ module.exports = class Router extends Backbone.Router
     #$('ul.nav').find('li.frames').addClass('active')
     #$('#main').html application.framelistView.render().el
     #$('#main').slideReplace application.framelistView.initialize()
-    $('#main').html application.framelistView.render().el
-    #$('#main').slideReplace application.framelistView.render().el, 'right'
+    #$('#main').html application.framelistView.render().el
+    $('#main').slideReplace application.framelistView.render().el, 'right'
     
         
         
