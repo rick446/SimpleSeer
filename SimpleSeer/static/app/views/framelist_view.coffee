@@ -198,12 +198,14 @@ module.exports = class FramelistView extends View
         fv = new FramelistFrameView o
         an.append(fv.render().el)
     else if @page == "tabData"
+      _empty = "---"
       for o in d.models
         if o.attributes.features.models
           f = o.attributes.features.models[0].attributes.featuredata
         else
           f = {}
-        row = "<tr><td>"+new moment(o.attributes.capturetime)+"</td><td>"+f.head_width_mm+"</td><td>"+f.lbs_width_mm+"</td><td>"+f.shaft_width_mm+"</td><td>"+f.fillet_left_r+"</td><td>"+f.fillet_right_r+"</td></tr>"
+        dt = new moment(o.attributes.capturetime*1000)
+        row = "<tr><td>"+dt.format("M-D-YY")+"</td><td>"+(f.head_width_mm||_empty)+"</td><td>"+(f.lbs_width_mm||_empty)+"</td><td>"+(f.shaft_width_mm||_empty)+"</td><td>"+(f.fillet_left_r||_empty)+"</td><td>"+(f.fillet_right_r||_empty)+"</td></tr>"
         row = $(row)
         resort = true; 
         @$el.find("#tabDataTable").find('tbody')
