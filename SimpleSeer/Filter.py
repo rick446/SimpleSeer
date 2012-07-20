@@ -75,10 +75,13 @@ class Filter():
 			if sortinfo['type'] == 'measurement':
 				pipeline.append({'$sort': {'results.numeric': sortinfo['order'], 'results.string': sortinfo['order']}})
 			elif sortinfo['type'] == 'framefeature':
-				pipeline.append({'$sort': {'features.' + sortinfo['name']: sortinfo['order']}})
+				feat, c, field = sortinfo['name'].partition('.')
+				pipeline.append({'$sort': {'features.' + field: sortinfo['order']}})
 			else:
 				print 'GOOD'
 				pipeline.append({'$sort': {sortinfo['name']: sortinfo['order']}})
+		
+		print pipeline
 		
 		db = Frame._get_db()
 		cmd = db.command('aggregate', 'frame', pipeline = pipeline)
