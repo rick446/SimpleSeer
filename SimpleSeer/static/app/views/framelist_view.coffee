@@ -115,6 +115,7 @@ module.exports = class FramelistView extends View
         @filtercollection.sortList(v[0],v[1])
         #set sort order and key
       width:"50px"
+    @$el.find("#tabDataTable").tablesorter()
 
   """
   postRender: =>
@@ -182,6 +183,8 @@ module.exports = class FramelistView extends View
     fv = new FramelistFrameView d
     if @page == "tabImage"
       an.append(fv.render().el)
+    #else if @page == "tabData"
+    #  @$el.find("#tabDataTable").tablesorter
     @clearLoading()
 
   addObjs: (d)=>
@@ -194,6 +197,19 @@ module.exports = class FramelistView extends View
       for o in d.models
         fv = new FramelistFrameView o
         an.append(fv.render().el)
+    else if @page == "tabData"
+      for o in d.models
+        if o.attributes.features.models
+          f = o.attributes.features.models[0].attributes.featuredata
+        else
+          f = {}
+        row = "<tr><td>"+new moment(o.attributes.capturetime)+"</td><td>"+f.head_width_mm+"</td><td>"+f.lbs_width_mm+"</td><td>"+f.shaft_width_mm+"</td><td>"+f.fillet_left_r+"</td><td>"+f.fillet_right_r+"</td></tr>"
+        row = $(row)
+        resort = true; 
+        @$el.find("#tabDataTable").find('tbody')
+          .append(row) 
+          .trigger('addRows', [row, resort]); 
+      @$el.find("#tabDataTable").trigger('update')
     @clearLoading()
 
   """
