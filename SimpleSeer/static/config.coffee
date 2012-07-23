@@ -41,7 +41,8 @@ exports.config =
           'vendor/scripts/moment.js',
           'vendor/scripts/jquery.tablesorter.js',
           'vendor/scripts/jquery.tablesorter.pager.js',
-          'vendor/scripts/processing.js']
+          'vendor/scripts/processing.js',
+          'vendor/scripts/jquery.ui.zoomify.js']
 
     stylesheets:
       defaultExtension: 'less'
@@ -53,7 +54,8 @@ exports.config =
           'vendor/styles/themes/base/jquery.ui.core.css',
           'vendor/styles/tablesorter-blue.css',
           'vendor/styles/jquery.tablesorter.pager.css',
-          'vendor/styles/jquery.ui.combobox.css']
+          'vendor/styles/jquery.ui.combobox.css',
+          'vendor/styles/jquery.ui.zoomify.css']
 
     templates:
       defaultExtension: 'hbs'
