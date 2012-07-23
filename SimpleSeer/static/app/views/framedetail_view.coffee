@@ -14,7 +14,6 @@ module.exports = class FrameDetailView extends View
     os = $('#display').offset()
     viewPort = $('#display-zoom')
     ui.zoom = scale * ui.zoom
-
     if ui.zoom is 1
       @zoomed = false
       viewPort.css('position', 'static')
