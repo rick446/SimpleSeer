@@ -6,33 +6,31 @@ module.exports = class FrameDetailView extends View
   template: template
   
   events:
-    'click #display-zoom' : 'zoom'
     'change .metaDataEdit' : 'updateMetaData'
     'change .notesEdit' : 'updateNotes'
     
-  zoom: (e) ->
+  zoom: (e, ui) ->
+    scale = $("#zoomer").data("orig-scale")
     os = $('#display').offset()
     viewPort = $('#display-zoom')
-    if @zoomed
+    ui.zoom = scale * ui.zoom
+
+    if ui.zoom is 1
       @zoomed = false
       viewPort.css('position', 'static')
       viewPort.css('left', 0)
       viewPort.css('top', 0)
       viewPort.css('width', '100%')
       viewPort.css('height', '100%')
-    else    
-      _ratio = (@.model.attributes.width / viewPort.width()).toFixed(2);
-      if _ratio > 1
-        @zoomed = true
-        viewPort.css('position', 'relative')
-        _top = ((e.pageY * _ratio) - (os.top * _ratio))
-        _left = ((e.pageX * _ratio) - (os.left * _ratio))
-        _left -= _left / _ratio
-        _top -= _top / _ratio
-        viewPort.css('top', '-'+_top+'px')
-        viewPort.css('left', '-'+_left+'px')
-        viewPort.css('width', @.model.attributes.width+'px')
-        viewPort.css('height', @.model.attributes.height+'px')
+    else
+      @zoomed = true
+      viewPort.css('position', 'relative')
+      viewPort.css('top', '-'+(@.model.attributes.height * ui.zoom * ui.y)+'px')
+      viewPort.css('left', '-'+(@.model.attributes.width * ui.zoom * ui.x)+'px')
+      viewPort.css('width', (@.model.attributes.width * ui.zoom)+'px')
+      viewPort.css('height', (@.model.attributes.height * ui.zoom)+'px')
+      $('#display').css("height", (@.model.attributes.height * scale))
+      
 
   getRenderData: =>
     data = {}
@@ -84,7 +82,16 @@ module.exports = class FrameDetailView extends View
     framewidth = @model.get("width")
     realwidth = $('#display-img').width()
     scale = realwidth / framewidth
-        
+
+    $("#zoomer").zoomify({
+      image: @model.get('imgfile'),
+      zoom: 1,
+      update: (e, ui) =>
+        @zoom(e, ui)
+    })
+
+    $("#zoomer").data("orig-scale", scale);
+    
     @pjs.size $('#display-img').width(), @model.get("height") * scale
     @pjs.scale scale
     @model.get('features').each (f) => f.render(@pjs)

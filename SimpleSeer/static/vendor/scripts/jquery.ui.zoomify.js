@@ -10,16 +10,16 @@ $.widget("ui.zoomify", {
 
     if( !self.loaded ) { return false; }
 
-    var image = content.find("#display").get(0);
+    var image = content.find(".display").get(0);
     self.image = image;
     
     var ratio = image.width / image.height;
-    content.find("#view").height(image.height + 2);
+    content.find(".view").height(image.height + 2);
 
-    var frame = content.find("#frame");    
+    var frame = content.find(".frame");    
     frame.css({"top": self.viewport.y, "left": self.viewport.x});
-    frame.width(image.width * self.viewport.zoom);
-    frame.height(image.height * self.viewport.zoom);
+    frame.width(image.width / self.viewport.zoom);
+    frame.height(image.height / self.viewport.zoom);
 
     var frameWidth = frame.css("border-bottom-width").replace(/\D/g, "");
     frameWidth *= 2;    
@@ -51,11 +51,11 @@ $.widget("ui.zoomify", {
 
     self.viewport = {zoom: options.zoom, x: options.x, y: options.y};
     
-    var content = $('<div class="window"><div id="view"><div id="frame"></div><img id="display" src="'+options.image+'"></div></div><div class="settings"><input type="text" value=""><div class="slider"></div></div>').appendTo(element);
+    var content = $('<div class="window"><div class="view"><div class="frame"></div><img class="display" src="'+options.image+'"></div></div><div class="settings"><input type="text" value=""><div class="slider"></div></div>').appendTo(element);
     content.find("input").attr("value", self.viewport.zoom * 100 + "%");
-    content.find("#display").load(function() { self.loaded = true; self.updateDisplay(); }).bind('dragstart', function(event) { event.preventDefault(); });;
+    content.find(".display").load(function() { self.loaded = true; self.updateDisplay(); }).bind('dragstart', function(event) { event.preventDefault(); });;
 
-    content.find("#frame").draggable({
+    content.find(".frame").draggable({
       containment: "parent",
       drag: function(event, ui) {
          self.viewport.x = ui.position.left;
@@ -65,8 +65,8 @@ $.widget("ui.zoomify", {
     });
     
     content.find(".slider").slider({
-      min: 25,
-      max: 100,
+      min: 100,
+      max: 400,
       value: self.viewport.zoom * 100,
       slide: function(event, ui) {
         $(this).parent().find("input").attr("value", ui.value + "%");
