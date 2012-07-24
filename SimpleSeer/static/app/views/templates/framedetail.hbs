@@ -43,8 +43,8 @@
                           <tbody id="metadata">
                           {{#key_value metadata}}
                                   <tr>
-                                          <td><input class="metaDataEdit" type="text" {{#if ../disabled}}disabled="disabled"{{/if}} value="{{key}}"></td>
-                                          <td><input class="metaDataEdit" type="text" {{#if ../disabled}}disabled="disabled"{{/if}} value="{{value}}"></td>
+                                          <td><input class="metaDataEdit" type="text" disabled="disabled" value="{{key}}"></td>
+                                          <td><input class="metaDataEdit" type="text" disabled="disabled" value="{{value}}"></td>
                                   </tr>
                           {{/key_value}}
                           </tbody>
@@ -52,7 +52,7 @@
                                   <tr>
                                           <td colspan=2>
                                                   <label for="notes">Notes:</label>
-                                                  <textarea name="notes" id="notesEdit" class="notesEdit" {{#if disabled}}disabled="disabled"{{/if}}>{{notes}}</textarea>
+                                                  <textarea name="notes" id="notesEdit" class="notesEdit" disabled="disabled">{{notes}}</textarea>
                                           </td>
                                   </tr>
                           </tbody>
