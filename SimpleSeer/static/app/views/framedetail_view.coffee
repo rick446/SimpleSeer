@@ -72,6 +72,10 @@ module.exports = class FrameDetailView extends View
   postRender: =>
     #application.viewPort = $('#display')
     @addMetaBox()
+    framewidth = @model.get("width")
+    realwidth = $('#display-img').width()
+    scale = realwidth / framewidth
+
     $("#zoomer").zoomify({
       image: @model.get('imgfile'),
       zoom: 1,
@@ -86,10 +90,6 @@ module.exports = class FrameDetailView extends View
     @pjs = new Processing("displaycanvas")
 
     @pjs.background(0,0)
-    framewidth = @model.get("width")
-    realwidth = $('#display-img').width()
-    scale = realwidth / framewidth
-
     
     @pjs.size $('#display-img').width(), @model.get("height") * scale
     @pjs.scale scale
