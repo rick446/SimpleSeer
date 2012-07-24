@@ -15,8 +15,8 @@ Measurements = require 'app/collections/Measurements'
 describe 'collections/Frames', ->
   o = new Frames()
   describe '#url', ->
-    it 'should be /lastframes', ->
-      o.url.should.equal '/lastframes'
+    it 'should be /frames', ->
+      o.url.should.equal '/frames'
   describe '#model', ->
     it 'should be Frame', ->
       o.model.name.should.equal 'Frame'

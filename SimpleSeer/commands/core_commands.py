@@ -67,6 +67,14 @@ def WebCommand(self):
     'Run the web server'
     from SimpleSeer.Web import WebServer, make_app
     from SimpleSeer import models as M
+    from pymongo import Connection, DESCENDING, ASCENDING
+
+    # Ensure indexes created for filterable fields
+    db = Connection().default
+    for f in self.session.ui_filters:
+        db.frame.ensure_index([(f['filter_name'], ASCENDING), (f['filter_name'], DESCENDING)])
+    
+    
     web = WebServer(make_app())
     web.run_gevent_server()
 
