@@ -25,7 +25,7 @@ module.exports = class FilterCollection extends Collection
       @view = params.view
     #todo: map filter sets to view type
     for o in application.settings.ui_filters_framemetadata
-      @filters.push @view.addSubview o.format, application.getFilter(o.format), '#filter_form', {params:o,collection:@}
+      @filters.push @view.addSubview o.field_name, application.getFilter(o.format), '#filter_form', {params:o,collection:@}
     @
 
   #comparator: (chapter) =>

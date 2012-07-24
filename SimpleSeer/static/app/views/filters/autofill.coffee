@@ -3,11 +3,12 @@ template = require './templates/autofill'
 application = require 'application'
 
 module.exports = class AutofillFilterView extends _filter
-  id: 'autofill-filter-view'
   className:'filter_widget'
   template: template
 
   initialize: () =>
+    #console.dir @options.params
+    @id = 'autofill-filter-view'+(@options.params.field_name+'-'+@options.params.format).replace(/[^a-z0-9_\-]/gi,'_')
     super()
     @
 
@@ -18,7 +19,6 @@ module.exports = class AutofillFilterView extends _filter
 
   afterRender: () =>
     #$( "#combobox" ).combobox();
-    
     @$el.find('#'+@options.params.name+'_af').combobox
       selected: (event, ui) =>
         if ui.item
