@@ -72,6 +72,14 @@ module.exports = class FrameDetailView extends View
   postRender: =>
     #application.viewPort = $('#display')
     @addMetaBox()
+    $("#zoomer").zoomify({
+      image: @model.get('imgfile'),
+      zoom: 1,
+      update: (e, ui) =>
+        @zoom(e, ui)
+    })
+
+    $("#zoomer").data("orig-scale", scale);
     if not @model.get('features').length
       return
     @$(".tablesorter").tablesorter()
@@ -82,14 +90,6 @@ module.exports = class FrameDetailView extends View
     realwidth = $('#display-img').width()
     scale = realwidth / framewidth
 
-    $("#zoomer").zoomify({
-      image: @model.get('imgfile'),
-      zoom: 1,
-      update: (e, ui) =>
-        @zoom(e, ui)
-    })
-
-    $("#zoomer").data("orig-scale", scale);
     
     @pjs.size $('#display-img').width(), @model.get("height") * scale
     @pjs.scale scale
