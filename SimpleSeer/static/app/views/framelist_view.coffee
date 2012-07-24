@@ -215,7 +215,7 @@ module.exports = class FramelistView extends View
           f = {}
         dt = new moment(o.attributes.capturetime*1000)
         meta =  o.attributes.metadata
-        row = "<tr><td>"+dt.format("M/D/YYYY h:mm a (UTC)")+"</td><td>"+(meta['Operator']||_empty)+"</td><td>"+(meta['Machine Number']||_empty)+"</td><td>"+(meta['Part Number']||_empty)+"</td><td>"+(meta['Lot Number']||_empty)+"</td></tr>"
+        row = "<tr><td>"+dt.format("MM/DD/YYYY h:mm a (UTC)")+"</td><td>"+(meta['Operator']||_empty)+"</td><td>"+(meta['Machine Number']||_empty)+"</td><td>"+(meta['Part Number']||_empty)+"</td><td>"+(meta['Lot Number']||_empty)+"</td></tr>"
         row = $(row)
         resort = true; 
         @$el.find("#tabDataTable").find('tbody')
