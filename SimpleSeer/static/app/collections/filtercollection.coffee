@@ -53,11 +53,11 @@ module.exports = class FilterCollection extends Collection
       limit:@limit
       query:_json
       sortkey: @sortParams.sortkey || 'capturetime'
-      sortorder: @sortParams.sortorder || 1
+      sortorder: @sortParams.sortorder || -1
       sortinfo:
         type: @sortParams.sorttype || ''
         name: @sortParams.sortkey || 'capturetime'
-        order: @sortParams.sortorder || 1
+        order: @sortParams.sortorder || -1
     url = @url+"/"+JSON.stringify _json
     #console.dir _json
     $.getJSON(url, (data) =>

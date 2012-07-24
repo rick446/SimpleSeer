@@ -214,7 +214,7 @@ module.exports = class FramelistView extends View
         else
           f = {}
         dt = new moment(o.attributes.capturetime*1000)
-        row = "<tr><td>"+dt.format("M-D-YY")+"</td><td>"+(f.head_width_mm||_empty)+"</td><td>"+(f.lbs_width_mm||_empty)+"</td><td>"+(f.shaft_width_mm||_empty)+"</td><td>"+(f.fillet_left_r||_empty)+"</td><td>"+(f.fillet_right_r||_empty)+"</td></tr>"
+        row = "<tr><td>"+dt.format("M/D/YYYY h:mm a (UTC)")+"</td><td>"+(f.head_width_mm||_empty)+"</td><td>"+(f.shaft_width_mm||_empty)+"</td><td>"+(f.fillet_left_r||_empty)+"</td><td>"+(f.fillet_right_r||_empty)+"</td></tr>"
         row = $(row)
         resort = true; 
         @$el.find("#tabDataTable").find('tbody')
