@@ -37,6 +37,7 @@ class Command(object):
 
     def _configure_logging(self):
         import logging
+        import logging.config
         if self.options.logging:
             logging.config.fileConfig(self.options.logging)
         else:
