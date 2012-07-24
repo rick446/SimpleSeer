@@ -31,14 +31,10 @@
         <table class="editableMeta">
             {{#key_value metadata}}
           <tr>
-            <td class="item-detail clickEdit">{{key}}</td>
-            <td class="item-detail-value clickEdit">{{value}}</td>
+            <td class="item-detail">{{key}}</td>
+            <td class="item-detail-value clickEdit"><input type="text" value="{{value}}"></td>
           </tr>
             {{/key_value}}
-          <tr>
-            <td class="item-detail clickEdit"><input type="text"></td>
-            <td class="item-detail-value clickEdit"><input type="text"></td>
-          </tr>            
         </table>
       </div>
 
