@@ -38,6 +38,9 @@ $.widget("ui.zoomify", {
       frame.css("top", value);
     }
 
+    var slider = content.find(".slider");
+    slider.css("width", slider.parent().width() - slider.parent().find("input").width() - 30);
+
     self._trigger("update", null, {
       x: self.viewport.x / image.width,
       y: self.viewport.y / image.height,
@@ -92,7 +95,7 @@ $.widget("ui.zoomify", {
         self.updateDisplay();
       }
     });
-
+    
     $(window).resize(function() { self.updateDisplay(); });
   },
 
