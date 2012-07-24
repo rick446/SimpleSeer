@@ -35,8 +35,8 @@
               <span>Order by:</span>
               <select id="sortCombo">
               {{#each sortComboVals}}
-                <option value="{{this.type}},{{this.name}},1" {{#if_eq "capturetime" compare=this.name}}selected="selected"{{/if_eq}}>{{this.label}} ascending</option>
-                <option value="{{this.type}},{{this.name}},-1">{{this.label}} descending</option>
+                <option value="{{this.type}},{{this.name}},1">{{this.label}} ascending</option>
+                <option value="{{this.type}},{{this.name}},-1" {{#if_eq "capturetime" compare=this.name}}selected="selected"{{/if_eq}}>{{this.label}} descending</option>
               {{/each}}
               </select>
             </div>
@@ -75,12 +75,11 @@
                   <table id="tabDataTable" class="tablesorter">
                     <thead> 
                       <tr> 
-                        <th>capturetime</th> 
-                        <th>head_width_mm</th> 
-                        <th>lbs_width_mm</th> 
-                        <th>shaft_width_mm</th> 
-                        <th>fillet_left_r</th> 
-                        <th>fillet_right_r</th> 
+                        <th>Capture Time</th> 
+                        <th>Operator</th> 
+                        <th>Machine Number</th> 
+                        <th>Part Number</th> 
+                        <th>Lot Number</th> 
                       </tr> 
                     </thead>
                     <tbody>

@@ -26,6 +26,9 @@ module.exports = class SliderFilterView extends _filter
       @setValue(sl.slider("values"),true)
 
   afterRender: () =>
+    if @options.params.constraints
+      @options.params.constraints.min = Math.floor @options.params.constraints.min
+      @options.params.constraints.max = Math.ceil @options.params.constraints.max
     @$el.find("#"+@options.params.name+"_sl").slider
       range: true
       min: @options.params.constraints.min
@@ -42,6 +45,9 @@ module.exports = class SliderFilterView extends _filter
     super()
       
   getRenderData: () =>
+    if @options.params.constraints
+      @options.params.constraints.min = Math.floor @options.params.constraints.min
+      @options.params.constraints.max = Math.ceil @options.params.constraints.max
     return @options.params
     
   toJson: () =>
