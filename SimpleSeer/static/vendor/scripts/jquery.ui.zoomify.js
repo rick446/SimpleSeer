@@ -1,5 +1,5 @@
 $.widget("ui.zoomify", {
-  options: {image: "", zoom: 1, x: 0, y: 0},
+  options: {image: "", zoom: 1, x: 0, y: 0, min: 100, max: 400},
   image: {},
   loaded: false,
   viewport: {x: 0, y:0, zoom: 1},
@@ -16,10 +16,12 @@ $.widget("ui.zoomify", {
     var ratio = image.width / image.height;
     content.find(".view").height(image.height + 2);
 
-    var frame = content.find(".frame");    
-    frame.css({"top": self.viewport.y, "left": self.viewport.x});
-    frame.width(image.width / self.viewport.zoom);
-    frame.height(image.height / self.viewport.zoom);
+    var scale = (self.viewport.zoom * 100) / self.options.min;
+
+    var frame = content.find(".frame");
+    frame.css({"top": 0, "left": 0});
+    frame.width(image.width / scale);
+    frame.height(image.height / scale);
 
     var frameWidth = frame.css("border-bottom-width").replace(/\D/g, "");
     frameWidth *= 2;    
@@ -62,12 +64,12 @@ $.widget("ui.zoomify", {
          self.viewport.y = ui.position.top;
          self.updateDisplay();
       }
-    });
+    });   
     
     content.find(".slider").slider({
-      min: 100,
-      max: 400,
-      value: self.viewport.zoom * 100,
+      min: options.min,
+      max: options.max,
+      value: (options.zoom * 100),
       slide: function(event, ui) {
         $(this).parent().find("input").attr("value", ui.value + "%");
         self.viewport.zoom = content.find("input").attr("value").replace(/\%/g, "") / 100;
@@ -101,20 +103,37 @@ $.widget("ui.zoomify", {
 
     switch(option) {
       case "image":
+        self.options.image = value;
         this.element.find("#display").attr("src", value);
         break;
       case "zoom":
+        self.options.zoom = value;
         self.viewport.zoom = value;
+        self.options.y = self.viewport.y = self.options.x = self.viewport.x = 0;
         self.element.find(".slider").slider("option", "value", value * 100);
         self.element.find("input").attr("value", (value * 100) + "%");
         self.updateDisplay();
         break;
       case "x":
+        self.options.x = value;
         self.viewport.x = value * self.image.width
         self.updateDisplay();
         break;
       case "y":
+        self.options.y = value;
         self.viewport.y = value * self.image.height
+        self.updateDisplay();
+        break;
+      case "min":
+        self.options.min = value;
+        self.options.y = self.viewport.y = self.options.x = self.viewport.x = 0;
+        self.element.find(".slider").slider("option", "min", value);
+        self.updateDisplay();
+        break;
+      case "max":
+        self.options.max = value;
+        self.options.y = self.viewport.y = self.options.x = self.viewport.x = 0;
+        self.element.find(".slider").slider("option", "max", value);
         self.updateDisplay();
         break;        
     }

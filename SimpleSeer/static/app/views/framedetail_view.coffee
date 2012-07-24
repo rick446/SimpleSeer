@@ -13,9 +13,6 @@ module.exports = class FrameDetailView extends View
     scale = $("#zoomer").data("orig-scale")
     os = $('#display').offset()
     viewPort = $('#display-zoom')
-
-    # The image is already scaled, factor that in.
-    ui.zoom = scale * ui.zoom
     
     if ui.zoom is 1
       @zoomed = false
@@ -37,7 +34,6 @@ module.exports = class FrameDetailView extends View
       });
       $('#display').css("height", (@.model.attributes.height * scale))
       
-
   getRenderData: =>
     data = {}
     if @model.get("features").length
@@ -74,21 +70,42 @@ module.exports = class FrameDetailView extends View
 
   updateNotes: (e) =>
     @model.save {notes:$("#notesEdit").attr('value')}
+
+  calculateScale: =>
+    framewidth = @model.get("width")
+    realwidth = $('#display').width()
+    scale = realwidth / framewidth
+
+    scale
+
+  updateScale: =>
+    scale = @calculateScale()
+    if scale is $("#zoomer").data("orig-scale")
+      return
+      
+    $("#zoomer").data("orig-scale", scale)
+    $("#zoomer").zoomify("option", {
+      min: (scale.toFixed(2)) * 100,
+      max: 400,
+      zoom: scale.toFixed(2),
+    })
   
   postRender: =>
     @addMetaBox()
-    
-    framewidth = @model.get("width")
-    realwidth = $('#display-img').width()
-    scale = realwidth / framewidth
-
+    scale = @calculateScale()
+  
     $("#zoomer").zoomify({
       image: @model.get('imgfile'),
-      zoom: 1,
+      min: (scale.toFixed(2)) * 100,
+      max: 400,
+      zoom: scale.toFixed(2),
       update: (e, ui) =>
         @zoom(e, ui)
-    }).data("orig-scale", scale);
-    
+    }).data("orig-scale", scale)
+
+    $(window).resize =>
+      @updateScale()
+        
     if not @model.get('features').length
       return
       
