@@ -63,7 +63,7 @@ module.exports = class FramelistFrameView extends View
     @frame = frame.model
 
   getRenderData: =>
-    capturetime: new Date parseInt @frame.get('capturetime')+'000'
+    capturetime: new moment(parseInt @frame.get('capturetime')+'000').utc().format("M/D/YYYY h:mm a (UTC)")
     camera: @frame.get('camera')
     imgfile: @frame.get('imgfile')
     thumbnail_file: @frame.get('thumbnail_file')
