@@ -6,18 +6,18 @@ module.exports = class _filter extends SubView
   value:null
   className:'filter_widget'
   initialize: () =>
+    @options.params.name = (@options.params.field_name+'-'+@options.params.format).replace(/[^a-z0-9_\-]/gi,'_')
     super()
     @collection = @options.collection || null
     _ret = $.ajax '/getFilter/'+@options.params.type+'/'+@options.params.field_name+'/'+@options.params.format, {dataType:'json', async:false}
     @options.params.constraints = $.parseJSON _ret.responseText
-    @options.params.name = (@options.params.field_name+'-'+@options.params.format).replace(/[^a-z0-9_\-]/gi,'_')
     @options.subselector = ''
     @
 
   render: () =>
-    if @rendered
-      @.delegateEvents(@.events)
-    @rendered = true
+    #if @rendered
+    #  @.delegateEvents(@.events)
+    #@rendered = true
     if @options.subselector == ''
       @options.subselector = @options.selector
     else
