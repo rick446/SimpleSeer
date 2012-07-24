@@ -90,6 +90,8 @@ $.widget("ui.zoomify", {
         self.updateDisplay();
       }
     });
+
+    $(window).resize(function() { self.updateDisplay(); });
   },
 
   _setOption: function(option, value) {
