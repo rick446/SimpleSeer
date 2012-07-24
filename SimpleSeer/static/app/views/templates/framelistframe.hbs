@@ -13,17 +13,17 @@
     </div>
     <div class="ivi-right">
       <table>
-          {{#featurelist features}}
-        <tr>
-          <td class="item-detail">{{key}}</td>
-          <td class="item-detail-value">{{value}}</td>
-        </tr>
-          {{/featurelist}}          
-
         <tr>
           <td class="item-detail">Capture Time:</td>
           <td class="item-detail-value">{{capturetime}}</td>
         </tr>
+        
+          {{#featurelist features}}
+        <tr>
+          <td class="item-detail">{{key}}:</td>
+          <td class="item-detail-value">{{value}}</td>
+        </tr>
+          {{/featurelist}}          
 
         <tr>
           <td class="item-detail">Width:</td>
