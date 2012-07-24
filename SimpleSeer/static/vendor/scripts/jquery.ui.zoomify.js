@@ -80,7 +80,7 @@ $.widget("ui.zoomify", {
     content.find("input").keypress(function(e) {
       if(e.which == 13){
         var input = $(this);
-        var value =  input.attr("value");
+        var value = String(Math.max(input.attr("value"), self.options.min));
         
         // Set the slider's value
         $("#control .slider").slider("option", "value", value.replace(/\%/g, ""));
