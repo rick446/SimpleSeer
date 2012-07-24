@@ -45,6 +45,7 @@ module.exports = class FrameDetailView extends View
     data
     
   addMetaBox: =>
+    return
     disabled = application.settings.mongo.is_slave || false
     html='<tr><td><input class="metaDataEdit" type="text"'
     if disabled
