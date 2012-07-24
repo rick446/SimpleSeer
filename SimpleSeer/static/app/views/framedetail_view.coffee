@@ -13,21 +13,28 @@ module.exports = class FrameDetailView extends View
     scale = $("#zoomer").data("orig-scale")
     os = $('#display').offset()
     viewPort = $('#display-zoom')
+
+    # The image is already scaled, factor that in.
     ui.zoom = scale * ui.zoom
+    
     if ui.zoom is 1
       @zoomed = false
-      viewPort.css('position', 'static')
-      viewPort.css('left', 0)
-      viewPort.css('top', 0)
-      viewPort.css('width', '100%')
-      viewPort.css('height', '100%')
+      viewPort.css({
+        'position': 'static',
+        'left': 0,
+        'top': 0,
+        'width': '100%',
+        'height': '100%'
+      });
     else
       @zoomed = true
-      viewPort.css('position', 'relative')
-      viewPort.css('top', '-'+(@.model.attributes.height * ui.zoom * ui.y)+'px')
-      viewPort.css('left', '-'+(@.model.attributes.width * ui.zoom * ui.x)+'px')
-      viewPort.css('width', (@.model.attributes.width * ui.zoom)+'px')
-      viewPort.css('height', (@.model.attributes.height * ui.zoom)+'px')
+      viewPort.css({
+        'position': 'relative',
+        'top': '-'+(@.model.attributes.height * ui.zoom * ui.y)+'px',
+        'left': '-'+(@.model.attributes.width * ui.zoom * ui.x)+'px',
+        'width': (@.model.attributes.width * ui.zoom)+'px',
+        'height': (@.model.attributes.height * ui.zoom)+'px',
+      });
       $('#display').css("height", (@.model.attributes.height * scale))
       
 
@@ -68,10 +75,9 @@ module.exports = class FrameDetailView extends View
   updateNotes: (e) =>
     @model.save {notes:$("#notesEdit").attr('value')}
   
-      
   postRender: =>
-    #application.viewPort = $('#display')
     @addMetaBox()
+    
     framewidth = @model.get("width")
     realwidth = $('#display-img').width()
     scale = realwidth / framewidth
@@ -81,16 +87,14 @@ module.exports = class FrameDetailView extends View
       zoom: 1,
       update: (e, ui) =>
         @zoom(e, ui)
-    })
-
-    $("#zoomer").data("orig-scale", scale);
+    }).data("orig-scale", scale);
+    
     if not @model.get('features').length
       return
+      
     @$(".tablesorter").tablesorter()
     @pjs = new Processing("displaycanvas")
-
     @pjs.background(0,0)
-    
     @pjs.size $('#display-img').width(), @model.get("height") * scale
     @pjs.scale scale
     @model.get('features').each (f) => f.render(@pjs)
