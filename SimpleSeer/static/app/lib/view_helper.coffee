@@ -121,8 +121,8 @@ Handlebars.registerHelper 'featurelist', (features) ->
   i = 0
   while i < features.models[0].tableHeader().length
     ret += "<tr>"
-    ret += "<td>" + keys[i] + "</td>"
-    ret += "<td>" + values[i] + "</td>"
+    ret += "<td class='item-detail'>" + keys[i] + ":</td>"
+    ret += "<td class='item-detail-value'>" + values[i] + "</td>"
     ret += "</tr>"
     i++
 
