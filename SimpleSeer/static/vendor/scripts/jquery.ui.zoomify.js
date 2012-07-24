@@ -38,6 +38,9 @@ $.widget("ui.zoomify", {
       frame.css("top", value);
     }
 
+    var slider = content.find(".slider");
+    slider.css("width", slider.parent().width() - slider.parent().find("input").width() - 30);
+
     self._trigger("update", null, {
       x: self.viewport.x / image.width,
       y: self.viewport.y / image.height,
@@ -80,7 +83,7 @@ $.widget("ui.zoomify", {
     content.find("input").keypress(function(e) {
       if(e.which == 13){
         var input = $(this);
-        var value =  input.attr("value");
+        var value = String(Math.max(input.attr("value"), self.options.min));
         
         // Set the slider's value
         $("#control .slider").slider("option", "value", value.replace(/\%/g, ""));
@@ -92,7 +95,7 @@ $.widget("ui.zoomify", {
         self.updateDisplay();
       }
     });
-
+    
     $(window).resize(function() { self.updateDisplay(); });
   },
 
