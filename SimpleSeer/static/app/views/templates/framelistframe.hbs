@@ -17,9 +17,7 @@
           <td class="item-detail">Capture Time:</td>
           <td class="item-detail-value">{{capturetime}}</td>
         </tr>
-        
-        {{#featurelist features}}{{/featurelist}}          
-
+        <!--
         <tr>
           <td class="item-detail">Width:</td>
           <td class="item-detail-value">{{width}} <span>pixels</span></td>
@@ -28,17 +26,24 @@
         <tr>
           <td class="item-detail">Height:</td>
           <td class="item-detail-value">{{height}} <span>pixels</span></td>
-        </tr>                     
+        </tr>
+        -->                     
       </table>
 
       <div class="tableSpacer">
+        <table>
+          {{#featurelist features}}{{/featurelist}}          
+        </table>
+      </div>
+
+      <div class="tableSpacer">
         <table class="editableMeta">
-            {{#key_value metadata}}
+            {{#each metadata}}
           <tr>
-            <td class="item-detail">{{key}}:</td>
-            <td class="item-detail-value clickEdit"><input type="text" value="{{value}}"></td>
+            <td class="item-detail"><span>{{this.key}}</span>:</td>
+            <td class="item-detail-value clickEdit"><input type="text" value="{{this.val}}"></td>
           </tr>
-            {{/key_value}}
+            {{/each}}
         </table>
       </div>
       <div class="item-detail tableSpacer">Notes:</div>

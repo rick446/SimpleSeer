@@ -1,5 +1,6 @@
 View = require './view'
 template = require './templates/framelistframe'
+
 application = require('application')
 
 module.exports = class FramelistFrameView extends View
@@ -42,7 +43,8 @@ module.exports = class FramelistFrameView extends View
     rows.each (id, obj) ->
       tds = $(obj).find('td')
       input = $(tds[1]).find('input')
-      metadata[$(tds[0]).html()] = input.attr('value')
+      span = $(tds[0]).find('span')
+      metadata[$(span).html()] = input.attr('value')
     
     #@addMetaBox(self)
     @model.save {metadata: metadata}
@@ -68,18 +70,45 @@ module.exports = class FramelistFrameView extends View
     @updateMetaData(target)
     
   getRenderData: =>
-    capturetime: new moment(parseInt @frame.get('capturetime')+'000').utc().format("M/D/YYYY h:mm a (UTC)")
-    camera: @frame.get('camera')
-    imgfile: @frame.get('imgfile')
-    thumbnail_file: @frame.get('thumbnail_file')
-    id: @frame.get('id')
-    features: @frame.get('features')
-    metadata: @frame.get('metadata')
-    width: @frame.get('width')
-    height: @frame.get('height')
-    notes: @frame.get('notes')
+    md = @frame.get('metadata')
+    metadata = []
+    for i in application.settings.ui_metadata_keys
+      metadata.push {key:i,val:md[i]}
+    retVal =
+      capturetime: new moment(parseInt @frame.get('capturetime')+'000').utc().format("M/D/YYYY h:mm a (UTC)")
+      camera: @frame.get('camera')
+      imgfile: @frame.get('imgfile')
+      thumbnail_file: @frame.get('thumbnail_file')
+      id: @frame.get('id')
+      features: @frame.get('features')
+      metadata: metadata
+      width: @frame.get('width')
+      height: @frame.get('height')
+      notes: @frame.get('notes')
+    retVal
 
   afterRender: =>
     $(".notes-field").autogrow();
+
+  renderTableRow: =>
+    _empty = "---"
+    rd = @getRenderData()
+    row = "<tr>"
+    row += "<td>"+rd.capturetime+"</td>"
+    for i in rd.metadata
+      row += "<td>"+(i.val||_empty)+"</td>"
+    if rd.features.models
+      f = rd.features.models[0].getPluginMethod(rd.features.models[0].get("featuretype"), 'metadata')()
+    else
+      f = {}
+    pairs = {}
+    for i,o of f
+      pairs[o.title] = o.value
+    for i in application.settings.ui_feature_keys
+      if pairs[i]
+        row += "<td>"+pairs[i]+"</td>"
+      else
+        row += "<td>"+_empty+"</td>"        
+    row = $(row)
 
   
