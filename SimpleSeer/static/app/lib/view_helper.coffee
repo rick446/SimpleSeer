@@ -113,13 +113,12 @@ Handlebars.registerHelper 'featuredetail', (features) ->
 Handlebars.registerHelper 'featurelist', (features) ->
   unless features.length > 0
     return new Handlebars.SafeString("")
-    
-  keys = features.models[0].tableHeader()
-  values = features.models[0].tableData()
-
   ret = ""
-  i = 0
-  if features.models[0] && features.models[0].tableHeader
+  if features.models[0]
+    keys = features.models[0].tableHeader()
+    values = features.models[0].tableData()
+  
+    i = 0
     while i < features.models[0].tableHeader().length
       ret += "<tr>"
       ret += "<td class='item-detail'>" + keys[i] + ":</td>"
