@@ -106,8 +106,17 @@ module.exports = class FramelistFrameView extends View
     for i in rd.metadata
       row += "<td>"+(i.val||_empty)+"</td>"
     if rd.features.models
-      for i,l of rd.features.models[0].getPluginMethod(rd.features.models[0].get("featuretype"), 'get')()
-        row += "<td>"+l.value+"</td>"
+      f = rd.features.models[0].getPluginMethod(rd.features.models[0].get("featuretype"), 'metadata')()
+    else
+      f = {}
+    pairs = {}
+    for i,o of f
+      pairs[o.title] = o.value
+    for i in application.settings.ui_feature_keys
+      if pairs[i]
+        row += "<td>"+pairs[i]+"</td>"
+      else
+        row += "<td>"+_empty+"</td>"        
     row = $(row)
 
   

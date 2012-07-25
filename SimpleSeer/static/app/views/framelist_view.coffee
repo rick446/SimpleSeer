@@ -87,6 +87,7 @@ module.exports = class FramelistView extends View
     count_new: @newFrames.length
     sortComboVals: @updateFilterCombo(false)
     metakeys: application.settings.ui_metadata_keys
+    featurekeys: application.settings.ui_feature_keys
 
   render: =>
     @filtercollection.limit = @filtercollection._defaults.limit
