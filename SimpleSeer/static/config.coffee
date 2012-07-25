@@ -42,7 +42,8 @@ exports.config =
           'vendor/scripts/jquery.tablesorter.js',
           'vendor/scripts/jquery.tablesorter.pager.js',
           'vendor/scripts/processing.js',
-          'vendor/scripts/jquery.ui.zoomify.js']
+          'vendor/scripts/jquery.ui.zoomify.js',
+          'vendor/scripts/jquery.autogrow-textarea.js']
 
     stylesheets:
       defaultExtension: 'less'

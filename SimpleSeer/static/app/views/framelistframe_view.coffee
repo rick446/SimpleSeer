@@ -78,4 +78,8 @@ module.exports = class FramelistFrameView extends View
     width: @frame.get('width')
     height: @frame.get('height')
     notes: @frame.get('notes')
+
+  afterRender: =>
+    $(".notes-field").autogrow();
+
   
