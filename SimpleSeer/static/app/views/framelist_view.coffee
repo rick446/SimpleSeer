@@ -81,12 +81,12 @@ module.exports = class FramelistView extends View
   toggleMenu: ()=>
     if application.settings.showMenu
       application.settings.showMenu = false
-      $('#second-tier-menu').hide()
-      $("#stage").css('margin-left','0')
+      $('#second-tier-menu').hide("slide", { direction: "left" }, 100)
+      $("#stage").animate({'margin-left':'0px'}, 100)
     else
       application.settings.showMenu = true
-      $('#second-tier-menu').show()
-      $("#stage").css('margin-left','252px')
+      $('#second-tier-menu').show("slide", { direction: "left" }, 100)
+      $("#stage").animate({'margin-left':'252px'}, 100)
   
   getRenderData: =>
     count_viewing: @filtercollection.length
