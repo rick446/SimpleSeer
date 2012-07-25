@@ -282,10 +282,13 @@ class Filter():
 		for i, frame in enumerate(frames):
 			print type(frame['capturetime'])
 			for j, name in enumerate(keys):
-				if type(frame[name]) == datetime:
-					s.write(i+1, j, frame[name], dateStyle)
-				else:
-					s.write(i+1, j, str(frame[name]))
+                                try:
+                                        if type(frame[name]) == datetime:
+                                                s.write(i+1, j, frame[name], dateStyle)
+                                        else:
+                                                s.write(i+1, j, str(frame[name]))
+                                except KeyError:
+                                        pass
 		
 		# Save the the string IO and grab the string data
 		wb.save(f)
@@ -300,17 +303,20 @@ class Filter():
 		# First pass is to find all possible feature names
 		featkeys = {}
 		
-		for frame in frames:	
-			for feature in frame['features']:
-				# Don't check this feature type if already done
-				if feature['featuretype'] not in featkeys:
-					# Get to the plugin via the inspection
-					# TODO: see if there is an easier way
-					insp = Inspection.objects(id=feature['inspection'])[0]
-					insp.register_plugins('seer.plugins.inspection')
-					plugin = insp.get_plugin(insp.method)
-					if 'printFields' in dir(plugin):
-						featkeys[feature['featuretype']] = plugin.printFields()
+		for frame in frames:
+                        try:
+                                for feature in frame['features']:
+                                        # Don't check this feature type if already done
+                                        if feature['featuretype'] not in featkeys:
+                                                # Get to the plugin via the inspection
+                                                # TODO: see if there is an easier way
+                                                insp = Inspection.objects(id=feature['inspection'])[0]
+                                                insp.register_plugins('seer.plugins.inspection')
+                                                plugin = insp.get_plugin(insp.method)
+                                                if 'printFields' in dir(plugin):
+                                                        featkeys[feature['featuretype']] = plugin.printFields()
+                        except KeyError:
+                                pass
 					
 				
 		flatFrames = []
@@ -323,12 +329,15 @@ class Filter():
 			
 			for featkey in featkeys.keys():
 				thisFeat = {}
-				for feat in frame['features']:
-					if feat['featuretype'] == featkey:
-						thisFeat = feat
-				
-				for k in featkeys[featkey]:
-					tmpFrame[featkey + '.' + k] = thisFeat.get(k, 'N/A')
+                                try:
+                                        for feat in frame['features']:
+                                                if feat['featuretype'] == featkey:
+                                                        thisFeat = feat
+                                        
+                                        for k in featkeys[featkey]:
+                                                tmpFrame[featkey + '.' + k] = thisFeat.get(k, 'N/A')
+                                except KeyError:
+                                        pass
 			
 			flatFrames.append(tmpFrame)
 			
