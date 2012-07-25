@@ -39,7 +39,13 @@
 
     <div id="main" class="container">
     </div> <!-- /container -->
-    <div id="lost_connection" title="Error">Could not connect to the server. Please try again later.</div>
+    <div id="lost_connection" title="Error"></div>
+    <div id="app_load" class="notification_box">
+      <h2>Application Loading...</h2>
+      <div class="text">
+        Please wait patiently as the application loads.
+      </div>
+    </div>
     <div id="browser_fail" style="display: none;">
       <h2>Please Stand By...</h2>
       <div class="text">
@@ -63,7 +69,7 @@
 
 <script>
   setTimeout(function() {
-    if( typeof SimpleSeer === 'undefined' ) { $("#browser_fail").show(); }
-    if( $("#browser_fail").is(':visible') == true ) { $("#lost_connection").hide(); }
+    if( typeof SimpleSeer === 'undefined' ) { $("#browser_fail").show(); } else { $("#app_load").hide(); }
+    if( $("#browser_fail").is(':visible') == true ) { $("#lost_connection, #app_load").hide(); }
   }, 2000);
 </script>
