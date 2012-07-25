@@ -34,8 +34,17 @@ module.exports = class FramelistView extends View
     'click #data-tab' : 'tabData'
     'click #image-tab' : 'tabImage'
   
+  preFetch:()=>
+    $('#loadThrob').modal "show"
+  
+  postFetch:()=>
+    $('#loadThrob').modal "hide"
+    url = @filtercollection.getUrl(true)
+    $('#csvlink').attr('href','/downloadFrames/csv'+url)
+    $('#excellink').attr('href','/downloadFrames/excel'+url)
+  
+  
   tabData: ()=>
-    $('#loadThrob').modal("show");
     $('#data-view').show()
     $('#data-tab').removeClass('unselected')
     $('#image-view').hide()
@@ -46,12 +55,13 @@ module.exports = class FramelistView extends View
     @filtercollection.limit = 65536
     @filtercollection.skip = 0
     @filtercollection.fetch
+      before: @preFetch
       success: () =>
-        $('#loadThrob').modal("hide");
         $('#data-views-controls').show()
         $('#views-contain').addClass('wide scroll')
         $('#views').addClass('wide')
         $('#content').addClass('wide')
+        @postFetch()
 
   tabImage: () =>
     $('#loadThrob').modal("show");
@@ -64,11 +74,13 @@ module.exports = class FramelistView extends View
     @filtercollection.limit = @filtercollection._defaults.limit
     @filtercollection.skip = @filtercollection._defaults.skip
     @filtercollection.fetch
+      before: @preFetch
       success: () =>
         $('#loadThrob').modal("hide");
         $('#data-views-controls').hide()
         $('#views-controls').show()
         $('#views-contain').removeClass('wide')
+        @postFetch()
 
   
   toggleMenu: ()=>
@@ -88,6 +100,7 @@ module.exports = class FramelistView extends View
     sortComboVals: @updateFilterCombo(false)
     metakeys: application.settings.ui_metadata_keys
     featurekeys: application.settings.ui_feature_keys
+    filter_url:@filtercollection.getUrl()
 
   render: =>
     @filtercollection.limit = @filtercollection._defaults.limit
@@ -109,14 +122,14 @@ module.exports = class FramelistView extends View
     if !application.settings.showMenu?
       application.settings.showMenu = true
       @$el.find("#stage").css('margin-left','252px')
-    @filtercollection.fetch()
+    @filtercollection.fetch({before: @preFetch,success:@postFetch})
     @$el.find('#sortCombo').combobox
       selected: (event, ui) =>
         if ui.item
           v = ui.item.value
         v = v.split(',')
         @filtercollection.sortList(v[0],v[1],v[2])
-        #set sort order and key
+        @filtercollection.fetch({before: @preFetch,success:@postFetch})
       width:"50px"
     @$el.find("#tabDataTable").tablesorter()
 
@@ -132,7 +145,7 @@ module.exports = class FramelistView extends View
         @$el.find('#loading_message').fadeIn('fast')
         @loading=true
         @filtercollection.skip += @filtercollection._defaults.limit
-        @filtercollection.fetch()
+        @filtercollection.fetch({before: @preFetch,success:@postFetch})
 
   clearLoading: (callback=->)=>
     @loading = false
