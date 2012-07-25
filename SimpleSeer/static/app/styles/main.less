@@ -456,7 +456,7 @@ a.video{
 /*SECOND TIER*/
 #second-tier-menu{
   width:245px;
-  margin-left:10px;
+  margin-left:1px;
   margin-top: 1px;
   float:left;
   background: #f8f8f8;
@@ -742,9 +742,8 @@ a.video{
   width:100%;
 }
 .image-view-item{
-  border-top:#f0f0f0 solid 1px;
+  border-top: 1px solid #d8d8d8;
   padding:25px;
-  padding-top:30px;
   font-weight:bold;
   float:left;
   width:100%;
@@ -756,15 +755,9 @@ a.video{
   overflow: hidden;
 }
   .ivi-left{
-    width:150px;
+    padding-left:15px;
+    width:161px;
     float:left;
-  }
-  .ivi-left table{
-    float:left;
-  }
-  .ivi-left td{
-    padding:5px;
-    vertical-align:top;
   }
   .ivi-left-thumb-contain{
     float:right;
@@ -777,58 +770,38 @@ a.video{
       text-align: center;
     }
   }
-    .view{
-      height:25px;
-      width:50px;
-      background-image: url('../img/icon-view.png');
-      background-repeat:no-repeat;
-      margin:10px 0;
-      padding-left:25px;
-      cursor:pointer;
-    }
-      .view:hover, .download:hover{
-        color:#ffa902;
-      }
-
-    .download{
-      height:25px;
-      width:50px;
-      background-image: url('../img/icon-download.png');
-      background-position:left top;
-      background-repeat:no-repeat;
-      padding-left:25px;
-      margin:15px 0;
-      margin-top:20px;
-      cursor:pointer;
-    }
   .thumb{
-    background: rgb(246,246,246); /* Old browsers */
-    background: -moz-linear-gradient(top, rgba(246,246,246,1) 0%, rgba(223,223,223,1) 100%, rgba(255,255,255,1) 100%); /* FF3.6+ */
-    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(246,246,246,1)), color-stop(100%,rgba(223,223,223,1)), color-stop(100%,rgba(255,255,255,1))); /* Chrome,Safari4+ */
-    background: -webkit-linear-gradient(top, rgba(246,246,246,1) 0%,rgba(223,223,223,1) 100%,rgba(255,255,255,1) 100%); /* Chrome10+,Safari5.1+ */
-    background: -o-linear-gradient(top, rgba(246,246,246,1) 0%,rgba(223,223,223,1) 100%,rgba(255,255,255,1) 100%); /* Opera 11.10+ */
-    background: -ms-linear-gradient(top, rgba(246,246,246,1) 0%,rgba(223,223,223,1) 100%,rgba(255,255,255,1) 100%); /* IE10+ */
-    background: linear-gradient(to bottom, rgba(246,246,246,1) 0%,rgba(223,223,223,1) 100%,rgba(255,255,255,1) 100%); /* W3C */
-    filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f6f6f6', endColorstr='#ffffff',GradientType=0 ); /* IE6-9 */
-
+    background: #f8f8f8;
     border-radius: 2px;
     border:#ccc solid 1px;
-    padding:6px;
+    padding:7px;
   }
 .ivi-right{
   float:left;
-  padding-left:30px;
   font-size:13px;
+  padding: 20px;
+  background: #f8f8f8;
+  border: 1px solid #e4e4e4;
+  border-radius: 2px;
 }
 
 .ivi-right td.item-detail{
-  width:200px;
+  width:160px;
   height: 21px;
 }
 .ivi-right td.item-detail-value{
-  width:270px;
+  width:220px;
   span { color: #aaa; }
 }
+
+.ivi-left .btn {
+  padding: 4px 15px;
+}
+
+.ivi-left .btnGp {
+  margin-top: 14px;
+}
+
 input[type=checkbox] {}
 
 .tableSpacer {

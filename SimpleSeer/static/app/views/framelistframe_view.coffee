@@ -88,7 +88,15 @@ module.exports = class FramelistFrameView extends View
     retVal
 
   afterRender: =>
-    $(".notes-field").autogrow();
+    @$el.find(".thumb").click ->
+      $(this).next(".zoomer").show()
+      $(this).hide();
+      
+    @$el.find(".zoomer").zoomify({
+      image: @frame.get('imgfile')
+    }).hide();
+    
+    @$el.find(".notes-field").autogrow();
 
   renderTableRow: =>
     _empty = "---"

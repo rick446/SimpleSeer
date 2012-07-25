@@ -17,9 +17,9 @@ $.widget("ui.zoomify", {
     content.find(".view").height(image.height + 2);
 
     var scale = (self.viewport.zoom * 100) / self.options.min;
-
+     
     var frame = content.find(".frame");
-    frame.css({"top": 0, "left": 0});
+    frame.css({"top": self.viewport.y, "left": self.viewport.x});
     frame.width(image.width / scale);
     frame.height(image.height / scale);
 
