@@ -282,9 +282,13 @@ p.frame_icons{
   opacity: .9;
 }
 .filter_widget{
-  border-bottom: 1px solid #000000;
-  margin-top:10px;
+  border-bottom: 1px solid #ddd;
+  margin-bottom:10px;
   padding-bottom: 10px;
+}
+.filter_widget:last-child {
+  border-bottom: none;
+  margin-bottom: 0px;
 }
 #filter_form{
   clear:both;
@@ -295,6 +299,28 @@ p.frame_icons{
 }
 #filter_form .ui-combobox input{
   width:165px;
+}
+#filter_form .oneLine input[type=text] {
+  width: 160px;
+  height: 12px;
+  font-size: 11px;
+  
+  margin-left: 3px;
+  margin-bottom: 0;
+  padding: 5px;
+
+  border-radius: 2px;  
+}
+#filter_form .oneLine label {
+  width: 34px;
+  text-align: right;
+}
+#filter_form .oneLine {
+  margin-top: 10px;
+  vertical-align: middle;
+}
+#filter_form .oneLine input[type=text], label {
+  display: inline-block;
 }
 .ui-slider .ui-slider-handle {
   width: 6px;
@@ -681,14 +707,15 @@ a.video{
 
   #views-controls,#data-views-controls{
     width:100%;
-    height:15px;
-    padding:25px;
+    height: 28px;
+    padding: 15px;
     font-size:12px;
     font-weight:bold;
   }
     #control-images{
       float:left;
       width:100px;
+      margin-left: 10px;
       cursor:pointer;
     }
     #data-control-images{
@@ -742,7 +769,7 @@ a.video{
   width:100%;
 }
 .image-view-item{
-  border-top: 1px solid #d8d8d8;
+  border-top: 1px solid #E0DEDE;
   padding:25px;
   font-weight:bold;
   float:left;
@@ -776,6 +803,7 @@ a.video{
     border:#ccc solid 1px;
     padding:7px;
   }
+  
 .ivi-right{
   float:left;
   font-size:13px;
@@ -795,7 +823,7 @@ a.video{
 }
 
 .ivi-left .btn {
-  padding: 4px 15px;
+  padding: 4px 12px;
 }
 
 .ivi-left .btnGp {
@@ -822,10 +850,10 @@ input[type=checkbox] {}
   cursor: default;
   
   width: 170px;
-  height: 11px;
-  font-size: 12px;
-  margin-bottom: 0;
-
+  height: 12px;
+  font-size: 11px;
+  padding: 5px;
+  margin-bottom: 0px;
   border-radius: 2px;
 }
 
