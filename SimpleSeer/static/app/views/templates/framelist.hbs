@@ -75,11 +75,16 @@
                   <table id="tabDataTable" class="tablesorter">
                     <thead> 
                       <tr> 
-                        <th>Capture Time</th> 
+                        <th>Capture Time</th>
+                        {{#each metakeys}}
+                        <th>{{this}}</th>
+                        {{/each}}
+                        <!--
                         <th>Operator</th> 
                         <th>Machine Number</th> 
                         <th>Part Number</th> 
                         <th>Lot Number</th>
+                        -->
                         <th>Left Angle</th>
                         <th>Right Angle</th>
                       </tr> 

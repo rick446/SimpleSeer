@@ -114,8 +114,8 @@ Handlebars.registerHelper 'featurelist', (features) ->
   unless features.length > 0
     return new Handlebars.SafeString("")
     
-  keys = features.models[0].tableHeader();
-  values = features.models[0].tableData();
+  keys = features.models[0].tableHeader()
+  values = features.models[0].tableData()
 
   ret = ""
   i = 0
