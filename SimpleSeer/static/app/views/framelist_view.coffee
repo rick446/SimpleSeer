@@ -48,31 +48,37 @@ module.exports = class FramelistView extends View
     'click #image-tab' : 'tabImage'
   
   tabData: ()=>
+    $('#loadThrob').modal("show");
+    $('#data-view').show()
+    $('#data-tab').removeClass('unselected')
+    $('#image-view').hide()
+    $('#image-tab').addClass('unselected')
+    $('#views-controls').hide()
+    
     @page = "tabData"
     @filtercollection.limit = 65536
     @filtercollection.skip = 0
     @filtercollection.fetch
       success: () =>
-        $('#image-view').hide()
-        $('#data-view').show()
-        $('#data-tab').removeClass('unselected')
-        $('#image-tab').addClass('unselected')
+        $('#loadThrob').modal("hide");
         $('#data-views-controls').show()
-        $('#views-controls').hide()
         $('#views-contain').addClass('wide scroll')
         $('#views').addClass('wide')
         $('#content').addClass('wide')
 
   tabImage: () =>
+    $('#loadThrob').modal("show");
+    $('#image-view').show()
+    $('#image-tab').removeClass('unselected')
+    $('#data-view').hide()
+    $('#data-tab').addClass('unselected')    
+            
     @page = "tabImage"
     @filtercollection.limit = @filtercollection._defaults.limit
     @filtercollection.skip = @filtercollection._defaults.skip
     @filtercollection.fetch
       success: () =>
-        $('#data-view').hide()
-        $('#image-view').show()
-        $('#image-tab').removeClass('unselected')
-        $('#data-tab').addClass('unselected')
+        $('#loadThrob').modal("hide");
         $('#data-views-controls').hide()
         $('#views-controls').show()
         $('#views-contain').removeClass('wide')

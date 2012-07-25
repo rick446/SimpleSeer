@@ -64,12 +64,26 @@
         </script>
       </div>
     </div>
+    <div class="modal fade" id="loadThrob">
+      <div class="modal-body">
+        <p style="text-align: center; margin-top: 5px;"><img src="/img/loading.gif"></p>
+      </div>
+    </div>    
 </body>
 </html>
 
 <script>
   setTimeout(function() {
-    if( typeof SimpleSeer === 'undefined' ) { $("#browser_fail").show(); } else { $("#app_load").hide(); }
+    if( typeof SimpleSeer === 'undefined' ) {
+      $("#browser_fail").show();
+    } else {
+      $("#app_load").hide();
+      $("#loadThrob").modal({
+        "backdrop": "static",
+        "keyboard": false,
+        "show": false
+      });
+    }
     if( $("#browser_fail").is(':visible') == true ) { $("#lost_connection, #app_load").hide(); }
   }, 2000);
 </script>
