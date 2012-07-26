@@ -87,11 +87,11 @@ module.exports = class FramelistView extends View
     if application.settings.showMenu
       application.settings.showMenu = false
       $('#second-tier-menu').hide("slide", { direction: "left" }, 100)
-      $("#stage").animate({'margin-left':'0px'}, 100)
+      $("#stage").animate({'margin-left':'90px'}, 100)
     else
       application.settings.showMenu = true
       $('#second-tier-menu').show("slide", { direction: "left" }, 100)
-      $("#stage").animate({'margin-left':'252px'}, 100)
+      $("#stage").animate({'margin-left':'343px'}, 100)
   
   getRenderData: =>
     count_viewing: @filtercollection.length
@@ -121,7 +121,7 @@ module.exports = class FramelistView extends View
   afterRender: =>
     if !application.settings.showMenu?
       application.settings.showMenu = true
-      @$el.find("#stage").css('margin-left','252px')
+      @$el.find("#stage").css('margin-left','343px')
     @filtercollection.fetch({before: @preFetch,success:@postFetch})
     @$el.find('#sortCombo').combobox
       selected: (event, ui) =>

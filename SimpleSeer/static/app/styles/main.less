@@ -284,7 +284,8 @@ p.frame_icons{
 .filter_widget{
   border-bottom: 1px solid #ddd;
   margin-bottom:10px;
-  padding-bottom: 10px;
+  padding-bottom: 14px;
+  h4 { margin: 4px; }
 }
 .filter_widget:last-child {
   border-bottom: none;
@@ -298,9 +299,13 @@ p.frame_icons{
   width:199px;
 }
 #filter_form .ui-combobox input{
+  cursor: pointer;
+  
   width:165px;
 }
 #filter_form .oneLine input[type=text] {
+  cursor: pointer;
+  
   width: 160px;
   height: 12px;
   font-size: 11px;
@@ -501,11 +506,13 @@ a.video{
     height:40px;
   }
   #second-tier-footer{
-    color:#0090d6;
-    border-top:#e0dede solid 1px;
-    height:45px;
-    text-align:center;
-    padding-top:10px;
+    color: #0090d6;
+    border-top: #e0dede solid 1px;
+    text-align: center;
+    padding: 10px 0px;
+
+    p { margin-bottom: 0px; }
+    span.bar { color: #333; }
   }
 
     #second-tier-header .title{
@@ -645,12 +652,12 @@ a.video{
 
 #config{
   position: fixed;
-  margin-left:-30px;
+  margin-left:40px;
 }
 
 #stage{
-  width:870px;
-  margin-left:252px;
+  margin-left:343px;
+  margin-right: 36px;
 }
 
 /*--- VIEWS ----*/
@@ -819,7 +826,7 @@ a.video{
 }
 .ivi-right td.item-detail-value{
   width:220px;
-  span { color: #aaa; }
+  span { color: #000; }
 }
 
 .ivi-left .btn {
@@ -847,7 +854,7 @@ input[type=checkbox] {}
 }
 
 .clickEdit input {
-  cursor: default;
+  cursor: pointer;
   
   width: 170px;
   height: 12px;
