@@ -1,6 +1,7 @@
 View = require './view'
 template = require './templates/framelistframe'
 
+
 application = require('application')
 
 module.exports = class FramelistFrameView extends View
@@ -90,13 +91,16 @@ module.exports = class FramelistFrameView extends View
   afterRender: =>    
     @$el.find(".notes-field").autogrow();
 
-  renderTableRow: =>
+  renderTableRow: (table) =>
     _empty = "---"
+    awesomeRow = []
     rd = @getRenderData()
     row = "<tr>"
     row += "<td>"+rd.capturetime+"</td>"
+    awesomeRow['Capture Time'] = rd.capturetime
     for i in rd.metadata
       row += "<td>"+(i.val||_empty)+"</td>"
+      awesomeRow[i.key] = i.val
     if rd.features.models
       f = rd.features.models[0].getPluginMethod(rd.features.models[0].get("featuretype"), 'metadata')()
     else
@@ -107,8 +111,10 @@ module.exports = class FramelistFrameView extends View
     for i in application.settings.ui_feature_keys
       if pairs[i]
         row += "<td>"+pairs[i]+"</td>"
+        awesomeRow[i] = pairs[i]
       else
         row += "<td>"+_empty+"</td>"        
+    table.addRow(awesomeRow)
     row = $(row)
 
   

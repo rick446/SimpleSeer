@@ -4,12 +4,14 @@ FramelistFrameView = require './framelistframe_view'
 application = require '../application'
 Frame = require "../../models/frame"
 Filters = require "../../collections/filtercollection"
+tableView = require './widgets/tableView'
 
 module.exports = class FramelistView extends View  
   template: template
 
   initialize: ()=>
     super()
+
     @empty=true
     @loading=false
     @_frameViews = []
@@ -23,6 +25,8 @@ module.exports = class FramelistView extends View
     @filtercollection = new Filters({model:Frame,view:@})
     $.datepicker.setDefaults $.datepicker.regional['']
     @page = "tabImage"
+    
+    @tableView = @addSubview 'tabDataTable', tableView, '#tabDataTable', {emptyCell:'---'}
 
     $(window).on 'scroll', @loadMore
     @filtercollection.on 'add', @addObj
@@ -41,8 +45,7 @@ module.exports = class FramelistView extends View
     $('#loadThrob').modal "hide"
     url = @filtercollection.getUrl(true)
     $('#csvlink').attr('href','/downloadFrames/csv'+url)
-    $('#excellink').attr('href','/downloadFrames/excel'+url)
-  
+    $('#excellink').attr('href','/downloadFrames/excel'+url)  
   
   tabData: ()=>
     $('#data-view').show()
@@ -131,7 +134,6 @@ module.exports = class FramelistView extends View
         @filtercollection.sortList(v[0],v[1],v[2])
         @filtercollection.fetch({before: @preFetch,success:@postFetch})
       width:"50px"
-    @$el.find("#tabDataTable").tablesorter()
 
   loadMore: (evt)=>
     if ($(window).scrollTop() >= $(document).height() - $(window).height()-1) && !@loading
@@ -191,14 +193,16 @@ module.exports = class FramelistView extends View
     else if @page == "tabData"
       resort = true
       @$el.find("#tabDataTable").find('tbody').html('')
+      @tableView.empty()
       for o in d.models
         fv = new FramelistFrameView {model:o}
-        fv.renderTableRow()
-        row = fv.renderTableRow()
+        #fv.renderTableRow()
+        row = fv.renderTableRow(@tableView)
         @$el.find("#tabDataTable").find('tbody')
           .append(row) 
           .trigger('addRows', [row, resort]); 
       @$el.find("#tabDataTable").trigger('update')
+      @tableView.render()
     @clearLoading()
 
   disableEvent: (evt)=>
