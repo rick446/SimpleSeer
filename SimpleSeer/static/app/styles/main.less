@@ -284,7 +284,8 @@ p.frame_icons{
 .filter_widget{
   border-bottom: 1px solid #ddd;
   margin-bottom:10px;
-  padding-bottom: 10px;
+  padding-bottom: 14px;
+  h4 { margin: 4px; }
 }
 .filter_widget:last-child {
   border-bottom: none;
@@ -298,9 +299,13 @@ p.frame_icons{
   width:199px;
 }
 #filter_form .ui-combobox input{
+  cursor: pointer;
+  
   width:165px;
 }
 #filter_form .oneLine input[type=text] {
+  cursor: pointer;
+  
   width: 160px;
   height: 12px;
   font-size: 11px;
@@ -501,11 +506,13 @@ a.video{
     height:40px;
   }
   #second-tier-footer{
-    color:#0090d6;
-    border-top:#e0dede solid 1px;
-    height:45px;
-    text-align:center;
-    padding-top:10px;
+    color: #0090d6;
+    border-top: #e0dede solid 1px;
+    text-align: center;
+    padding: 10px 0px;
+
+    p { margin-bottom: 0px; }
+    span.bar { color: #333; }
   }
 
     #second-tier-header .title{
@@ -605,7 +612,7 @@ a.video{
     border:#e0dede solid 1px;
     background: #f8f8f8 url('../img/icon-gear.png');
     background-repeat:no-repeat;
-    background-position:center center;
+    background-position:5px 6px;
     cursor:pointer;
   }
 
@@ -645,12 +652,12 @@ a.video{
 
 #config{
   position: fixed;
-  margin-left:-30px;
+  margin-left:40px;
 }
 
 #stage{
-  width:870px;
-  margin-left:252px;
+  margin-left:343px;
+  margin-right: 36px;
 }
 
 /*--- VIEWS ----*/
@@ -703,6 +710,8 @@ a.video{
 
   #data-view{
     display:none;
+    margin-top: -4px;
+    padding: 0 5px;
   }
 
   #views-controls,#data-views-controls{
@@ -819,7 +828,7 @@ a.video{
 }
 .ivi-right td.item-detail-value{
   width:220px;
-  span { color: #aaa; }
+  span { color: #000; }
 }
 
 .ivi-left .btn {
@@ -847,7 +856,7 @@ input[type=checkbox] {}
 }
 
 .clickEdit input {
-  cursor: default;
+  cursor: pointer;
   
   width: 170px;
   height: 12px;
@@ -870,3 +879,67 @@ input[type=checkbox] {}
   min-width: 373px;
   margin-top: 5px;
 }
+
+table.tablesorter thead tr th {
+  background-color: #f8f8f8 !important;
+}
+
+table.tablesorter tbody tr td {
+  border: none;
+  border-right: 1px solid #eee !important;
+}
+
+table.tablesorter thead tr th,
+table.tablesorter tfooter tr th {
+  border: 1px solid #eee !important;
+}
+
+table.tablesorter {
+  border: 1px solid #eee !important;
+}
+
+#viewStage {
+  display: none;
+  position: absolute;
+  margin: 0;
+  z-index: 1020;
+  width: 300px;
+  background: rgba(0,0,0,.1);
+
+  #displayimage {
+    position: absolute;
+    top: 0;
+    left: 0;
+  }
+
+  #displaycanvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+
+    background: rgba(255, 0,0,.1);
+  }
+  
+  .arrow-right {
+    border-bottom: 35px solid transparent;
+    border-left: 35px solid white;
+    border-top: 35px solid transparent;
+    height: 0;
+    margin-top: 32px;
+    position: absolute;
+    top: 0;
+    width: 0;
+  }
+
+  .close {
+    position: absolute;
+    right: 4px;
+    top: 0px;
+    color: white;
+    opacity: 1;
+    text-shadow: none;
+  } 
+}
+

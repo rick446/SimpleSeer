@@ -14,9 +14,9 @@
       <div id="filter_form"></div>
         <div id="second-tier-footer">
           <p style="clear:both;">Viewing <span id="count_viewing">{{count_viewing}}</span> of <span id="count_total">{{count_total}}</span> records</p>
-          <div>
-            <a href="#" id="excellink" target="_blank">CSV</a> | <a href="#" id="csvlink" target="_blank">Excel</a>
-          </div>
+          <p>
+            <a href="#" id="excellink" target="_blank">CSV</a> <span class="bar">&middot;</span> <a href="#" id="csvlink" target="_blank">Excel</a>
+          </p>
         </div>
     </div>
   </div>
@@ -77,16 +77,19 @@
                 <div class="data-view-item" id="tabDataTable">
                 </div> <!-- END DATA VIEW ITEM -->
             </div><!-- END DATA VIEW ITEM -->
-
-
       </div>
-    
-    
-    
-    
-    
   </div>
 </div>
+
+
+<div id="viewStage">
+  <img id="displayimage" src="">
+  <canvas id="displaycanvas"></canvas>
+  <div class="arrow-right"></div>
+  <button class="close">&times;</button>
+</div>
+
+
 <div id="loading_message" class="alert alert-info span11">
   Loading <span id="next_page_size">20</span> more frames...
 </div>
