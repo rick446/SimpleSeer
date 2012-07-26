@@ -138,15 +138,15 @@ module.exports = class FramelistFrameView extends View
   hideImageExpanded: =>
     $("#viewStage").css({"display": "none"})
     
-  renderTableRow: =>
-    _empty = "---"
+  renderTableRow: (table) =>
+    #_empty = "---"
     awesomeRow = []
     rd = @getRenderData()
-    row = "<tr>"
-    row += "<td>"+rd.capturetime+"</td>"
+    #row = "<tr>"
+    #row += "<td>"+rd.capturetime+"</td>"
     awesomeRow['Capture Time'] = rd.capturetime
     for i in rd.metadata
-      row += "<td>"+(i.val||_empty)+"</td>"
+      #row += "<td>"+(i.val||_empty)+"</td>"
       awesomeRow[i.key] = i.val
     if rd.features.models
       f = rd.features.models[0].getPluginMethod(rd.features.models[0].get("featuretype"), 'metadata')()
@@ -157,11 +157,11 @@ module.exports = class FramelistFrameView extends View
       pairs[o.title] = o.value
     for i in application.settings.ui_feature_keys
       if pairs[i]
-        row += "<td>"+pairs[i]+"</td>"
+        #row += "<td>"+pairs[i]+"</td>"
         awesomeRow[i] = pairs[i]
-      else
-        row += "<td>"+_empty+"</td>"        
+      #else
+        #row += "<td>"+_empty+"</td>"        
     table.addRow(awesomeRow)
-    row = $(row)
+    #row = $(row)
 
   

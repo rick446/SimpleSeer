@@ -197,11 +197,11 @@ module.exports = class FramelistView extends View
       for o in d.models
         fv = new FramelistFrameView {model:o}
         #fv.renderTableRow()
-        row = fv.renderTableRow(@tableView)
-        @$el.find("#tabDataTable").find('tbody')
-          .append(row) 
-          .trigger('addRows', [row, resort]); 
-      @$el.find("#tabDataTable").trigger('update')
+        fv.renderTableRow(@tableView)
+        #@$el.find("#tabDataTable").find('tbody')
+        #  .append(row) 
+        #  .trigger('addRows', [row, resort]); 
+      #@$el.find("#tabDataTable").trigger('update')
       @tableView.render()
     @clearLoading()
 
