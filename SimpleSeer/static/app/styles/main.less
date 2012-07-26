@@ -612,7 +612,7 @@ a.video{
     border:#e0dede solid 1px;
     background: #f8f8f8 url('../img/icon-gear.png');
     background-repeat:no-repeat;
-    background-position:center center;
+    background-position:5px 6px;
     cursor:pointer;
   }
 
@@ -710,6 +710,8 @@ a.video{
 
   #data-view{
     display:none;
+    margin-top: -4px;
+    padding: 0 5px;
   }
 
   #views-controls,#data-views-controls{
@@ -876,4 +878,22 @@ input[type=checkbox] {}
   max-width: 373px;
   min-width: 373px;
   margin-top: 5px;
+}
+
+table.tablesorter thead tr th {
+  background-color: #f8f8f8 !important;
+}
+
+table.tablesorter tbody tr td {
+  border: none;
+  border-right: 1px solid #eee !important;
+}
+
+table.tablesorter thead tr th,
+table.tablesorter tfooter tr th {
+  border: 1px solid #eee !important;
+}
+
+table.tablesorter {
+  border: 1px solid #eee !important;
 }
