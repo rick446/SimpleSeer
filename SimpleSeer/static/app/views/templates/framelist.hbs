@@ -13,7 +13,7 @@
       </div>
       <div id="filter_form"></div>
         <div id="second-tier-footer">
-          <p style="clear:both;">Viewing <span id="count_viewing">{{count_viewing}}</span> of <span id="count_total">{{count_total}}</span> frames.</p>
+          <p style="clear:both;">Viewing <span id="count_viewing">{{count_viewing}}</span> of <span id="count_total">{{count_total}}</span> records</p>
           <p>
             <a href="#" id="excellink" target="_blank">CSV</a> <span class="bar">&middot;</span> <a href="#" id="csvlink" target="_blank">Excel</a>
           </p>
@@ -74,26 +74,7 @@
 
                   </div>
                 </div>-->
-                <div class="data-view-item">
-                  <table id="tabDataTable" class="tablesorter">
-                    <thead> 
-                      <tr> 
-                        <th>Capture Time</th>
-                        {{#each metakeys}}
-                        <th>{{this}}</th>
-                        {{/each}}
-                        {{#each featurekeys}}
-                        <th>{{this}}</th>
-                        {{/each}}
-                        <!--
-                        <th>Left Angle</th>
-                        <th>Right Angle</th>
-                        -->
-                      </tr> 
-                    </thead>
-                    <tbody>
-                    </tbody>
-                  </table>
+                <div class="data-view-item" id="tabDataTable">
                 </div> <!-- END DATA VIEW ITEM -->
             </div><!-- END DATA VIEW ITEM -->
       </div>
