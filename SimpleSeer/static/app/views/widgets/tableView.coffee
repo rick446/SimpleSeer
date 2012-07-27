@@ -24,6 +24,14 @@ module.exports = class tableView extends SubView
       newRow[i] = o
     @tableData.push newRow
 
+  getType: (val) =>
+    """
+    56%
+    percent = if ends with %
+    int = if is int
+    date = if typeof date (if !moment, switch to moment)
+    """
+
   isEmpty: (val) =>
     val == false || val == ''
 

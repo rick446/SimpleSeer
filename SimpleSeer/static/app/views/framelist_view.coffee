@@ -28,7 +28,9 @@ module.exports = class FramelistView extends View
     $.datepicker.setDefaults $.datepicker.regional['']
     @page = "tabImage"
     
-    @tableView = @addSubview 'tabDataTable', tableView, '#tabDataTable', {emptyCell:'---'}
+    @tableView = @addSubview 'tabDataTable', tableView, '#tabDataTable',
+      emptyCell:'---'
+      columnOrder:["Capture Time","Left Fillet Angle&deg;","Right Fillet Angle&deg;","Part Number","Lot Number","Machine Number","First / Last Piece","Operator"]
 
     $(window).on 'scroll', @loadMore
     @filtercollection.on 'add', @addObj
