@@ -37,6 +37,10 @@ module.exports = class tableView extends SubView
 
   afterRender: =>
     @$el.find('.tablesorter').tablesorter()
+    l = @$el.find('thead :visible th')
+    for dn in l
+      if dn.innerHTML == "Capture Time"
+        dn.innerHTML += " " + new Date().toString().match(/\(.*\)/g)
 
   getRenderData: =>
     retHeader = []
