@@ -19,6 +19,7 @@ Application =
     Pallette = require 'lib/ui_helper'
     @pallette = new Pallette()
     @subscriptions = {}
+    @timeOffset = (new Date()).getTimezoneOffset() * 60 * 1000
 
     if !@.isMobile
       @.socket = io.connect '/rt'

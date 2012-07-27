@@ -1,75 +1,48 @@
-<div class="row"><a href="#frames">Back to Inspection Images</a></div>
-<div class="row framedetailrow">
-        <div id="frame" class="span8">
-                <div id="display">
-                        <div id="display-zoom">
-                                <img id="display-img" src="{{imgfile}}">
-                                <canvas id="displaycanvas"></canvas>
-                        </div>
-                </div>
-                <p class="frame_icons">
-                        <a href="{{imgfile}}?download=True"><i class="icon-download"></i> Download</a>
-                </p>
-        </div>
-        <div id="sidebar" class="span3">
+<div class="framedetailrow">
+        <div id="sidebar" class="">
+          <div class="backLink"><a href="#frames">&laquo; Inspection Images</a></div>
           <div id="zoomer"></div>
-          <div id="properties" class="frameData">
-                  <table border="1" cellpadding="7">
-                          <thead>
-
-                          </thead>
-                          <tbody>
-                                  <tr>
-                                          <td>Camera</td>
-                                          <td><b>{{camera}}</b></td>
-                                  </tr>
-                                  <tr>
-                                          <td>Capture Time</td>
-                                          <td>{{epochtime capturetime}}</td>
-                                  </tr>
-                                  <tr>
-                                          <td>Capture Date</td>
-                                          <td>{{epochdate capturetime}}</td>
-                                  </tr>
-                                  <tr>
-                                          <td>Width</td>
-                                          <td>{{width}} <span>pixels</span></td>
-                                  </tr>
-                                  <tr>
-                                          <td>Height</td>
-                                          <td>{{height}} <span>pixels</span></td>
-                                  </tr>
-                          </tbody>
-                          <tbody id="metadata">
-                          {{#key_value metadata}}
-                                  <tr>
-                                          <td><input class="metaDataEdit" type="text" disabled="disabled" value="{{key}}"></td>
-                                          <td><input class="metaDataEdit" type="text" disabled="disabled" value="{{value}}"></td>
-                                  </tr>
-                          {{/key_value}}
-                          </tbody>
-                          <tbody id="notes">
-                                  <tr>
-                                          <td colspan=2>
-                                                  <label for="notes">Notes:</label>
-                                                  <textarea name="notes" id="notesEdit" class="notesEdit" disabled="disabled">{{notes}}</textarea>
-                                          </td>
-                                  </tr>
-                          </tbody>
-                          
-                  </table>
+          <div id="toggleBox" class="ivi-right">
+            <label><input id="toggleProcessing" type="checkbox" checked="checked">Show Markup</label>
           </div>
-       </div>   
-</div>
+          <div id="properties" class="ivi-right">
+            <table>
+              <tr>
+                <td class="item-detail">Capture Time:</td>
+                <td class="item-detail-value">{{capturetime}}</td>
+              </tr>                 
+            </table>
 
-<div class="row" style="margin-bottom: 30px;">
-  <div id="features" class="span12 frameData">
-    {{#each featuretypes}}
-       
-        <h3>{{#if this.[0].icon}}<img class="featureicon" src="{{this.[0].icon}}">{{/if}}{{this.[0].name}} Detections</h3>
-      <div class="set">{{featuredetail this}}</div>
-    {{/each}}
-  </div>
+            <div class="tableSpacer">
+              <table>
+                {{#featurelist features}}{{/featurelist}}          
+              </table>
+            </div>
+
+            <div class="tableSpacer">
+              <table class="editableMeta">
+                  {{#each metadata}}
+                <tr>
+                  <td class="item-detail"><span>{{this.key}}</span>:
+                  <span class="clickEdit"><input type="text" value="{{this.val}}"></span></td>
+                </tr>
+                  {{/each}}
+              </table>
+            </div>
+            <div class="item-detail tableSpacer">Notes:</div>
+            <textarea class="notes-field">{{notes}}</textarea>  
+          </div>
+       </div>
+        <div id="frameHolder">
+          <div id="" class="">
+                  <div id="display">
+                          <div id="display-zoom">
+                                  <img id="display-img" src="{{imgfile}}">
+                                  <canvas id="displaycanvas"></canvas>
+                          </div>
+                  </div>
+          </div>
+        </div>         
 </div>
 
 

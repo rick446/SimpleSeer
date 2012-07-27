@@ -38,19 +38,24 @@ module.exports = class FilterCollection extends Collection
         @sortParams.sortkey = sortkey
         @sortParams.sortorder = sortorder
         @sortParams.sorttype = sorttype
-        @fetch()
     return
-  
-  fetch: (params={}) =>
+    
+  getUrl: (total=false)=>
     #todo: map .error to params.error
     _json = []
     for o in @filters
       val = o.toJson()
       if val
         _json.push val
+    if total
+      skip = 0
+      limit = @skip+@limit
+    else
+      skip=@skip
+      limit=@limit
     _json =
-      skip:@skip
-      limit:@limit
+      skip:skip
+      limit:limit
       query:_json
       sortkey: @sortParams.sortkey || 'capturetime'
       sortorder: @sortParams.sortorder || -1
@@ -58,9 +63,13 @@ module.exports = class FilterCollection extends Collection
         type: @sortParams.sorttype || ''
         name: @sortParams.sortkey || 'capturetime'
         order: @sortParams.sortorder || -1
-    url = @url+"/"+JSON.stringify _json
+    "/"+JSON.stringify _json
+
+  fetch: (params={}) =>
     #console.dir _json
-    $.getJSON(url, (data) =>
+    if params.before
+      params.before()
+    $.getJSON(@url+@getUrl(), (data) =>
       @.totalavail = data.total_frames
       if @skip == 0
         @reset data.frames

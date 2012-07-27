@@ -1,3 +1,4 @@
+<div id="mainSpacer">
   <div id="config">
     <div id="icon-menu">
       <div class="icon-item">
@@ -13,7 +14,7 @@
       </div>
       <div id="filter_form"></div>
         <div id="second-tier-footer">
-          <p style="clear:both;">Viewing <span id="count_viewing">{{count_viewing}}</span> of <span id="count_total">{{count_total}}</span> frames.</p>
+          <p style="clear:both;">Viewing <span id="count_viewing">{{count_viewing}}</span> of <span id="count_total">{{count_total}}</span> records</p>
         </div>
     </div>
   </div>
@@ -22,6 +23,7 @@
   
        <!--MAIN TABS -->
       <div id="views">
+        <div id="views-tabs-linkbar">Download <a href="#" id="excellink" target="_blank">CSV</a> / <a href="#" id="csvlink" target="_blank">Excel</a></div>
         <div id="views-tabs">
           <div id="image-tab">Image View</div>
           <div id="data-tab" class="unselected">Data View</div>
@@ -71,38 +73,24 @@
 
                   </div>
                 </div>-->
-                <div class="data-view-item">
-                  <table id="tabDataTable" class="tablesorter">
-                    <thead> 
-                      <tr> 
-                        <th>Capture Time</th>
-                        {{#each metakeys}}
-                        <th>{{this}}</th>
-                        {{/each}}
-                        {{#each featurekeys}}
-                        <th>{{this}}</th>
-                        {{/each}}
-                        <!--
-                        <th>Left Angle</th>
-                        <th>Right Angle</th>
-                        -->
-                      </tr> 
-                    </thead>
-                    <tbody>
-                    </tbody>
-                  </table>
+                <div class="data-view-item" id="tabDataTable">
                 </div> <!-- END DATA VIEW ITEM -->
             </div><!-- END DATA VIEW ITEM -->
-
-
       </div>
-    
-    
-    
-    
-    
   </div>
 </div>
+
+<div id="viewStageContainer">
+  <div id="viewStage">
+    <img id="displayimage" src="">
+    <canvas id="displaycanvas"></canvas>
+    <div class="close">Close [&times;]</div>
+    <div class="clearfix"></div>
+  </div>
+</div>  
+
+
 <div id="loading_message" class="alert alert-info span11">
   Loading <span id="next_page_size">20</span> more frames...
+</div>
 </div>

@@ -10,23 +10,26 @@ module.exports = class DateTimeFilterView extends _filter
   initialize: () =>
     super()
     tf = new moment(@options.params.constraints.min)
+    tt = new moment(@options.params.constraints.max)
     @options.params.constraints.min = tf
-    @options.params.constraints.max = new moment(@options.params.constraints.max)
+    @options.params.constraints.max = tt
     @_vals['from'] = tf.valueOf()
+    @_vals['to'] = tt.valueOf()
     @
 
   afterRender: () =>
-    tf = @$el.find('input[name=time_from]').datetimepicker {timeFormat: "h:mm tt (U'T'C)", onClose: @setValue, ampm:true}
-    tt = @$el.find('input[name=time_to]').datetimepicker {timeFormat: "h:mm tt (U'T'C)", onClose: @setValue, ampm:true}
-    tf.datepicker( "setDate",  new Date(@options.params.constraints.min))
-    tt.datepicker( "setDate",  new Date(@options.params.constraints.max))
+    tf = @$el.find('input[name=time_from]').datetimepicker {timeFormat: "h:mm tt", onClose: @setValue, ampm:true}
+    tt = @$el.find('input[name=time_to]').datetimepicker {timeFormat: "h:mm tt", onClose: @setValue, ampm:true}
+    tf.datepicker( "setDate",  new Date(@options.params.constraints.min-application.timeOffset))
+    tt.datepicker( "setDate",  new Date(@options.params.constraints.max-application.timeOffset))
     #console.log @options.params.constraints
     super()
 
     
+  #setValue ALWAYS expects a date in the local time
   setValue :(e,u) =>
-    #todo: check that e is valid dt
     dt = new moment(e)
+    dt.add('ms',application.timeOffset)
     id = u.id.replace(@options.params.name,'')
     #v = dt.valueOf()
     """

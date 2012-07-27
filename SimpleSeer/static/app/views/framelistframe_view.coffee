@@ -1,6 +1,5 @@
 View = require './view'
 template = require './templates/framelistframe'
-
 application = require('application')
 
 module.exports = class FramelistFrameView extends View
@@ -15,9 +14,13 @@ module.exports = class FramelistFrameView extends View
 
   
   events:
+    'click .action-viewFrame' : 'expandImage'
     'click .clickEdit'  : 'switchStaticMeta'
     'blur .clickEdit'  : 'switchInputMeta'
     'change .notes-field' : 'updateNotes'
+
+  expandImage: =>
+    application.framelistView.showImageExpanded @$el, @frame, @model
 
   delBlankMeta: (obj) =>
     $(obj).find("tr").each (id, obj) ->
@@ -75,7 +78,7 @@ module.exports = class FramelistFrameView extends View
     for i in application.settings.ui_metadata_keys
       metadata.push {key:i,val:md[i]}
     retVal =
-      capturetime: new moment(parseInt @frame.get('capturetime')+'000').utc().format("M/D/YYYY h:mm a (UTC)")
+      capturetime: new moment(parseInt @frame.get('capturetime')+'000').format("M/D/YYYY h:mm a")
       camera: @frame.get('camera')
       imgfile: @frame.get('imgfile')
       thumbnail_file: @frame.get('thumbnail_file')
@@ -87,28 +90,22 @@ module.exports = class FramelistFrameView extends View
       notes: @frame.get('notes')
     retVal
 
-  afterRender: =>
-    $(".notes-field").autogrow();
-
-  renderTableRow: =>
-    _empty = "---"
+  afterRender: =>    
+    @$el.find(".notes-field").autogrow();
+        
+  renderTableRow: (table) =>
+    awesomeRow = []
     rd = @getRenderData()
-    row = "<tr>"
-    row += "<td>"+rd.capturetime+"</td>"
+    awesomeRow['Capture Time'] = rd.capturetime
     for i in rd.metadata
-      row += "<td>"+(i.val||_empty)+"</td>"
+      awesomeRow[i.key] = i.val
     if rd.features.models
       f = rd.features.models[0].getPluginMethod(rd.features.models[0].get("featuretype"), 'metadata')()
     else
       f = {}
     pairs = {}
     for i,o of f
-      pairs[o.title] = o.value
-    for i in application.settings.ui_feature_keys
-      if pairs[i]
-        row += "<td>"+pairs[i]+"</td>"
-      else
-        row += "<td>"+_empty+"</td>"        
-    row = $(row)
+      awesomeRow[o.title + o.units] = o.value
+    table.addRow(awesomeRow)
 
   

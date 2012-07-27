@@ -1,33 +1,11 @@
 <div id="image-view">
   <div class="image-view-item">
-    <div class="ivi-left">
-      <div class="ivi-left-thumb-contain">
-        <div class="thumb">
-          <div class="blackBar">
-            <a href="#frame/{{id}}"><img src="{{thumbnail_file}}"></a>
-          </div>
-        </div>
-        <a href="{{imgfile}}?download=True"><div class="download">Download</div></a>
-        <a href="#frame/{{id}}"><div class="view">View</div></a>
-      </div>
-    </div>
     <div class="ivi-right">
       <table>
         <tr>
           <td class="item-detail">Capture Time:</td>
           <td class="item-detail-value">{{capturetime}}</td>
-        </tr>
-        <!--
-        <tr>
-          <td class="item-detail">Width:</td>
-          <td class="item-detail-value">{{width}} <span>pixels</span></td>
-        </tr>
-
-        <tr>
-          <td class="item-detail">Height:</td>
-          <td class="item-detail-value">{{height}} <span>pixels</span></td>
-        </tr>
-        -->                     
+        </tr>           
       </table>
 
       <div class="tableSpacer">
@@ -49,6 +27,20 @@
       <div class="item-detail tableSpacer">Notes:</div>
       <textarea class="notes-field">{{notes}}</textarea>  
     </div>
-
+    <div class="ivi-left">
+      <div class="ivi-left-thumb-contain">
+        <div class="thumb">
+          <div class="blackBar">
+            <a href="#frame/{{id}}"><img src="{{thumbnail_file}}"></a>
+          </div>
+        </div>
+        <div class="zoomer"></div>
+        <div class="btnGp">
+          <div class="download"><a href="{{imgfile}}?download=True">Download</a></div>
+          <div class="view action-viewFrame">View</div>
+          <div class="fullscreen"><a href="#frame/{{id}}">Fullscreen</a></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div><!-- END IMAGE VIEW ITEM -->
