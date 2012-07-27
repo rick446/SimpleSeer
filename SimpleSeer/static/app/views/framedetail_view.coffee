@@ -154,6 +154,6 @@ module.exports = class FrameDetailView extends View
     @pjs.background(0,0)
     @pjs.size $('#display-img').width(), @model.get("height") * scale
     @pjs.scale scale
-    @model.get('features').each (f) => f.render(@pjs)
+    if @model.get('features') then @model.get('features').each (f) => f.render(@pjs)
 
     @$el.find(".notes-field").autogrow();
