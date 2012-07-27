@@ -36,7 +36,7 @@ module.exports = class tableView extends SubView
     val == false || val == ''
 
   afterRender: =>
-    @$el.find('.tablesorter').tablesorter()
+    @$el.find('.tablesorter').tablesorter({widgets: ['zebra']})
 
   getRenderData: =>
     retHeader = []

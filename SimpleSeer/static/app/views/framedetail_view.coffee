@@ -4,10 +4,22 @@ application = require('application')
 
 module.exports = class FrameDetailView extends View  
   template: template
+
+  initialize: (frame)=>
+    super()
+    for k in application.settings.ui_metadata_keys
+      if !frame.model.attributes.metadata[k]?
+        frame.model.attributes.metadata[k] = ''
+    @frame = frame.model
   
   events:
-    'change .metaDataEdit' : 'updateMetaData'
-    'change .notesEdit' : 'updateNotes'
+    'click #toggleProcessing' : 'togglePro'
+    'click .clickEdit'  : 'switchStaticMeta'
+    'blur .clickEdit'  : 'switchInputMeta'
+    'change .notes-field' : 'updateNotes'
+
+  togglePro: =>
+    $("#displaycanvas").toggle();
     
   zoom: (e, ui) ->
     scale = $("#zoomer").data("orig-scale")
@@ -36,12 +48,20 @@ module.exports = class FrameDetailView extends View
       
   getRenderData: =>
     data = {}
+   
     if @model.get("features").length
       data.featuretypes = _.values(@model.get("features").groupBy (f) -> f.get("featuretype"))
     
     for k of @model.attributes
       data[k] = @model.attributes[k]
     data.disabled = application.settings.mongo.is_slave || false
+
+    md = @frame.get('metadata')
+    metadata = []
+    for i in application.settings.ui_metadata_keys
+      metadata.push {key:i,val:md[i]}
+    data.metadata = metadata
+      
     data
     
   addMetaBox: =>
@@ -56,21 +76,38 @@ module.exports = class FrameDetailView extends View
     html+='></td></tr>'
     $('#metadata').append(html)
 
-  updateMetaData: (e) =>
+  updateMetaData: (self) =>  
     metadata = {}
-    _add = true
-    $("#metadata tr").each (ind,obj) ->
+    
+    rows = $(self).find("tr")
+    rows.each (id, obj) ->
       tds = $(obj).find('td')
-      if $(tds[0]).find('input').attr('value')
-        metadata[$(tds[0]).find('input').attr('value')] = $(tds[1]).find('input').attr('value')
-      else if $(tds[0]).find('input').attr('value') == '' && $(tds[1]).find('input').attr('value') == ''
-        $(obj).remove()
-    if _add
-      @addMetaBox()
-    @.model.save {metadata: metadata}
+      input = $(tds[1]).find('input')
+      span = $(tds[0]).find('span')
+      metadata[$(span).html()] = input.attr('value')
+    
+    #@addMetaBox(self)
+    @model.save {metadata: metadata}
 
   updateNotes: (e) =>
-    @model.save {notes:$("#notesEdit").attr('value')}
+    @model.save {notes:$(".notes-field").attr('value')}
+
+  switchStaticMeta: (e) =>
+    self = $(e.currentTarget)
+
+    if self.find("input").length == 0
+      $(self).html "<input type=\"text\" value=\"" + self.html() + "\">"
+      self.find("input").focus()
+
+  switchInputMeta: (e) =>
+    target = $(e.currentTarget).parent().parent()
+
+    #unless target.find("input").length is 0
+    #  target.find("td").each (id, obj) ->
+    #    $(obj).html $(obj).find("input").attr("value")
+
+    #@delBlankMeta(target)
+    @updateMetaData(target)
 
   calculateScale: =>
     framewidth = @model.get("width")
@@ -117,3 +154,5 @@ module.exports = class FrameDetailView extends View
     @pjs.size $('#display-img').width(), @model.get("height") * scale
     @pjs.scale scale
     @model.get('features').each (f) => f.render(@pjs)
+
+    @$el.find(".notes-field").autogrow();
