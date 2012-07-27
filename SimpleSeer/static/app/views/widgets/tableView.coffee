@@ -41,6 +41,7 @@ module.exports = class tableView extends SubView
     for dn in l
       if dn.innerHTML == "Capture Time"
         dn.innerHTML += " " + new Date().toString().match(/\(.*\)/g)
+    @$el.find('.tablesorter').tablesorter({widgets: ['zebra']})
 
   getRenderData: =>
     retHeader = []

@@ -94,7 +94,7 @@ ul {
 #main{
   position: relative;
   /*border: 1px solid #E0DEDE;*/
-  padding: 10px;
+  padding: 0px;
 }
 
 #display{
@@ -174,9 +174,25 @@ p.frame_icons{
 }
 
 .framedetailrow{
-  margin-top: 21px;
-  margin-bottom: 20px;
+  margin-left: 25px;
 
+  #sidebar {
+    float: left;
+    margin-bottom: 20px;
+    position: relative;
+    width: 250px;
+    z-index: 1020;
+  }
+
+  #frameHolder {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    box-sizing: border-box !important;
+    -moz-box-sizing: border-box;
+    padding-left: 300px;
+  }
 }
 
 .featureicon {
@@ -844,6 +860,36 @@ a.video{
   color: #000;
 }
 
+#toggleBox.ivi-right, #properties.ivi-right {
+  width: 100%;
+  max-width: 100%;
+  min-width: 100%;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  margin-bottom: 10px;
+  padding: 10px;
+  border-color: #bbb;
+  textarea { width: 218px; min-width: 218px; max-width: 218px; margin-bottom: 1px}
+  .item-detail { width: 228px; font-weight: bold;}
+  .item-detail-value { text-align: right; font-weight: bold; }
+  .tableSpacer {
+      border-top: 1px solid #ccc;
+      margin-top: 9px;
+      padding-top: 12px;
+  }
+
+  .clickEdit input {
+    display: block;
+    width: 213px;
+  }
+
+  label { margin-bottom: 0; }
+  label > input {
+    display: inline-block;
+    margin-right: 5px;
+  }
+}
+
 .ivi-right td.item-detail{
   width:160px;
   height: 21px;
@@ -923,21 +969,22 @@ input[type=checkbox] {}
 }
 
 table.tablesorter thead tr th {
-  background-color: #f8f8f8 !important;
+  background-color: #f3f3f3 !important;
 }
 
 table.tablesorter tbody tr td {
   border: none;
-  border-right: 1px solid #eee !important;
+  border-right: 1px solid #ddd !important;
 }
 
+table.tablesorter,
 table.tablesorter thead tr th,
 table.tablesorter tfooter tr th {
-  border: 1px solid #eee !important;
+  border: 1px solid #ddd !important;
 }
 
-table.tablesorter {
-  border: 1px solid #eee !important;
+table.tablesorter tbody tr.odd td {
+    background-color: #fafafa !important;
 }
 
 #viewStage {
@@ -987,3 +1034,6 @@ table.tablesorter {
 }
 
 .pushLeft { margin-left: 30px; }
+
+#mainSpacer { padding: 10px; }
+.backLink { margni-top: 1px; margin-bottom: 10px; }

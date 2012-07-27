@@ -1,19 +1,21 @@
 .ui-zoomify {
   padding: 10px;
-  border-radius: 8px;
-  background: #eee;
   margin-bottom: 10px;
+  background: #f8f8f8;
+  border: 1px solid #bbb;
+  border-radius: 2px;
+  color: #000;
 }
 
 .ui-zoomify .window {
-  margin-top: -10px;
+  padding-bottom: 10px;
   border-bottom: 1px solid #ccc;
 }
 
 .ui-zoomify .window .view {
   padding: 0px;
   width: 100%;
-  border: 1px solid #444;
+  border: 1px solid #000;
   position: relative;
   box-sizing: border-box;
   -moz-box-sizing: border-box;
@@ -42,24 +44,25 @@
 }    
 
 .ui-zoomify .settings {
-  border-top: 1px solid #f8f8f8;
-  padding-top: 4px;
-  height: 22px;
+  border-top: 1px solid white;
+  padding-top: 8px;
+  height: 23px;
 }
 
 .ui-zoomify .settings input {
-  border: 1px solid #aaa;
-  width: 55px;
+  border-radius: 2px 2px 2px 2px;
   font-size: 11px;
-  float: left;
-  padding: 2px;
+  height: 12px;
+  margin-bottom: 0;
+  padding: 5px;
+  width: 45px;  
 }
 
 .ui-zoomify .settings .slider {
-  height: 7px;
+  height: 8px;
   float: right;
-  margin-right: 5px;
-  margin-top: 8px;
+  margin-right: 1px;
+  margin-top: 7px;
 }
 
 .ui-zoomify .settings .slider .ui-slider-handle {

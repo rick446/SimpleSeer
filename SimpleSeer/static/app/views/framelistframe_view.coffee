@@ -1,7 +1,5 @@
 View = require './view'
 template = require './templates/framelistframe'
-
-
 application = require('application')
 
 module.exports = class FramelistFrameView extends View
