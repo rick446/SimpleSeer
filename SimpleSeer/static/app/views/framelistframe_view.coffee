@@ -6,7 +6,6 @@ application = require('application')
 
 module.exports = class FramelistFrameView extends View
   template: template
-  sideBarOpen: application.settings.showMenu
   
   initialize: (frame)=>
     super()
@@ -17,10 +16,13 @@ module.exports = class FramelistFrameView extends View
 
   
   events:
-    'click .action-viewFrame' : 'showImageExpanded'
+    'click .action-viewFrame' : 'expandImage'
     'click .clickEdit'  : 'switchStaticMeta'
     'blur .clickEdit'  : 'switchInputMeta'
     'change .notes-field' : 'updateNotes'
+
+  expandImage: =>
+    application.framelistView.showImageExpanded @$el, @frame, @model
 
   delBlankMeta: (obj) =>
     $(obj).find("tr").each (id, obj) ->
@@ -92,52 +94,7 @@ module.exports = class FramelistFrameView extends View
 
   afterRender: =>    
     @$el.find(".notes-field").autogrow();
-    
-    $("#viewStage").find(".close").click =>
-      $("#viewStage").hide();
-      if @sideBarOpen
-        @showSettingsBar()
-
-  hideSettingsBar: (call) =>
-    if application.settings.showMenu is true
-      application.settings.showMenu = false
-      @sideBarOpen = true
-      $('#second-tier-menu').hide("slide", { direction: "left" }, 100)
-      $("#stage").animate({'margin-left':'90px'}, 100, call)
-    else
-      @sideBarOpen = false
-      call()
-
-  showSettingsBar: =>
-    application.settings.showMenu = true
-    $('#second-tier-menu').show("slide", { direction: "left" }, 100)
-    $("#stage").animate({'margin-left':'343px'}, 100)  
-
-  showImageExpanded: =>
-    @hideSettingsBar =>
-      thumbnail = @$el.find(".thumb")
-      offsetLeft = thumbnail.offset().left + thumbnail.width() + 35
-      offsetTop = thumbnail.offset().top - thumbnail.parents("#views").offset().top + 10
-      imgWidth = thumbnail.parents("#views").width() - offsetLeft + 75
-      
-      $("#displayimage").attr("src", @frame.get('imgfile'));
-      $("#viewStage").css({"top": offsetTop + "px", "left": offsetLeft + "px", "width": imgWidth + "px", "display": "block"});
-
-      """
-        framewidth = @model.get("width")
-        realwidth = $('#displayimage').width()
-        scale = realwidth / framewidth
-
-        @pjs = new Processing("#displaycanvas")
-        @pjs.background(0,0)
-        @pjs.size $('#displayimage').width(), @model.get("height") * scale
-        @pjs.scale scale
-        @model.get('features').each (f) => f.render(@pjs)
-      """
-
-  hideImageExpanded: =>
-    $("#viewStage").css({"display": "none"})
-    
+        
   renderTableRow: (table) =>
     awesomeRow = []
     rd = @getRenderData()
