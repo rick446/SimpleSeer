@@ -8,7 +8,8 @@ tableView = require './widgets/tableView'
 
 module.exports = class FramelistView extends View  
   template: template
-
+  sideBarOpen: application.settings.showMenu
+  
   initialize: ()=>
     super()
 
@@ -85,16 +86,15 @@ module.exports = class FramelistView extends View
         $('#views-contain').removeClass('wide')
         @postFetch()
 
-  
-  toggleMenu: ()=>
+  toggleMenu: (callback) =>
     if application.settings.showMenu
       application.settings.showMenu = false
       $('#second-tier-menu').hide("slide", { direction: "left" }, 100)
-      $("#stage").animate({'margin-left':'90px'}, 100)
+      $("#stage").animate({'margin-left':'90px'}, 100, callback || => )
     else
       application.settings.showMenu = true
       $('#second-tier-menu').show("slide", { direction: "left" }, 100)
-      $("#stage").animate({'margin-left':'343px'}, 100)
+      $("#stage").animate({'margin-left':'343px'}, 100, callback || => )
   
   getRenderData: =>
     count_viewing: @filtercollection.length
@@ -134,6 +134,39 @@ module.exports = class FramelistView extends View
         @filtercollection.sortList(v[0],v[1],v[2])
         @filtercollection.fetch({before: @preFetch,success:@postFetch})
       width:"50px"
+
+    $("#viewStage .click").click =>
+      @hideImageExpanded()
+      if @sideBarOpen then @toggleMenu()
+
+  openUpExpanded: (element, frame, model) =>
+    thumbnail = element.find(".thumb")
+    offsetLeft = thumbnail.offset().left + thumbnail.width() + 35
+    offsetTop = thumbnail.offset().top - thumbnail.parents("#views").offset().top + 10
+    imgWidth = thumbnail.parents("#views").width() - offsetLeft + 75
+    
+    $("#displayimage").attr("src", frame.get('imgfile'));
+    $("#viewStage").css({"top": offsetTop + "px", "left": offsetLeft + "px", "width": imgWidth + "px", "display": "block"});
+    
+    framewidth = model.get("width")
+    realwidth = $('#displayimage').width()
+    scale = realwidth / framewidth
+
+    @pjs = new Processing($("#displaycanvas").get 0)
+    @pjs.background(0,0)
+    @pjs.size $('#displayimage').width(), model.get("height") * scale
+    @pjs.scale scale
+    model.get('features').each (f) => f.render(@pjs)
+    
+  showImageExpanded: (element, frame, model) =>
+    if application.settings.showMenu
+      @toggleMenu =>
+        @openUpExpanded element, frame, model
+    else
+      @openUpExpanded element, frame, model
+
+  hideImageExpanded: =>
+    $("#viewStage").css({"display": "none"})      
 
   loadMore: (evt)=>
     if ($(window).scrollTop() >= $(document).height() - $(window).height()-1) && !@loading
