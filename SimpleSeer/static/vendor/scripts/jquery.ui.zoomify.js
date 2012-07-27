@@ -1,5 +1,5 @@
 $.widget("ui.zoomify", {
-  options: {image: "", zoom: 1, x: 0, y: 0, min: 100, max: 400},
+  options: {image: "", zoom: 1, x: 0, y: 0, min: 100, max: 400, height: 0},
   image: {},
   loaded: false,
   viewport: {x: 0, y:0, zoom: 1},
@@ -21,7 +21,7 @@ $.widget("ui.zoomify", {
     var frame = content.find(".frame");
     frame.css({"top": self.viewport.y, "left": self.viewport.x});
     frame.width(image.width / scale);
-    frame.height(image.height / scale);
+    frame.height(image.height * self.options.height / scale);
 
     var frameWidth = frame.css("border-bottom-width").replace(/\D/g, "");
     frameWidth *= 2;    
@@ -138,7 +138,10 @@ $.widget("ui.zoomify", {
         self.options.y = self.viewport.y = self.options.x = self.viewport.x = 0;
         self.element.find(".slider").slider("option", "max", value);
         self.updateDisplay();
-        break;        
+        break;
+      case "height":
+        self.options.height = value;
+        self.updateDisplay();
     }
   }
 });

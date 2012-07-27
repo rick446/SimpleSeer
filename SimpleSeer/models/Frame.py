@@ -11,7 +11,8 @@ from formencode import schema as fes
 from SimpleSeer import validators as V
 import formencode as fe
 
-from .base import SimpleDoc
+
+from .base import SimpleDoc, SONScrub
 from .FrameFeature import FrameFeature
 from .Clip import Clip
 from .Result import Result, ResultEmbed
@@ -146,7 +147,7 @@ class Frame(SimpleDoc, mongoengine.Document):
                 self.layerfile.put(pygame.image.tostring(mergedlayer._mSurface, "RGBA"))
                 #TODO, make layerfile a compressed object
             #self._imgcache = ''
-
+        
         super(Frame, self).save(*args, **kwargs)
         
         #TODO, this is sloppy -- we should handle this with cascading saves

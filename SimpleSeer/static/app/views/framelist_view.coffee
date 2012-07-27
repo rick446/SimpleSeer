@@ -198,7 +198,7 @@ module.exports = class FramelistView extends View
     @pjs.scale scale
     
     $("#displaycanvas").height(model.get("height") * scale)
-    if model.get('features') else model.get('features').each (f) => f.render(@pjs)
+    if model.get('features') then model.get('features').each (f) => f.render(@pjs)
     @viewIsScrolled()
     @lastModel = model
     
