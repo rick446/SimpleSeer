@@ -112,7 +112,6 @@ module.exports = class FrameDetailView extends View
       
     @$(".tablesorter").tablesorter()
     @pjs = new Processing("displaycanvas")
-    Document.pjs = @pjs
     @pjs.background(0,0)
     @pjs.size $('#display-img').width(), @model.get("height") * scale
     @pjs.scale scale

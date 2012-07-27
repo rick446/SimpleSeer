@@ -217,7 +217,7 @@ module.exports = class FramelistView extends View
     $(".currentExpanded").removeClass("currentExpanded")
 
   loadMore: (evt)=>
-    if ($(window).scrollTop() >= $(document).height() - $(window).height()-1) && !@loading
+    if ($(window).scrollTop() >= $(document).height() - $(window).height()-1) && !@loading && $("#views-controls :visible").length
       if (@filtercollection.length+1) <= @filtercollection.totalavail
     #if !@loading && $('#loading_message').length && @total_frames > 2\
     #   && (@total_frames - @filtercollection.length) > 0 && ($(window).scrollTop() >= $(document).height() - $(window).height())

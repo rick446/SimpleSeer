@@ -80,7 +80,7 @@ module.exports = class FramelistFrameView extends View
     for i in application.settings.ui_metadata_keys
       metadata.push {key:i,val:md[i]}
     retVal =
-      capturetime: new moment(parseInt @frame.get('capturetime')+'000').utc().format("M/D/YYYY h:mm a (UTC)")
+      capturetime: new moment(parseInt @frame.get('capturetime')+'000').format("M/D/YYYY h:mm a")
       camera: @frame.get('camera')
       imgfile: @frame.get('imgfile')
       thumbnail_file: @frame.get('thumbnail_file')
