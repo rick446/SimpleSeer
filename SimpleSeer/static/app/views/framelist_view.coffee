@@ -9,6 +9,7 @@ tableView = require './widgets/tableView'
 module.exports = class FramelistView extends View  
   template: template
   sideBarOpen: application.settings.showMenu
+  lastModel: ""
   
   initialize: ()=>
     super()
@@ -38,6 +39,7 @@ module.exports = class FramelistView extends View
     'click .icon-item' : 'toggleMenu'
     'click #data-tab' : 'tabData'
     'click #image-tab' : 'tabImage'
+    'click #viewStage .close' : 'closeViewStage'
   
   preFetch:()=>
     $('#loadThrob').modal "show"
@@ -87,14 +89,17 @@ module.exports = class FramelistView extends View
         @postFetch()
 
   toggleMenu: (callback) =>
+    if !callback then callback = =>
+    
     if application.settings.showMenu
       application.settings.showMenu = false
       $('#second-tier-menu').hide("slide", { direction: "left" }, 100)
-      $("#stage").animate({'margin-left':'90px'}, 100, callback || => )
+      $("#stage").animate({'margin-left':'90px'}, 100, 'linear', callback)
     else
+      @hideImageExpanded()
       application.settings.showMenu = true
       $('#second-tier-menu').show("slide", { direction: "left" }, 100)
-      $("#stage").animate({'margin-left':'343px'}, 100, callback || => )
+      $("#stage").animate({'margin-left':'343px'}, 100, 'linear', callback)
   
   getRenderData: =>
     count_viewing: @filtercollection.length
@@ -135,38 +140,79 @@ module.exports = class FramelistView extends View
         @filtercollection.fetch({before: @preFetch,success:@postFetch})
       width:"50px"
 
-    $("#viewStage .click").click =>
-      @hideImageExpanded()
-      if @sideBarOpen then @toggleMenu()
+    $(window).scroll =>
+      @viewIsScrolled()
+
+    $(window).resize =>
+      console.log @lastModel
+      if @lastModel and $(".currentExpanded").length > 0 
+        @resizeExpanded()
+
+  viewIsScrolled: =>
+    if $(window).scrollTop() < 128 
+      $("#viewStage").removeClass("fixit");
+    else
+      $("#viewStage").addClass("fixit");  
+    
+  closeViewStage: =>
+    @hideImageExpanded()
+    if @sideBarOpen then @toggleMenu()
+
+  resizeExpanded: =>
+    thumbnail = $($(".thumb").get 0)
+    offsetLeft = thumbnail.offset().left + thumbnail.width() + 37
+    imgWidth = thumbnail.parents("#views").width() - offsetLeft + 61
+    $("#viewStage").css({"left": offsetLeft + "px", "width": imgWidth + "px", "display": "block"}).removeClass("fixit");
+    
+    framewidth = @lastModel.get("width")
+    realwidth = imgWidth
+    scale = realwidth / framewidth
+
+    @pjs.size $('#viewStage').width(), @lastModel.get("height") * scale
+    @pjs.scale scale
+    
+    $("#displaycanvas").height(@lastModel.get("height") * scale)
+    @lastModel.get('features').each (f) => f.render(@pjs)
+    @viewIsScrolled()    
 
   openUpExpanded: (element, frame, model) =>
+    element.find(".image-view-item").addClass("currentExpanded");
+    
     thumbnail = element.find(".thumb")
-    offsetLeft = thumbnail.offset().left + thumbnail.width() + 35
-    offsetTop = thumbnail.offset().top - thumbnail.parents("#views").offset().top + 10
-    imgWidth = thumbnail.parents("#views").width() - offsetLeft + 75
+    offsetLeft = thumbnail.offset().left + thumbnail.width() + 37
+    imgWidth = thumbnail.parents("#views").width() - offsetLeft + 61
     
     $("#displayimage").attr("src", frame.get('imgfile'));
-    $("#viewStage").css({"top": offsetTop + "px", "left": offsetLeft + "px", "width": imgWidth + "px", "display": "block"});
-    
+    $("#viewStage").css({"left": offsetLeft + "px", "width": imgWidth + "px", "display": "block"}).removeClass("fixit");
+
     framewidth = model.get("width")
-    realwidth = $('#displayimage').width()
+    realwidth = imgWidth
     scale = realwidth / framewidth
 
     @pjs = new Processing($("#displaycanvas").get 0)
     @pjs.background(0,0)
-    @pjs.size $('#displayimage').width(), model.get("height") * scale
+    @pjs.size $('#viewStage').width(), model.get("height") * scale
     @pjs.scale scale
+    
+    $("#displaycanvas").height(model.get("height") * scale)
     model.get('features').each (f) => f.render(@pjs)
+    @viewIsScrolled()
+    @lastModel = model
     
   showImageExpanded: (element, frame, model) =>
+    $(".currentExpanded").removeClass("currentExpanded")
+     
     if application.settings.showMenu
+      @sideBarOpen = true
       @toggleMenu =>
         @openUpExpanded element, frame, model
     else
+      @sideBarOpen = false
       @openUpExpanded element, frame, model
 
   hideImageExpanded: =>
-    $("#viewStage").css({"display": "none"})      
+    $("#viewStage").hide()
+    $(".currentExpanded").removeClass("currentExpanded")
 
   loadMore: (evt)=>
     if ($(window).scrollTop() >= $(document).height() - $(window).height()-1) && !@loading
