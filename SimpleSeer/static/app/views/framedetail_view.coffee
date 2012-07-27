@@ -122,20 +122,26 @@ module.exports = class FrameDetailView extends View
     scale = @calculateScale()
     if scale is $("#zoomer").data("orig-scale")
       return
+
+    fullHeight = $(window).height() - 48
       
     $("#zoomer").data("orig-scale", scale)
     $("#zoomer").zoomify("option", {
       min: (scale.toFixed(2)) * 100,
       max: 400,
+      height: (fullHeight / @model.get("height")) / scale,
       zoom: scale.toFixed(2),
     })
   
   postRender: =>
     @addMetaBox()
     scale = @calculateScale()
-  
+
+    fullHeight = $(window).height() - 48;
+    console.log fullHeight, scale, fullHeight * scale
     $("#zoomer").zoomify({
       image: @model.get('imgfile'),
+      height: (fullHeight / @model.get("height")) / scale,
       min: (scale.toFixed(2)) * 100,
       max: 400,
       zoom: scale.toFixed(2),
