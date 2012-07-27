@@ -81,11 +81,11 @@ module.exports = class FrameDetailView extends View
   updateMetaData: (self) =>  
     metadata = {}
     
-    rows = $(self).find("tr")
+    rows = @$el.find(".editableMeta tr")
     rows.each (id, obj) ->
       tds = $(obj).find('td')
-      input = $(tds[1]).find('input')
-      span = $(tds[0]).find('span')
+      input = $(tds[0]).find('input')
+      span = $(tds[0]).find('span')[0]
       metadata[$(span).html()] = input.attr('value')
     
     #@addMetaBox(self)
