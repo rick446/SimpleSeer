@@ -26,6 +26,7 @@ SONScrub.scrub_type(cv.iplimage)
 SONScrub.scrub_type(SimpleCV.Image)
 SONScrub.register_bsonifier(np.integer, lambda v,c: int(v))
 SONScrub.register_bsonifier(np.float, lambda v,c: float(v))
+SONScrub.register_bsonifier(np.float64, lambda v,c: float(v))
 SONScrub.register_bintype(np.ndarray, _numpy_save, _numpy_load)
 # matrices are instances of np.ndarray, no need to register them again
 # SONScrub.register_bintype(np.matrix, _numpy_save, _numpy_load)
@@ -74,6 +75,7 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
     #this converts a SimpleCV Feature object into a FrameFeature
     #clean this up a bit
     def setFeature(self, data):
+    
         self._featurecache = data
         self.x = int(data.x)
         self.y = int(data.y)
@@ -96,8 +98,10 @@ class FrameFeature(SimpleEmbeddedDoc, mongoengine.EmbeddedDocument):
         if hasattr(data, "__getstate__"):
             datadict = data.__getstate__()
         else:
-            datadict = data.__dict__
-        
+            datakeys = [k for k in dir(data) if not (str(type(getattr(data,k))) == "<type 'instancemethod'>" or k.startswith("_")) ]
+            for k in datakeys:
+                datadict[k] = getattr(data, k)
+                        
         for k in datadict:
             if k in self.featuredata_mask or hasattr(self, k) or k[0] == "_":
                 continue
