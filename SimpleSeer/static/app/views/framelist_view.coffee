@@ -175,7 +175,7 @@ module.exports = class FramelistView extends View
     @pjs.scale scale
     
     $("#displaycanvas").height(@lastModel.get("height") * scale)
-    @lastModel.get('features').each (f) => f.render(@pjs)
+    if @lastModel.get('features') then @lastModel.get('features').each (f) => f.render(@pjs)
     @viewIsScrolled()    
 
   openUpExpanded: (element, frame, model) =>
@@ -198,7 +198,7 @@ module.exports = class FramelistView extends View
     @pjs.scale scale
     
     $("#displaycanvas").height(model.get("height") * scale)
-    model.get('features').each (f) => f.render(@pjs)
+    if model.get('features') else model.get('features').each (f) => f.render(@pjs)
     @viewIsScrolled()
     @lastModel = model
     
