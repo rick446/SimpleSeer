@@ -61,7 +61,9 @@ module.exports = class FrameDetailView extends View
     for i in application.settings.ui_metadata_keys
       metadata.push {key:i,val:md[i]}
     data.metadata = metadata
-      
+
+    data.capturetime = new moment(parseInt @frame.get('capturetime')+'000').format("M/D/YYYY h:mm a")
+  
     data
     
   addMetaBox: =>
