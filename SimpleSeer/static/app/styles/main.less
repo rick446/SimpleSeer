@@ -1,4 +1,5 @@
 body {
+  color: #000;
   padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
 }
 
@@ -294,8 +295,10 @@ p.frame_icons{
 #filter_form{
   clear:both;
   padding:15px;
+  color: #000;
 }
 #filter_form input:not([type=checkbox]) {
+  color: #000;
   width:199px;
 }
 #filter_form .ui-combobox input{
@@ -492,6 +495,8 @@ a.video{
   float:left;
   background: #f8f8f8;
   border:#e0dede solid 1px;
+
+  .title { cursor: pointer; }
 }
   .second-tier-item{
 
@@ -506,7 +511,7 @@ a.video{
     height:40px;
   }
   #second-tier-footer{
-    color: #0090d6;
+    color: #000;
     border-top: #e0dede solid 1px;
     text-align: center;
     padding: 10px 0px;
@@ -679,7 +684,7 @@ a.video{
     border-bottom:#fff solid 2px;
     font-size:16px;
     font-weight:bold;
-    color:#0090d6;
+    color:#636363;
     -webkit-border-top-left-radius: 10px;
     -webkit-border-top-right-radius: 10px;
     -moz-border-radius-topleft: 10px;
@@ -705,7 +710,7 @@ a.video{
       background:#f0f0f0;
       border:none !important;
       border-bottom:#f0f0f0 solid 2px !important;
-      color:#636363 !important;
+      color:#0090d6!important;
     }
 
   #data-view{
@@ -779,7 +784,7 @@ a.video{
 }
 .image-view-item{
   border-top: 1px solid #E0DEDE;
-  padding:25px;
+  padding:15px;
   font-weight:bold;
   float:left;
   width:100%;
@@ -797,6 +802,7 @@ a.video{
   overflow: hidden;
 }
   .ivi-left{
+    color: black;
     padding-left:15px;
     width:161px;
     float:left;
@@ -826,6 +832,7 @@ a.video{
   background: #f8f8f8;
   border: 1px solid #e4e4e4;
   border-radius: 2px;
+  color: #000;
 }
 
 .ivi-right td.item-detail{
@@ -843,6 +850,26 @@ a.video{
 
 .ivi-left .btnGp {
   margin-top: 14px;
+
+  div {
+    cursor: pointer;
+    
+    height: 20px;
+    line-height: 20px;
+    padding-left: 23px;
+    margin-bottom: 5px;
+
+    background: url("/img/icon-download.png") no-repeat left center;
+
+    &:hover {
+      color: #005580 !important;
+      text-decoration: underline;
+    }
+  }
+
+  .download { background-image: url("/img/icon-download.png"); }
+  .view { background-image: url("/img/icon-view.png"); }
+  .fullscreen { background-image: url("/img/icon-fullscreen.png"); }
 }
 
 input[type=checkbox] {}
@@ -950,3 +977,4 @@ table.tablesorter {
   } 
 }
 
+.pushLeft { margin-left: 30px; }

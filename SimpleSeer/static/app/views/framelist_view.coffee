@@ -36,6 +36,7 @@ module.exports = class FramelistView extends View
 
   events:
     'click #minimize-control-panel' : 'toggleMenu'
+    'click #second-tier-menu .title' : 'toggleMenu'
     'click .icon-item' : 'toggleMenu'
     'click #data-tab' : 'tabData'
     'click #image-tab' : 'tabImage'
