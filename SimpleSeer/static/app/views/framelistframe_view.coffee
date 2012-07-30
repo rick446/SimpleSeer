@@ -17,6 +17,7 @@ module.exports = class FramelistFrameView extends View
     'click .action-viewFrame' : 'expandImage'
     'click .clickEdit'  : 'switchStaticMeta'
     'blur .clickEdit'  : 'switchInputMeta'
+    'click .notes-field' : 'setDirty'
     'change .notes-field' : 'updateNotes'
     'click .savebtn' : 'setSaved'
 
