@@ -874,7 +874,7 @@ a.video{
   padding: 10px;
   border-color: #bbb;
   textarea { width: 218px; min-width: 218px; max-width: 218px; margin-bottom: 1px}
-  .item-detail { width: 228px; font-weight: bold;}
+  .item-detail { font-weight: bold; float:left;}
   .item-detail-value { text-align: right; font-weight: bold; }
   .tableSpacer {
       border-top: 1px solid #ccc;
@@ -899,6 +899,15 @@ a.video{
 .ivi-right td.item-detail{
   width: 180px;
   height: 21px;
+}
+
+.ivi-right p.item-detail{
+  float:left;
+  width: 180px;
+  height: 21px;
+}
+.ivi-right .tableSpacerListView p.item-detail span{
+  display:none;
 }
 .ivi-right td.item-detail-value{
   width:220px;

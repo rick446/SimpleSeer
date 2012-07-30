@@ -122,10 +122,10 @@ Handlebars.registerHelper 'featurelist', (features) ->
     f = features.models[0].getPluginMethod(features.models[0].get("featuretype"), 'metadata')()
     for i,o of f
       _lk = "["+o.labelkey+"] " || ""
-      ret += "<tr>"
-      ret += "<td class='item-detail'><span class=\"featureLabel\">"+_lk+"</span>" + o.title + ":</td>"
-      ret += "<td class='item-detail-value'>"+o.value+"<span>"+o.units+"</span></td>"
-      ret += "</tr>"
+      ret += "<div style=\"clear:both;\">"
+      ret += "<p class='item-detail'><span class=\"featureLabel\">"+_lk+"</span>" + o.title + ":</p>"
+      ret += "<p class='item-detail-value'>"+o.value+"<span>"+o.units+"</span></p>"
+      ret += "</div>"
     """
     i = 0
     while i < features.models[0].tableHeader().length
