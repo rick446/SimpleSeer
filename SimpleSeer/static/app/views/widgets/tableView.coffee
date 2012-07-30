@@ -36,7 +36,6 @@ module.exports = class tableView extends SubView
     val == false || val == ''
 
   afterRender: =>
-    @$el.find('.tablesorter').tablesorter()
     l = @$el.find('thead :visible th')
     for dn in l
       if dn.innerHTML == "Capture Time"
