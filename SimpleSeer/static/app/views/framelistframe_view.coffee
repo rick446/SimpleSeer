@@ -23,6 +23,9 @@ module.exports = class FramelistFrameView extends View
 
   expandImage: =>
     application.framelistView.showImageExpanded @$el, @frame, @model
+    @$el.find('.featureLabel').show()
+  hideImage: =>
+    @$el.find('.featureLabel').hide()
     
   setSaved: =>
     @$el.find('.savebtn').button( "option" , 'label' , 'Saved' )
