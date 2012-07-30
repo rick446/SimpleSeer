@@ -22,20 +22,19 @@ Application =
     @timeOffset = (new Date()).getTimezoneOffset() * 60 * 1000
 
     if !@.isMobile
-      @socket = io.connect '/rt'
-      #@socket = io.connect 'ws://127.0.0.1'
-      @socket.on 'timeout', ->
+      @.socket = io.connect '/rt'
+      @.socket.on 'timeout', ->
 	    #alert 'websocket timeout'
-      @socket.on 'connect', ->
+      @.socket.on 'connect', ->
 	    #alert 'websocket connect'
-      @socket.on 'error', ->
+      @.socket.on 'error', ->
 	    #alert 'websocket  error'
-      @socket.on 'disconnect', ->
+      @.socket.on 'disconnect', ->
 	    #alert 'websocket disconnect'
       #@.socket.on 'message', (msg) ->
 	    #console.log 'Got message', msg
-      @socket.on "message:alert/", Application._serveralert
-      @socket.emit 'subscribe', 'alert/'
+      @.socket.on "message:alert/", Application._serveralert
+      @.socket.emit 'subscribe', 'alert/'
 	    
     @inspections = new Inspections()
     @inspections.fetch()
