@@ -117,9 +117,11 @@ Handlebars.registerHelper 'featurelist', (features) ->
   if features.models[0]
     keys = features.models[0].tableHeader()
     values = features.models[0].tableData()
-    metadata = features.models[0].getPluginMethod(features.models[0].get("featuretype"), 'metadata')()
-    
-    f = features.models[0].getPluginMethod(features.models[0].get("featuretype"), 'metadata')()
+    metadata = features.models[0].getPluginMethod(features.models[0].get("featuretype"), 'metadata')
+    if metadata
+      f = metadata()
+    else
+      f = {}
     for i,o of f
       _lk = "["+o.labelkey+"] " || ""
       ret += "<div style=\"clear:both;\">"
