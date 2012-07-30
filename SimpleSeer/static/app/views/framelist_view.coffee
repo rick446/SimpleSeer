@@ -204,6 +204,8 @@ module.exports = class FramelistView extends View
     @lastModel = model
     
   showImageExpanded: (element, frame, model) =>
+    #console.log $(".currentExpanded")[0]
+    #console.log element, frame, model
     $(".currentExpanded").removeClass("currentExpanded")
      
     if application.settings.showMenu
