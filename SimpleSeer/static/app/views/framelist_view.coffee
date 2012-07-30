@@ -142,12 +142,13 @@ module.exports = class FramelistView extends View
         @filtercollection.sortList(v[0],v[1],v[2])
         @filtercollection.fetch({before: @preFetch,success:@postFetch})
       width:"50px"
-
+      
+    application.settings.showMenu = true
+      
     $(window).scroll =>
       @viewIsScrolled()
 
     $(window).resize =>
-      console.log @lastModel
       if @lastModel and $(".currentExpanded").length > 0 
         @resizeExpanded()
 
@@ -190,7 +191,7 @@ module.exports = class FramelistView extends View
 
     framewidth = model.get("width")
     realwidth = imgWidth
-    scale = realwidth / framewidth
+    scale = realwidth / framewidth   
 
     @pjs = new Processing($("#displaycanvas").get 0)
     @pjs.background(0,0)

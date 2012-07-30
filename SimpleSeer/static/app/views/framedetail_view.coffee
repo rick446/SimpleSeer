@@ -26,26 +26,23 @@ module.exports = class FrameDetailView extends View
     os = $('#display').offset()
     viewPort = $('#display-zoom')
     
-    if ui.zoom is 1
-      @zoomed = false
-      viewPort.css({
-        'position': 'static',
-        'left': 0,
-        'top': 0,
-        'width': '100%',
-        'height': '100%'
-      });
-    else
-      @zoomed = true
-      viewPort.css({
-        'position': 'relative',
-        'top': '-'+(@.model.attributes.height * ui.zoom * ui.y)+'px',
-        'left': '-'+(@.model.attributes.width * ui.zoom * ui.x)+'px',
-        'width': (@.model.attributes.width * ui.zoom)+'px',
-        'height': (@.model.attributes.height * ui.zoom)+'px',
-      });
-      $('#display').css("height", (@.model.attributes.height * scale))
-      
+    viewPort.css({
+      'position': 'relative',
+      'top': '-'+(@.model.attributes.height * ui.zoom * ui.y)+'px',
+      'left': '-'+(@.model.attributes.width * ui.zoom * ui.x)+'px',
+      'width': (@.model.attributes.width * ui.zoom)+'px',
+      'height': (@.model.attributes.height * ui.zoom)+'px',
+    });
+    $('#display').css("height", (@.model.attributes.height * scale))
+
+    i = (scale / ui.zoom)
+
+    @pjs = new Processing("displaycanvas")
+    @pjs.background(0,0)
+    @pjs.size $('#display-img').width(), $("#display-img").height()
+    @pjs.scale @calculateScale() / i
+    if @model.get('features') then @model.get('features').each (f) => f.render(@pjs)
+    
   getRenderData: =>
     data = {}
    
@@ -138,9 +135,9 @@ module.exports = class FrameDetailView extends View
     scale = @calculateScale()
 
     fullHeight = $(window).height() - 48;
-    console.log fullHeight, scale, fullHeight * scale
     $("#zoomer").zoomify({
       image: @model.get('imgfile'),
+      y: 25,
       height: (fullHeight / @model.get("height")) / scale,
       min: (scale.toFixed(2)) * 100,
       max: 400,
