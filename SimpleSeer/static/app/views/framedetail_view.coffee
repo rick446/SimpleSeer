@@ -24,14 +24,16 @@ module.exports = class FrameDetailView extends View
     $("#displaycanvas").toggle();
 
   clickZoom: (e) ->
-  '''
     viewPort = $('#display-zoom')
     scale = $("#zoomer").data("orig-scale")
     fakeZoom = Number($("#zoomer").data("last-zoom"))
     fakeZoom += .2
 
-    oldLeft = e.clientX - 300 - Number($("#display-zoom").css("left").replace("px", ""))
-    oldTop = e.clientY - 48 - Number($("#display-zoom").css("top").replace("px", ""))
+    clickX = e.clientX - 300
+    clickY = e.clientY - 48
+    
+    oldLeft = clickX - Number($("#display-zoom").css("left").replace("px", ""))
+    oldTop = clickY - Number($("#display-zoom").css("top").replace("px", ""))
     oldWidth = viewPort.width()
     oldHeight = viewPort.height()
 
@@ -41,18 +43,14 @@ module.exports = class FrameDetailView extends View
     newTop = oldTop / oldHeight * newHeight
 
     # new point goes in center
-    #newTop = 
+    x = Number($("#display-zoom").css("left").replace("px", "")) - (newLeft - oldLeft)
+    y = Number($("#display-zoom").css("top").replace("px", "")) - (newTop - oldTop)
 
-    $("#zoomer").data("last-zoom", fakeZoom)
-    $("#zoomer").zoomify("option", {zoom: fakeZoom, x: (newLeft) / newWidth, y: (newTop)/ newHeight})
-
+    $("#zoomer").zoomify("option", {zoom: Math.floor((fakeZoom*100))/100, x: (-x) / newWidth, y: (-y)/ newHeight})
     $('#display').css("height", (@.model.attributes.height * scale))    
-  '''
   
   zoom: (e, ui) ->
     scale = $("#zoomer").data("orig-scale")
-    $("#zoomer").data("last-zoom", ui.zoom)
-    
     os = $('#display').offset()
     viewPort = $('#display-zoom')
     
@@ -67,11 +65,14 @@ module.exports = class FrameDetailView extends View
 
     i = (scale / ui.zoom)
 
-    @pjs = new Processing("displaycanvas")
-    @pjs.background(0,0)
-    @pjs.size $('#display-img').width(), $("#display-img").height()
-    @pjs.scale @calculateScale() / i
-    if @model.get('features') then @model.get('features').each (f) => f.render(@pjs)
+    if ui.zoom != Number($("#zoomer").data("last-zoom"))
+      @pjs = new Processing("displaycanvas")
+      @pjs.background(0,0)
+      @pjs.size $('#display-img').width(), $("#display-img").height()
+      @pjs.scale @calculateScale() / i
+      if @model.get('features') then @model.get('features').each (f) => f.render(@pjs)
+    
+    $("#zoomer").data("last-zoom", ui.zoom)
     
   getRenderData: =>
     data = {}

@@ -24,7 +24,19 @@ $.widget("ui.zoomify", {
     frame.height(image.height * self.options.height / scale);
 
     var frameWidth = frame.css("border-bottom-width").replace(/\D/g, "");
-    frameWidth *= 2;    
+    frameWidth *= 2;
+
+    if( self.viewport.x < 0 ) {
+      var value = 0;
+      self.viewport.x = value;
+      frame.css("left", value);
+    }
+
+    if( self.viewport.y < 0 ) {
+      var value = 0;
+      self.viewport.y = value;
+      frame.css("top", value);
+    }    
 
     if( frame.width() + self.viewport.x > image.width - frameWidth ) {
       var value = image.width - frame.width() - frameWidth;
