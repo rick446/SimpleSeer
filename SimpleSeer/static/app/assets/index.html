@@ -9,13 +9,19 @@
   <title>Sight Machine</title>
   <meta name="viewport" content="width=device-width">
   <link rel="stylesheet" href="stylesheets/app.css">
-    
-        <style>
-
-    </style>
-  <script src="javascripts/vendor.js"></script>
-  <script src="javascripts/app.js"></script>
-  <script src="/plugins.js"></script>
+  <style></style>
+  <script type="text/javascript">
+    (function() {
+      var uuid = (new Date()).toUTCString();
+      function include(url) {
+        document.write('<scr'+'ipt type="text/javascript" src="'+url+'?v='+uuid+'"></scr'+'ipt>');
+      }
+      
+      include("javascripts/vendor.js");
+      include("javascripts/app.js");
+      include("/plugins.js");
+    })();
+  </script>
   <script>require('initialize');</script>
 </head>
 <body>
