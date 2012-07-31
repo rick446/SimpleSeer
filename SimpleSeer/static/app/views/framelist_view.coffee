@@ -206,6 +206,8 @@ module.exports = class FramelistView extends View
   showImageExpanded: (element, frame, model) =>
     #console.log $(".currentExpanded")[0]
     #console.log element, frame, model
+    @$el.find('.featureLabel').hide()
+
     $(".currentExpanded").removeClass("currentExpanded")
      
     if application.settings.showMenu

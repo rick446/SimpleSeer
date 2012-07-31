@@ -24,7 +24,19 @@ $.widget("ui.zoomify", {
     frame.height(image.height * self.options.height / scale);
 
     var frameWidth = frame.css("border-bottom-width").replace(/\D/g, "");
-    frameWidth *= 2;    
+    frameWidth *= 2;
+
+    if( self.viewport.x < 0 ) {
+      var value = 0;
+      self.viewport.x = value;
+      frame.css("left", value);
+    }
+
+    if( self.viewport.y < 0 ) {
+      var value = 0;
+      self.viewport.y = value;
+      frame.css("top", value);
+    }    
 
     if( frame.width() + self.viewport.x > image.width - frameWidth ) {
       var value = image.width - frame.width() - frameWidth;
@@ -112,7 +124,7 @@ $.widget("ui.zoomify", {
       case "zoom":
         self.options.zoom = value;
         self.viewport.zoom = value;
-        self.options.y = self.viewport.y = self.options.x = self.viewport.x = 0;
+        //self.options.y = self.viewport.y = self.options.x = self.viewport.x = 0;
         self.element.find(".slider").slider("option", "value", value * 100);
         self.element.find("input").attr("value", (value * 100) + "%");
         self.updateDisplay();

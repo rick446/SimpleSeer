@@ -186,12 +186,16 @@ p.frame_icons{
 
   #frameHolder {
     position: fixed;
-    top: 48px;
+    top: 0;
     left: 0;
     width: 100%;
+    height: 100%;
+    padding-top: 48px;
     box-sizing: border-box !important;
     -moz-box-sizing: border-box;
     padding-left: 300px;
+
+    #display-zoom {cursor: move;}
   }
 }
 
@@ -902,11 +906,9 @@ a.video{
 }
 
 .ivi-right p.item-detail{
+  margin-bottom:0;
   float:left;
   height: 21px;
-}
-.ivi-right .tableSpacerListView p.item-detail{
-  width:180px;
 }
 .ivi-right .tableSpacerListView p.item-detail span{
   display:none;
@@ -1029,6 +1031,7 @@ div.data-view-item {
     position: fixed;
     margin: 0;
     top: 48px !important;
+    
   }
 
   #displayimage {

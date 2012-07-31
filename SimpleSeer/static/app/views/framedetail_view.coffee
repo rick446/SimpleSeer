@@ -17,10 +17,38 @@ module.exports = class FrameDetailView extends View
     'click .clickEdit'  : 'switchStaticMeta'
     'blur .clickEdit'  : 'switchInputMeta'
     'change .notes-field' : 'updateNotes'
+    'resize window': 'updateScale'
+    'dblclick #display-zoom': 'clickZoom'
 
   togglePro: =>
     $("#displaycanvas").toggle();
+
+  clickZoom: (e) ->
+    viewPort = $('#display-zoom')
+    scale = $("#zoomer").data("orig-scale")
+    fakeZoom = Number($("#zoomer").data("last-zoom"))
+    fakeZoom += .2
+
+    clickX = e.clientX - 300
+    clickY = e.clientY - 48
     
+    oldLeft = clickX - Number($("#display-zoom").css("left").replace("px", ""))
+    oldTop = clickY - Number($("#display-zoom").css("top").replace("px", ""))
+    oldWidth = viewPort.width()
+    oldHeight = viewPort.height()
+
+    newWidth = (@.model.attributes.width * fakeZoom)
+    newHeight = (@.model.attributes.height * fakeZoom)
+    newLeft = oldLeft / oldWidth * newWidth  
+    newTop = oldTop / oldHeight * newHeight
+
+    # new point goes in center
+    x = Number($("#display-zoom").css("left").replace("px", "")) - (newLeft - oldLeft)
+    y = Number($("#display-zoom").css("top").replace("px", "")) - (newTop - oldTop)
+
+    $("#zoomer").zoomify("option", {zoom: Math.floor((fakeZoom*100))/100, x: (-x) / newWidth, y: (-y)/ newHeight})
+    $('#display').css("height", (@.model.attributes.height * scale))    
+  
   zoom: (e, ui) ->
     scale = $("#zoomer").data("orig-scale")
     os = $('#display').offset()
@@ -37,11 +65,14 @@ module.exports = class FrameDetailView extends View
 
     i = (scale / ui.zoom)
 
-    @pjs = new Processing("displaycanvas")
-    @pjs.background(0,0)
-    @pjs.size $('#display-img').width(), $("#display-img").height()
-    @pjs.scale @calculateScale() / i
-    if @model.get('features') then @model.get('features').each (f) => f.render(@pjs)
+    if ui.zoom != Number($("#zoomer").data("last-zoom"))
+      @pjs = new Processing("displaycanvas")
+      @pjs.background(0,0)
+      @pjs.size $('#display-img').width(), $("#display-img").height()
+      @pjs.scale @calculateScale() / i
+      if @model.get('features') then @model.get('features').each (f) => f.render(@pjs)
+    
+    $("#zoomer").data("last-zoom", ui.zoom)
     
   getRenderData: =>
     data = {}
@@ -145,9 +176,6 @@ module.exports = class FrameDetailView extends View
       update: (e, ui) =>
         @zoom(e, ui)
     }).data("orig-scale", scale)
-
-    $(window).resize =>
-      @updateScale()
         
     if not @model.get('features').length
       return
@@ -159,4 +187,26 @@ module.exports = class FrameDetailView extends View
     @pjs.scale scale
     if @model.get('features') then @model.get('features').each (f) => f.render(@pjs)
 
+    $("#display-zoom").draggable({
+      drag: (e, ui) ->
+        w0 = $("#frameHolder").width()
+        h0 = $("#frameHolder").height()
+        w = $("#display-zoom").width()
+        h = $("#display-zoom").height()
+        
+        if ui.position.left > 0
+          ui.position.left = 0
+          
+        if ui.position.top > 0
+          ui.position.top = 0
+          
+        if -1*ui.position.left + w0 > w
+          ui.position.left = w0 - w
+          
+        if -1*ui.position.top + h0 > h
+          ui.position.top = h0 - h
+
+        $("#zoomer").zoomify("option", {"x": -1*ui.position.left / w, "y": -1*ui.position.top / h})
+    });
+    
     @$el.find(".notes-field").autogrow();
