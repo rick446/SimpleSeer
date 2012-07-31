@@ -40,7 +40,7 @@ module.exports = class FilterCollection extends Collection
         @sortParams.sorttype = sorttype
     return
     
-  getUrl: (total=false)=>
+  getUrl: (total=false, addParams)=>
     #todo: map .error to params.error
     _json = []
     for o in @filters
@@ -63,6 +63,8 @@ module.exports = class FilterCollection extends Collection
         type: @sortParams.sorttype || ''
         name: @sortParams.sortkey || 'capturetime'
         order: @sortParams.sortorder || -1
+    if addParams
+      _json = _.extend _json, addParams
     "/"+JSON.stringify _json
 
   fetch: (params={}) =>

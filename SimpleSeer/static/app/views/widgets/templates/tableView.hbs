@@ -1,20 +1,21 @@
-                  <table class="tablesorter">
-                    <thead> 
-                      <tr>
-                        {{#each header}}
-                        <th>{{this}}</th>
-                        {{/each}}
-                      </tr> 
-                    </thead>
-                    <tbody>
-                        {{#each row}}
-                          <tr>
-                          {{#each this}}
-                            <td>
-                              {{this}}
-                            </td>
-                          {{/each}}
-                          </tr>
-                        {{/each}}
-                    </tbody>
-                  </table>
+<div id="views-tabs-linkbar">Download <a href="{{exportUrl}}" id="csvlink" target="_blank">CSV</a><!-- / <a href="#" id="excellink" target="_blank">Excel</a>--></div>
+<table class="tablesorter">
+  <thead> 
+    <tr>
+      {{#each header}}
+      <th>{{this}}</th>
+      {{/each}}
+    </tr> 
+  </thead>
+  <tbody>
+      {{#each row}}
+        <tr>
+        {{#each this}}
+          <td>
+            {{this}}
+          </td>
+        {{/each}}
+        </tr>
+      {{/each}}
+  </tbody>
+</table>
