@@ -1,4 +1,4 @@
-The SimpleSeer is a way to create inspections and take measurements,
+The SimpleSeer is a framework to create inspections and take measurements,
 it uses the SimpleCV framework and MongoDB to turn any PC into a vision appliance.
 
 Examples of usage:
@@ -16,6 +16,15 @@ To start an iPython shell:
 
     $ simpleseer shell (terminal shell)
     $ simpleseer notebook (web-based notebook) 
+
+To run a script:
+   
+    $ simpleseer script my-commands.py
+
+To create a new project (this will create a new directory PROJECTNAME):
+  
+    $ paster create -t simpleseer PROJECTNAME
+
 
 To capture an image, display, and store in the database:
 
