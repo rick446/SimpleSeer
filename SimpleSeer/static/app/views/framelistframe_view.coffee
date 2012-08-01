@@ -21,12 +21,21 @@ module.exports = class FramelistFrameView extends View
     'click .notes-field' : 'setDirty'
     'change .notes-field' : 'updateNotes'
     'click .savebtn' : 'setSaved'
+    'focus .ivi-right' : 'showSaved'
+    'blur .ivi-right' : 'hideSaved'
 
   expandImage: =>
     application.framelistView.showImageExpanded @$el, @frame, @model
     @$el.find('.featureLabel').show()
+    
   hideImage: =>
     @$el.find('.featureLabel').hide()
+
+  showSaved: =>
+    @$el.find('.savebtn').show()
+    
+  hideSaved: =>
+    @$el.find('.savebtn').hide()
     
   setSaved: =>
     @$el.find('.savebtn').button( "option" , 'label' , 'Saved' )
@@ -35,6 +44,7 @@ module.exports = class FramelistFrameView extends View
   setDirty: =>
     @$el.find('.savebtn').button('enable')
     @$el.find('.savebtn').button( "option" , 'label' , 'Save' )
+    @$el.find('.savebtn').show()
 
   delBlankMeta: (obj) =>
     $(obj).find("tr").each (id, obj) ->
@@ -110,6 +120,7 @@ module.exports = class FramelistFrameView extends View
   afterRender: =>    
     @$el.find(".notes-field").autogrow()
     @$el.find('.savebtn').button()
+    @$el.find('.savebtn').hide()
     @setSaved()
     
   renderTableRow: (table) =>
