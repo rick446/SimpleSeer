@@ -10,7 +10,7 @@ To start SimpleSeer in continuous mode:
     $ python -mPyro4.naming &
     $ simpleseer broker & 
     $ simpleseer core &
-    $ simpleseer web & 
+    $ simpleseer web 
 
 To start an iPython shell:
 
