@@ -21,7 +21,7 @@ To run a script:
    
     $ simpleseer script my-commands.py
 
-To create a new project:
+To create a new project (this will create a new directory PROJECTNAME):
   
     $ paster create -t simpleseer PROJECTNAME
 
