@@ -17,9 +17,14 @@ class CoreStatesCommand(Command):
         import Pyro4
 
         core = Core(self.session)
+        found_statemachine = False
         with open(self.options.program) as fp:
             exec fp in dict(core=core)
-
+            found_statemachine = True
+        
+        if not found_statemachine:
+            raise Exception("State machine " + self.options.program + " not found!")
+            
         so = ScheduledOLAP()
         gevent.spawn_link_exception(so.runSked)
 

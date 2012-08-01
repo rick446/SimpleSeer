@@ -69,4 +69,26 @@ module.exports = class tableView extends SubView
       while a.length < retHeader.length
         a.push @emptyCell
       retRow.push a
-    return {header:retHeader,row:retRow}
+
+    csvString = ''
+    
+    for csvheader in retHeader
+      csvString += '"'+csvheader+'",'
+    csvString = $("<div/>").html(csvString.slice(0,-1)).text()
+    csvString += "\n"
+      
+    for csvrow in retRow
+      for item in csvrow
+        if item == '---'
+          item = ''
+        csvString += '"'+item+'",'
+      csvString = csvString.slice(0,-1)
+      csvString += "\n"
+    #@exportUrl = @options.parent.filtercollection.getUrl(true, {headers:retHeader})
+    #console.log @exportUrl
+    #@$el.find('#csvlink').attr('href','/downloadFrames/csv')
+    uriContent = "data:text/csv," + encodeURIComponent(csvString)
+    exportUrl = uriContent
+    #console.log @$el.find('#csvlink').attr('href')
+    #@$el.find('#excellink').attr('href','/downloadFrames/excel'+@exportUrl)
+    return {header:retHeader,row:retRow,exportUrl:exportUrl}
