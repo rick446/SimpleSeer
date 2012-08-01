@@ -21,6 +21,10 @@ To run a script:
    
     $ simpleseer script my-commands.py
 
+To create a new project:
+  
+    $ paster create -t simpleseer PROJECTNAME
+
 
 To capture an image, display, and store in the database:
 
