@@ -1,4 +1,4 @@
-The SimpleSeer is a means to create inspections and take measurements,
+The SimpleSeer is a framework to create inspections and take measurements,
 it uses the SimpleCV framework and MongoDB to turn any PC into a vision appliance.
 
 Examples of usage:
