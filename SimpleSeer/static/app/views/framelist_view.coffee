@@ -180,6 +180,11 @@ module.exports = class FramelistView extends View
     @viewIsScrolled()    
 
   openUpExpanded: (element, frame, model) =>
+    if @lastModel is model
+      @hideImageExpanded()
+      @lastModel = ""
+      return
+      
     element.find(".image-view-item").addClass("currentExpanded");
     
     thumbnail = element.find(".thumb")

@@ -15,6 +15,7 @@ module.exports = class FramelistFrameView extends View
   
   events:
     'click .action-viewFrame' : 'expandImage'
+    'keypress .action-viewFrame' : 'expandImage'
     'click .clickEdit'  : 'switchStaticMeta'
     'blur .clickEdit'  : 'switchInputMeta'
     'click .notes-field' : 'setDirty'
