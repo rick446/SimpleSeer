@@ -79,6 +79,8 @@ module.exports = class tableView extends SubView
       
     for csvrow in retRow
       for item in csvrow
+        if item == '---'
+          item = ''
         csvString += '"'+item+'",'
       csvString = csvString.slice(0,-1)
       csvString += "\n"
