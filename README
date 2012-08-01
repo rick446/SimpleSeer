@@ -17,6 +17,11 @@ To start an iPython shell:
     $ simpleseer shell (terminal shell)
     $ simpleseer notebook (web-based notebook) 
 
+To run a script:
+   
+    $ simpleseer script my-commands.py
+
+
 To capture an image, display, and store in the database:
 
     >>> frames = SS.capture()
