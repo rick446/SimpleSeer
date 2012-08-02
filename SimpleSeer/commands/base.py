@@ -19,10 +19,10 @@ class Command(object):
             from gevent import monkey
             monkey.patch_all()
             gevent_zeromq.monkey_patch()
+        self._configure_logging()
         # These imports need to happen *after* monkey patching
         from SimpleSeer.Session import Session
         from SimpleSeer import models as M
-        self._configure_logging()
         self.session = Session(options.config)
         if self.remote_seer:
             from SimpleSeer.SimpleSeer import SimpleSeer as SS
