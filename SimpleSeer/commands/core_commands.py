@@ -45,7 +45,7 @@ class CoreCommand(CoreStatesCommand):
         subparser.add_argument('--disable-pyro', action='store_true')
 
     def run(self):
-        self.options.program = self.session.statemachine or 'default-states.py'
+        self.options.program = self.session.statemachine or 'states.py'
         super(CoreCommand, self).run()
 
 @Command.simple(use_gevent=False, remote_seer=True)

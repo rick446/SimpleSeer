@@ -151,7 +151,7 @@ class Core(object):
             for watcher in self.watchers:
                 watcher.check(frame.results)
 
-    def process(frame):
+    def process(self, frame):
         frame.features = []
         frame.results = []
         for inspection in M.Inspection.objects:
