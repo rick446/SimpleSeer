@@ -1,0 +1,4 @@
+SeerRouter = require 'lib/seer_router'
+
+module.exports = class Router extends SeerRouter
+  name: '${package}'

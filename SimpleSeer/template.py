@@ -44,29 +44,51 @@ class SimpleSeerProjectTemplate(Template):
     def post(self, command, output_dir, vars):
         src_brunch = path(pkg_resources.resource_filename(
             'SimpleSeer', 'static'))
-        tgt_brunch = path(output_dir) / vars['package'] / 'brunch_src'
+        src_public = path(pkg_resources.resource_filename(
+            'SimpleSeer', 'static/public'))
+        tgt_brunch = (path(output_dir) / vars['package'] / 'brunch_src').abspath()
+        tgt_public = (path(output_dir) / vars['package'] / 'static').abspath()
 
-        # Copy vendor directory
-        src_vendor = src_brunch / 'vendor'
-        tgt_vendor = tgt_brunch / 'vendor'
-        if tgt_vendor.exists():
-            tgt_vendor.rmtree()
-        src_vendor.copytree(tgt_vendor)
+        # Ensure that brunch build has been run in the source
+        with src_brunch:
+            print subprocess.check_output(['brunch', 'build'])
 
-        # Copy app directory
-        src_app = src_brunch / 'app'
-        tgt_app = tgt_brunch / 'app'
-        if tgt_app.exists():
-            tgt_app.rmtree()
-        src_app.copytree(tgt_app)
-
-        # Read the base package.json
+        # Create package.json
         package = json.loads((src_brunch / 'package.json').text())
         package['name'] = vars['package']
         (tgt_brunch / 'package.json').write_text(
             json.dumps(package, indent=2))
 
+        # Copy (built) seer.js & seer.css
+        overwrite(
+            src_public / 'javascripts/seer.js',
+            tgt_brunch / 'vendor/javascripts/seer.js')
+        overwrite(
+            src_public / 'stylesheets/seer.css',
+            tgt_brunch / 'vendor/stylesheets/seer.css')
+
         # Link the app
         with tgt_brunch:
             print subprocess.check_output(
                 ['npm', 'link'])
+
+        # Ensure that brunch build has been run in the target
+        with tgt_brunch:
+            print subprocess.check_output(['brunch', 'build'])
+
+
+def overwrite(src, dst):
+    if dst.exists(): dst.remove()
+    src.copy(dst)
+
+def overlay(src, dst, force=False):
+    for src_fn in src.walk():
+        rel_fn = src.relpathto(src_fn)
+        dst_fn = dst / rel_fn
+        if src_fn.isdir():
+            dst_fn.mkdir_p()
+            continue
+        if overwrite:
+            overwrite(src_fn, dst_fn)
+        else:
+            src_fn.copy(dst_fn)

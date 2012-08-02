@@ -1,0 +1,7 @@
+SeerApplication = require 'seer_application'
+
+# You might want to add
+Application = _.extend SeerApplication,
+  name: '${package}'
+
+module.exports = Application

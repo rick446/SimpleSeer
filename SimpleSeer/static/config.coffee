@@ -15,8 +15,6 @@ exports.config =
       # * map of ('outputFilePath': /regExp that matches input path/)
       # * map of ('outputFilePath': function that takes input path)
       joinTo:
-        'javascripts/app.js': /^app/
-        'javascripts/vendor.js': /^vendor/
         'javascripts/seer.js': (path) -> true
       # Defines compilation order.
       # `vendor` files will be compiled before other ones
@@ -48,7 +46,8 @@ exports.config =
 
     stylesheets:
       defaultExtension: 'less'
-      joinTo: 'stylesheets/app.css'
+      joinTo:
+        'stylesheets/seer.css': (path) -> true
       order:
         before: ['vendor/styles/bootstrap.css']
         after: [ 'vendor/styles/bootstrap-responsive.css',
@@ -61,7 +60,7 @@ exports.config =
 
     templates:
       defaultExtension: 'hbs'
-      joinTo: 'javascripts/app.js'
+      joinTo: 'javascripts/seer.js'
 
   # Change this if you're using something other than backbone (e.g. 'ember').
   # Content of files, generated with `brunch generate` depends on the setting.

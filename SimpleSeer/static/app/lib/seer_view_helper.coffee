@@ -50,52 +50,52 @@ Handlebars.registerHelper "nl2br", (text) ->
 
 Handlebars.registerHelper 'epoch', (epoch) ->
   d = new Date parseInt epoch * 1000
-  
+
   zp = (n) ->
     if n < 10
       n = "0" + n
     n.toString()
-  
+
   (d.getMonth() + 1) + "/" + zp(d.getDate()) + " " + zp(d.getHours()) + ":" + zp(d.getMinutes()) + ":" + zp(d.getSeconds())
 
 Handlebars.registerHelper 'epochtime', (epoch) ->
   d = new Date parseInt epoch * 1000
-  
+
   zp = (n) ->
     if n < 10
       n = "0" + n
     n.toString()
-  
+
   zp(d.getHours()) + ":" + zp(d.getMinutes()) + ":" + zp(d.getSeconds())
 
 Handlebars.registerHelper 'epochdate', (epoch) ->
   d = new Date parseInt epoch * 1000
-  
+
   zp = (n) ->
     if n < 10
       n = "0" + n
     n.toString()
-  
+
   (d.getMonth() + 1) + "/" + zp(d.getDate()) + "/" + (1900 + d.getYear())
-  
+
 Handlebars.registerHelper 'featuresummary', (featureset) ->
   unless featureset?
     return
-  #TODO, group by featuretype  
+  #TODO, group by featuretype
   ret = ''
   for f in featureset.models
     icon = ""
     if f.icon()
       icon = "<img src=\"" + f.icon() + "\">"
     ret += "<li class=feature>" + icon + f.represent() + "</li>"
-    
+
   new Handlebars.SafeString(ret)
-  
-  
+
+
 Handlebars.registerHelper 'featuredetail', (features) ->
   unless features[0].tableOk()?
     return new Handlebars.SafeString features[0].represent()
-    
+
   ret = "<table class=\"tablesorter\"><thead><tr>"
   for th in features[0].tableHeader()
     ret += "<th>" + th + "</th>"
@@ -106,7 +106,7 @@ Handlebars.registerHelper 'featuredetail', (features) ->
      for td in tr.tableData()
        ret += "<td>" + td + "</td>"
      ret += "</tr>"
-  
+
   ret += "</tbody></table>"
   new Handlebars.SafeString(ret)
 
@@ -138,7 +138,7 @@ Handlebars.registerHelper 'featurelist', (features) ->
       ret += "</div>"
       i++
   return new Handlebars.SafeString(ret)
-  
+
 # Usage: {{#key_value obj}} Key: {{key}} // Value: {{value}} {{/key_value}}
 Handlebars.registerHelper "key_value", (obj, fn) ->
   buffer = []
