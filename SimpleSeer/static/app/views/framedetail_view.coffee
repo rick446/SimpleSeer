@@ -70,7 +70,7 @@ module.exports = class FrameDetailView extends View
       @pjs.background(0,0)
       @pjs.size $('#display-img').width(), $("#display-img").height()
       @pjs.scale @calculateScale() / i
-      if @model.get('features').length() then @model.get('features').each (f) => f.render(@pjs)
+      if @model.get('features').length then @model.get('features').each (f) => f.render(@pjs)
     
     $("#zoomer").data("last-zoom", ui.zoom)
     
@@ -185,7 +185,7 @@ module.exports = class FrameDetailView extends View
     @pjs.background(0,0)
     @pjs.size $('#display-img').width(), @model.get("height") * scale
     @pjs.scale scale
-    if @model.get('features').length() then @model.get('features').each (f) => f.render(@pjs)
+    if @model.get('features').length then @model.get('features').each (f) => f.render(@pjs)
 
     $("#display-zoom").draggable({
       drag: (e, ui) ->
