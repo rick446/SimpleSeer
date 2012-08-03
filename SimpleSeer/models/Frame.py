@@ -133,8 +133,7 @@ class Frame(SimpleDoc, mongoengine.Document):
             img = self._imgcache
             if self.clip_id is None:
                 img.getPIL().save(s, "jpeg", quality = 100)
-                self.imgfile.delete()
-                self.imgfile.put(s.getvalue(), content_type = "image/jpg")
+                self.imgfile.replace(s.getvalue(), content_type = "image/jpg")
           
             if len(img._mLayers):
                 if len(img._mLayers) > 1:
@@ -143,8 +142,7 @@ class Frame(SimpleDoc, mongoengine.Document):
                         layer.renderToOtherLayer(mergedlayer)
                 else:
                     mergedlayer = img.dl()
-                self.layerfile.delete()
-                self.layerfile.put(pygame.image.tostring(mergedlayer._mSurface, "RGBA"))
+                self.layerfile.replace(pygame.image.tostring(mergedlayer._mSurface, "RGBA"))
                 #TODO, make layerfile a compressed object
             #self._imgcache = ''
         
