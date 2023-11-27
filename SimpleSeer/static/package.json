@@ -28,6 +28,6 @@
     "mocha": "0.14.0",
     "expect.js": "0.1.2",
     "backbone":"0.9.2",
-    "handlebars": "1.0.5beta"
+    "handlebars": "4.7.7"
   }
 }
